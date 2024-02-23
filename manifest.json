@@ -4,8 +4,7 @@
   "description": "Shortcuts including search by code.",
   "version": "0.1",
   "action": {
-    "default_title" : "LDX Tools LDX",
-    "default_popup": "js/index.html"
+    "default_title" : "LDX Tools LDX"
   },
  "commands" : {
       "_execute_action": {
@@ -14,40 +13,34 @@
       }
   },
   "background" : {
-      "service_worker": "./static/background.js",
+      "service_worker": "js/background.js",
       "type" : "module"
   },
   "web_accessible_resources": [{
      "matches": ["<all_urls>"],
-     "resources": ["src/modules/canvas_course.mjs"]
+     "resources": ["js/canvas.js"]
    }],
   "content_scripts" : [
     {
-      "matches" : ["*://*.instructure.com/**"],
-      "js": ["/.static/js/content.js"]
-
-    },
-    {
       "matches" : ["*://*.instructure.com/courses/**"],
-      "js" : ["src/page_fixes.js"],
+      "js" : ["js/pageFixes.js"],
       "run_at" : "document_end"
     },
     {
       "matches" : ["*://*.instructure.com/courses/*/modules"],
-      "js" : ["src/module_ui.js"],
+      "js" : ["js/ui/module.js"],
       "run_at" : "document_end"
     },
     {
       "matches" : ["*://*.instructure.com/courses/**"],
-      "js" : ["src/course_ui.js"],
+      "js" : ["js/ui/course.js"],
       "run_at" : "document_end"
     },
     {
       "matches" : ["*://*.instructure.com/accounts/*"],
-      "js" : ["src/account_ui.js"],
+      "js" : ["js/ui/account.js"],
       "run_at" : "document_end"
     }
   ],
-
   "permissions" : ["activeTab", "scripting", "storage"]
 }

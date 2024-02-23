@@ -12,6 +12,6 @@ action.onClicked.addListener(async (tab) => {
   if (!id) { return }
   return scripting.executeScript({
     target: {tabId: id},
-    files: ['./static/content.js']
+    files: ['./js/content.js']
   });
 });

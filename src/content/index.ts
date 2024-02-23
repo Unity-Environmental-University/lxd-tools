@@ -1,7 +1,10 @@
+import '../canvas/index';
 
+console.log("IMPORTED CONTENT SCRIPT");
 
 (async() => {
     console.log('running');
+    console.log("RUNNING CONTENT SCRIPT");
     async function getJson(url: string) {
         console.log(url);
         const response = await fetch(url);

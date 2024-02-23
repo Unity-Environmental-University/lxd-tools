@@ -1,10 +1,9 @@
+import {Course} from "../../canvas";
 
 (async() => {
-  const src = chrome.runtime.getURL("src/modules/canvas_course.ts");
-  const lxd = await import(src);
-  const course = await lxd.Course.getFromUrl(document.documentURI);
+  const course = await Course.getFromUrl(document.documentURI);
   let header = document.querySelector('.right-of-crumbs');
-  let bp = await lxd.Course.getByCode(`BP_${course.baseCode}`);
+  let bp = await Course.getByCode(`BP_${course.baseCode}`);
 
   if (course.isBlueprint) {
 
