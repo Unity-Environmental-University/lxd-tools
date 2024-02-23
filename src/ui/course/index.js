@@ -32,7 +32,9 @@ import {Course} from "../../canvas";
     bpBtn.innerHTML = "BP";
     header.append(bpBtn);
     bpBtn.addEventListener('click', async () => {
-      window.open(bp.courseUrl);
+      if(window) {
+        window.open(bp.courseUrl);
+      }
     })
 
   }

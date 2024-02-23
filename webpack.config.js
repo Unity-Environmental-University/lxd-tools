@@ -11,7 +11,6 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 module.exports = {
     mode: 'production',
     entry: {
-        main: './src/popup',
         background: './src/background',
         content: './src/content',
         canvas: './src/canvas',
