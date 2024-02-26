@@ -102,13 +102,11 @@ import {Course} from "../canvas";
     if (!searchCode) return;
     let course = getCourseToNavTo(searchCode, courses);
 
-
     let url =`/accounts/98244?search_term=${searchCode}`;
     if (course  && courses.length <  4) {
-        url = `/courses/${course.id}`;
-
-        const modules = await course.getModules();
+        url = `/courses/${course.canvasId}`;
         if (targetModuleWeekNumber) {
+            const modules = await course.getModules();
             let targetModule;
             for(let module of modules) {
                 if(getWeekNumber(module) === targetModuleWeekNumber) {
@@ -120,7 +118,7 @@ import {Course} from "../canvas";
             if (targetModule && typeof targetType !== 'undefined') {
                 //If it's a page, just search for the parameter string
                 if(targetType === 'Page' && contentSearchString) {
-                    url = `/courses/${course.id}/pages?${new URLSearchParams([['search_term', contentSearchString]])}`;
+                    url = `/courses/${course.canvasId}/pages?${new URLSearchParams([['search_term', contentSearchString]])}`;
 
                 //If it's anything else, get only those items in the module and set url to the targetIndexth one.
                 } else if (targetType && targetIndex) {
