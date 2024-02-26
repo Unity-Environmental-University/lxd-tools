@@ -1,5 +1,7 @@
+import {Course} from "../../canvas";
+
 (async () => {
-    const course = await lxd.Course.getFromUrl(document.documentURI);
+    const course = await Course.getFromUrl(document.documentURI);
 
     let moduleHeader = document.querySelector('.header-bar-right__buttons');
 

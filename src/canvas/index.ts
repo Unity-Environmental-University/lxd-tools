@@ -8,7 +8,8 @@ And starting to convert to ts
  */
 
 import assert from 'assert';
-import {ICanvasData, Dict} from "./canvasDataDefs";
+import {ICanvasData, Dict, IModuleData, IModuleItemData, ModuleItemType, Lut} from "./canvasDataDefs";
+import {type} from "node:os";
 interface ICanvasCallConfig extends Dict {
     fetchConfig?: Dict
     queryParams?: Dict
@@ -45,18 +46,33 @@ function formDataify(data: Dict) {
     return formData;
 }
 
-async function getItemTypeAndId(
-    item: {
-        type: string,
-        url: string,
-        content_id: number | string
+export function getModuleWeekNumber(module: Dict) {
+    const regex = /(week|module) (\d+)/i;
+    let match = module.name.match(regex);
+    let weekNumber = !match? null : Number(match[1]);
+    if (!weekNumber) {
+        for (let moduleItem of module.items) {
+            if (!moduleItem.hasOwnProperty('title')) {
+                continue;
+            }
+            let match = moduleItem.title.match(regex);
+            if (match) {
+                weekNumber = match[2];
+            }
+        }
     }
+    return weekNumber;
+}
+
+export async function getItemTypeAndId(
+    item: IModuleItemData
 ) {
     let id = null;
     let type = null;
     if (type_lut.hasOwnProperty(item.type)) {
         type = type_lut[item.type];
         if (type === "wiki_page") {
+            assert(item.url); //wiki_page items always have a url param
             const response = await fetch(item.url);
             if (response.ok) {
                 const data = await response.json();
@@ -201,7 +217,7 @@ export class BaseCanvasObject {
         assert(typeof this.accountId === 'number');
         assert(typeof constructor._contentUrlTemplate === 'string');
         return constructor._contentUrlTemplate
-            .replace('{content_id}', this.canvasId.toString())
+            .replace('{content_id}', this.id.toString())
             .replace('{account_id}', this.accountId.toString());
     }
 
@@ -220,7 +236,7 @@ export class BaseCanvasObject {
     }
 
     static async getDataById(contentId: number, course: Course | null = null, config : ICanvasCallConfig | undefined): Promise<ICanvasData> {
-        let url = this.getUrlPathFromIds(contentId, course ? course.canvasId : null);
+        let url = this.getUrlPathFromIds(contentId, course ? course.id : null);
         const response =  await fetchApiJson(url, config);
         assert(!Array.isArray(response));
         return response;
@@ -259,7 +275,7 @@ export class BaseCanvasObject {
     }
 
 
-    get canvasId() : number {
+    get id() : number {
         const id = this._canvasData[(<typeof BaseCanvasObject> this.constructor)._idProperty];
         return parseInt(id);
     }
@@ -329,6 +345,8 @@ export class Account extends BaseCanvasObject {
 
 export class Course extends BaseCanvasObject {
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
+    private _modules: IModuleData[] | undefined = undefined;
+    private modulesByWeekNumber: Lut<IModuleData> | undefined = undefined;
 
     static async getFromUrl(url: string | null = null) {
         if (url === null) {
@@ -355,7 +373,7 @@ export class Course extends BaseCanvasObject {
             config.queryParams = config.queryParams || {};
             config.queryParams['search_term'] = code;
             if (term !== null) {
-                config.queryParams['enrollment_term_id'] = term.canvasId;
+                config.queryParams['enrollment_term_id'] = term.id;
             }
             courseDataList = await getApiPagedData(url, config);
             if (courseDataList && courseDataList.length > 0) {
@@ -413,7 +431,7 @@ export class Course extends BaseCanvasObject {
     // }
 
     get contentUrlPath() {
-        return `courses/${this.canvasId}`;
+        return `courses/${this.id}`;
     }
 
     get courseUrl() {
@@ -450,15 +468,76 @@ export class Course extends BaseCanvasObject {
         return this._canvasData['workflow_state'] === 'available';
     }
 
-    async getModules() {
-        return await getApiPagedData(`${this.contentUrlPath}/modules?include[]=items&include[]=content_details`);
+    async getModules(): Promise<IModuleData[]> {
+        if(this._modules) {
+            return this._modules;
+        }
+        let modules = <IModuleData[]> await getApiPagedData(`${this.contentUrlPath}/modules?include[]=items&include[]=content_details`);
+        this._modules = modules;
+        return modules;
+    }
 
 
+    async getModulesByWeekNumber() {
+        if (this.modulesByWeekNumber) return this.modulesByWeekNumber;
+        let modules = await this.getModules();
+        let modulesByWeekNumber: Lut<IModuleData> = {};
+        for(let module of modules)  {
+            let weekNumber = getModuleWeekNumber(module);
+            if (weekNumber) {
+                modulesByWeekNumber[weekNumber] = module;
+            }
+        }
+        this.modulesByWeekNumber = modulesByWeekNumber;
+        return modulesByWeekNumber;
+    }
+
+    async getModuleItemLink(moduleOrWeekNumber: number | Dict, target: IModuleItemData | {
+        type: ModuleItemType,
+        search?: string,
+        index?: number,
+    }) {
+        assert(target.hasOwnProperty('type'));
+        let targetType: ModuleItemType = target.type;
+        let url: string| null = null;
+        let contentSearchString = target.hasOwnProperty('search')? target.search : null;
+        let targetIndex = target.hasOwnProperty('index') ? target.index : null;
+        let targetModuleWeekNumber;
+        let targetModule;
+        if (typeof moduleOrWeekNumber === 'number') {
+            let modules = await this.getModulesByWeekNumber();
+            assert(modules.hasOwnProperty(moduleOrWeekNumber));
+            targetModuleWeekNumber = moduleOrWeekNumber;
+            targetModule = modules[targetModuleWeekNumber];
+        } else {
+            targetModule = moduleOrWeekNumber;
+            targetModuleWeekNumber = getModuleWeekNumber(targetModule);
+        }
+
+        if (targetModule && typeof targetType !== 'undefined') {
+            //If it's a page, just search for the parameter string
+            if(targetType === 'Page' && contentSearchString) {
+                url = `/courses/${this.id}/pages?${new URLSearchParams([['search_term', contentSearchString]])}`;
+
+            //If it's anything else, get only those items in the module and set url to the targetIndexth one.
+            } else if (targetType && targetIndex) {
+                //bump index for week 1 to account for intro discussion / checking for rubric would require pulling too much data
+                //and too much performance overhead
+                if (targetType === 'Discussion' && targetModuleWeekNumber === 1 ) targetIndex++;
+                const matchingTypeItems = targetModule.items.filter( (a: Dict) => a.type === targetType);
+                if (matchingTypeItems.length >= targetIndex) {
+                    //We discuss and number the assignments indexed at 1, but the array is indexed at 0
+                    const targetItem = matchingTypeItems[targetIndex - 1];
+                    url = targetItem['html_url'];
+                }
+            }
+        }
+        return url;
     }
 
     async getSyllabus(): Promise<string> {
         if (!('syllabus_body' in this._canvasData)) {
-            const data = await Course.getById(this.canvasId, {'include[]': 'syllabus_body'});
+            const data = await Course.getById(this.id, {'include[]': 'syllabus_body'});
             this._canvasData['syllabus_body'] = data._canvasData['syllabus_body'];
         }
         return this._canvasData['syllabus_body'];
@@ -487,19 +566,19 @@ export class Course extends BaseCanvasObject {
     async getAssociatedCourses() {
         if (!this.isBlueprint) return null;
 
-        const url = `courses/${this.canvasId}/blueprint_templates/default/associated_courses`;
+        const url = `courses/${this.id}/blueprint_templates/default/associated_courses`;
         const courses = await getApiPagedData(url, {queryParams: {per_page: 50}});
         return courses.map(courseData => new Course(courseData));
     }
 
     async getSubsections() {
-        const url = `/api/v1/courses/${this.canvasId}/sections`;
+        const url = `/api/v1/courses/${this.id}/sections`;
         return await fetchApiJson(url);
 
     }
 
     async getTabs() {
-        return await fetchApiJson(`courses/${this.canvasId}/tabs`);
+        return await fetchApiJson(`courses/${this.id}/tabs`);
     }
 
     async getFrontPage() {
@@ -519,14 +598,14 @@ export class Course extends BaseCanvasObject {
         const tab = this.getTab(label);
         if (!tab) return null;
 
-        return await fetchApiJson(`courses/${this.canvasId}/tabs/${tab.id}`, {
+        return await fetchApiJson(`courses/${this.id}/tabs/${tab.id}`, {
             queryParams : {'hidden': value}
         });
     }
 
     async changeSyllabus(newHtml: string) {
         this._canvasData['syllabus_body'] = newHtml;
-        return await fetchApiJson(`courses/${this.canvasId}`, {
+        return await fetchApiJson(`courses/${this.id}`, {
             fetchConfig: {
                 method: 'PUT',
                 body: JSON.stringify({'course[syllabus_body]': newHtml})
@@ -540,7 +619,8 @@ export class Course extends BaseCanvasObject {
 
     async lockBlueprint() {
         const modules = await this.getModules();
-        const items = [].concat(...modules.map((a) => [].concat(...a.items)));
+        const items: IModuleItemData[] = [];
+        items.concat(...modules.map((a) =>(<IModuleItemData[]> [] ).concat(...a.items)));
         const promises = items.map(async (item) => {
             const url = `${this.contentUrlPath}/blueprint_templates/default/restrict_item`;
             let {type, id} = await getItemTypeAndId(item);
@@ -564,7 +644,7 @@ export class Course extends BaseCanvasObject {
     }
 
     async setAsBlueprint() {
-        const url = `courses/${this.canvasId}`;
+        const url = `courses/${this.id}`;
         const payload = {
             'course[blueprint]': true,
             'course[use_blueprint_restrictions_by_object_type]': 0,
@@ -582,7 +662,7 @@ export class Course extends BaseCanvasObject {
     }
 
     async unsetAsBlueprint() {
-        const url = `courses/${this.canvasId}`;
+        const url = `courses/${this.id}`;
         const payload = {
             'course[blueprint]': false,
         };
@@ -599,7 +679,7 @@ export class Course extends BaseCanvasObject {
     }
 
     async publish() {
-        const url = `courses/${this.canvasId}`;
+        const url = `courses/${this.id}`;
         const courseData = await fetchOneApiJson(url, {fetchConfig:{
             method: 'PUT',
             body: JSON.stringify({'offer': true})
@@ -610,12 +690,12 @@ export class Course extends BaseCanvasObject {
     }
 
     async unpublish() {
-        const url = `courses/${this.canvasId}`;
+        const url = `courses/${this.id}`;
         await fetchApiJson(url, {fetchConfig:{
             method: 'PUT',
             body: JSON.stringify({'course[event]': 'claim'})
         }});
-        this._canvasData = (await Course.getById(this.canvasId) ).rawData;
+        this._canvasData = (await Course.getById(this.id) ).rawData;
     }
 
     async contentUpdatesAndFixes(_fixesToRun = null) {
@@ -643,7 +723,7 @@ export class Course extends BaseCanvasObject {
         // }
         //
         // const syllabus = SyllabusFix.fix(this.syllabus);
-        // await fetchApiJson(`courses/${this.canvasId}`, {}, {
+        // await fetchApiJson(`courses/${this.id}`, {}, {
         //     method: 'PUT',
         //     body: JSON.stringify({'course[syllabus_body]': syllabus})
         // });
@@ -656,7 +736,7 @@ export class Course extends BaseCanvasObject {
             return false;
         }
 
-        const url = `/courses/${this.canvasId}/reset_content`;
+        const url = `/courses/${this.id}/reset_content`;
         const data = await fetchOneApiJson(url, { fetchConfig: {method: 'POST'}});
         this._canvasData['id'] = data.id;
 
@@ -666,7 +746,7 @@ export class Course extends BaseCanvasObject {
     /**
      * NOT IMPLEMENTED
      * @param prompt Either a boolean or an async function that takes in a source and destination course and returns a boolean
-     * @param update
+     * @param updateCallback
      */
     async importDevCourse(
         prompt: ((source: Course, destination: Course) => Promise<boolean>) | false = false,
@@ -692,7 +772,7 @@ export class Course extends BaseCanvasObject {
     }
 
     async getParentCourse(return_dev_search = false) {
-        let migrations = await getApiPagedData(`courses/${this.canvasId}/content_migrations`);
+        let migrations = await getApiPagedData(`courses/${this.id}/content_migrations`);
 
         if (migrations.length < 1) {
             console.log('no migrations found');
@@ -725,7 +805,7 @@ export class BaseContentItem extends BaseCanvasObject {
     }
 
     static async getAllInCourse(course: Course, config: ICanvasCallConfig) {
-        let url = this.getAllUrl(course.canvasId);
+        let url = this.getAllUrl(course.id);
         let data = await getApiPagedData(url, config);
         return data.map(item => new this(item, course));
     }
@@ -766,8 +846,8 @@ export class BaseContentItem extends BaseCanvasObject {
     get contentUrlPath() {
         let url = (<typeof BaseContentItem> this.constructor)._contentUrlTemplate;
         assert(url);
-        url = url.replace('{course_id}', this.course.canvasId.toString());
-        url = url.replace('{content_id}', this.canvasId.toString());
+        url = url.replace('{course_id}', this.course.id.toString());
+        url = url.replace('{content_id}', this.id.toString());
 
         return url;
     }
@@ -899,7 +979,7 @@ export class Rubric extends BaseContentItem {
             return this._canvasData['associations'];
         }
 
-        let data = await this.myClass.getDataById(this.canvasId, this.course, {params: {'include': ['associations']}});
+        let data = await this.myClass.getDataById(this.id, this.course, {params: {'include': ['associations']}});
         let associations = data['associations'].map((data: ICanvasData) => new RubricAssociation(data, this.course));
         this._canvasData['associations'] = associations;
         return associations;
@@ -942,7 +1022,7 @@ export class Term extends BaseCanvasObject {
         if (workflowState) queryParams['workflow_state'] = workflowState;
         if (code) queryParams['term_name'] = code;
         let rootAccount = await Account.getRootAccount();
-        let url = `accounts/${rootAccount?.canvasId}/terms`;
+        let url = `accounts/${rootAccount?.id}/terms`;
         const data = await getApiPagedData(url, config);
         let terms: ICanvasData[] = [];
         terms.concat(...data.map( (datum) => [...datum['enrollment_terms']]));

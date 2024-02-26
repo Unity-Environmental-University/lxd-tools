@@ -1,5 +1,5 @@
-import {Dict, ICanvasData} from "../canvas/canvasDataDefs";
-import {Course} from "../canvas";
+import {Dict, ICanvasData, ModuleItemType} from "../canvas/canvasDataDefs";
+import {Course, getModuleWeekNumber} from "../canvas";
 
 
 (async() => {
@@ -33,26 +33,6 @@ import {Course} from "../canvas";
             return new Course(courses[0]);
         }
     }
-
-
-    function getWeekNumber(module: Dict) {
-        const regex = /(week|module) (\d+)/i;
-        let match = module.name.match(regex);
-        let weekNumber = !match? null : Number(match[1]);
-        if (!weekNumber) {
-            for (let moduleItem of module.items) {
-                if (!moduleItem.hasOwnProperty('title')) {
-                    continue;
-                }
-                let match = moduleItem.title.match(regex);
-                if (match) {
-                    weekNumber = match[2];
-                }
-            }
-        }
-        return weekNumber;
-    }
-
 
     async function getJson(url: string) {
         console.log(url);
@@ -106,36 +86,14 @@ import {Course} from "../canvas";
     if (course  && courses.length <  4) {
         url = `/courses/${course.canvasId}`;
         if (targetModuleWeekNumber) {
-            const modules = await course.getModules();
-            let targetModule;
-            for(let module of modules) {
-                if(getWeekNumber(module) === targetModuleWeekNumber) {
-                    targetModule = module;
-                    break;
-                }
-            }
-
-            if (targetModule && typeof targetType !== 'undefined') {
-                //If it's a page, just search for the parameter string
-                if(targetType === 'Page' && contentSearchString) {
-                    url = `/courses/${course.canvasId}/pages?${new URLSearchParams([['search_term', contentSearchString]])}`;
-
-                //If it's anything else, get only those items in the module and set url to the targetIndexth one.
-                } else if (targetType && targetIndex) {
-                    //bump index for week 1 to account for intro discussion / checking for rubric would require pulling too much data
-                    if (targetType === 'Discussion' && targetModuleWeekNumber === 1 ) targetIndex++;
-
-                    const correctTypeItems = targetModule.items.filter( (a: Dict) => a.type === targetType);
-                    if (correctTypeItems.length >= targetIndex) {
-                        //We discuss and number the assignments indexed at 1, but the array is indexed at 0
-                        const targetItem = correctTypeItems[targetIndex - 1];
-                        url = targetItem['html_url'];
-                    }
-                }
-            }
+            const potentialUrl = await course.getModuleItemLink(targetModuleWeekNumber, {
+                type: targetType as ModuleItemType,
+                index: targetIndex,
+                search: contentSearchString
+            });
+            if (potentialUrl) url = potentialUrl;
         }
     }
-
     console.log(url);
     window.open(url, "_blank");
 })();
