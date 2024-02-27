@@ -1,4 +1,5 @@
 import {Course} from "../../canvas";
+import assert from "assert";
 
 (async () => {
     const course = await Course.getFromUrl(document.documentURI);
@@ -6,7 +7,7 @@ import {Course} from "../../canvas";
     let moduleHeader = document.querySelector('.header-bar-right__buttons');
 
     if (moduleHeader) {
-        if (course.isBlueprint) {
+        if (course?.isBlueprint) {
             let btn = document.createElement('btn');
             btn.innerHTML = "Lock All";
             moduleHeader.insertBefore(btn, moduleHeader.firstChild);
@@ -24,7 +25,7 @@ import {Course} from "../../canvas";
         moduleHeader.insertBefore(btn, moduleHeader.firstChild);
         btn.addEventListener('click', async () => {
             let offset = prompt("Days to offset by?")
-
+            assert(course);
             let promises = [];
             let assignments = await course.getAssignments();
             let quizzes = await course.getQuizzes();

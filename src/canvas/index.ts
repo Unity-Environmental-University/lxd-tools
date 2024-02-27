@@ -31,6 +31,29 @@ const type_lut: Dict = {
 }
 
 
+export function formDataify(data: Dict) {
+    console.log('form', data);
+    let formData = new FormData();
+    for (let key in data) {
+        addToFormData(formData, key, data[key]);
+    }
+
+    if (document) {
+        const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
+        const authenticityToken = el ? el.value : null;
+        if (authenticityToken) formData.append('authenticity_token', authenticityToken);
+    }
+    for(let entry of formData.entries()) {
+        console.log(entry[0], entry[1]);
+    }
+    return formData;
+}
+
+function legacyAddToFormData(formData: FormData, key: string, value: any) {
+    formData.append(key, value);
+}
+
+
 function addToFormData(formData: FormData, key: string, value: any | Dict | []) {
     if(Array.isArray(value)) {
         for(let item of value) {
@@ -39,26 +62,12 @@ function addToFormData(formData: FormData, key: string, value: any | Dict | []) 
     } else if (typeof value === 'object') {
         for(let itemKey in value) {
             const itemValue = value[itemKey];
-            itemKey = key.length > 0? `key[${itemKey}]` : itemKey;
+            itemKey = key.length > 0? `${key}[${itemKey}]` : itemKey;
             addToFormData(formData, itemKey, itemValue);
         }
     } else {
         formData.append(key, value.toString());
     }
-}
-
-export function formDataify(data: Dict) {
-    console.log('form', data);
-    let formData = new FormData();
-    addToFormData(formData, '', data);
-
-    if (document) {
-        const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
-        const authenticityToken = el ? el.value : null;
-        if (authenticityToken) formData.append('authenticity_token', authenticityToken);
-    }
-
-    return formData;
 }
 
 export function getModuleWeekNumber(module: Dict) {
@@ -145,6 +154,7 @@ async function getPagedData(
             data = values.find((a) => Array.isArray(a));
         }
     }
+    assert(Array.isArray(data));
 
     let next_page_link = "!";
     while (next_page_link.length !== 0 &&
@@ -159,10 +169,13 @@ async function getPagedData(
             next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
             response = await fetch(next_page_link, fetchConfig);
             let responseData = await response.json();
-            if (responseData.values && responseData.values().isArray(responseData)) {
-                const values = responseData.values();
-                responseData = values ? values.find((a: any) => Array.isArray(a)) : [];
+            if (typeof responseData === 'object' && !Array.isArray(data)) {
+                let values = Array.from(Object.values(data));
+                if (values) {
+                    responseData = values?.find((a) => Array.isArray(a));
+                }
             }
+
             data = data.concat(responseData);
         } else {
             next_page_link = "";
@@ -173,11 +186,11 @@ async function getPagedData(
 }
 
 async function fetchJson(
-    url: string, {queryParams, fetchParams}: ICanvasCallConfig | undefined = { queryParams : undefined, fetchConfig : undefined}): Promise<ICanvasData|ICanvasData[]> {
-    if (queryParams) {
-        url += '?' + new URLSearchParams(queryParams);
+    url: string, config: ICanvasCallConfig | null = null): Promise<ICanvasData|ICanvasData[]> {
+    if (config?.queryParams) {
+        url += '?' + new URLSearchParams(config.queryParams);
     }
-    const response = await fetch(url, fetchParams);
+    const response = await fetch(url, config?.fetchConfig);
     return await response.json();
 }
 
