@@ -84,7 +84,7 @@ import {Course, getModuleWeekNumber} from "../canvas";
 
     let url =`/accounts/98244?search_term=${searchCode}`;
     if (course  && courses.length <  4) {
-        url = `/courses/${course.canvasId}`;
+        url = `/courses/${course.id}`;
         if (targetModuleWeekNumber) {
             const potentialUrl = await course.getModuleItemLink(targetModuleWeekNumber, {
                 type: targetType as ModuleItemType,

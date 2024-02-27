@@ -30,12 +30,27 @@ const type_lut: Dict = {
     'Page': 'wiki_page'
 }
 
-function formDataify(data: Dict) {
+
+function addToFormData(formData: FormData, key: string, value: any | Dict | []) {
+    if(Array.isArray(value)) {
+        for(let item of value) {
+            addToFormData(formData, `${key}[]`, item);
+        }
+    } else if (typeof value === 'object') {
+        for(let itemKey in value) {
+            const itemValue = value[itemKey];
+            itemKey = key.length > 0? `key[${itemKey}]` : itemKey;
+            addToFormData(formData, itemKey, itemValue);
+        }
+    } else {
+        formData.append(key, value.toString());
+    }
+}
+
+export function formDataify(data: Dict) {
     console.log('form', data);
     let formData = new FormData();
-    for (let key in data) {
-        formData.append(key, data[key]);
-    }
+    addToFormData(formData, '', data);
 
     if (document) {
         const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
@@ -64,11 +79,15 @@ export function getModuleWeekNumber(module: Dict) {
     return weekNumber;
 }
 
+/**
+ * Takes in a module item and returns an object specifying its type and content id
+ * @param item
+ */
 export async function getItemTypeAndId(
     item: IModuleItemData
-) {
-    let id = null;
-    let type = null;
+) : Promise<{type: ModuleItemType, id: number}>{
+    let id;
+    let type;
     if (type_lut.hasOwnProperty(item.type)) {
         type = type_lut[item.type];
         if (type === "wiki_page") {
@@ -93,7 +112,6 @@ function searchParamsFromObject(queryParams: string[][] | Record<string, string>
     return new URLSearchParams(queryParams);
 }
 
-
 /**
  * Gets paged data from the url beginning /api/v1/
  @param url The url of the query to put after /api/v1/
@@ -111,7 +129,6 @@ async function getApiPagedData(url: string, apiFetchParams : ICanvasCallConfig |
  * @param fetchParams params to pass to the fetch call
  * @returns {Promise<object[]>}
  */
-
 async function getPagedData(
     url: string, {queryParams, fetchConfig} : ICanvasCallConfig = {queryParams : undefined, fetchConfig : undefined}): Promise<ICanvasData[]> {
 
@@ -142,7 +159,7 @@ async function getPagedData(
             next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
             response = await fetch(next_page_link, fetchConfig);
             let responseData = await response.json();
-            if (Array.isArray(responseData.values())) {
+            if (responseData.values && responseData.values().isArray(responseData)) {
                 const values = responseData.values();
                 responseData = values ? values.find((a: any) => Array.isArray(a)) : [];
             }
@@ -778,7 +795,7 @@ export class Course extends BaseCanvasObject {
             console.log('no migrations found');
             if (return_dev_search) {
                 return Course.getByCode('DEV_' + this.baseCode);
-            } else return false;
+            } else return null;
         }
         migrations.sort((a, b) => b.id - a.id);
 
@@ -1008,16 +1025,24 @@ export class Term extends BaseCanvasObject {
     }
 
     static async getTerm (code: string, workflowState: string = 'any', config: ICanvasCallConfig | undefined = undefined) {
-        const terms = await this.getTerms(code, workflowState, config);
+        const terms = await this.searchTerms(code, workflowState, config);
         if (!Array.isArray(terms) || terms.length <= 0) {
             return null;
         }
         return terms[0];
     }
 
-    static async getTerms(code: string | undefined = undefined, workflowState = 'all', config: ICanvasCallConfig | undefined = undefined) {
+    static async getAllActiveTerms(config: ICanvasCallConfig | null = null) {
+        return await this.searchTerms(null, 'active', config);
+    }
+    static async searchTerms(
+        code: string | null = null,
+        workflowState = 'all',
+        config: ICanvasCallConfig | null = null) {
+
         config = config || {};
         config.queryParams = config.queryParams || {};
+
         let queryParams = config.queryParams;
         if (workflowState) queryParams['workflow_state'] = workflowState;
         if (code) queryParams['term_name'] = code;
