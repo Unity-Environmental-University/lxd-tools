@@ -8,8 +8,11 @@ And starting to convert to ts
  */
 
 import assert from 'assert';
+import Browser, { runtime, downloads } from 'webextension-polyfill'
 import {ICanvasData, Dict, IModuleData, IModuleItemData, ModuleItemType, Lut} from "./canvasDataDefs";
-import {type} from "node:os";
+
+const HOMETILE_WIDTH = 500;
+
 interface ICanvasCallConfig extends Dict {
     fetchConfig?: Dict
     queryParams?: Dict
@@ -30,6 +33,43 @@ const type_lut: Dict = {
     'Page': 'wiki_page'
 }
 
+export function resizedImage(imgSrc: string, targetWidth: number, targetHeight: null | number=null): Promise<ImageData> {
+    assert(document);
+    const image = new Image();
+    image.loading = 'eager';
+    return new Promise((resolve, reject) => {
+        let callback = () => {
+            console.log("Loaded");
+            console.log(image.src, image.height, image.width);
+            const targetCanvas =  document.createElement('canvas');
+            const tCtx = targetCanvas.getContext('2d');
+            if(!tCtx) {
+                reject();
+                return;
+            }
+            tCtx.imageSmoothingEnabled = true;
+            tCtx.imageSmoothingQuality = "high";
+
+            const aspectRatio = image.width / image.height;
+            targetHeight = targetHeight? targetHeight : targetWidth / aspectRatio;
+            targetCanvas.width = targetWidth; targetCanvas.height = targetHeight;
+            tCtx.drawImage(image, 0, 0, targetWidth, targetHeight);
+            resolve(tCtx.getImageData(0,0,targetWidth, targetHeight));
+        }
+        console.log("loading", imgSrc);
+        image.src = imgSrc;
+        if (image.complete) {
+            callback();
+        } else {
+           image.addEventListener('load', callback);
+           image.addEventListener('error', (e) => {
+               console.log(e);
+               console.log(image);
+            })
+        }
+
+    });
+}
 
 export function formDataify(data: Dict) {
     console.log('form', data);
@@ -199,12 +239,12 @@ async function fetchJson(
  * @param url
  * @param config query and fetch params
  */
-async function fetchApiJson(url: string, config: ICanvasCallConfig| undefined = undefined) {
+async function fetchApiJson(url: string, config: ICanvasCallConfig| null = null) {
     url = `/api/v1/${url}`;
     return await fetchJson(url, config);
 }
 
-async function fetchOneApiJson(url: string, config: ICanvasCallConfig | undefined = undefined) {
+async function fetchOneApiJson(url: string, config: ICanvasCallConfig | null = null) {
     let result = await fetchApiJson(url, config);
     if (Array.isArray(result)) return result[0];
     return <ICanvasData> result;
@@ -265,13 +305,16 @@ export class BaseCanvasObject {
         return out;
     }
 
-    static async getDataById(contentId: number, course: Course | null = null, config : ICanvasCallConfig | undefined): Promise<ICanvasData> {
+    static async getDataById(contentId: number, course: Course | null = null, config : ICanvasCallConfig | null = null): Promise<ICanvasData> {
         let url = this.getUrlPathFromIds(contentId, course ? course.id : null);
         const response =  await fetchApiJson(url, config);
         assert(!Array.isArray(response));
         return response;
     }
 
+    static async getById(contentId: number, course : Course) {
+        return new this(await this.getDataById(contentId, course))
+    }
     static getUrlPathFromIds(
         contentId: number,
         courseId: number | null) {
@@ -821,6 +864,72 @@ export class Course extends BaseCanvasObject {
             return await Course.getByCode('DEV_' + this.baseCode);
         }
     }
+
+    async generateHomeTiles() {
+        const modules = await this.getModules();
+        const promises: Promise<void>[] = [];
+        for (let module of modules) {
+            promises.push(this.generateHomeTile(module));
+        }
+        await Promise.all(promises);
+    }
+
+    async generateHomeTile(module: IModuleData) {
+
+        let overview = module.items.find(item =>
+            item.type === "Page" &&
+            item.title.toLowerCase().includes('overview')
+        );
+        if (!overview?.url) return;
+
+        assert(overview.url);
+        const url = overview.url.replace(/https:\/\/.*api\/v1/, '/api/v1')
+        const pageData = await fetchJson(url) as ICanvasData;
+        const overviewPage = new Page(pageData, this);
+        const pageBody = document.createElement('html');
+        pageBody.innerHTML = overviewPage.body;
+        let bannerImg : HTMLImageElement | null = pageBody.querySelector('.cbt-banner-image img')
+
+        assert(bannerImg, "Page has no banner");
+        let download = await downloads.download({
+            method: 'GET',
+            url: bannerImg.src,
+        });
+
+        // const img = await resizedImage(bannerImg.src, 500);
+        // const canvas = document.createElement('canvas');
+        // const ctx = canvas.getContext('2d');
+        // const blob: Blob = await new Promise((resolve, reject) => canvas.toBlob(resolve as BlobCallback));
+        // const homeTileName = `hometile${module.position}.png`
+        // await this.uploadFile(
+        //     new File([blob], homeTileName),
+        //     '/Images/hometile');
+    }
+
+    async uploadFile(file: File, path: string) {
+        let url = `/api/v1/courses/${this.id}/files`;
+        file.name;
+        const initialParams = {
+            name: file.name,
+            no_redirect: true,
+            parent_folder: path,
+            on_duplicate: 'overwrite'
+        }
+        let response = await fetch(url, {
+            body: formDataify(initialParams),
+            method: 'POST'
+        });
+        assert(response.ok, await response.json());
+        const data = await response.json();
+
+        const uploadParams = data.upload_params;
+        const uploadFormData = formDataify(uploadParams);
+        uploadFormData.append('file', file);
+        response = await fetch(uploadParams.url, {
+            body: uploadFormData,
+        })
+        assert(response.ok, await response.text());
+    }
 }
 
 
@@ -984,6 +1093,9 @@ export class Page extends BaseContentItem {
         this._canvasData[this.nameKey] = result['title'];
     }
 
+    get body(): string {
+        return this._canvasData[this.bodyKey];
+    }
     async updateContent(text = null, name = null) {
         let data: Dict = {};
         if (text) {

@@ -15,3 +15,4 @@ action.onClicked.addListener(async (tab) => {
     files: ['./js/content.js']
   });
 });
+
