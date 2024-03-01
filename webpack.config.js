@@ -9,7 +9,8 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 
 
 module.exports = {
-    mode: 'production',
+    mode: isDevelopment ? 'development' : 'production',
+
     entry: {
         background: './src/background',
         content: './src/content',
@@ -44,47 +45,45 @@ module.exports = {
         ],
     },
     plugins: [
-    new webpack.DefinePlugin({
-        'process.env': JSON.stringify(dotenv.parsed),
-        'process.env.NODE_ENV': JSON.stringify(isDevelopment ? 'development' : 'production'),
-    }),
-    new webpack.SourceMapDevToolPlugin({
-        exclude: /node_modules/,
-        test: /\.(ts|js|css|mjs|tsx)/
-    }),
-    new CopyPlugin({
-        patterns: [
-            {from: "manifest.json", to: "../manifest.json"},
-        ],
-    }),
-    new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
-        const mod = resource.request.replace(/^node:/, "");
-        switch (mod) {
-            case "assert":
-                resource.request = "assert";
-                break;
-        }
-    }),
-    ...getHtmlPlugins(["index"]),
-],
-resolve: {
-    extensions: [".tsx", ".ts", ".js"],
-}
-,
-stats: {
-    errorDetails: true,
-}
-,
-output: {
-    path: path.join(__dirname, "dist/js"),
-        filename
-:
-    '[name].js',
-        chunkFilename
-:
-    '[name]/.js'
-}
-,
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
+
+        new webpack.SourceMapDevToolPlugin({
+            exclude: /node_modules/,
+            test: /\.(ts|js|css|mjs|tsx)/
+        }),
+        new CopyPlugin({
+            patterns: [
+                {from: "manifest.json", to: "../manifest.json"},
+            ],
+        }),
+        new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
+            const mod = resource.request.replace(/^node:/, "");
+            switch (mod) {
+                case "assert":
+                    resource.request = "assert";
+                    break;
+            }
+        }),
+        ...getHtmlPlugins(["index"]),
+    ],
+    resolve: {
+        extensions: [".tsx", ".ts", ".js"],
+    }
+
+    ,
+    stats: {
+        errorDetails: true,
+    }
+    ,
+    output: {
+        path: path.join(__dirname, "dist/js"),
+        filename:
+            '[name].js',
+        chunkFilename:
+            '[name]/.js'
+    },
 
 }
 

@@ -3,7 +3,7 @@ export interface Dict {
     [key: string] : any,
 }
 
-export interface Lut<T> {
+export interface LookUpTable<T> {
     [key: string|number] : T,
 }
 
@@ -60,4 +60,10 @@ export interface IModuleItemData extends ICanvasData{
         unlock_at?: string,
         lock_at?: string,
     }
+}
+
+export interface IPageData extends ICanvasData{
+    page_id: number,
+    url: string,
+    title: string,
 }

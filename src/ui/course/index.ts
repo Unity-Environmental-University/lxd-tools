@@ -1,40 +1,40 @@
-import {Course, formDataify} from "../../canvas";
+import {BaseContentItem, Course, formDataify, Page} from "../../canvas";
 import assert from "assert";
 
 (async () => {
-    const course = await Course.getFromUrl(document.documentURI);
-    if (!course) return;
+    const currentCourse = await Course.getFromUrl(document.documentURI);
+    if (!currentCourse) return;
     let header: HTMLElement | null = document.querySelector('.right-of-crumbs');
     if (!header) return;
     let bp: Course | null;
 
-    if (course.isBlueprint) {
-        await addDevButton(header, course);
-        addSectionsButton(header, course);
+    if (currentCourse.isBlueprint) {
+        await addDevButton(header, currentCourse);
+        addSectionsButton(header, currentCourse);
     } else {
-        bp = await Course.getByCode(`BP_${course.baseCode}`);
+        bp = await Course.getByCode(`BP_${currentCourse.baseCode}`);
         if (bp) {
-            await addBpButton(header, bp);
-            addSectionsButton(header, bp);
+            await addBpButton(header, bp, currentCourse);
+            addSectionsButton(header, bp, currentCourse);
         }
     }
 
     let moduleCardsEl: HTMLElement | null = document.querySelector('.cbt-home-cards');
     console.log(moduleCardsEl);
     //Not working due to CORS issue;  likely need server to proxy images.
-    //if (moduleCardsEl) await addHomeTilesButton(moduleCardsEl, course);
+    if (moduleCardsEl) await addHomeTilesButton(moduleCardsEl, currentCourse);
 
 
 })();
 
-function addSectionsButton(header: HTMLElement, course: Course) {
-
+function addSectionsButton(header: HTMLElement, bp: Course, currentCourse: Course | null = null) {
+    if (!currentCourse) currentCourse = bp;
     let sectionBtn = document.createElement('btn');
     sectionBtn.classList.add('btn');
     sectionBtn.innerHTML = "Open Sections";
     header.append(sectionBtn);
     sectionBtn.addEventListener('click', async () => {
-        let sections = await course.getAssociatedCourses();
+        let sections = await bp.getAssociatedCourses();
         if (sections) sections.forEach(section => window.open(section.courseUrl));
     })
 }
@@ -49,21 +49,31 @@ async function addDevButton(header: HTMLElement, course: Course) {
         header?.append(parentBtn);
 
         parentBtn.addEventListener('click', async () => {
-            if (parentCourse) {
+            if (parentCourse && window) {
                 window.open(parentCourse.courseUrl);
             }
         })
     }
 }
 
-async function addBpButton(header: HTMLElement, bp: Course) {
+async function addBpButton(header: HTMLElement, bp: Course, currentCourse: Course) {
     let bpBtn = document.createElement('btn');
     bpBtn.classList.add('btn');
     bpBtn.innerHTML = "BP";
     header.append(bpBtn);
+    let currentContentItem : BaseContentItem | null = await currentCourse.getContentItemFromUrl();
+    let targetContentItem = await currentContentItem?.getMeInAnotherCourse(bp);
+
+
     bpBtn.addEventListener('click', async () => {
-        if (window && bp) {
-            window.open(bp.courseUrl);
+        if (window) {
+            if(targetContentItem) {
+                window.open(targetContentItem.htmlContentUrl);
+            } else {
+                let url = document.URL.replace(currentCourse.id.toString(), bp.id.toString())
+                window.open(bp.courseUrl);
+            }
+
         }
     })
 }
