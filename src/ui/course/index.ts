@@ -1,5 +1,4 @@
-import {BaseContentItem, Course, formDataify, Page} from "../../canvas";
-import assert from "assert";
+import {BaseContentItem, Course, NotImplementedException} from "../../canvas";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);
@@ -10,12 +9,12 @@ import assert from "assert";
 
     if (currentCourse.isBlueprint) {
         await addDevButton(header, currentCourse);
-        addSectionsButton(header, currentCourse);
+        await addSectionsButton(header, currentCourse);
     } else {
         bp = await Course.getByCode(`BP_${currentCourse.baseCode}`);
         if (bp) {
             await addBpButton(header, bp, currentCourse);
-            addSectionsButton(header, bp, currentCourse);
+            await addSectionsButton(header, bp, currentCourse);
         }
     }
 
@@ -27,32 +26,49 @@ import assert from "assert";
 
 })();
 
-function addSectionsButton(header: HTMLElement, bp: Course, currentCourse: Course | null = null) {
-    if (!currentCourse) currentCourse = bp;
+
+async function openThisContentInTarget(currentCourse: Course, target: Course | Course[]) {
+    if (!window) return;
+    let currentContentItem: BaseContentItem | null = await currentCourse.getContentItemFromUrl();
+    let targetCourses = Array.isArray(target) ? target : [target];
+    let targetInfos = targetCourses.map((targetCourse) => {
+        return {
+            course: targetCourse,
+            contentItemPromise: currentContentItem?.getMeInAnotherCourse(targetCourse)
+        }
+    });
+
+    for (let {course, contentItemPromise} of targetInfos) {
+        let targetContentItem = await contentItemPromise;
+        if (targetContentItem) {
+            window.open(targetContentItem.htmlContentUrl);
+        } else {
+            let url = document.URL.replace(currentCourse.id.toString(), course.id.toString())
+            window.open(url);
+        }
+    }
+}
+
+async function addSectionsButton(header: HTMLElement, bp: Course, currentCourse: Course | null = null) {
+    const sourceCourse = currentCourse ?? bp;
     let sectionBtn = document.createElement('btn');
     sectionBtn.classList.add('btn');
     sectionBtn.innerHTML = "Open Sections";
+    const sections = await bp.getAssociatedCourses();
+    if (!sections) return;
     header.append(sectionBtn);
-    sectionBtn.addEventListener('click', async () => {
-        let sections = await bp.getAssociatedCourses();
-        if (sections) sections.forEach(section => window.open(section.courseUrl));
-    })
+    sectionBtn.addEventListener('click', async () => await openThisContentInTarget(sourceCourse, sections))
 }
 
 async function addDevButton(header: HTMLElement, course: Course) {
-    let parentCourse = await course.getParentCourse();
+    const parentCourse = await course.getParentCourse();
     if (parentCourse) {
         let parentBtn = document.createElement('btn');
 
         parentBtn.classList.add('btn');
         parentBtn.innerHTML = "DEV";
         header?.append(parentBtn);
-
-        parentBtn.addEventListener('click', async () => {
-            if (parentCourse && window) {
-                window.open(parentCourse.courseUrl);
-            }
-        })
+        parentBtn.addEventListener('click', async () => await openThisContentInTarget(course, parentCourse))
     }
 }
 
@@ -61,32 +77,27 @@ async function addBpButton(header: HTMLElement, bp: Course, currentCourse: Cours
     bpBtn.classList.add('btn');
     bpBtn.innerHTML = "BP";
     header.append(bpBtn);
-    let currentContentItem : BaseContentItem | null = await currentCourse.getContentItemFromUrl();
-    let targetContentItem = await currentContentItem?.getMeInAnotherCourse(bp);
 
+    bpBtn.addEventListener('click', async () => await openThisContentInTarget(currentCourse, bp))
 
-    bpBtn.addEventListener('click', async () => {
-        if (window) {
-            if(targetContentItem) {
-                window.open(targetContentItem.htmlContentUrl);
-            } else {
-                let url = document.URL.replace(currentCourse.id.toString(), bp.id.toString())
-                window.open(bp.courseUrl);
-            }
-
-        }
-    })
 }
 
+/**
+ * NOT IMPLEMENTED
+ * @ TODO: Implement this if at all possible
+ * @param container
+ * @param course
+ */
 async function addHomeTilesButton(container: HTMLElement, course: Course) {
-    console.log("Adding home tile buttons");
-    let homeTileBtn = document.createElement('btn');
-    homeTileBtn.classList.add('btn');
-    homeTileBtn.innerHTML = "Update Home Tiles";
-    homeTileBtn.addEventListener('click', async () => {
-      await course.generateHomeTiles();
-    })
-    const parent = container.parentNode;
-    if (!parent) return;
-    parent.insertBefore(homeTileBtn, container);
+    throw new NotImplementedException();
+    // console.log("Adding home tile buttons");
+    // let homeTileBtn = document.createElement('btn');
+    // homeTileBtn.classList.add('btn');
+    // homeTileBtn.innerHTML = "Update Home Tiles";
+    // homeTileBtn.addEventListener('click', async () => {
+    //   await course.generateHomeTiles();
+    // })
+    // const parent = container.parentNode;
+    // if (!parent) return;
+    // parent.insertBefore(homeTileBtn, container);
 }

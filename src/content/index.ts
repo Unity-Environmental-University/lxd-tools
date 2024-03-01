@@ -75,8 +75,6 @@ import {Course, getModuleWeekNumber} from "../canvas";
             targetType = "page";
             contentSearchString = match[1];
         }
-
-
     }
     const courses = await getJson(`/api/v1/accounts/98244/courses?search_term=${searchCode}`);
     if (!searchCode) return;
