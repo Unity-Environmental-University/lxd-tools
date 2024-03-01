@@ -56,7 +56,7 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {from: "manifest.json", to: "../manifest.json"},
-                {from: "README.md", to: "../README.md"},
+                {from: "README.dist.md", to: "../README.dist.md"},
             ],
         }),
         new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
