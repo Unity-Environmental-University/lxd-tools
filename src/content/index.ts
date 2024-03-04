@@ -76,7 +76,14 @@ import {Course, getModuleWeekNumber} from "../canvas";
             contentSearchString = match[1];
         }
     }
-    const courses = await getJson(`/api/v1/accounts/98244/courses?search_term=${searchCode}`);
+    let queryUrl = `/api/v1/accounts/98244/courses?search_term=${searchCode}`;
+    if (!document.documentURI.includes(".instructure.com")) {
+        queryUrl = `https://unity.instructure.com/accounts/98244?search_term=${searchCode}`;
+        window.open(queryUrl, "_blank");
+        return;
+    }
+
+    const courses = await getJson(queryUrl);
     if (!searchCode) return;
     let course = getCourseToNavTo(searchCode, courses);
 
