@@ -16,6 +16,7 @@ module.exports = {
         content: './src/content',
         canvas: './src/canvas',
         pageFixes: './src/content/pageFixes.js',
+        speedGrader: './src/ui/speedGrader',
         'ui/course': './src/ui/course',
         'ui/account': './src/ui/account',
         'ui/module': './src/ui/module',
