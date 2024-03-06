@@ -26,6 +26,11 @@
       "js" : ["js/pageFixes.js"],
       "run_at" : "document_end"
     },
+   {
+      "matches" : ["*://*.instructure.com/courses/*/gradebook/speed_grader?*"],
+      "js" : ["js/speedGrader.js"],
+      "run_at" : "document_end"
+    },
     {
       "matches" : ["*://*.instructure.com/courses/*/modules"],
       "js" : ["js/ui/module.js"],
@@ -42,5 +47,5 @@
       "run_at" : "document_end"
     }
   ],
-  "permissions" : ["activeTab", "scripting", "storage", "download"]
+  "permissions" : ["activeTab", "scripting", "storage"]
 }

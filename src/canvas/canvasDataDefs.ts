@@ -1,24 +1,48 @@
-
-export interface Dict {
-    [key: string] : any,
+export interface ITermsData extends ICanvasData{
+    enrollment_terms : ITermData[],
 }
 
-export interface LookUpTable<T> {
-    [key: string|number] : T,
-}
+export interface ITermData extends ICanvasData{
 
+}
 export interface ICanvasData extends Dict{
     id: number,
     name?: string,
 }
 
+export interface IEnrollmentData extends ICanvasData{
+    user: IUserData
+}
+
+export interface IUserData extends ICanvasData{
+    name: string,
+}
+
+
 export interface ICourseData extends ICanvasData{
     name: string,
 }
 
-export interface ITermsData extends ICanvasData{
-    enrollment_terms : ICanvasData[],
+
+export interface IPageData extends ICanvasData{
+    page_id: number,
+    url: string,
+    title: string,
 }
+
+export interface IAssignmentData extends ICanvasData{
+    name: string,
+    rubric: IRubricCriterion[]
+}
+
+export interface IDiscussionData extends ICanvasData{
+
+}
+
+export interface IQuizData extends ICanvasData{
+
+}
+
 
 export interface IModuleData extends ICanvasData{
     name: string,
@@ -62,8 +86,28 @@ export interface IModuleItemData extends ICanvasData{
     }
 }
 
-export interface IPageData extends ICanvasData{
-    page_id: number,
-    url: string,
-    title: string,
+
+export interface IRubricCriterion {
+ id: string,
+    description: string | null,
+    long_description: string | null,
+    points: number,
+    criterion_use_range: boolean,
+    ratings: IRubricRating[]
 }
+
+export interface IRubricRating {
+    id: string,
+    description: string | null,
+    long_description: string | null,
+    points: number,
+}
+
+export interface Dict {
+    [key: string] : any,
+}
+
+export interface LookUpTable<T> {
+    [key: string|number] : T,
+}
+
