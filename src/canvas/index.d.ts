@@ -1,6 +1,3 @@
-/**
- * noinspection FunctionNamingConventionJS,JSUnusedGlobalSymbols
- */
 import { Dict, ICanvasData, IModuleData, IModuleItemData, LookUpTable, ModuleItemType } from "./canvasDataDefs";
 interface ICanvasCallConfig extends Dict {
     fetchInit?: RequestInit;
@@ -86,8 +83,11 @@ export declare class Course extends BaseCanvasObject {
     get contentUrlPath(): string;
     get courseUrl(): string;
     get courseCode(): null | string;
+    get fullCourseCode(): null | string;
     get codeMatch(): RegExpExecArray | null;
     get baseCode(): string;
+    get termId(): number | null;
+    getTerm(): Promise<Term | null>;
     get codePrefix(): string;
     get isBlueprint(): any;
     get isPublished(): boolean;
@@ -148,6 +148,7 @@ export declare class BaseContentItem extends BaseCanvasObject {
     _course: Course;
     constructor(canvasData: ICanvasData, course: Course);
     static get contentUrlPart(): string | null;
+    static get contentUrlRegex(): RegExp;
     static getIdFromUrl(url: string): number | null;
     static getAllInCourse(course: Course, config: ICanvasCallConfig): Promise<BaseContentItem[]>;
     static clearAddedContentTags(text: string): string;
@@ -210,6 +211,7 @@ export declare class RubricAssociation extends BaseContentItem {
 export declare class Term extends BaseCanvasObject {
     get code(): string | undefined;
     static getTerm(code: string, workflowState?: string, config?: ICanvasCallConfig | undefined): Promise<Term | null>;
+    static getTermById(termId: number, config?: ICanvasCallConfig | null): Promise<Term | null>;
     static getAllActiveTerms(config?: ICanvasCallConfig | null): Promise<Term[] | null>;
     static searchTerms(code?: string | null, workflowState?: string, config?: ICanvasCallConfig | null): Promise<Term[] | null>;
 }

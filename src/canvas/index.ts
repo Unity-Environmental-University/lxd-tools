@@ -1,6 +1,4 @@
-/**
- * noinspection FunctionNamingConventionJS,JSUnusedGlobalSymbols
- */
+
 
 /* Very Initial refactor to JS using ChatGPT4
 NOTE: Almost all of this code has had to be rewritten since then.
@@ -9,10 +7,19 @@ And starting to convert to ts
 
 import assert from 'assert';
 import {Downloads, runtime} from 'webextension-polyfill'
-import {Dict, ICanvasData, IModuleData, IModuleItemData, IPageData, LookUpTable, ModuleItemType} from "./canvasDataDefs";
+import {
+    Dict,
+    ICanvasData, ICourseData,
+    IModuleData,
+    IModuleItemData,
+    IPageData,
+    ITermData,
+    LookUpTable,
+    ModuleItemType
+} from "./canvasDataDefs";
 import DownloadOptionsType = Downloads.DownloadOptionsType;
 
-const HOMETILE_WIDTH = 500;
+//const HOMETILE_WIDTH = 500;
 
 
 interface ICanvasCallConfig extends Dict {
@@ -36,7 +43,7 @@ const type_lut: Dict = {
 }
 
 async function downloadFile(options: DownloadOptionsType) {
-    const response = await runtime.sendMessage('downloadFile', options);
+    await runtime.sendMessage('downloadFile', options);
 }
 
 export function resizedImage(imgSrc: string, targetWidth: number, targetHeight: null | number=null): Promise<ImageData> {
@@ -93,10 +100,6 @@ export function formDataify(data: Dict) {
         console.log(entry[0], entry[1]);
     }
     return formData;
-}
-
-function legacyAddToFormData(formData: FormData, key: string, value: any) {
-    formData.append(key, value);
 }
 
 function addToFormData(formData: FormData, key: string, value: any | Dict | []) {
@@ -180,6 +183,9 @@ async function getPagedData(
         url += '?' + searchParamsFromObject(config.queryParams);
     }
 
+    if(url.includes('undefined')){
+        console.log(url);
+    }
     /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
     let response = await fetch(url, config?.fetchInit);
     let data = await response.json();
@@ -299,7 +305,7 @@ export class BaseCanvasObject {
         return `/${this.contentUrlPath}`;
     }
 
-    get rawData(): ICanvasData {
+    get rawData(){
         const out: ICanvasData = {
             id: NaN,
         };
@@ -554,6 +560,10 @@ export class Course extends BaseCanvasObject {
         return `${prefix}_${courseCode}`;
     }
 
+    get fullCourseCode(): null | string {
+        return this.canvasData.course_code
+    }
+
     get codeMatch() {
         return Course.CODE_REGEX.exec(this.canvasData.course_code);
     }
@@ -561,6 +571,17 @@ export class Course extends BaseCanvasObject {
     get baseCode() {
         let match = this.codeMatch;
         return match ? match[2] : '';
+    }
+
+
+    get termId() : number | null {
+        return (this.canvasData as ICourseData).enrollment_term_id;
+    }
+
+
+    async getTerm() : Promise<Term | null> {
+        if (this.termId) return Term.getTermById(this.termId)
+        else return null;
     }
 
     get codePrefix() {
@@ -664,7 +685,7 @@ export class Course extends BaseCanvasObject {
     async getAssignments(config : ICanvasCallConfig = {
         queryParams: {'include': ['due_at']}
     }): Promise<Assignment[]> {
-        return <Assignment[]> await Assignment.getAllInCourse(this, config);
+        return  await Assignment.getAllInCourse(this, config) as Assignment[];
     }
 
     /**
@@ -995,11 +1016,16 @@ export class BaseContentItem extends BaseCanvasObject {
         return urlTerm;
 
     }
+
+    static get contentUrlRegex(): RegExp {
+        assert(this.contentUrlTemplate, `Class ${this.toString()} does not have a content url property`);
+        let contentString = this.contentUrlTemplate.replace(/\{[^}]+\}/, '(\d+)');
+        return new RegExp(contentString);
+    }
     static getIdFromUrl(url: string) {
             //let _contentUrlTemplate = "courses/{course_id}/discussion_topics/{content_id}";
         assert(this.contentUrlTemplate);
         // use the content url template as a basis to generate
-        let regex = new RegExp(this.contentUrlTemplate?.replace(/\{.*\}/, '(d+)'));
         let match = /courses\/(\d+)/.exec(url);
         if (match) {
             return parseInt(match[1]);
@@ -1007,6 +1033,8 @@ export class BaseContentItem extends BaseCanvasObject {
         return null;
 
     }
+
+
     static async getAllInCourse(course: Course, config: ICanvasCallConfig) {
         let url = this.getAllUrl(course.id);
         let data = await getApiPagedData(url, config);
@@ -1023,6 +1051,7 @@ export class BaseContentItem extends BaseCanvasObject {
         if (url === null) {
             url = document.documentURI;
         }
+
         url = url.replace(/\.com/, '.com/api/v1')
         let data = await fetchJson(url);
         if (!course) {
@@ -1033,7 +1062,7 @@ export class BaseContentItem extends BaseCanvasObject {
         if(Array.isArray(data)) return null;
         assert(!Array.isArray(data));
         if (data) {
-            return new this(data, course)
+            return new this(data, course);
         }
         return null;
     }
@@ -1245,9 +1274,18 @@ export class Term extends BaseCanvasObject {
         return terms[0];
     }
 
+    static async getTermById(termId: number, config: ICanvasCallConfig | null = null) {
+        let account = await Account.getRootAccount();
+        let url = `accounts/${account.id}/terms/${termId}`;
+        let termData = await fetchApiJson(url) as ICanvasData | null;
+        if (termData) return new Term(termData);
+        return null;
+    }
+
     static async getAllActiveTerms(config: ICanvasCallConfig | null = null) {
         return await this.searchTerms(null, 'active', config);
     }
+
     static async searchTerms(
         code: string | null = null,
         workflowState = 'all',
@@ -1260,15 +1298,20 @@ export class Term extends BaseCanvasObject {
         if (workflowState) queryParams['workflow_state'] = workflowState;
         if (code) queryParams['term_name'] = code;
         let rootAccount = await Account.getRootAccount();
-        let url = `accounts/${rootAccount?.id}/terms`;
+        assert(rootAccount);
+        let url = `accounts/${rootAccount.id}/terms`;
         const data = await getApiPagedData(url, config);
         let terms: ICanvasData[] = [];
-        terms.concat(...data.map( (datum) => [...datum['enrollment_terms']]));
-
-        if (!data || !data.hasOwnProperty('enrollment_terms')) {
-            console.warn(`No enrollment terms found for ${code}`);
-            return null;
+        for(let datum of data){
+            if(datum.hasOwnProperty('enrollment_terms')) {
+                for(let termData of datum['enrollment_terms']) {
+                    terms.push(termData);
+                }
+            } else {
+                terms.push(datum);
+            }
         }
+        console.log(terms);
 
         if (!terms || terms.length === 0) {
             return null;

@@ -1,5 +1,7 @@
 // This implementation modified from https://github.com/UCBoulder/canvas-userscripts
 
+
+
 import {
     Dict,
     IAssignmentData,
@@ -11,9 +13,9 @@ import {
     ModuleItemType, IEnrollmentData, IUserData, ITermData, IDiscussionData, IModuleItemData
 } from "../../canvas/canvasDataDefs";
 import assert from "assert";
-import React from "react";
-import {createRoot} from "react-dom/client";
+import {Assignment, Course, Term} from "../../canvas/index";
 
+const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.
 
 
 let header = [
@@ -23,23 +25,25 @@ let header = [
 ].join(',');
 header += '\n';
 
-
-
-
-
 let modalDialog = createModalDialog();
-function main() {
+async function main() {
     'use strict';
     // utility function for downloading a file
     let exportButtonContainer = document.querySelector('#gradebook_header div.statsMetric');
     if (!exportButtonContainer) return;
+
+    const course : Course | null = await Course.getFromUrl();
+    assert(course, "Could not determine course");
+    const urlParams = new URLSearchParams(window.location.search);
+    const assignmentId = urlParams.get('assignmentId');
+    const assignment: Assignment | null = assignmentId? (await Assignment.getById(parseInt(assignmentId), course)) as Assignment : null;
 
     let exportOneButton = document.createElement('button');
     exportOneButton.innerText = "Export Assignment";
     exportOneButton.id = "export_one_rubric_btn";
     exportOneButton.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
-        await exportData(true);
+        await exportData(course, assignment);
         return false;
 
     });
@@ -50,24 +54,37 @@ function main() {
     exportAllButton.id = "export_all_rubric_btn";
     exportAllButton.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
-        await exportData(true);
+        await exportData(course);
         return false;
 
     });
     exportButtonContainer?.append(exportAllButton);
+
+    let exportMultiSection = document.createElement('button');
+    exportMultiSection.innerText = "Export Term Sections";
+    exportMultiSection.id = "export_sections_rubric_btn";
+    exportMultiSection.addEventListener('click', async (event: MouseEvent) => {
+        event.preventDefault();
+        await exportSectionsInTerm(course);
+        return false;
+    });
+    exportButtonContainer?.append(exportMultiSection);
+
 }
 
 function createModalDialog() {
     let body = document.querySelector('body');
     assert(body);
     let infoDialog = document.createElement('dialog');
-    infoDialog.innerHTML = '<p>Hello There</p>'
+    infoDialog.draggable = true;
+    infoDialog.title = "Rubric Export"
+
     body.appendChild(infoDialog);
     return infoDialog;
 
 }
 
-function saveTestGenFunc() {
+function saveDataGenFunc() {
     let a = document.createElement("a");
     document.body.appendChild(a);
     a.setAttribute('display', 'none');
@@ -81,66 +98,144 @@ function saveTestGenFunc() {
     };
 }
 
-async function exportData(singleAssignment = false) {
+async function exportAllSections(course: Course | null = null) {
+    popUp("Exporting scores, please wait...");
+
+    course ??= await Course.getFromUrl();
+    assert(course);
+
+    let terms = await Term.searchTerms();
+    assert(terms, "No terms found");
+    let promises: Promise<string[]>[] = [];
+    for(let term of terms) {
+        promises.push((async () => {
+            let sections = await Course.getAllByCode(course.baseCode, term);
+            if(sections) {
+                let csvRows: string[] = [];
+                for(let section of sections) {
+                    csvRows = csvRows.concat(await csvRowsForCourse(section));
+                    saveDataGenFunc()([header].concat(csvRows), `Rubric Scores ${section.fullCourseCode}.csv`);
+                }
+                return csvRows;
+            }
+            return [];
+        })());
+    }
+    let rowsOfRows: string[][] = [];
+    for(let row of  promises) {
+        rowsOfRows.push(await row);
+    }
+    // works, but rate limited for large numbers of rows
+    //let rowsOfRows = await Promise.all(promises);
+    let csvRows: string[] = [header];
+    csvRows.concat(...rowsOfRows);
+    console.log("Writing Final Output Document...")
+    popClose()
+    saveDataGenFunc()(csvRows, `${course.baseCode} All Terms.csv`);
+}
+
+async function exportSectionsInTerm(course: Course | null = null, term: Term | number  | null = null) {
+    popUp("Exporting scores, please wait...");
+
+    course ??= await Course.getFromUrl();
+    assert(course)
+    if(typeof term === "number") {
+        term = await Term.getTermById(term);
+    } else {
+        term ??= await course?.getTerm();
+    }
+
+    assert(term);
+    assert(course);
+
+    let sections = await Course.getAllByCode(course.baseCode, term);
+    const allSectionRows: string[] = [];
+    if(sections) {
+        const sectionsTotal = sections.length;
+        let sectionsLeftToProcess = sections.slice(0);
+
+        while (sectionsLeftToProcess.length > 0) {
+            const sliceToProcessNow = sectionsLeftToProcess.slice(0, MAX_SECTION_SLICE_SIZE);
+            sectionsLeftToProcess = sectionsLeftToProcess.slice(MAX_SECTION_SLICE_SIZE);
+            const rowsOfRows = await Promise.all(sliceToProcessNow.map(async (section) => {
+                const sectionRows = await csvRowsForCourse(section);
+                saveDataGenFunc()([header].concat(sectionRows), `Rubric Scores ${section.fullCourseCode}.csv`);
+                return sectionRows;
+            }))
+            for(let rowSet of rowsOfRows) {
+                for (let row of rowSet) {
+                    allSectionRows.push(row);
+                }
+            }
+        }
+    }
+    // works, but rate limited for large numbers of rows
+    //let rowsOfRows = await Promise.all(promises);
+    console.log("Writing Final Output Document...")
+    popClose();
+    saveDataGenFunc()([header].concat(allSectionRows), `${term.code} ${course.baseCode} All Sections.csv`);
+    return allSectionRows;
+}
+
+async function exportData(course: Course, assignment: Assignment | null = null) {
 
     try {
         popUp("Exporting scores, please wait...");
         window.addEventListener("error", showError);
 
+        let csvRows = await csvRowsForCourse(course, assignment)
 
-        // Get some initial data from the current URL
-        const urlParams = window.location.href.split('?')[1].split('&');
-        const courseId = window.location.href.split('/')[4];
-
-        let courseResponse = await fetch(`/api/v1/courses/${courseId}?include=term`)
-        let course = await courseResponse.json()
-
-        let accounts = await getAllPagesAsync(`/api/v1/accounts/${course.account_id}`);
-        let account = accounts[0];
-        let rootAccountId = account.root_account_id;
-        const assignId = urlParams.find(i => i.split('=')[0] === "assignment_id")?.split('=')[1];
-        let assignRequest = await fetch(`/api/v1/courses/${courseId}/assignments/${assignId}`);
-        let assignment = await assignRequest.json() as IAssignmentData;
-        let assignments = await getAllPagesAsync(`/api/v1/courses/${courseId}/assignments`) as IAssignmentData[];
-        let baseSubmissionsUrl = singleAssignment ? `/api/v1/courses/${courseId}/assignments/${assignId}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
-        let userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=100&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`);
-
-        let instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
-        let modules = await getAllPagesAsync(`/api/v1/courses/${courseId}/modules?include[]=items&include[]=content_details`) as IModuleData[];
-        let enrollments = await getAllPagesAsync(`/api/v1/courses/${courseId}/enrollments?per_page=100`) as IEnrollmentData[];
-
-        let response = await fetch(`/api/v1/accounts/${rootAccountId}/terms/${course.enrollment_term_id}`);
-        let term = await response.json();
-
-        let assignmentsCollection = new AssignmentsCollection(assignments);
-
-        let csvRows = [header];
-        for (let enrollment of enrollments) {
-            let out_rows = await getRows({
-                enrollment,
-                modules,
-                userSubmissions,
-                term,
-                course,
-                instructors,
-                assignmentsCollection,
-            });
-
-            csvRows = csvRows.concat(out_rows);
-        }
         popClose();
-        let filename = singleAssignment ? assignment.name : course.course_code;
-        saveTestGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
-        saveTestGenFunc()([JSON.stringify(userSubmissions, null, 2)], `User Submissions ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.json`);
 
+        let filename = assignment? assignment?.name : course.fullCourseCode;
+
+        saveDataGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
         window.removeEventListener("error", showError);
 
     } catch (e) {
         popClose();
-        popUp(`ERROR ${e} while retrieving assignment data from Canvas. Please refresh and try again.`);
+        popUp(`ERROR ${e} while retrieving assignment data from Canvas. Please refresh and try again.`, "OK");
         window.removeEventListener("error", showError);
         throw (e);
     }
+}
+
+async function csvRowsForCourse(course: Course, assignment : Assignment | null = null) {
+    let csvRows: string[] = [];
+    const courseId = course.id;
+    const courseData = course.rawData as ICourseData;
+
+    const accounts = await getAllPagesAsync(`/api/v1/accounts/${courseData.account_id}`);
+    const account = accounts[0];
+    const rootAccountId = account.root_account_id;
+
+    const baseSubmissionsUrl = assignment ? `/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
+    const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IUserData[];
+    const assignments = await course.getAssignments();
+    const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[] ;
+    const modules = await getAllPagesAsync(`/api/v1/courses/${courseId}/modules?include[]=items&include[]=content_details`) as IModuleData[];
+    const enrollments = await getAllPagesAsync(`/api/v1/courses/${courseId}/enrollments?per_page=5`) as IEnrollmentData[];
+
+    const termsResponse = await fetch(`/api/v1/accounts/${rootAccountId}/terms/${courseData.enrollment_term_id}`);
+    const term = await termsResponse.json();
+    const assignmentsCollection = new AssignmentsCollection(
+        assignments.map(assignment => assignment.rawData as IAssignmentData));
+
+
+    for (let enrollment of enrollments) {
+        let out_rows = await getRows({
+            enrollment,
+            modules,
+            userSubmissions,
+            term,
+            course: courseData,
+            instructors,
+            assignmentsCollection,
+        });
+
+        csvRows = csvRows.concat(out_rows);
+    }
+    return csvRows;
 }
 
 /**
@@ -183,20 +278,15 @@ async function getRows({
     assignmentsCollection,
     instructors,
     term}: IGetRowsConfig) {
-    let {user} = enrollment;
-    let singleUserSubmissions = userSubmissions.filter(a => a.user_id === user.id);
+    const {user} = enrollment;
+    const singleUserSubmissions = userSubmissions.filter(a => a.user_id === user.id);
     const {course_code} = course;
-    let section = course_code.match(/-\s*(\d+)$/);
-    let base_code = course_code.match(/([a-zA-Z]{4}\d{3})/);
-    if (section) {
-        section = section[1];
-    }
-    if (base_code) {
-        base_code = base_code[1]
-    }
+    const sectionMatch = course_code.match(/-\s*(\d+)$/);
+    const baseCodeMatch = course_code.match(/([a-zA-Z]{4}\d{3})/);
+    const section: string | null = sectionMatch? sectionMatch[1] : null;
+    const baseCode = baseCodeMatch? baseCodeMatch[1] : null;
 
     let instructorName
-
     if (instructors.length > 1) {
         instructorName = instructors.map((a: IUserData) => a.name).join(',');
     } else if (instructors.length === 0) {
@@ -204,6 +294,7 @@ async function getRows({
     } else {
         instructorName = instructors[0].name;
     }
+    const cachedInstructorName = instructorName;
     // Let's not actually do this if we can't find the user's submissions.
     if (singleUserSubmissions.length === 0) {
         return [];
@@ -218,10 +309,10 @@ async function getRows({
     }
 
     const rows = [];
-    let baseRow = [
+    const baseRow = [
         term.name,
-        instructorName,
-        base_code,
+        cachedInstructorName,
+        baseCode,
         section,
 
     ]
@@ -262,14 +353,14 @@ async function getRows({
                         if (criteriaInfo?.ratingDescriptions && critKey in criteriaInfo.ratingDescriptions) {
                             crit.rating = criteriaInfo.ratingDescriptions[critKey][critValue.rating_id];
                         } else {
-                            console.log('critKey not found ', critKey, criteriaInfo)
+                            console.log('critKey not found ', critKey, criteriaInfo, rubricAssessment)
                         }
                     }
                     critAssessments.push(crit);
                     critIds.push(critKey);
                 }
             }
-            let submissionBaseRow = baseRow.concat([
+            const submissionBaseRow = baseRow.concat([
                 user.name,
                 user.sis_user_id,
                 enrollment.enrollment_state,
@@ -308,14 +399,13 @@ async function getRows({
             for (let critIndex in critAssessments) {
                 let critAssessment = critAssessments[critIndex];
                 let criterion = criteriaInfo?.critsById[critAssessment.id];
-                assert(criterion);
 
                 rows.push(submissionBaseRow.concat([
-                    criterion.id,
+                    criterion? criterion.id : critAssessment.id,
                     Number(critIndex) + 1,
-                    criterion.description,
+                    criterion? criterion.description : "-REMOVED-",
                     critAssessment.points,
-                    criterion.points
+                    criterion?.points
                 ]));
             }
         }
@@ -463,8 +553,9 @@ function getCriteriaInfo(assignment:IAssignmentData): CriteriaInfo| null {
     return {order, ratingDescriptions, critsById}
 }
 
-function popUp(text:string) {
+function popUp(text:string, closeButton: string | null=null) {
     modalDialog.innerHTML = `<p>${text}</p>`;
+    if (closeButton) {modalDialog.innerHTML += `\n<form method="dialog"><button>${closeButton}</button></form>`}
     modalDialog.showModal();
 }
 
@@ -474,7 +565,7 @@ function popClose() {
 }
 
 async function getAllPagesAsync(url: string) {
-    return await getRemainingPagesAsync(url, []);
+    return  getRemainingPagesAsync(url, []);
 }
 
 async function getRemainingPagesAsync(url: string, listSoFar: ICanvasData[]) {
@@ -554,8 +645,6 @@ class AssignmentsCollection {
             }
         }
     }
-
-
 
     /**
      * Returns content type as a string if it is an Assignment, Quiz, or Discussion
