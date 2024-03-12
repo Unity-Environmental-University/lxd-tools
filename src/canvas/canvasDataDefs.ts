@@ -2,9 +2,16 @@ export interface ITermsData extends ICanvasData{
     enrollment_terms : ITermData[],
 }
 
-export interface ITermData extends ICanvasData{
+export type TermWorkflowState = 'all' | 'active' | 'deleted'
 
+export interface ITermData extends ICanvasData{
+    start_at: string,
+    end_at: string,
+    workflow_state: TermWorkflowState,
+    overrides?: Dict,
+    course_count: number
 }
+
 export interface ICanvasData extends Dict{
     id: number,
     name?: string,

@@ -70,6 +70,24 @@ async function main() {
     });
     exportButtonContainer?.append(exportMultiSection);
 
+    let exportMultiTermButton = document.createElement('button');
+    exportMultiTermButton.innerText = `Export All Sections from ${new Date().getUTCFullYear() - 3} to Present`;
+    exportMultiTermButton.id = "export_sections_rubric_btn";
+    exportMultiTermButton.addEventListener('click', async (event: MouseEvent) => {
+        event.preventDefault();
+        let terms = await Term.searchTerms(null, 'active' );
+        if(terms) {
+            terms = terms.filter((term) => {
+                return new Date().getUTCFullYear() - term.endDate.getUTCFullYear() <= 3;
+            })
+        };
+        assert(terms, "No terms found");
+        await exportMultipleTerms(course, terms);
+        return false;
+    });
+    exportButtonContainer?.append(exportMultiTermButton);
+
+
 }
 
 function createModalDialog() {

@@ -315,6 +315,10 @@ export class BaseCanvasObject {
         return out;
     }
 
+    get data() {
+        return this.canvasData;
+    }
+
     static async getDataById(contentId: number, course: Course | null = null, config : ICanvasCallConfig | null = null): Promise<ICanvasData> {
         let url = this.getUrlPathFromIds(contentId, course ? course.id : null);
         const response =  await fetchApiJson(url, config);
@@ -1266,7 +1270,7 @@ export class Term extends BaseCanvasObject {
         return this.canvasData['name'];
     }
 
-    static async getTerm (code: string, workflowState: string = 'any', config: ICanvasCallConfig | undefined = undefined) {
+    static async getTerm (code: string, workflowState: 'all' | 'active' | 'deleted' = 'all', config: ICanvasCallConfig | undefined = undefined) {
         const terms = await this.searchTerms(code, workflowState, config);
         if (!Array.isArray(terms) || terms.length <= 0) {
             return null;
@@ -1288,7 +1292,7 @@ export class Term extends BaseCanvasObject {
 
     static async searchTerms(
         code: string | null = null,
-        workflowState = 'all',
+        workflowState: 'all' | 'active' | 'deleted' = 'all',
         config: ICanvasCallConfig | null = null) {
 
         config = config || {};
@@ -1317,6 +1321,14 @@ export class Term extends BaseCanvasObject {
             return null;
         }
         return terms.map(term => new Term(term));
+    }
+
+    get startDate(): Date{
+        return new Date(this.data.start_at);
+    }
+
+    get endDate(): Date{
+        return new Date(this.data.end_at);
     }
 }
 
