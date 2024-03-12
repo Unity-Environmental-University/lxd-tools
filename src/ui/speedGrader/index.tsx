@@ -98,40 +98,23 @@ function saveDataGenFunc() {
     };
 }
 
-async function exportAllSections(course: Course | null = null) {
+async function exportMultipleTerms(course: Course | null = null, terms:Term[]) {
     popUp("Exporting scores, please wait...");
 
     course ??= await Course.getFromUrl();
     assert(course);
-
-    let terms = await Term.searchTerms();
     assert(terms, "No terms found");
-    let promises: Promise<string[]>[] = [];
+    const totalRows: string[] = [];
     for(let term of terms) {
-        promises.push((async () => {
-            let sections = await Course.getAllByCode(course.baseCode, term);
-            if(sections) {
-                let csvRows: string[] = [];
-                for(let section of sections) {
-                    csvRows = csvRows.concat(await csvRowsForCourse(section));
-                    saveDataGenFunc()([header].concat(csvRows), `Rubric Scores ${section.fullCourseCode}.csv`);
-                }
-                return csvRows;
-            }
-            return [];
-        })());
+        let rows = await exportSectionsInTerm(course, term);
     }
-    let rowsOfRows: string[][] = [];
-    for(let row of  promises) {
-        rowsOfRows.push(await row);
-    }
-    // works, but rate limited for large numbers of rows
-    //let rowsOfRows = await Promise.all(promises);
+
+
     let csvRows: string[] = [header];
-    csvRows.concat(...rowsOfRows);
+    totalRows.unshift(header);
     console.log("Writing Final Output Document...")
     popClose()
-    saveDataGenFunc()(csvRows, `${course.baseCode} All Terms.csv`);
+    saveDataGenFunc()(csvRows, `${course.baseCode} Multiterm.csv`);
 }
 
 async function exportSectionsInTerm(course: Course | null = null, term: Term | number  | null = null) {
@@ -149,31 +132,36 @@ async function exportSectionsInTerm(course: Course | null = null, term: Term | n
     assert(course);
 
     let sections = await Course.getAllByCode(course.baseCode, term);
-    const allSectionRows: string[] = [];
-    if(sections) {
-        const sectionsTotal = sections.length;
-        let sectionsLeftToProcess = sections.slice(0);
+    const allSectionRows: string[] = sections? await getRowsForSections(sections) : [];
 
-        while (sectionsLeftToProcess.length > 0) {
-            const sliceToProcessNow = sectionsLeftToProcess.slice(0, MAX_SECTION_SLICE_SIZE);
-            sectionsLeftToProcess = sectionsLeftToProcess.slice(MAX_SECTION_SLICE_SIZE);
-            const rowsOfRows = await Promise.all(sliceToProcessNow.map(async (section) => {
-                const sectionRows = await csvRowsForCourse(section);
-                saveDataGenFunc()([header].concat(sectionRows), `Rubric Scores ${section.fullCourseCode}.csv`);
-                return sectionRows;
-            }))
-            for(let rowSet of rowsOfRows) {
-                for (let row of rowSet) {
-                    allSectionRows.push(row);
-                }
-            }
-        }
-    }
-    // works, but rate limited for large numbers of rows
-    //let rowsOfRows = await Promise.all(promises);
     console.log("Writing Final Output Document...")
     popClose();
     saveDataGenFunc()([header].concat(allSectionRows), `${term.code} ${course.baseCode} All Sections.csv`);
+    return allSectionRows;
+}
+
+
+/**
+ * Uses MAX_SECTION_SLICE_SIZE to set
+ * @param sections
+ */
+async function getRowsForSections(sections: Course[], sectionsAtATime = MAX_SECTION_SLICE_SIZE) {
+    const allSectionRows: string[] = [];
+    let sectionsLeftToProcess = sections.slice(0);
+    while (sectionsLeftToProcess.length > 0) {
+        const sliceToProcessNow = sectionsLeftToProcess.slice(0, sectionsAtATime);
+        sectionsLeftToProcess = sectionsLeftToProcess.slice(sectionsAtATime);
+        const rowsOfRows = await Promise.all(sliceToProcessNow.map(async (section) => {
+            const sectionRows = await csvRowsForCourse(section);
+            saveDataGenFunc()([header].concat(sectionRows), `Rubric Scores ${section.fullCourseCode}.csv`);
+            return sectionRows;
+        }))
+        for(let rowSet of rowsOfRows) {
+            for (let row of rowSet) {
+                allSectionRows.push(row);
+            }
+        }
+    }
     return allSectionRows;
 }
 
