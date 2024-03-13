@@ -460,6 +460,14 @@ export class Course extends BaseCanvasObject {
     }
 
     /**
+     * Checks if a string looks like a course code
+     * @param code
+     */
+    static stringIsCourseCode(code:string){
+        return this.CODE_REGEX.exec(code);
+    }
+
+    /**
      * Returns this library's class corresponding to the current url, drawing from Course.contentClasses.
      * Classes can be included in Course.contentClasses using the decorator @contentClass
      *

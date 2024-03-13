@@ -47,7 +47,20 @@ import {Course, getModuleWeekNumber} from "../canvas";
     const queryString = prompt();
     if(!queryString) return;
     const params = queryString.split('|');
-    const searchCode = params.shift();
+    const searchCode = params.length > 0? params[0] : null;
+
+    if(!searchCode) return;
+
+    let queryUrl = `/api/v1/accounts/98244/courses?search_term=${searchCode}`;
+    if (!document.documentURI.includes(".instructure.com")) {
+        queryUrl = `https://unity.instructure.com/accounts/98244?search_term=${searchCode}`;
+        window.open(queryUrl, "_blank");
+        return;
+    }
+
+    const courses = Course.stringIsCourseCode(searchCode)? await getJson(queryUrl) : null;
+    const course: Course = courses? getCourseToNavTo(searchCode, courses) : await Course.getFromUrl();
+
 
     let targetType: string | undefined;
     let targetModuleWeekNumber
@@ -76,19 +89,11 @@ import {Course, getModuleWeekNumber} from "../canvas";
             contentSearchString = match[1];
         }
     }
-    let queryUrl = `/api/v1/accounts/98244/courses?search_term=${searchCode}`;
-    if (!document.documentURI.includes(".instructure.com")) {
-        queryUrl = `https://unity.instructure.com/accounts/98244?search_term=${searchCode}`;
-        window.open(queryUrl, "_blank");
-        return;
-    }
 
-    const courses = await getJson(queryUrl);
     if (!searchCode) return;
-    let course = getCourseToNavTo(searchCode, courses);
 
     let url =`/accounts/98244?search_term=${searchCode}`;
-    if (course  && courses.length <  4) {
+    if (course  && (!courses || courses.length <  4)) {
         url = `/courses/${course.id}`;
         if (targetModuleWeekNumber) {
             const potentialUrl = await course.getModuleItemLink(targetModuleWeekNumber, {
