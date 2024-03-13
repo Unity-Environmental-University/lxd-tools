@@ -1,15 +1,8 @@
 // This implementation modified from https://github.com/UCBoulder/canvas-userscripts
 
-
-
 import {
-    Dict,
-    IAssignmentData,
-    ICanvasData,
-    IRubricCriterion,
-    ICourseData,
-    IModuleData,
-    LookUpTable,
+    Dict, ICanvasData,
+    IAssignmentData, IRubricCriterion, ICourseData, IModuleData, LookUpTable,
     ModuleItemType, IEnrollmentData, IUserData, ITermData, IDiscussionData, IModuleItemData
 } from "../../canvas/canvasDataDefs";
 import assert from "assert";
@@ -38,12 +31,16 @@ async function main() {
     const assignmentId = urlParams.get('assignmentId');
     const assignment: Assignment | null = assignmentId? (await Assignment.getById(parseInt(assignmentId), course)) as Assignment : null;
 
+
+
     let exportOneButton = document.createElement('button');
     exportOneButton.innerText = "Export Assignment";
     exportOneButton.id = "export_one_rubric_btn";
     exportOneButton.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
+        popUp("Exporting scores, please wait...");
         await exportData(course, assignment);
+        popClose();
         return false;
 
     });
@@ -53,8 +50,10 @@ async function main() {
     exportAllButton.innerText = "Export All Assignments";
     exportAllButton.id = "export_all_rubric_btn";
     exportAllButton.addEventListener('click', async (event: MouseEvent) => {
+        popUp("Exporting scores, please wait...");
         event.preventDefault();
         await exportData(course);
+        popClose();
         return false;
 
     });
@@ -65,7 +64,9 @@ async function main() {
     exportMultiSection.id = "export_sections_rubric_btn";
     exportMultiSection.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
+        popUp("Exporting scores, please wait...");
         await exportSectionsInTerm(course);
+        popClose();
         return false;
     });
     exportButtonContainer?.append(exportMultiSection);
@@ -75,6 +76,7 @@ async function main() {
     exportMultiTermButton.id = "export_sections_rubric_btn";
     exportMultiTermButton.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
+        popUp("Exporting scores, please wait...");
         let terms = await Term.searchTerms(null, 'active' );
         if(terms) {
             terms = terms.filter((term) => {
@@ -83,6 +85,7 @@ async function main() {
         };
         assert(terms, "No terms found");
         await exportMultipleTerms(course, terms);
+        popClose();
         return false;
     });
     exportButtonContainer?.append(exportMultiTermButton);
@@ -117,7 +120,6 @@ function saveDataGenFunc() {
 }
 
 async function exportMultipleTerms(course: Course | null = null, terms:Term[]) {
-    popUp("Exporting scores, please wait...");
 
     course ??= await Course.getFromUrl();
     assert(course);
@@ -125,18 +127,16 @@ async function exportMultipleTerms(course: Course | null = null, terms:Term[]) {
     const totalRows: string[] = [];
     for(let term of terms) {
         let rows = await exportSectionsInTerm(course, term);
+        totalRows.splice(totalRows.length, 0, ...rows);
     }
-
 
     let csvRows: string[] = [header];
     totalRows.unshift(header);
     console.log("Writing Final Output Document...")
-    popClose()
     saveDataGenFunc()(csvRows, `${course.baseCode} Multiterm.csv`);
 }
 
 async function exportSectionsInTerm(course: Course | null = null, term: Term | number  | null = null) {
-    popUp("Exporting scores, please wait...");
 
     course ??= await Course.getFromUrl();
     assert(course)
@@ -153,7 +153,6 @@ async function exportSectionsInTerm(course: Course | null = null, term: Term | n
     const allSectionRows: string[] = sections? await getRowsForSections(sections) : [];
 
     console.log("Writing Final Output Document...")
-    popClose();
     saveDataGenFunc()([header].concat(allSectionRows), `${term.code} ${course.baseCode} All Sections.csv`);
     return allSectionRows;
 }
@@ -186,12 +185,10 @@ async function getRowsForSections(sections: Course[], sectionsAtATime = MAX_SECT
 async function exportData(course: Course, assignment: Assignment | null = null) {
 
     try {
-        popUp("Exporting scores, please wait...");
         window.addEventListener("error", showError);
 
         let csvRows = await csvRowsForCourse(course, assignment)
 
-        popClose();
 
         let filename = assignment? assignment?.name : course.fullCourseCode;
 
