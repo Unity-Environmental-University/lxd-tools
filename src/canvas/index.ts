@@ -483,7 +483,6 @@ export class Course extends BaseCanvasObject {
     static getContentClassFromUrl(url: string | null = null) {
         if (!url) url = document.documentURI;
 
-
         for (let class_ of this.contentClasses) {
             console.log(class_, class_.contentUrlPart);
             if (class_.contentUrlPart && url.includes(class_.contentUrlPart)) return class_;
@@ -1181,7 +1180,7 @@ export class BaseContentItem extends BaseCanvasObject {
         const el = this.bodyAsElement;
         const anchors = el.querySelectorAll('a');
         const urls: string[] = [];
-        for(let link of anchors) urls.push(link.href);
+        for (let link of anchors) urls.push(link.href);
         return urls;
 
 
@@ -1240,7 +1239,27 @@ export class Page extends BaseContentItem {
     static nameProperty = 'title';
     static bodyProperty = 'body';
     static contentUrlTemplate = "courses/{course_id}/pages/{content_id}";
-    static allContentUrlTemplate = "courses/{course_id}/pages/";
+    static allContentUrlTemplate = "courses/{course_id}/pages";
+
+    static async getFromUrl(url: string | null = null, course: null | Course = null) {
+        if (url === null) {
+            url = document.documentURI;
+        }
+
+        url = url.replace(/\.com/, '.com/api/v1')
+        let data = await fetchJson(url);
+        if (!course) {
+            course = await Course.getFromUrl();
+            if (!course) return null;
+        }
+        //If this is a collection of data, we can't process it as a Canvas Object
+        if (Array.isArray(data)) return null;
+        assert(!Array.isArray(data));
+        if (data) {
+            return new this(data, course);
+        }
+        return null;
+    }
 
     async getRevisions() {
         return getPagedData(`${this.contentUrlPath}/revisions`);
@@ -1399,6 +1418,6 @@ export class CourseNotFoundException extends Error {
 
 
 function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
-    Course.registerContentClass(originalClass);
     //originalClass.contentUrlPart =
+    Course.registerContentClass(originalClass);
 }
