@@ -52,7 +52,8 @@ async function addSectionsButton(header: HTMLElement, bp: Course, currentCourse:
     const sourceCourse = currentCourse ?? bp;
     let sectionBtn = document.createElement('btn');
     sectionBtn.classList.add('btn');
-    sectionBtn.innerHTML = "Open Sections";
+    sectionBtn.innerHTML = "Sections";
+    sectionBtn.title = "Open all sections associated with the current BP for this course."
     const sections = await bp.getAssociatedCourses();
     if (!sections) return;
     header.append(sectionBtn);
@@ -66,6 +67,7 @@ async function addDevButton(header: HTMLElement, course: Course) {
 
         parentBtn.classList.add('btn');
         parentBtn.innerHTML = "DEV";
+        parentBtn.title = "Open the dev version of this course"
         header?.append(parentBtn);
         parentBtn.addEventListener('click', async () => await openThisContentInTarget(course, parentCourse))
     }
@@ -75,6 +77,7 @@ async function addBpButton(header: HTMLElement, bp: Course, currentCourse: Cours
     let bpBtn = document.createElement('btn');
     bpBtn.classList.add('btn');
     bpBtn.innerHTML = "BP";
+    bpBtn.title = "Open the blueprint version of this course"
     header.append(bpBtn);
 
     bpBtn.addEventListener('click', async () => await openThisContentInTarget(currentCourse, bp))
@@ -88,6 +91,7 @@ async function addOpenAllLinksButton(
     let btn = document.createElement('btn');
     btn.classList.add('btn');
     btn.innerHTML = "Links";
+    btn.title = "Open all links in the content of this page into their own tabs."
     header.append(btn);
     if(!currentContentItem) return;
     btn.addEventListener('click', () => openAllLinksInContent(currentContentItem))
@@ -96,7 +100,7 @@ async function addOpenAllLinksButton(
 
 function openAllLinksInContent(contentItem: BaseContentItem) {
     const urls = new Set(contentItem.getAllLinks());
-    
+
     for(let url of urls) window.open(url, "_blank");
 
 }
