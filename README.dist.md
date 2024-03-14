@@ -39,6 +39,10 @@ You can navigate to a specific assignment by typing its number after. So, w3d2 w
 
 The introduction should almost always be w1d0.
 
+You can go to a specific assignment in a different course by typing:
+[course code]|[wXaY]
+
+For example, **DEV_TEST000|w3q1** would go to the first quiz in week 3 of DEV_TEST000
 ### Course Navigation Buttons
 
 Each course now has several buttons at the top to take you to different versions of the course.
