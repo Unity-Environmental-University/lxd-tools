@@ -1,7 +1,10 @@
-import {BaseContentItem, Course, NotImplementedException} from "../../canvas";
+import {Assignment, BaseContentItem, Course, NotImplementedException} from "../../canvas";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);
+    const CurrentContentClass = Course.getContentClassFromUrl();
+    const currentContentItem = await CurrentContentClass?.getFromUrl();
+    console.log(CurrentContentClass, currentContentItem);
     if (!currentCourse) return;
     let header: HTMLElement | null = document.querySelector('.right-of-crumbs');
     if (!header) return;
@@ -17,13 +20,9 @@ import {BaseContentItem, Course, NotImplementedException} from "../../canvas";
             await addSectionsButton(header, bp, currentCourse);
         }
     }
-
-    let moduleCardsEl: HTMLElement | null = document.querySelector('.cbt-home-cards');
-    console.log(moduleCardsEl);
-    //Not working due to CORS issue;  likely need server to proxy images.
-    //if (moduleCardsEl) await addHomeTilesButton(moduleCardsEl, currentCourse);
-
-
+    if(currentContentItem) {
+        await addOpenAllLinksButton(header, currentContentItem);
+    }
 })();
 
 
@@ -79,6 +78,25 @@ async function addBpButton(header: HTMLElement, bp: Course, currentCourse: Cours
     header.append(bpBtn);
 
     bpBtn.addEventListener('click', async () => await openThisContentInTarget(currentCourse, bp))
+
+}
+
+async function addOpenAllLinksButton(
+    header: HTMLElement,
+    currentContentItem: BaseContentItem
+) {
+    let btn = document.createElement('btn');
+    btn.classList.add('btn');
+    btn.innerHTML = "Links";
+    header.append(btn);
+    if(!currentContentItem) return;
+    btn.addEventListener('click', () => openAllLinksInContent(currentContentItem))
+}
+
+
+function openAllLinksInContent(contentItem: BaseContentItem) {
+    const urls = contentItem.getAllLinks();
+    for(let url of urls) window.open(url, "_blank");
 
 }
 

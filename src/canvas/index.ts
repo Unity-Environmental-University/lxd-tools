@@ -1176,6 +1176,23 @@ export class BaseContentItem extends BaseCanvasObject {
         let targets = await ContentClass.getAllInCourse(targetCourse, {queryParams: {search_term: this.name}})
         return targets.find((target: BaseContentItem) => target.name == this.name);
     }
+
+    getAllLinks(): string[] {
+        const el = this.bodyAsElement;
+        const anchors = el.querySelectorAll('a');
+        const urls: string[] = [];
+        for(let link of anchors) urls.push(link.href);
+        return urls;
+
+
+    }
+
+    get bodyAsElement() {
+        assert(this.body, "This content item has no body property")
+        let el = document.createElement('div');
+        el.innerHTML = this.body;
+        return el;
+    }
 }
 
 @contentClass
