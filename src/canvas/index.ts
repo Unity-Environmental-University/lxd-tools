@@ -1,5 +1,3 @@
-
-
 /* Very Initial refactor to JS using ChatGPT4
 NOTE: Almost all of this code has had to be rewritten since then.
 And starting to convert to ts
@@ -28,7 +26,7 @@ interface ICanvasCallConfig extends Dict {
 }
 
 interface IUpdateCallback {
-    (current: number, total: number) : Promise<number>
+    (current: number, total: number): Promise<number>
 }
 
 
@@ -46,7 +44,7 @@ async function downloadFile(options: DownloadOptionsType) {
     await runtime.sendMessage('downloadFile', options);
 }
 
-export function resizedImage(imgSrc: string, targetWidth: number, targetHeight: null | number=null): Promise<ImageData> {
+export function resizedImage(imgSrc: string, targetWidth: number, targetHeight: null | number = null): Promise<ImageData> {
     assert(document);
     const image = new Image();
     image.loading = 'eager';
@@ -54,9 +52,9 @@ export function resizedImage(imgSrc: string, targetWidth: number, targetHeight: 
         let callback = () => {
             console.log("Loaded");
             console.log(image.src, image.height, image.width);
-            const targetCanvas =  document.createElement('canvas');
+            const targetCanvas = document.createElement('canvas');
             const tCtx = targetCanvas.getContext('2d');
-            if(!tCtx) {
+            if (!tCtx) {
                 reject();
                 return;
             }
@@ -64,20 +62,21 @@ export function resizedImage(imgSrc: string, targetWidth: number, targetHeight: 
             tCtx.imageSmoothingQuality = "high";
 
             const aspectRatio = image.width / image.height;
-            targetHeight = targetHeight? targetHeight : targetWidth / aspectRatio;
-            targetCanvas.width = targetWidth; targetCanvas.height = targetHeight;
+            targetHeight = targetHeight ? targetHeight : targetWidth / aspectRatio;
+            targetCanvas.width = targetWidth;
+            targetCanvas.height = targetHeight;
             tCtx.drawImage(image, 0, 0, targetWidth, targetHeight);
-            resolve(tCtx.getImageData(0,0,targetWidth, targetHeight));
+            resolve(tCtx.getImageData(0, 0, targetWidth, targetHeight));
         }
         console.log("loading", imgSrc);
         image.src = imgSrc;
         if (image.complete) {
             callback();
         } else {
-           image.addEventListener('load', callback);
-           image.addEventListener('error', (e) => {
-               console.log(e);
-               console.log(image);
+            image.addEventListener('load', callback);
+            image.addEventListener('error', (e) => {
+                console.log(e);
+                console.log(image);
             })
         }
 
@@ -96,21 +95,21 @@ export function formDataify(data: Dict) {
         const authenticityToken = el ? el.value : null;
         if (authenticityToken) formData.append('authenticity_token', authenticityToken);
     }
-    for(let entry of formData.entries()) {
+    for (let entry of formData.entries()) {
         console.log(entry[0], entry[1]);
     }
     return formData;
 }
 
 function addToFormData(formData: FormData, key: string, value: any | Dict | []) {
-    if(Array.isArray(value)) {
-        for(let item of value) {
+    if (Array.isArray(value)) {
+        for (let item of value) {
             addToFormData(formData, `${key}[]`, item);
         }
     } else if (typeof value === 'object') {
-        for(let itemKey in value) {
+        for (let itemKey in value) {
             const itemValue = value[itemKey];
-            addToFormData(formData, key.length > 0? `${key}[${itemKey}]` : itemKey, itemValue);
+            addToFormData(formData, key.length > 0 ? `${key}[${itemKey}]` : itemKey, itemValue);
         }
     } else {
         formData.append(key, value.toString());
@@ -120,7 +119,7 @@ function addToFormData(formData: FormData, key: string, value: any | Dict | []) 
 export function getModuleWeekNumber(module: Dict) {
     const regex = /(week|module) (\d+)/i;
     let match = module.name.match(regex);
-    let weekNumber = !match? null : Number(match[1]);
+    let weekNumber = !match ? null : Number(match[1]);
     if (!weekNumber) {
         for (let moduleItem of module.items) {
             if (!moduleItem.hasOwnProperty('title')) {
@@ -141,7 +140,7 @@ export function getModuleWeekNumber(module: Dict) {
  */
 export async function getItemTypeAndId(
     item: IModuleItemData
-) : Promise<{type: ModuleItemType, id: number}>{
+): Promise<{ type: ModuleItemType, id: number }> {
     let id;
     let type;
     assert(type_lut.hasOwnProperty(item.type), "Unexpected type " + item.type);
@@ -166,7 +165,7 @@ function searchParamsFromObject(queryParams: string[][] | Record<string, string>
     return new URLSearchParams(queryParams);
 }
 
-async function getApiPagedData(url: string, config : ICanvasCallConfig | null = null): Promise<ICanvasData[]> {
+async function getApiPagedData(url: string, config: ICanvasCallConfig | null = null): Promise<ICanvasData[]> {
     return await getPagedData(`/api/v1/${url}`, config)
 }
 
@@ -177,13 +176,13 @@ async function getApiPagedData(url: string, config : ICanvasCallConfig | null = 
  * @returns {Promise<Dict[]>}
  */
 async function getPagedData(
-    url: string, config : ICanvasCallConfig | null = null): Promise<ICanvasData[]> {
+    url: string, config: ICanvasCallConfig | null = null): Promise<ICanvasData[]> {
 
     if (config?.queryParams) {
         url += '?' + searchParamsFromObject(config.queryParams);
     }
 
-    if(url.includes('undefined')){
+    if (url.includes('undefined')) {
         console.log(url);
     }
     /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
@@ -227,7 +226,7 @@ async function getPagedData(
 }
 
 async function fetchJson(
-    url: string, config: ICanvasCallConfig | null = null): Promise<ICanvasData|ICanvasData[]> {
+    url: string, config: ICanvasCallConfig | null = null): Promise<ICanvasData | ICanvasData[]> {
     if (config?.queryParams) {
         url += '?' + new URLSearchParams(config.queryParams);
     }
@@ -246,7 +245,7 @@ async function fetchJson(
  * @param url
  * @param config query and fetch params
  */
-async function fetchApiJson(url: string, config: ICanvasCallConfig| null = null) {
+async function fetchApiJson(url: string, config: ICanvasCallConfig | null = null) {
     url = `/api/v1/${url}`;
     return await fetchJson(url, config);
 }
@@ -254,8 +253,9 @@ async function fetchApiJson(url: string, config: ICanvasCallConfig| null = null)
 async function fetchOneApiJson(url: string, config: ICanvasCallConfig | null = null) {
     let result = await fetchApiJson(url, config);
     if (Array.isArray(result)) return result[0];
-    return <ICanvasData> result;
+    return <ICanvasData>result;
 }
+
 /**
  *  A base class for objects that interact with the Canvas API
  */
@@ -263,7 +263,7 @@ async function fetchOneApiJson(url: string, config: ICanvasCallConfig | null = n
 export class BaseCanvasObject {
     static idProperty = 'id'; // The field name of the id of the canvas object type
     static nameProperty: string | null = null; // The field name of the primary name of the canvas object type
-    static contentUrlTemplate:string | null = null; // A templated url to get a single item
+    static contentUrlTemplate: string | null = null; // A templated url to get a single item
     static allContentUrlTemplate: string | null = null; // A templated url to get all items
     protected canvasData: ICanvasData;
     protected accountId: null | number = null;
@@ -284,7 +284,10 @@ export class BaseCanvasObject {
         return this.canvasData[item] || null;
     }
 
-    get myClass() { return (<typeof BaseContentItem> this.constructor)}
+    get myClass() {
+        return (<typeof BaseContentItem>this.constructor)
+    }
+
     get nameKey() {
         assert(this.myClass.nameProperty);
         return this.myClass.nameProperty;
@@ -305,7 +308,7 @@ export class BaseCanvasObject {
         return `/${this.contentUrlPath}`;
     }
 
-    get rawData(){
+    get rawData() {
         const out: ICanvasData = {
             id: NaN,
         };
@@ -319,16 +322,17 @@ export class BaseCanvasObject {
         return this.canvasData;
     }
 
-    static async getDataById(contentId: number, course: Course | null = null, config : ICanvasCallConfig | null = null): Promise<ICanvasData> {
+    static async getDataById(contentId: number, course: Course | null = null, config: ICanvasCallConfig | null = null): Promise<ICanvasData> {
         let url = this.getUrlPathFromIds(contentId, course ? course.id : null);
-        const response =  await fetchApiJson(url, config);
+        const response = await fetchApiJson(url, config);
         assert(!Array.isArray(response));
         return response;
     }
 
-    static async getById(contentId: number, course : Course) {
+    static async getById(contentId: number, course: Course) {
         return new this(await this.getDataById(contentId, course))
     }
+
     static getUrlPathFromIds(
         contentId: number,
         courseId: number | null) {
@@ -350,8 +354,8 @@ export class BaseCanvasObject {
         assert(typeof this.allContentUrlTemplate === 'string');
         let replaced = this.allContentUrlTemplate;
 
-        if(courseId) replaced = replaced.replace('{course_id}', courseId.toString());
-        if(accountId) replaced = replaced.replace('{account_id}', accountId.toString());
+        if (courseId) replaced = replaced.replace('{course_id}', courseId.toString());
+        if (accountId) replaced = replaced.replace('{account_id}', accountId.toString());
         return replaced;
     }
 
@@ -362,8 +366,8 @@ export class BaseCanvasObject {
     }
 
 
-    get id() : number {
-        const id = this.canvasData[(<typeof BaseCanvasObject> this.constructor).idProperty];
+    get id(): number {
+        const id = this.canvasData[(<typeof BaseCanvasObject>this.constructor).idProperty];
         return parseInt(id);
     }
 
@@ -375,16 +379,18 @@ export class BaseCanvasObject {
 
     async saveData(data: Dict) {
         assert(this.contentUrlPath);
-        return await fetchApiJson(this.contentUrlPath, {fetchInit : {
-            method: 'PUT',
-            body: formDataify(data)
-        }});
+        return await fetchApiJson(this.contentUrlPath, {
+            fetchInit: {
+                method: 'PUT',
+                body: formDataify(data)
+            }
+        });
 
     }
 
     async delete() {
         assert(this.contentUrlPath);
-        return await fetchApiJson(this.contentUrlPath, { fetchInit: {method: 'DELETE'}})
+        return await fetchApiJson(this.contentUrlPath, {fetchInit: {method: 'DELETE'}})
     }
 
 }
@@ -394,6 +400,7 @@ export class Account extends BaseCanvasObject {
     static contentUrlTemplate = 'accounts/{content_id}'; // A templated url to get a single item
     static allContentUrlTemplate = 'accounts'; // A templated url to get all items
     private static account: Account;
+
     static async getFromUrl(url: string | null = null) {
         if (url === null) {
             url = document.documentURI;
@@ -413,7 +420,7 @@ export class Account extends BaseCanvasObject {
     }
 
     static async getRootAccount(resetCache = false) {
-        let accounts: Account[] = <Account[]> await this.getAll();
+        let accounts: Account[] = <Account[]>await this.getAll();
         if (!resetCache && this.hasOwnProperty('account') && this.account) {
             return this.account;
         }
@@ -444,7 +451,7 @@ export class Course extends BaseCanvasObject {
         if (match) {
             console.log(match);
             const id = this.getIdFromUrl(url);
-            if(!id) return null;
+            if (!id) return null;
             return await this.getById(id);
         }
         return null;
@@ -463,7 +470,7 @@ export class Course extends BaseCanvasObject {
      * Checks if a string looks like a course code
      * @param code
      */
-    static stringIsCourseCode(code:string){
+    static stringIsCourseCode(code: string) {
         return this.CODE_REGEX.exec(code);
     }
 
@@ -473,13 +480,13 @@ export class Course extends BaseCanvasObject {
      *
      * @param url
      */
-    static getContentClassFromUrl(url: string| null = null) {
+    static getContentClassFromUrl(url: string | null = null) {
         if (!url) url = document.documentURI;
 
 
-        for(let class_ of this.contentClasses) {
+        for (let class_ of this.contentClasses) {
             console.log(class_, class_.contentUrlPart);
-            if(class_.contentUrlPart && url.includes(class_.contentUrlPart)) return class_;
+            if (class_.contentUrlPart && url.includes(class_.contentUrlPart)) return class_;
         }
         return null;
     }
@@ -490,7 +497,7 @@ export class Course extends BaseCanvasObject {
         return new Course(data);
     }
 
-    private static async getCoursesByString(code:string, term: Term | null = null, config: ICanvasCallConfig = {}) {
+    private static async getCoursesByString(code: string, term: Term | null = null, config: ICanvasCallConfig = {}) {
         let courseDataList: ICanvasData[] | null = null;
         const accountIdsByName = await Course.getAccountIdsByName();
         for (let accountKey in accountIdsByName) {
@@ -517,12 +524,12 @@ export class Course extends BaseCanvasObject {
 
         return courseDataList.map(courseData => new Course(courseData));
     }
+
     static async getAllByCode(code: string, term: Term | null = null, config: ICanvasCallConfig | undefined = undefined) {
         return this.getCoursesByString(code, term, config);
     }
 
-    static async getByCode(code: string, term : Term | null = null, config: ICanvasCallConfig | undefined = undefined)
-    {
+    static async getByCode(code: string, term: Term | null = null, config: ICanvasCallConfig | undefined = undefined) {
         const courses = await this.getCoursesByString(code, term, config);
         if (Array.isArray(courses)) return courses[0];
         return null;
@@ -586,12 +593,12 @@ export class Course extends BaseCanvasObject {
     }
 
 
-    get termId() : number | null {
+    get termId(): number | null {
         return (this.canvasData as ICourseData).enrollment_term_id;
     }
 
 
-    async getTerm() : Promise<Term | null> {
+    async getTerm(): Promise<Term | null> {
         if (this.termId) return Term.getTermById(this.termId)
         else return null;
     }
@@ -610,17 +617,17 @@ export class Course extends BaseCanvasObject {
     }
 
     async getModules(): Promise<IModuleData[]> {
-        if(this._modules) {
+        if (this._modules) {
             return this._modules;
         }
-        let modules = <IModuleData[]> await getApiPagedData(`${this.contentUrlPath}/modules?include[]=items&include[]=content_details`);
+        let modules = <IModuleData[]>await getApiPagedData(`${this.contentUrlPath}/modules?include[]=items&include[]=content_details`);
         this._modules = modules;
         return modules;
     }
 
-    async getContentItemFromUrl(url:string | null = null) {
+    async getContentItemFromUrl(url: string | null = null) {
         let ContentClass = Course.getContentClassFromUrl(url);
-        if(!ContentClass) return null;
+        if (!ContentClass) return null;
         return ContentClass.getFromUrl(url);
     }
 
@@ -628,7 +635,7 @@ export class Course extends BaseCanvasObject {
         if (this.modulesByWeekNumber) return this.modulesByWeekNumber;
         let modules = await this.getModules();
         let modulesByWeekNumber: LookUpTable<IModuleData> = {};
-        for(let module of modules)  {
+        for (let module of modules) {
             let weekNumber = getModuleWeekNumber(module);
             if (weekNumber) {
                 modulesByWeekNumber[weekNumber] = module;
@@ -638,16 +645,26 @@ export class Course extends BaseCanvasObject {
         return modulesByWeekNumber;
     }
 
-    async getModuleItemLink(moduleOrWeekNumber: number | Dict, target: IModuleItemData | {
+    /**
+     * Returns a list of links to items in a given module
+     *
+     * @param moduleOrWeekNumber
+     * @param target An object specifying an item or items to look for
+     * type - specifies the type,
+     * search - a string to search for in titles. optional.
+     * index - return the indexth one of these in the week (minus the intro in week 1, which should be index 0)
+     * if none is specified, return all matches
+     */
+    async getModuleItemLinks(moduleOrWeekNumber: number | Dict, target: IModuleItemData | {
         type: ModuleItemType,
-        search?: string,
-        index?: number,
-    }) {
+        search?: string | null,
+        index?: number | null,
+    }): Promise<string[]> {
         assert(target.hasOwnProperty('type'));
         let targetType: ModuleItemType = target.type;
-        let url: string| null = null;
-        let contentSearchString = target.hasOwnProperty('search')? target.search : null;
-        let targetIndex = target.hasOwnProperty('index') ? target.index : null;
+        let url: string | null = null;
+        let contentSearchString = target.hasOwnProperty('search') ? target.search : null;
+        let targetIndex = isNaN(target.index) ? null : target.index;
         let targetModuleWeekNumber;
         let targetModule;
         if (typeof moduleOrWeekNumber === 'number') {
@@ -660,25 +677,32 @@ export class Course extends BaseCanvasObject {
             targetModuleWeekNumber = getModuleWeekNumber(targetModule);
         }
 
+        const urls = [];
         if (targetModule && typeof targetType !== 'undefined') {
             //If it's a page, just search for the parameter string
-            if(targetType === 'Page' && contentSearchString) {
-                url = `/courses/${this.id}/pages?${new URLSearchParams([['search_term', contentSearchString]])}`;
+            if (targetType === 'Page' && contentSearchString) {
+                let pages = await this.getPages({
+                    queryParams: {search_term: contentSearchString}
+                })
+                pages.forEach((page) => urls.push(page.htmlContentUrl));
 
-            //If it's anything else, get only those items in the module and set url to the targetIndexth one.
-            } else if (targetType && targetIndex) {
+
+                //If it's anything else, get only those items in the module and set url to the targetIndexth one.
+            } else if (targetType) {
                 //bump index for week 1 to account for intro discussion / checking for rubric would require pulling too much data
                 //and too much performance overhead
-                if (targetType === 'Discussion' && targetModuleWeekNumber === 1 ) targetIndex++;
-                const matchingTypeItems = targetModule.items.filter( (a: Dict) => a.type === targetType);
-                if (matchingTypeItems.length >= targetIndex) {
-                    //We discuss and number the assignments indexed at 1, but the array is indexed at 0
+                if (targetIndex && targetType === 'Discussion' && targetModuleWeekNumber === 1) targetIndex++;
+                const matchingTypeItems = targetModule.items.filter((item: IModuleItemData) => item.type === targetType);
+                if (targetIndex && matchingTypeItems.length >= targetIndex) {
+                    //We refer to and number the assignments indexed at 1, but the array is indexed at 0
                     const targetItem = matchingTypeItems[targetIndex - 1];
-                    url = targetItem['html_url'];
+                    urls.push(targetItem.html_url);
+                } else if (!targetIndex) {
+                    for (let item of matchingTypeItems) urls.push(item.html_url)
                 }
             }
         }
-        return url;
+        return urls;
     }
 
     async getSyllabus(): Promise<string> {
@@ -694,10 +718,10 @@ export class Course extends BaseCanvasObject {
      * @returns {Promise<Assignment[]>}
      * @param config
      */
-    async getAssignments(config : ICanvasCallConfig = {
+    async getAssignments(config: ICanvasCallConfig = {
         queryParams: {'include': ['due_at']}
     }): Promise<Assignment[]> {
-        return  await Assignment.getAllInCourse(this, config) as Assignment[];
+        return await Assignment.getAllInCourse(this, config) as Assignment[];
     }
 
     /**
@@ -706,7 +730,7 @@ export class Course extends BaseCanvasObject {
      * @returns {Promise<Quiz[]>}
      */
     async getQuizzes(queryParams = {'include': ['due_at']}): Promise<Quiz[]> {
-        return <Quiz[]> await Quiz.getAllInCourse(this, {queryParams});
+        return <Quiz[]>await Quiz.getAllInCourse(this, {queryParams});
     }
 
     async getAssociatedCourses() {
@@ -745,7 +769,7 @@ export class Course extends BaseCanvasObject {
         if (!tab) return null;
 
         return await fetchApiJson(`courses/${this.id}/tabs/${tab.id}`, {
-            queryParams : {'hidden': value}
+            queryParams: {'hidden': value}
         });
     }
 
@@ -766,7 +790,7 @@ export class Course extends BaseCanvasObject {
     async lockBlueprint() {
         const modules = await this.getModules();
         let items: IModuleItemData[] = [];
-        items = items.concat(...modules.map((a) =>(<IModuleItemData[]> [] ).concat(...a.items)));
+        items = items.concat(...modules.map((a) => (<IModuleItemData[]>[]).concat(...a.items)));
         const promises = items.map(async (item) => {
             const url = `${this.contentUrlPath}/blueprint_templates/default/restrict_item`;
             let {type, id} = await getItemTypeAndId(item);
@@ -778,10 +802,12 @@ export class Course extends BaseCanvasObject {
             }
 
             console.log(body);
-            await fetchApiJson(url, {fetchInit:{
-                method: 'PUT',
-                body: formDataify(body)
-            }});
+            await fetchApiJson(url, {
+                fetchInit: {
+                    method: 'PUT',
+                    body: formDataify(body)
+                }
+            });
 
         });
         await Promise.all(promises);
@@ -799,10 +825,12 @@ export class Course extends BaseCanvasObject {
             'course[blueprint_restrictions][availability_dates]': 1,
         };
 
-        this.canvasData = await fetchOneApiJson(url,{fetchInit:{
-            method: 'PUT',
-            body: JSON.stringify(payload)
-        }});
+        this.canvasData = await fetchOneApiJson(url, {
+            fetchInit: {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            }
+        });
         this.resetCache();
     }
 
@@ -811,10 +839,12 @@ export class Course extends BaseCanvasObject {
         const payload = {
             'course[blueprint]': false,
         };
-        this.canvasData = await fetchOneApiJson(url, {fetchInit:{
-            method: 'PUT',
-            body: JSON.stringify(payload)
-        }});
+        this.canvasData = await fetchOneApiJson(url, {
+            fetchInit: {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            }
+        });
         this.resetCache();
     }
 
@@ -825,10 +855,12 @@ export class Course extends BaseCanvasObject {
 
     async publish() {
         const url = `courses/${this.id}`;
-        const courseData = await fetchOneApiJson(url, {fetchInit:{
-            method: 'PUT',
-            body: JSON.stringify({'offer': true})
-        }});
+        const courseData = await fetchOneApiJson(url, {
+            fetchInit: {
+                method: 'PUT',
+                body: JSON.stringify({'offer': true})
+            }
+        });
         console.log(courseData);
         this.canvasData = courseData;
         this.resetCache();
@@ -836,11 +868,13 @@ export class Course extends BaseCanvasObject {
 
     async unpublish() {
         const url = `courses/${this.id}`;
-        await fetchApiJson(url, {fetchInit:{
-            method: 'PUT',
-            body: JSON.stringify({'course[event]': 'claim'})
-        }});
-        this.canvasData = (await Course.getById(this.id) ).rawData;
+        await fetchApiJson(url, {
+            fetchInit: {
+                method: 'PUT',
+                body: JSON.stringify({'course[event]': 'claim'})
+            }
+        });
+        this.canvasData = (await Course.getById(this.id)).rawData;
     }
 
     async contentUpdatesAndFixes(_fixesToRun = null) {
@@ -882,7 +916,7 @@ export class Course extends BaseCanvasObject {
         }
 
         const url = `/courses/${this.id}/reset_content`;
-        const data = await fetchOneApiJson(url, { fetchInit: {method: 'POST'}});
+        const data = await fetchOneApiJson(url, {fetchInit: {method: 'POST'}});
         this.canvasData['id'] = data.id;
 
         return false;
@@ -905,12 +939,11 @@ export class Course extends BaseCanvasObject {
 
         if (prompt) {
             const canContinue = await prompt(devCourse, this);
-            if(!canContinue) return;
+            if (!canContinue) return;
         }
 
-       await this.importCourse(devCourse, updateCallback);
+        await this.importCourse(devCourse, updateCallback);
     }
-
 
     async importCourse(course: Course, updateCallback: IUpdateCallback | undefined) {
         throw new NotImplementedException();
@@ -960,22 +993,13 @@ export class Course extends BaseCanvasObject {
         const overviewPage = new Page(pageData, this);
         const pageBody = document.createElement('html');
         pageBody.innerHTML = overviewPage.body;
-        let bannerImg : HTMLImageElement | null = pageBody.querySelector('.cbt-banner-image img')
+        let bannerImg: HTMLImageElement | null = pageBody.querySelector('.cbt-banner-image img')
 
         assert(bannerImg, "Page has no banner");
         let download = await downloadFile({
             method: 'GET',
             url: bannerImg.src,
         });
-
-        // const img = await resizedImage(bannerImg.src, 500);
-        // const canvas = document.createElement('canvas');
-        // const ctx = canvas.getContext('2d');
-        // const blob: Blob = await new Promise((resolve, reject) => canvas.toBlob(resolve as BlobCallback));
-        // const homeTileName = `hometile${module.position}.png`
-        // await this.uploadFile(
-        //     new File([blob], homeTileName),
-        //     '/Images/hometile');
     }
 
     async uploadFile(file: File, path: string) {
@@ -1006,6 +1030,10 @@ export class Course extends BaseCanvasObject {
     static registerContentClass(contentClass: typeof BaseContentItem) {
         this.contentClasses.push(contentClass);
     }
+
+    public getPages(config: ICanvasCallConfig | null = null) {
+        return Page.getAllInCourse(this, config) as Promise<Page[]>;
+    }
 }
 
 
@@ -1023,7 +1051,7 @@ export class BaseContentItem extends BaseCanvasObject {
         assert(this.allContentUrlTemplate, "Not a content url template");
         const urlTermMatch = /\/([\w_]+)$/.exec(this.allContentUrlTemplate);
         console.log(this.allContentUrlTemplate, urlTermMatch);
-        if(!urlTermMatch) return null;
+        if (!urlTermMatch) return null;
         const urlTerm = urlTermMatch[1];
         return urlTerm;
 
@@ -1034,8 +1062,9 @@ export class BaseContentItem extends BaseCanvasObject {
         let contentString = this.contentUrlTemplate.replace(/\{[^}]+\}/, '(\d+)');
         return new RegExp(contentString);
     }
+
     static getIdFromUrl(url: string) {
-            //let _contentUrlTemplate = "courses/{course_id}/discussion_topics/{content_id}";
+        //let _contentUrlTemplate = "courses/{course_id}/discussion_topics/{content_id}";
         assert(this.contentUrlTemplate);
         // use the content url template as a basis to generate
         let match = /courses\/(\d+)/.exec(url);
@@ -1047,7 +1076,7 @@ export class BaseContentItem extends BaseCanvasObject {
     }
 
 
-    static async getAllInCourse(course: Course, config: ICanvasCallConfig) {
+    static async getAllInCourse(course: Course, config: ICanvasCallConfig | null = null) {
         let url = this.getAllUrl(course.id);
         let data = await getApiPagedData(url, config);
         return data.map(item => new this(item, course));
@@ -1068,10 +1097,10 @@ export class BaseContentItem extends BaseCanvasObject {
         let data = await fetchJson(url);
         if (!course) {
             course = await Course.getFromUrl();
-            if(!course) return null;
+            if (!course) return null;
         }
         //If this is a collection of data, we can't process it as a Canvas Object
-        if(Array.isArray(data)) return null;
+        if (Array.isArray(data)) return null;
         assert(!Array.isArray(data));
         if (data) {
             return new this(data, course);
@@ -1080,7 +1109,9 @@ export class BaseContentItem extends BaseCanvasObject {
     }
 
 
-    get bodyKey() {return this.myClass.bodyProperty;}
+    get bodyKey() {
+        return this.myClass.bodyProperty;
+    }
 
     get body() {
         if (!this.bodyKey) return null;
@@ -1097,6 +1128,7 @@ export class BaseContentItem extends BaseCanvasObject {
     async setDueAt(date: Date): Promise<Dict> {
         throw new NotImplementedException();
     }
+
     async dueAtTimeDelta(timeDelta: number) {
         if (!this.dueAt) return null;
         let result = new Date(this.dueAt);
@@ -1107,7 +1139,7 @@ export class BaseContentItem extends BaseCanvasObject {
     }
 
     get contentUrlPath() {
-        let url = (<typeof BaseContentItem> this.constructor).contentUrlTemplate;
+        let url = (<typeof BaseContentItem>this.constructor).contentUrlTemplate;
         assert(url);
         url = url.replace('{course_id}', this.course.id.toString());
         url = url.replace('{content_id}', this.id.toString());
@@ -1121,7 +1153,7 @@ export class BaseContentItem extends BaseCanvasObject {
 
     async updateContent(text = null, name = null) {
         const data: Dict = {};
-        const constructor = <typeof BaseContentItem> this.constructor;
+        const constructor = <typeof BaseContentItem>this.constructor;
         assert(constructor.bodyProperty);
         assert(constructor.nameProperty);
         const nameProp = constructor.nameProperty;
@@ -1141,7 +1173,7 @@ export class BaseContentItem extends BaseCanvasObject {
 
     async getMeInAnotherCourse(targetCourse: Course) {
         let ContentClass = this.constructor as typeof BaseContentItem
-        let targets = await ContentClass.getAllInCourse(targetCourse,{queryParams: {search_term: this.name}})
+        let targets = await ContentClass.getAllInCourse(targetCourse, {queryParams: {search_term: this.name}})
         return targets.find((target: BaseContentItem) => target.name == this.name);
     }
 }
@@ -1177,7 +1209,7 @@ export class Quiz extends BaseContentItem {
     static contentUrlTemplate = "courses/{course_id}/quizzes/{content_id}";
     static allContentUrlTemplate = "courses/{course_id}/quizzes";
 
-    async setDueAt(dueAt: Date ) {
+    async setDueAt(dueAt: Date) {
         let result = await this.saveData({'quiz[due_at]': dueAt.toISOString()})
         this.canvasData['due_at'] = dueAt.toISOString();
         return result;
@@ -1225,6 +1257,7 @@ export class Page extends BaseContentItem {
     get body(): string {
         return this.canvasData[this.bodyKey];
     }
+
     async updateContent(text = null, name = null) {
         let data: Dict = {};
         if (text) {
@@ -1278,7 +1311,7 @@ export class Term extends BaseCanvasObject {
         return this.canvasData['name'];
     }
 
-    static async getTerm (code: string, workflowState: 'all' | 'active' | 'deleted' = 'all', config: ICanvasCallConfig | undefined = undefined) {
+    static async getTerm(code: string, workflowState: 'all' | 'active' | 'deleted' = 'all', config: ICanvasCallConfig | undefined = undefined) {
         const terms = await this.searchTerms(code, workflowState, config);
         if (!Array.isArray(terms) || terms.length <= 0) {
             return null;
@@ -1314,9 +1347,9 @@ export class Term extends BaseCanvasObject {
         let url = `accounts/${rootAccount.id}/terms`;
         const data = await getApiPagedData(url, config);
         let terms: ICanvasData[] = [];
-        for(let datum of data){
-            if(datum.hasOwnProperty('enrollment_terms')) {
-                for(let termData of datum['enrollment_terms']) {
+        for (let datum of data) {
+            if (datum.hasOwnProperty('enrollment_terms')) {
+                for (let termData of datum['enrollment_terms']) {
                     terms.push(termData);
                 }
             } else {
@@ -1331,19 +1364,21 @@ export class Term extends BaseCanvasObject {
         return terms.map(term => new Term(term));
     }
 
-    get startDate(): Date{
+    get startDate(): Date {
         return new Date(this.data.start_at);
     }
 
-    get endDate(): Date{
+    get endDate(): Date {
         return new Date(this.data.end_at);
     }
 }
 
 
-export class NotImplementedException extends Error {}
-export class CourseNotFoundException extends Error {}
+export class NotImplementedException extends Error {
+}
 
+export class CourseNotFoundException extends Error {
+}
 
 
 function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {

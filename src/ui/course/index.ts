@@ -21,7 +21,7 @@ import {BaseContentItem, Course, NotImplementedException} from "../../canvas";
     let moduleCardsEl: HTMLElement | null = document.querySelector('.cbt-home-cards');
     console.log(moduleCardsEl);
     //Not working due to CORS issue;  likely need server to proxy images.
-    if (moduleCardsEl) await addHomeTilesButton(moduleCardsEl, currentCourse);
+    //if (moduleCardsEl) await addHomeTilesButton(moduleCardsEl, currentCourse);
 
 
 })();
