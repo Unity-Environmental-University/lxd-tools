@@ -95,7 +95,8 @@ async function addOpenAllLinksButton(
 
 
 function openAllLinksInContent(contentItem: BaseContentItem) {
-    const urls = contentItem.getAllLinks();
+    const urls = new Set(contentItem.getAllLinks());
+    
     for(let url of urls) window.open(url, "_blank");
 
 }
