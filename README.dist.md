@@ -1,4 +1,4 @@
-# LXD Chrome Extension Distribution
+# LXD Chrome Extension Distribution  
 
 
 This is for use by Unity Environmental University Learning Experience Designers.
