@@ -2,9 +2,10 @@
   "manifest_version": 3,
   "name": "LXD Browser Extension REACT version",
   "description": "Shortcuts including search by code.",
-  "version": "1.1",
+  "version": "1.2",
   "action": {
-    "default_title" : "LDX Tools LDX"
+    "default_popup" : "popup.html",
+    "default_title" : "LXD Tools"
   },
  "commands" : {
       "_execute_action": {
@@ -18,7 +19,7 @@
   },
   "web_accessible_resources": [{
      "matches": ["<all_urls>"],
-     "resources": ["js/canvas.js"]
+     "resources": ["js/canvas.js", "*.map"]
    }],
   "content_scripts" : [
     {

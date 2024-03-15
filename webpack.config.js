@@ -10,16 +10,20 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 
 module.exports = {
     mode: isDevelopment ? 'development' : 'production',
-
+    performance: {
+        hints: isDevelopment? false : 'warning'
+    },
     entry: {
-        background: './src/background',
-        content: './src/content',
-        canvas: './src/canvas',
-        pageFixes: './src/content/pageFixes.js',
-        speedGrader: './src/ui/speedGrader',
-        'ui/course': './src/ui/course',
-        'ui/account': './src/ui/account',
-        'ui/module': './src/ui/module',
+        'popup': './src/popup',
+
+        'js/background': './src/background',
+        'js/content': './src/content',
+        'js/canvas': './src/canvas',
+        'js/pageFixes': './src/content/pageFixes.js',
+        'js/speedGrader': './src/ui/speedGrader',
+        'js/ui/course': './src/ui/course',
+        'js/ui/account': './src/ui/account',
+        'js/ui/module': './src/ui/module',
     },
     devtool: 'source-map',
     module: {
@@ -37,10 +41,11 @@ module.exports = {
             },
             {
                 exclude: /node_modules/,
-                test: /\.css$/i,
+                test: /\.s?[ca]ss$/i,
                 use: [
                     "style-loader",
-                    "css-loader"
+                    "css-loader",
+                    'sass-loader'
                 ]
             },
         ],
@@ -52,13 +57,13 @@ module.exports = {
 
         new webpack.SourceMapDevToolPlugin({
             exclude: /node_modules/,
-            test: /\.(ts|js|css|mjs|tsx)/
+            test: /\.(ts|js|s?[ca]ss|mjs|tsx)/,
+            filename: '[name][ext].map'
         }),
         new CopyPlugin({
             patterns: [
-                {from: "manifest.json", to: "../."},
-                {from: "README.dist.md", to: "../README.md"},
-                {from: "LICENSE", to: "../."},
+                {from: "./README.dist.md", to: "README.md"},
+                {from: "./manifest.json", to: "manifest.json"},
             ],
         }),
         new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
@@ -69,19 +74,17 @@ module.exports = {
                     break;
             }
         }),
-        ...getHtmlPlugins(["index"]),
+        ...getHtmlPlugins(["popup"]),
     ],
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
-    }
-
-    ,
+    },
     stats: {
         errorDetails: true,
     }
     ,
     output: {
-        path: path.join(__dirname, "dist/js"),
+        path: path.join(__dirname, "dist"),
         filename:
             '[name].js',
         chunkFilename:
