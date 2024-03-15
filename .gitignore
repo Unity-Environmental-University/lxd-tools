@@ -27,3 +27,5 @@ yarn-error.log*
 dist/
 src/canvas/canvasDataDefs.d.ts
 src/canvas/index.d.ts
+.env.dev
+.env.prod
