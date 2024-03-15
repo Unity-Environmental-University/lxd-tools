@@ -25,7 +25,6 @@ yarn-error.log*
 .idea/.gitignore
 .idea/
 dist/
-src/canvas/canvasDataDefs.d.ts
-src/canvas/index.d.ts
+*.d.ts
 .env.dev
 .env.prod
