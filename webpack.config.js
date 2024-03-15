@@ -11,7 +11,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 module.exports = {
     mode: isDevelopment ? 'development' : 'production',
     performance: {
-        hints: isDevelopment? false : 'warning'
+        hints: isDevelopment ? false : 'warning'
     },
     entry: {
         'popup': './src/popup',
@@ -41,11 +41,24 @@ module.exports = {
             },
             {
                 exclude: /node_modules/,
-                test: /\.s?[ca]ss$/i,
+                test: /\.(css|scss)$/i,
                 use: [
                     "style-loader",
                     "css-loader",
-                    'sass-loader'
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: function () {
+                                    return [
+                                        require('precss'),
+                                        require('autoprefixer')
+                                    ];
+                                }
+                            }
+                        },
+                    },
+                    "sass-loader"
                 ]
             },
         ],
