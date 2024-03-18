@@ -3,16 +3,19 @@ import {runtime} from "webextension-polyfill";
 import "./App.scss"
 import 'bootstrap'
 
-async function submitQuery(queryString: string | null) {
-    console.log(queryString)
-    await runtime.sendMessage({
-        searchForCourse: queryString
-    });
-}
-
 function App() {
-
+    const [isDisabled, setIsDisabled] = useState<boolean>(false)
     const [queryString, setQueryString] = useState<string | null>(null)
+
+    async function submitQuery(queryString: string | null) {
+        console.log(queryString)
+        setIsDisabled(true);
+        await runtime.sendMessage({
+            searchForCourse: queryString
+        });
+        setIsDisabled(false);
+    }
+
     return (
         <div className="App container text-center">
             <div className="col card-body search-box">
@@ -23,6 +26,7 @@ function App() {
                 }}>
                     <div className="row">
                         <input
+                            disabled={isDisabled}
                             autoFocus
                             id="search-box"
                             type='text'
@@ -31,7 +35,7 @@ function App() {
                         ></input>
                     </div>
                     <div className={'col'}>
-                        <button className="btn">Search</button>
+                        <button disabled={isDisabled} className="btn">Search</button>
                     </div>
                 </form>
             </div>
