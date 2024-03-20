@@ -28,7 +28,7 @@ async function main() {
     const course : Course | null = await Course.getFromUrl();
     assert(course, "Could not determine course");
     const urlParams = new URLSearchParams(window.location.search);
-    const assignmentId = urlParams.get('assignmentId');
+    const assignmentId = urlParams.get('assignment_id');
     const assignment: Assignment | null = assignmentId? (await Assignment.getById(parseInt(assignmentId), course)) as Assignment : null;
 
 
@@ -38,6 +38,7 @@ async function main() {
     exportOneButton.id = "export_one_rubric_btn";
     exportOneButton.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
+        console.log(`Export ${assignment?.name}`)
         popUp("Exporting scores, please wait...");
         await exportData(course, assignment);
         popClose();
@@ -88,9 +89,7 @@ async function main() {
         popClose();
         return false;
     });
-    exportButtonContainer?.append(exportMultiTermButton);
-
-
+    //exportButtonContainer?.append(exportMultiTermButton);
 }
 
 function createModalDialog() {
@@ -133,7 +132,8 @@ async function exportMultipleTerms(course: Course | null = null, terms:Term[]) {
     let csvRows: string[] = [header];
     totalRows.unshift(header);
     console.log("Writing Final Output Document...")
-    saveDataGenFunc()(csvRows, `${course.baseCode} Multiterm.csv`);
+    saveDataGenFunc()([header].concat(totalRows), `${course.baseCode} Multiterm.csv`);
+    console.log([header].concat(totalRows))
 }
 
 async function exportSectionsInTerm(course: Course | null = null, term: Term | number  | null = null) {
@@ -192,7 +192,7 @@ async function exportData(course: Course, assignment: Assignment | null = null) 
 
         let filename = assignment? assignment?.name : course.fullCourseCode;
 
-        saveDataGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
+        saveDataGenFunc()([header].concat(csvRows), `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
         window.removeEventListener("error", showError);
 
     } catch (e) {
