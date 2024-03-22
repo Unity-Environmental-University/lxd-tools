@@ -1,1 +1,1 @@
-export {};
+import "./speedGrader.scss";

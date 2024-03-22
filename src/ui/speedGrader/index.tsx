@@ -1,5 +1,7 @@
 // This implementation modified from https://github.com/UCBoulder/canvas-userscripts
 
+import "./speedGrader.scss"
+
 import {
     Dict, ICanvasData,
     IAssignmentData, IRubricCriterion, ICourseData, IModuleData, LookUpTable,
@@ -7,6 +9,9 @@ import {
 } from "../../canvas/canvasDataDefs";
 import assert from "assert";
 import {Assignment, Course, Term} from "../../canvas/index";
+import {Modal} from "react-bootstrap"
+import ReactDOM from "react-dom/client";
+import React, {useState} from "react";
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.
 
@@ -18,20 +23,95 @@ let header = [
 ].join(',');
 header += '\n';
 
-let modalDialog = createModalDialog();
+interface IModalView {
+    setMessage: (message: string) => void,
+    open: () => void,
+    close: () => void,
+    setHeader: (value: string) => void,
+    setCanClose: (value: boolean) => void
+}
+
+class ModalView {
+    rootReactDiv: ReactDOM.Root
+    modalStateHandler: IModalStateHandler | null = null
+
+    constructor() {
+        const root = document.createElement("div")
+        root.className = "container"
+        document.body.appendChild(root)
+        const rootDiv = ReactDOM.createRoot(root);
+        this.rootReactDiv = rootDiv;
+
+        rootDiv.render(
+            <React.StrictMode>
+                <ModalDialog sendReference={(modalStateHandler) => this.modalStateHandler = modalStateHandler}/>
+            </React.StrictMode>
+        )
+    }
+
+     popUp(text: string, header: string = "Alert", closeButton: boolean = false) {
+        this.modalStateHandler?.setMessage(text);
+        this.modalStateHandler?.setHeader(header);
+        this.modalStateHandler?.setCanClose(closeButton);
+        this.modalStateHandler?.show();
+    }
+
+    popClose() {
+        this.modalStateHandler?.hide();
+     }
+
+}
+
+let modalDialogView = new ModalView();
+
+interface IModalStateHandler {
+    setMessage: (message: string)=> void,
+    show: () => void,
+    hide: () => void,
+    setCanClose: (canClose:boolean) => void,
+    setHeader: (header:string) => void,
+}
+
+function ModalDialog(props: { sendReference: (state: IModalStateHandler) => void}) {
+    let body = document.querySelector('body');
+    assert(body);
+
+    const [show, setShow] = useState<boolean>(false)
+    const [canClose, setCanClose] = useState<boolean>(false)
+    const [header, setHeader] = useState<string>('Alert')
+    const [message, setMessage] = useState<string>('')
+
+    props.sendReference({
+        setMessage,
+        setHeader,
+        show: () => setShow(true),
+        hide: () => setShow(false),
+        setCanClose,
+    })
+
+    return (<>
+        {header}
+        {message}
+        <Modal show={show}>
+            <Modal.Header closeButton={canClose}>
+                <Modal.Title>{header}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{message}</Modal.Body>
+        </Modal>
+    </>)
+}
+
 async function main() {
     'use strict';
     // utility function for downloading a file
     let exportButtonContainer = document.querySelector('#gradebook_header div.statsMetric');
     if (!exportButtonContainer) return;
 
-    const course : Course | null = await Course.getFromUrl();
+    const course: Course | null = await Course.getFromUrl();
     assert(course, "Could not determine course");
     const urlParams = new URLSearchParams(window.location.search);
     const assignmentId = urlParams.get('assignment_id');
-    const assignment: Assignment | null = assignmentId? (await Assignment.getById(parseInt(assignmentId), course)) as Assignment : null;
-
-
+    const assignment: Assignment | null = assignmentId ? (await Assignment.getById(parseInt(assignmentId), course)) as Assignment : null;
 
     let exportOneButton = document.createElement('button');
     exportOneButton.innerText = "Export Assignment";
@@ -39,9 +119,9 @@ async function main() {
     exportOneButton.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
         console.log(`Export ${assignment?.name}`)
-        popUp("Exporting scores, please wait...");
+        modalDialogView.popUp("Exporting scores, please wait...", "Exporting");
         await exportData(course, assignment);
-        popClose();
+        modalDialogView.popClose();
         return false;
 
     });
@@ -51,10 +131,10 @@ async function main() {
     exportAllButton.innerText = "Export All Assignments";
     exportAllButton.id = "export_all_rubric_btn";
     exportAllButton.addEventListener('click', async (event: MouseEvent) => {
-        popUp("Exporting scores, please wait...");
+        modalDialogView.popUp("Exporting scores, please wait...", "Exporting");
         event.preventDefault();
         await exportData(course);
-        popClose();
+        modalDialogView.popClose();
         return false;
 
     });
@@ -65,9 +145,9 @@ async function main() {
     exportMultiSection.id = "export_sections_rubric_btn";
     exportMultiSection.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
-        popUp("Exporting scores, please wait...");
+        modalDialogView.popUp("Exporting scores, please wait...", "Exporting");
         await exportSectionsInTerm(course);
-        popClose();
+        modalDialogView.popClose();
         return false;
     });
     exportButtonContainer?.append(exportMultiSection);
@@ -77,32 +157,21 @@ async function main() {
     exportMultiTermButton.id = "export_sections_rubric_btn";
     exportMultiTermButton.addEventListener('click', async (event: MouseEvent) => {
         event.preventDefault();
-        popUp("Exporting scores, please wait...");
-        let terms = await Term.searchTerms(null, 'active' );
-        if(terms) {
+        modalDialogView.popUp("Exporting scores, please wait...", "Exporting");
+        let terms = await Term.searchTerms(null, 'active');
+        if (terms) {
             terms = terms.filter((term) => {
                 return new Date().getUTCFullYear() - term.endDate.getUTCFullYear() <= 3;
             })
-        };
+        }
         assert(terms, "No terms found");
         await exportMultipleTerms(course, terms);
-        popClose();
+        modalDialogView.popClose();
         return false;
     });
     //exportButtonContainer?.append(exportMultiTermButton);
 }
 
-function createModalDialog() {
-    let body = document.querySelector('body');
-    assert(body);
-    let infoDialog = document.createElement('dialog');
-    infoDialog.draggable = true;
-    infoDialog.title = "Rubric Export"
-
-    body.appendChild(infoDialog);
-    return infoDialog;
-
-}
 
 function saveDataGenFunc() {
     let a = document.createElement("a");
@@ -118,29 +187,28 @@ function saveDataGenFunc() {
     };
 }
 
-async function exportMultipleTerms(course: Course | null = null, terms:Term[]) {
+async function exportMultipleTerms(course: Course | null = null, terms: Term[]) {
 
     course ??= await Course.getFromUrl();
     assert(course);
     assert(terms, "No terms found");
     const totalRows: string[] = [];
-    for(let term of terms) {
+    for (let term of terms) {
         let rows = await exportSectionsInTerm(course, term);
         totalRows.splice(totalRows.length, 0, ...rows);
     }
 
-    let csvRows: string[] = [header];
     totalRows.unshift(header);
     console.log("Writing Final Output Document...")
     saveDataGenFunc()([header].concat(totalRows), `${course.baseCode} Multiterm.csv`);
     console.log([header].concat(totalRows))
 }
 
-async function exportSectionsInTerm(course: Course | null = null, term: Term | number  | null = null) {
+async function exportSectionsInTerm(course: Course | null = null, term: Term | number | null = null) {
 
     course ??= await Course.getFromUrl();
     assert(course)
-    if(typeof term === "number") {
+    if (typeof term === "number") {
         term = await Term.getTermById(term);
     } else {
         term ??= await course?.getTerm();
@@ -150,18 +218,13 @@ async function exportSectionsInTerm(course: Course | null = null, term: Term | n
     assert(course);
 
     let sections = await Course.getAllByCode(course.baseCode, term);
-    const allSectionRows: string[] = sections? await getRowsForSections(sections) : [];
+    const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
 
     console.log("Writing Final Output Document...")
     saveDataGenFunc()([header].concat(allSectionRows), `${term.code} ${course.baseCode} All Sections.csv`);
     return allSectionRows;
 }
 
-
-/**
- * Uses MAX_SECTION_SLICE_SIZE to set
- * @param sections
- */
 async function getRowsForSections(sections: Course[], sectionsAtATime = MAX_SECTION_SLICE_SIZE) {
     const allSectionRows: string[] = [];
     let sectionsLeftToProcess = sections.slice(0);
@@ -173,7 +236,7 @@ async function getRowsForSections(sections: Course[], sectionsAtATime = MAX_SECT
             saveDataGenFunc()([header].concat(sectionRows), `Rubric Scores ${section.fullCourseCode}.csv`);
             return sectionRows;
         }))
-        for(let rowSet of rowsOfRows) {
+        for (let rowSet of rowsOfRows) {
             for (let row of rowSet) {
                 allSectionRows.push(row);
             }
@@ -186,24 +249,21 @@ async function exportData(course: Course, assignment: Assignment | null = null) 
 
     try {
         window.addEventListener("error", showError);
-
         let csvRows = await csvRowsForCourse(course, assignment)
-
-
-        let filename = assignment? assignment?.name : course.fullCourseCode;
+        let filename = assignment ? assignment?.name : course.fullCourseCode;
 
         saveDataGenFunc()([header].concat(csvRows), `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
         window.removeEventListener("error", showError);
 
     } catch (e) {
-        popClose();
-        popUp(`ERROR ${e} while retrieving assignment data from Canvas. Please refresh and try again.`, "OK");
+        modalDialogView.popClose();
+        modalDialogView.popUp(`ERROR ${e} while retrieving assignment data from Canvas. Please refresh and try again.`, "OK");
         window.removeEventListener("error", showError);
         throw (e);
     }
 }
 
-async function csvRowsForCourse(course: Course, assignment : Assignment | null = null) {
+async function csvRowsForCourse(course: Course, assignment: Assignment | null = null) {
     let csvRows: string[] = [];
     const courseId = course.id;
     const courseData = course.rawData as ICourseData;
@@ -215,7 +275,7 @@ async function csvRowsForCourse(course: Course, assignment : Assignment | null =
     const baseSubmissionsUrl = assignment ? `/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
     const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IUserData[];
     const assignments = await course.getAssignments();
-    const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[] ;
+    const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
     const modules = await getAllPagesAsync(`/api/v1/courses/${courseId}/modules?include[]=items&include[]=content_details`) as IModuleData[];
     const enrollments = await getAllPagesAsync(`/api/v1/courses/${courseId}/enrollments?per_page=5`) as IEnrollmentData[];
 
@@ -274,20 +334,21 @@ interface IGetRowsConfig {
 }
 
 async function getRows({
-    course,
-    enrollment,
-    modules,
-    userSubmissions,
-    assignmentsCollection,
-    instructors,
-    term}: IGetRowsConfig) {
+                           course,
+                           enrollment,
+                           modules,
+                           userSubmissions,
+                           assignmentsCollection,
+                           instructors,
+                           term
+                       }: IGetRowsConfig) {
     const {user} = enrollment;
     const singleUserSubmissions = userSubmissions.filter(a => a.user_id === user.id);
     const {course_code} = course;
     const sectionMatch = course_code.match(/-\s*(\d+)$/);
     const baseCodeMatch = course_code.match(/([a-zA-Z]{4}\d{3})/);
-    const section: string | null = sectionMatch? sectionMatch[1] : null;
-    const baseCode = baseCodeMatch? baseCodeMatch[1] : null;
+    const section: string | null = sectionMatch ? sectionMatch[1] : null;
+    const baseCode = baseCodeMatch ? baseCodeMatch[1] : null;
 
     let instructorName
     if (instructors.length > 1) {
@@ -393,7 +454,7 @@ async function getRows({
             }
             // Sort into same order as column order
             let critOrder = criteriaInfo?.order;
-            if(critOrder) {
+            if (critOrder) {
                 critAssessments.sort(function (a, b) {
                     assert(critOrder);
                     return critOrder[a.id] - critOrder[b.id];
@@ -404,9 +465,9 @@ async function getRows({
                 let criterion = criteriaInfo?.critsById[critAssessment.id];
 
                 rows.push(submissionBaseRow.concat([
-                    criterion? criterion.id : critAssessment.id,
+                    criterion ? criterion.id : critAssessment.id,
                     Number(critIndex) + 1,
-                    criterion? criterion.description : "-REMOVED-",
+                    criterion ? criterion.description : "-REMOVED-",
                     critAssessment.points,
                     criterion?.points
                 ]));
@@ -438,7 +499,7 @@ function csvEncode(string: string) {
 }
 
 function showError(event: ErrorEvent) {
-    popUp(event.message);
+    modalDialogView.popUp(event.message, "Error", true);
     window.removeEventListener("error", showError);
 }
 
@@ -454,7 +515,7 @@ function getModuleInfo(contentItem: ICanvasData, modules: IModuleData[], assignm
 
     for (let module of modules) {
         let match = module.name.match(regex);
-        let weekNumber = !match? null : parseInt(match[1]);
+        let weekNumber = !match ? null : parseInt(match[1]);
         if (!weekNumber) {
             for (let moduleItem of module.items) {
                 if (!moduleItem.hasOwnProperty('title')) {
@@ -472,7 +533,7 @@ function getModuleInfo(contentItem: ICanvasData, modules: IModuleData[], assignm
             continue;
         }
         return {
-            weekNumber: weekNumber == null? '-' : weekNumber,
+            weekNumber: weekNumber == null ? '-' : weekNumber,
             moduleName: module.name,
             type: moduleItem.type,
             numberInModule: moduleItem.numberInModule
@@ -498,8 +559,8 @@ function getItemInModule(contentItem: ICanvasData, module: IModuleData, assignme
     for (let moduleItem of module.items) {
 
         let moduleItemAssignment = assignmentsCollection.getContentById(moduleItem.content_id);
-        if (assignmentsCollection.getModuleItemType(moduleItem) !== type){
-          continue;
+        if (assignmentsCollection.getModuleItemType(moduleItem) !== type) {
+            continue;
         }
 
         if (moduleItem.content_id === contentId) {
@@ -512,7 +573,7 @@ function getItemInModule(contentItem: ICanvasData, module: IModuleData, assignme
             return moduleItem;
         }
 
-        if (type === 'Discussion' && !moduleItemAssignment?.hasOwnProperty('rubric')){
+        if (type === 'Discussion' && !moduleItemAssignment?.hasOwnProperty('rubric')) {
             continue;
         }
 
@@ -521,12 +582,12 @@ function getItemInModule(contentItem: ICanvasData, module: IModuleData, assignme
 }
 
 
-
 interface CriteriaInfo {
     order: LookUpTable<number>,
-    ratingDescriptions : LookUpTable<Dict>,
+    ratingDescriptions: LookUpTable<Dict>,
     critsById: LookUpTable<IRubricCriterion>
 }
+
 /**
  * Fill out the csv header and map criterion ids to sort index
  * Also create an object that maps criterion ids to an object mapping rating ids to descriptions
@@ -534,7 +595,7 @@ interface CriteriaInfo {
  * The assignment from canvas api
  * @returns {{critRatingDescs: *[], critsById: *[], critOrder: *[]}}
  */
-function getCriteriaInfo(assignment:IAssignmentData): CriteriaInfo| null {
+function getCriteriaInfo(assignment: IAssignmentData): CriteriaInfo | null {
     if (!assignment || !assignment.hasOwnProperty('rubric')) {
         return null;
     }
@@ -556,19 +617,9 @@ function getCriteriaInfo(assignment:IAssignmentData): CriteriaInfo| null {
     return {order, ratingDescriptions, critsById}
 }
 
-function popUp(text:string, closeButton: string | null=null) {
-    modalDialog.innerHTML = `<p>${text}</p>`;
-    if (closeButton) {modalDialog.innerHTML += `\n<form method="dialog"><button>${closeButton}</button></form>`}
-    modalDialog.showModal();
-}
-
-function popClose() {
-    modalDialog.close()
-
-}
 
 async function getAllPagesAsync(url: string) {
-    return  getRemainingPagesAsync(url, []);
+    return getRemainingPagesAsync(url, []);
 }
 
 async function getRemainingPagesAsync(url: string, listSoFar: ICanvasData[]) {
@@ -604,6 +655,7 @@ class AssignmentsCollection {
     public discussionsById: LookUpTable<IDiscussionData>;
     public assignmentsByDiscussionId: LookUpTable<IAssignmentData>;
     public assignmentsByQuizId: LookUpTable<IAssignmentData>;
+
     constructor(assignments: IAssignmentData[]) {
         this.assignmentsById = {}
         for (let assignment of assignments) {
@@ -656,11 +708,17 @@ class AssignmentsCollection {
      * @returns {string}
      */
     getAssignmentContentType(contentItem: ICanvasData): ModuleItemType {
-        if(contentItem.hasOwnProperty('submission_types')) {
-            if (contentItem.submission_types.includes('external_tool')) { return 'ExternalTool'}
+        if (contentItem.hasOwnProperty('submission_types')) {
+            if (contentItem.submission_types.includes('external_tool')) {
+                return 'ExternalTool'
+            }
         }
-        if(contentItem.hasOwnProperty('discussion_topic')) { return 'Discussion'}
-        if(contentItem.hasOwnProperty('quiz_id')) { return 'Quiz'}
+        if (contentItem.hasOwnProperty('discussion_topic')) {
+            return 'Discussion'
+        }
+        if (contentItem.hasOwnProperty('quiz_id')) {
+            return 'Quiz'
+        }
         let id = contentItem?.id;
 
         if (this.assignmentsByQuizId.hasOwnProperty(id)) {
@@ -679,4 +737,4 @@ class AssignmentsCollection {
     }
 }
 
-main();
+main().finally(() => console.log("Finished setup"));
