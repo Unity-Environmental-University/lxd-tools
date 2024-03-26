@@ -250,11 +250,20 @@ async function fetchApiJson(url: string, config: ICanvasCallConfig | null = null
     return await fetchJson(url, config);
 }
 
-async function fetchOneApiJson(url: string, config: ICanvasCallConfig | null = null) {
+async function fetchOneKnownApiJson(url: string, config: ICanvasCallConfig | null = null) {
     let result = await fetchApiJson(url, config);
+    assert(result);
     if (Array.isArray(result)) return result[0];
     return <ICanvasData>result;
 }
+
+async function fetchOneUnknownApiJson(url: string, config: ICanvasCallConfig | null = null) {
+    let result = await fetchApiJson(url, config);
+    if(!result) return null;
+    if (Array.isArray(result) && result.length > 0) return result[0];
+    return <ICanvasData>result;
+}
+
 
 /**
  *  A base class for objects that interact with the Canvas API
@@ -280,9 +289,15 @@ export class BaseCanvasObject {
         return JSON.stringify(this.canvasData);
     }
 
-    getItem(item: string) {
-        return this.canvasData[item] || null;
+    getItem<T>(item: string) {
+        return this.canvasData[item] as T;
     }
+
+    setItem<T>(key: string, value: T) {
+        this.canvasData[key] = value;
+        return value;
+    }
+
 
     get myClass() {
         return (<typeof BaseContentItem>this.constructor)
@@ -292,7 +307,6 @@ export class BaseCanvasObject {
         assert(this.myClass.nameProperty);
         return this.myClass.nameProperty;
     }
-
 
     get contentUrlPath(): null | string {
         const constructor = <typeof BaseCanvasObject>this.constructor;
@@ -373,8 +387,8 @@ export class BaseCanvasObject {
 
     get name() {
         let nameProperty = this.getClass().nameProperty;
-        assert(nameProperty)
-        return this.getItem(nameProperty);
+        if (!nameProperty) return 'NAME PROPERTY NOT SET'
+        return this.getItem<string>(nameProperty);
     }
 
     async saveData(data: Dict) {
@@ -484,7 +498,6 @@ export class Course extends BaseCanvasObject {
         if (!url) url = document.documentURI;
 
         for (let class_ of this.contentClasses) {
-            console.log(class_, class_.contentUrlPart);
             if (class_.contentUrlPart && url.includes(class_.contentUrlPart)) return class_;
         }
         return null;
@@ -492,7 +505,7 @@ export class Course extends BaseCanvasObject {
 
 
     static async getById(courseId: number, config: ICanvasCallConfig | undefined = undefined) {
-        const data = await fetchOneApiJson(`courses/${courseId}`, config);
+        const data = await fetchOneKnownApiJson(`courses/${courseId}`, config);
         return new Course(data);
     }
 
@@ -596,7 +609,6 @@ export class Course extends BaseCanvasObject {
         return (this.canvasData as ICourseData).enrollment_term_id;
     }
 
-
     async getTerm(): Promise<Term | null> {
         if (this.termId) return Term.getTermById(this.termId)
         else return null;
@@ -613,6 +625,14 @@ export class Course extends BaseCanvasObject {
 
     get isPublished() {
         return this.canvasData['workflow_state'] === 'available';
+    }
+
+    get start() {
+        return new Date(this.getItem<string>('start_at'));
+    }
+
+    get end() {
+        return new Date(this.getItem<string>('end_at'));
     }
 
     async getModules(): Promise<IModuleData[]> {
@@ -752,7 +772,7 @@ export class Course extends BaseCanvasObject {
 
     async getFrontPage() {
         try {
-            const data = await fetchOneApiJson(`${this.contentUrlPath}/front_page`);
+            const data = await fetchOneKnownApiJson(`${this.contentUrlPath}/front_page`);
             return new Page(data, this);
         } catch (error) {
             return null;
@@ -824,7 +844,7 @@ export class Course extends BaseCanvasObject {
             'course[blueprint_restrictions][availability_dates]': 1,
         };
 
-        this.canvasData = await fetchOneApiJson(url, {
+        this.canvasData = await fetchOneKnownApiJson(url, {
             fetchInit: {
                 method: 'PUT',
                 body: JSON.stringify(payload)
@@ -838,7 +858,7 @@ export class Course extends BaseCanvasObject {
         const payload = {
             'course[blueprint]': false,
         };
-        this.canvasData = await fetchOneApiJson(url, {
+        this.canvasData = await fetchOneKnownApiJson(url, {
             fetchInit: {
                 method: 'PUT',
                 body: JSON.stringify(payload)
@@ -854,7 +874,7 @@ export class Course extends BaseCanvasObject {
 
     async publish() {
         const url = `courses/${this.id}`;
-        const courseData = await fetchOneApiJson(url, {
+        const courseData = await fetchOneKnownApiJson(url, {
             fetchInit: {
                 method: 'PUT',
                 body: JSON.stringify({'offer': true})
@@ -915,7 +935,7 @@ export class Course extends BaseCanvasObject {
         }
 
         const url = `/courses/${this.id}/reset_content`;
-        const data = await fetchOneApiJson(url, {fetchInit: {method: 'POST'}});
+        const data = await fetchOneKnownApiJson(url, {fetchInit: {method: 'POST'}});
         this.canvasData['id'] = data.id;
 
         return false;
@@ -1032,6 +1052,20 @@ export class Course extends BaseCanvasObject {
 
     public getPages(config: ICanvasCallConfig | null = null) {
         return Page.getAllInCourse(this, config) as Promise<Page[]>;
+    }
+
+    static async exists(baseCode: string, accountId: number | number[] | null = null, config:ICanvasCallConfig | null = null) {
+        if(!accountId) accountId = (await Account.getRootAccount()).id;
+        if(!Array.isArray(accountId)) {
+            accountId = [accountId];
+        }
+        let foundCount = 0;
+        for(let id of accountId) {
+            let url = this.getAllUrl(null, id)
+            let data = fetchOneUnknownApiJson(url);
+            if(Array.isArray(data) && data.length > 0) return true;
+        }
+        return false;
     }
 }
 
@@ -1285,7 +1319,7 @@ export class Page extends BaseContentItem {
 
     async applyRevision(revision: Dict) {
         const revisionId = revision['revision_id'];
-        let result = await fetchOneApiJson(`${this.contentUrlPath}/revisions/${revisionId}?revision_id=${revisionId}`);
+        let result = await fetchOneKnownApiJson(`${this.contentUrlPath}/revisions/${revisionId}?revision_id=${revisionId}`);
         this.canvasData[this.bodyKey] = result['body'];
         this.canvasData[this.nameKey] = result['title'];
     }
@@ -1342,10 +1376,7 @@ export class RubricAssociation extends BaseContentItem {
 }
 
 export class Term extends BaseCanvasObject {
-
-    get code() {
-        return this.canvasData['name'];
-    }
+    static nameProperty = "name";
 
     static async getTerm(code: string, workflowState: 'all' | 'active' | 'deleted' = 'all', config: ICanvasCallConfig | undefined = undefined) {
         const terms = await this.searchTerms(code, workflowState, config);
@@ -1358,7 +1389,7 @@ export class Term extends BaseCanvasObject {
     static async getTermById(termId: number, config: ICanvasCallConfig | null = null) {
         let account = await Account.getRootAccount();
         let url = `accounts/${account.id}/terms/${termId}`;
-        let termData = await fetchApiJson(url) as ICanvasData | null;
+        let termData = await fetchApiJson(url) as ITermData | null;
         if (termData) return new Term(termData);
         return null;
     }
@@ -1400,6 +1431,10 @@ export class Term extends BaseCanvasObject {
         return terms.map(term => new Term(term));
     }
 
+    get courseCount(): number {
+        return this.getItem('course_count');
+    }
+
     get startDate(): Date {
         return new Date(this.data.start_at);
     }
@@ -1407,8 +1442,8 @@ export class Term extends BaseCanvasObject {
     get endDate(): Date {
         return new Date(this.data.end_at);
     }
-}
 
+}
 
 export class NotImplementedException extends Error {
 }
