@@ -872,12 +872,36 @@ export class Course extends BaseCanvasObject {
         //delete this.associatedCourses;
     }
 
+    static async publishAll(courses: number[] | Course[], accountId:number) {
+
+        if(courses.length == 0 ) return false;
+        const courseIds = courses.map((course) => {
+           if(course instanceof Course) {
+               return course.id;
+           }
+           return course;
+        })
+
+        const url = `accounts/${accountId}/courses`;
+        const data = {
+            'event': 'offer',
+            'course_ids' : courseIds,
+        }
+        return await fetchOneUnknownApiJson(url, {
+            fetchInit : {
+                method: 'PUT',
+                body: formDataify(data),
+            }
+        })
+    }
+
+
     async publish() {
         const url = `courses/${this.id}`;
         const courseData = await fetchOneKnownApiJson(url, {
             fetchInit: {
                 method: 'PUT',
-                body: JSON.stringify({'offer': true})
+                body: formDataify({'offer': true})
             }
         });
         console.log(courseData);
@@ -1450,7 +1474,6 @@ export class NotImplementedException extends Error {
 
 export class CourseNotFoundException extends Error {
 }
-
 
 function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
     //originalClass.contentUrlPart =

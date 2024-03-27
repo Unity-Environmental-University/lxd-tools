@@ -1,13 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import PopUpApp from './PopUpApp';
+import PublishApp from "./PublishApp";
+import assert from "assert";
 
 const root = document.createElement("div")
-root.className = "container"
-document.body.appendChild(root)
+const el = document.body.querySelector("#course_status")
+assert(el);
+el.append(root);
+
 const rootDiv = ReactDOM.createRoot(root);
 rootDiv.render(
   <React.StrictMode>
-    <PopUpApp />
+    <PublishApp />
   </React.StrictMode>
 );

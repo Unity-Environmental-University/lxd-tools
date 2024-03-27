@@ -1,9 +1,9 @@
 import {useState} from "react";
 import {runtime} from "webextension-polyfill";
-import "./App.scss"
+import "./PopUpApp.scss"
 import 'bootstrap'
 
-function App() {
+function PopUpApp() {
     const [isDisabled, setIsDisabled] = useState<boolean>(false)
     const [queryString, setQueryString] = useState<string | null>(null)
 
@@ -17,7 +17,7 @@ function App() {
     }
 
     return (
-        <div className="App container text-center">
+        <div className="PopUpApp container text-center">
             <div className="col card-body search-box">
                 <h1>Course Navigation</h1>
                 <form onSubmit={async (e) => {
@@ -43,4 +43,4 @@ function App() {
     );
 }
 
-export default App;
+export default PopUpApp;

@@ -18,7 +18,7 @@ module.exports = {
 
         'js/background': './src/background',
         'js/content': './src/content',
-        'js/canvas': './src/canvas',
+        'js/publish': './src/publish',
         'js/pageFixes': './src/content/pageFixes.js',
         'js/speedGrader': './src/ui/speedGrader',
         'js/ui/course': './src/ui/course',

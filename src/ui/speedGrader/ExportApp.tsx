@@ -26,7 +26,7 @@ let header = [
 ].join(',');
 header += '\n';
 
-function App() {
+function ExportApp() {
     const urlParams = new URLSearchParams(window.location.search);
     const assignmentId = urlParams.get('assignment_id');
 
@@ -796,4 +796,5 @@ class AssignmentsCollection {
     }
 }
 
-export default App
+// @ts-ignore
+export default ExportApp

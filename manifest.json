@@ -33,6 +33,10 @@
       "run_at" : "document_end"
     },
     {
+      "matches" : ["*://*.instructure.com/**/settings"],
+      "js": ["js/publish.js"]
+    },
+    {
       "matches" : ["*://*.instructure.com/courses/*/modules"],
       "js" : ["js/ui/module.js"],
       "run_at" : "document_end"
