@@ -1,9 +1,10 @@
-
 @import "react-datepicker/dist/react-datepicker.css";
+@import "../ui/modal/modal.scss";
 
-#publish-modal{
+#lxd-publish-interface {
+  .button-container {
+    display: flex;
+    flex-direction: row-reverse;
 
-  width: 200px;
-  height: 200px;
-  margin: auto;
+  }
 }

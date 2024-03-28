@@ -11,7 +11,7 @@ import {
     IModuleData,
     IModuleItemData,
     IPageData,
-    ITermData,
+    ITermData, IUserData,
     LookUpTable,
     ModuleItemType
 } from "./canvasDataDefs";
@@ -607,6 +607,10 @@ export class Course extends BaseCanvasObject {
 
     get termId(): number | null {
         return (this.canvasData as ICourseData).enrollment_term_id;
+    }
+
+    async getInstructors(): Promise<IUserData[]|null> {
+        return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
     }
 
     async getTerm(): Promise<Term | null> {
