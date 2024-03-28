@@ -12,7 +12,8 @@
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
-    width: auto;
+    max-width: 1200px;
+    min-width: 400px;
   }
 
   .lxd-close {
@@ -20,12 +21,11 @@
     float: right;
     font-size: 28px;
     font-weight: bold;
-
-    &:hover, &:focus {
-      color: black;
-      text-decoration: none;
-      cursor: pointer;
-    }
+  }
+  .lxd-close:hover, .lxd-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
   }
 
   .closing {

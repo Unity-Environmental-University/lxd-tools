@@ -26,7 +26,7 @@ interface ICanvasCallConfig extends Dict {
 }
 
 interface IUpdateCallback {
-    (current: number, total: number): Promise<number>
+    (current: number, total: number, message: string | undefined) : void
 }
 
 

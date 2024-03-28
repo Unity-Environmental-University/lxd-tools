@@ -1,16 +1,13 @@
 @import "react-datepicker/dist/react-datepicker.css";
 @import "../ui/modal/modal.scss";
 
-#lxd-publish-interface {
-  .button-container {
-    display: flex;
-    flex-direction: row-reverse;
 
-  }
+
+
+#lxd-publish-interface, #lxd-import-interface {
 
   .course-row:nth-child(odd) {
       background-color: #f0f0f0;
-
   }
 
   .course-row {
@@ -18,4 +15,11 @@
       text-decoration: underline;
     }
   }
+  .button-container {
+    display: flex;
+    flex-direction: row-reverse;
+
+  }
+
 }
+
