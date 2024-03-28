@@ -610,6 +610,7 @@ export class Course extends BaseCanvasObject {
     }
 
     async getInstructors(): Promise<IUserData[]|null> {
+        console.log("Getting instructors");
         return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
     }
 

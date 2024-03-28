@@ -7,4 +7,15 @@
     flex-direction: row-reverse;
 
   }
+
+  .course-row:nth-child(odd) {
+      background-color: #f0f0f0;
+
+  }
+
+  .course-row {
+    a {
+      text-decoration: underline;
+    }
+  }
 }

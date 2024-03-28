@@ -50,7 +50,7 @@ const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, children}) => {
                     aria-modal="true"
                     aria-labelledby="modal-title"
                 >
-                    <div className="modal-content container" id={id}  role="document">
+                    <div className="modal-content" id={id}  role="document">
                         <div className="modal-body">{children}</div>
                     </div>
                 </div>

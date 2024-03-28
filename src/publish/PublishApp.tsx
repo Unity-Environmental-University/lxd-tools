@@ -44,16 +44,20 @@ function PublishApp() {
 
     function openButton() {
 
-            return (course && <Button disabled={!isBlueprint}
-                            className="ui-button"
-                            onClick={(e) => setShow(true)}
-            >{isBlueprint ? "Publish Sections.." : "Not A Blueprint"}</Button>)
+        return (course && <Button disabled={!isBlueprint}
+                                  className="ui-button"
+                                  onClick={(e) => setShow(true)}
+        >{isBlueprint ? "Publish Sections.." : "Not A Blueprint"}</Button>)
     }
 
     function associatedCoursesTable() {
-        return (<>
+        return (<div className={'course-table'}>
+            <div className={'row'}>
+                <div className={'col-sm-9'}><strong>Code</strong></div>
+                <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
+            </div>
             {associatedCourses && associatedCourses.map((course) => (<CourseRow course={course}/>))}
-        </>)
+        </div>)
     }
 
     return (<>
@@ -61,12 +65,17 @@ function PublishApp() {
         <Modal id={'lxd-publish-interface'} isOpen={show} requestClose={() => setShow(false)}>
             <div className={'container'}>
                 <div className='row'>
-                    <div className='col-sm-8'>
-                        Click this button to publish all sections associated with this blueprint. These sections are:
+                    <div className={'col-xs-12'}>
+                        <h3>Publish Sections</h3>
+                    </div>
+                    <div className={'col-xs-12 col-sm-8'}>
+                        Publish sections associated with this blueprint
+                    </div>
+                    <div className='col-xs-12'>
                         {associatedCoursesTable()}
                     </div>
-                    <div className='col-sm-4'>
-                        <Button className="btn pull-end" disabled={!(course?.isBlueprint)} onClick={publishCourses}>Publish
+                    <div className={'col-xs-12 button-container'}>
+                        <Button className="btn" disabled={!(course?.isBlueprint)} onClick={publishCourses}>Publish
                             Sections</Button>
 
                     </div>
@@ -80,18 +89,21 @@ function PublishApp() {
 type CourseRowProps = {
     course: Course,
 }
-function CourseRow({ course }:CourseRowProps) {
 
+function CourseRow({course}: CourseRowProps) {
     const [instructors, setInstructors] = useState<IUserData[]>([])
     useEffect(() => {
-        if(!instructors) {
+        if (instructors.length <= 0) {
             course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
         }
     }, [course, instructors])
 
-    return (<div className={'row'}>
-        <div className={'col-sm-6'}>{course.courseCode}</div>
-        <div className={'col-sm-6'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
+    console.log('instructors')
+    return (<div className={'row course-row'}>
+        <div className={'col-xs-9'}>
+            <a href={`/courses/${course.id}`} target={"blank_"}>{course.getItem<string>('course_code')}</a>
+        </div>
+        <div className={'col-xs-3'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
     </div>)
 }
 
