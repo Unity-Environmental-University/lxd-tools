@@ -1,57 +1,118 @@
-export interface ITermsData extends ICanvasData{
-    enrollment_terms : ITermData[],
+export interface ITermsData extends ICanvasData {
+    enrollment_terms: ITermData[],
 }
 
 export type TermWorkflowState = 'all' | 'active' | 'deleted'
 
-export interface ITermData extends ICanvasData{
+export interface ITermData extends ICanvasData {
     start_at: string,
     end_at: string,
     workflow_state: TermWorkflowState,
-    overrides?: Dict,
+    overrides?: Record<string, any>,
     course_count: number
 }
 
-export interface ICanvasData extends Dict{
-    id: number,
-    name?: string,
+export interface ICanvasData extends Record<string, any> {
+
 }
 
-export interface IEnrollmentData extends ICanvasData{
+export interface IEnrollmentData extends ICanvasData {
     user: IUserData
 }
 
-export interface IUserData extends ICanvasData{
+export interface IUserData extends ICanvasData {
+    id: number,
     name: string,
 }
 
 
-export interface ICourseData extends ICanvasData{
+export interface ICourseData extends ICanvasData {
+    id: number,
+    sis_course_id?: string,
+    uuid: string,
     name: string,
+    course_code: string,
+    original_name: string,
+    workflow_state: 'available' | 'unpublished' | 'completed' | 'deleted',
+    account_id: number,
+    root_account_id: number,
+    enrollment_term_id: number[] | number,
+    grading_periods?: ICanvasData[] | null,
+    grading_standard_id: number,
+    grade_passback_setting?: "nightly_sync" | "disabled" | '',
+    created_at: string,
+    start_at: string,
+    end_at: string,
+    locale: string,
+    enrollments: number | null,
+    total_students?: number,
+    calendar: ICanvasData,
+    default_view: 'feed' | 'wiki' | 'modules' | 'assignments' | 'syllabus',
+    syllabus_body?: string,
+    needs_grading_count?: number,
+    term?: ITermData,
+    course_progress: ICanvasData,
+    apply_assignment_group_weights: boolean,
+    permissions: Record<string, boolean>,
+    public_description: string,
+    storage_quota_mb: number,
+    storage_quota_used_mb: number,
+    hide_final_grades: boolean,
+    license: string,
+    allow_student_assignment_edits: boolean,
+    allow_wiki_comments: boolean,
+    allow_student_forum_attachments: boolean,
+    open_enrollment: boolean,
+    self_enrollment: boolean,
+    restrict_enrollments_to_course_dates: boolean,
+    course_format: string,
+    access_restricted_by_date?: boolean
+    time_zone: string,
+    blueprint: boolean,
+    blueprint_restrictions: IBlueprintContentRestrictions,
+    blueprint_restrictions_by_object_type: {
+        assignment?: IBlueprintContentRestrictions,
+        attachment?: IBlueprintContentRestrictions,
+        discussion_topic?: IBlueprintContentRestrictions,
+        quiz?: IBlueprintContentRestrictions,
+        wiki_page?: IBlueprintContentRestrictions
+    }
+    template: boolean
+
+}
+export interface IBlueprintContentRestrictions {
+    content: boolean,
+    points: boolean,
+    due_dates: boolean,
+    availability_dates: boolean
 }
 
 
-export interface IPageData extends ICanvasData{
+export interface IPageData extends ICanvasData {
     page_id: number,
     url: string,
     title: string,
 }
 
-export interface IAssignmentData extends ICanvasData{
+export interface IAssignmentData extends ICanvasData {
+    id: number,
     name: string,
     rubric: IRubricCriterion[]
 }
 
-export interface IDiscussionData extends ICanvasData{
+export interface IDiscussionData extends ICanvasData {
+    id: number,
 
 }
 
-export interface IQuizData extends ICanvasData{
+export interface IQuizData extends ICanvasData {
+    id: number,
 
 }
 
 
-export interface IModuleData extends ICanvasData{
+export interface IModuleData extends ICanvasData {
+    id: number,
     name: string,
     position: number,
     unlock_at: string,
@@ -66,10 +127,11 @@ export interface IModuleData extends ICanvasData{
     published: boolean
 }
 
-export type ModuleItemType  = "Assignment" | "Discussion" | "Quiz" | "ExternalTool" | "ExternalUrl" | "Page"
+export type ModuleItemType = "File" | "Assignment" | "Discussion" | "Quiz" | "ExternalTool" | "ExternalUrl" | "Page" | "Subheader"
+export type RestrictModuleItemType = 'assignment'|'attachment'|'discussion_topic'|'external_tool'|'lti-quiz'|'quiz'|'wiki_page'
 
 
-export interface IModuleItemData extends ICanvasData{
+export interface IModuleItemData extends ICanvasData {
     module_id: number,
     position: number,
     title: string,
@@ -95,7 +157,7 @@ export interface IModuleItemData extends ICanvasData{
 
 
 export interface IRubricCriterion {
- id: string,
+    id: string,
     description: string | null,
     long_description: string | null,
     points: number,
@@ -110,11 +172,5 @@ export interface IRubricRating {
     points: number,
 }
 
-export interface Dict {
-    [key: string] : any,
-}
-
-export interface LookUpTable<T> {
-    [key: string|number] : T,
-}
+export type LookUpTable<T> = Record<string|number, any>
 

@@ -28,17 +28,4 @@
     cursor: pointer;
   }
 
-  .closing {
-    animation: closing-animation 0.3s ease forwards;
-  }
-
-  @keyframes closing-animation {
-    0% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-
 }

@@ -1,7 +1,6 @@
-import { Dict } from "./canvasDataDefs";
 interface IContentTest {
     message?: string;
-    userdata?: Dict;
+    userdata?: Record<string, any>;
     (pageBody: string): boolean | RegExpMatchArray | null;
 }
 /**
