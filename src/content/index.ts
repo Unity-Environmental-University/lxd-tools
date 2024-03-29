@@ -1,4 +1,4 @@
-import {Dict, ICanvasData, ModuleItemType} from "../canvas/canvasDataDefs";
+import {ICanvasData, ICourseData, ModuleItemType} from "../canvas/canvasDataDefs";
 import {Course, getModuleWeekNumber} from "../canvas";
 import {extension, runtime} from "webextension-polyfill";
 
@@ -35,7 +35,7 @@ async function openTargetCourse(queryString: string) {
     let targetModuleWeekNumber: number = NaN;
     let targetIndex: number = NaN;
     let contentSearchString: string | null = null;
-    const paramTypeLut: Dict = {
+    const paramTypeLut: Record<string, string> = {
         a: "Assignment",
         d: "Discussion",
         q: "Quiz",
@@ -89,7 +89,7 @@ async function openTargetCourse(queryString: string) {
  * @param maxMatches{Number|null} If courses is longer than this, return null
  * @returns {*|null} The best matching course
  */
-function getCourseToNavTo(searchCode: string, courses: ICanvasData[], maxMatches: number | null = null): any | null {
+function getCourseToNavTo(searchCode: string, courses: ICourseData[], maxMatches: number | null = null): any | null {
     if (typeof courses === 'undefined' || courses.length === 0 || (maxMatches && courses.length < maxMatches)) {
         return null;
     } else if (courses.length === 1) {
@@ -97,10 +97,11 @@ function getCourseToNavTo(searchCode: string, courses: ICanvasData[], maxMatches
     } else {
         let exact_code_search = /[A-Za-z-_.]+_?[a-zA-Z]{3}\d{4}/
         for (let course of courses) {
-            let match_code = course.course_code.search(exact_code_search);
-            console.log(match_code);
-            if (typeof match_code !== 'string') continue;
-            if (match_code && match_code.toLowerCase() === searchCode.toLowerCase()) {
+            const match = course.course_code.match(exact_code_search);
+            const matchCode = match && match[0];
+            console.log(matchCode);
+            if (typeof matchCode !== 'string') continue;
+            if (matchCode.toLowerCase() === searchCode.toLowerCase()) {
                 return course;
             }
         }

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {createPortal} from "react-dom";
 
-// modal component base from ChatGPT-3.
+// Modal component base from ChatGPT-3.
 
 interface ModalProps extends React.PropsWithChildren {
     id?: string,
@@ -31,7 +31,7 @@ const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, children}) => {
         setTimeout(() => {
             setIsClosing(false);
             requestClose();
-        }, 300); // Adjust the duration to match your CSS transition duration
+        }, 0); // Adjust the duration to match your CSS transition duration
     };
 
     const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

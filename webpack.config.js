@@ -13,6 +13,10 @@ module.exports = {
     performance: {
         hints: isDevelopment ? false : 'warning'
     },
+  cache: {
+    type: 'filesystem',
+    allowCollectingMemory: true,
+  },
     entry: {
         'popup': './src/popup',
 

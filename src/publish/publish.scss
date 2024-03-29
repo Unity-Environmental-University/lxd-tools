@@ -1,21 +1,41 @@
-@import "react-datepicker/dist/react-datepicker.css";
-@import "../ui/modal/modal.scss";
+@import "../ui/widgets/Modal/modal.scss";
+@import"https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
+@import"https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp";
 
-#lxd-publish-interface {
+
+
+
+#lxd-publish-interface, #lxd-import-interface {
+
+  .course-row:nth-child(odd) {
+      background-color: #f0f0f0;
+  }
+
+  .course-row {
+
+    a:before {
+      content: '\e89d';
+      font-family: "Material Icons";
+    }
+
+    a.is-published:after {
+      content: '\e92f';
+      color: chartreuse;
+      font-family: "Material Icons";
+    }
+
+    a.unpublished:after {
+      content: '\e644';
+      color: mistyrose;
+      font-family: "Material Icons";
+    }
+
+  }
   .button-container {
     display: flex;
     flex-direction: row-reverse;
 
   }
 
-  .course-row:nth-child(odd) {
-      background-color: #f0f0f0;
-
-  }
-
-  .course-row {
-    a {
-      text-decoration: underline;
-    }
-  }
 }
+

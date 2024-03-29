@@ -3,7 +3,8 @@ import React, {useEffect, useState} from 'react';
 import {Button} from 'react-bootstrap'
 import {Course} from "../canvas";
 import assert from "assert";
-import Modal from "../ui/modal"
+import Modal from "../ui/widgets/Modal"
+import PublishCourseRow from "./PublishCourseRow"
 import {IUserData} from "../canvas/canvasDataDefs";
 
 console.log("running")
@@ -20,13 +21,11 @@ function PublishApp() {
                 const tempCourse = await Course.getFromUrl();
                 if (tempCourse) {
                     setAssociatedCourses(await tempCourse.getAssociatedCourses() ?? [])
+                    setCourse(tempCourse)
+                    setIsBlueprint(tempCourse?.isBlueprint)
                 }
-                setCourse(tempCourse)
-                setIsBlueprint(tempCourse?.isBlueprint)
             }
-
         }
-
         getCourse().then();
     }, [course]);
 
@@ -56,14 +55,15 @@ function PublishApp() {
                 <div className={'col-sm-9'}><strong>Code</strong></div>
                 <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
             </div>
-            {associatedCourses && associatedCourses.map((course) => (<CourseRow course={course}/>))}
+            {associatedCourses && associatedCourses.map((course) => (<PublishCourseRow course={course}/>))}
         </div>)
     }
 
     return (<>
+
         {openButton()}
         <Modal id={'lxd-publish-interface'} isOpen={show} requestClose={() => setShow(false)}>
-            <div className={'container'}>
+            <div>
                 <div className='row'>
                     <div className={'col-xs-12'}>
                         <h3>Publish Sections</h3>
@@ -75,8 +75,7 @@ function PublishApp() {
                         {associatedCoursesTable()}
                     </div>
                     <div className={'col-xs-12 button-container'}>
-                        <Button className="btn" disabled={!(course?.isBlueprint)} onClick={publishCourses}>Publish
-                            Sections</Button>
+                        <Button className="btn" disabled={!(course?.isBlueprint)} onClick={publishCourses}>Publish Sections</Button>
 
                     </div>
                 </div>
@@ -86,25 +85,51 @@ function PublishApp() {
     </>)
 }
 
-type CourseRowProps = {
+
+type ResetCourseProps = {
     course: Course,
+    show: boolean,
 }
 
-function CourseRow({course}: CourseRowProps) {
-    const [instructors, setInstructors] = useState<IUserData[]>([])
-    useEffect(() => {
-        if (instructors.length <= 0) {
-            course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
-        }
-    }, [course, instructors])
+type MigrationStatusUpdate = {
+    current: number,
+    total: number,
+    message?: string
+}
 
-    console.log('instructors')
-    return (<div className={'row course-row'}>
-        <div className={'col-xs-9'}>
-            <a href={`/courses/${course.id}`} target={"blank_"}>{course.getItem<string>('course_code')}</a>
-        </div>
-        <div className={'col-xs-3'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
-    </div>)
+function ResetCourse({course}: ResetCourseProps) {
+    const [show, setShow] = useState<boolean>(false);
+    const [sourceCourse, setSourceCourse] = useState<Course|null>(null);
+    const [potentialSources, setPotentialSources] = useState<Course[]>([]);
+    const [migrationUpdate, setMigrationUpdate] = useState<MigrationStatusUpdate|undefined>()
+
+    useEffect(()=>{
+        course.getParentCourse().then((course) => {
+            if(course) {
+                setSourceCourse(course);
+
+            }
+        })
+    }, [course])
+
+    async function importDev() {
+        if(!sourceCourse) return;
+        await course.importCourse(sourceCourse, (current, total, message) => {
+            setMigrationUpdate({
+                current,
+                total,
+                message
+            })
+        });
+    }
+
+    return(<>
+        <Button className={'ui-btn'}>Reset/Import Dev</Button>
+        <Modal isOpen={show} requestClose={() => setShow(false)}>
+
+        </Modal>
+    </>)
+
 }
 
 export default PublishApp

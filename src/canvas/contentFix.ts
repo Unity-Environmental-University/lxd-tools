@@ -1,11 +1,10 @@
 import assert from "assert";
-import {Dict} from "./canvasDataDefs";
 
 //NONE OF THIS IS TESTED SINCE REFACTOR
 
 interface IContentTest{
     message?: string
-    userdata?: Dict
+    userdata?: Record<string, any>
     (pageBody: string) : boolean | RegExpMatchArray | null
 }
 

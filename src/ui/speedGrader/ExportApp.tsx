@@ -6,7 +6,6 @@ import DatePicker from "react-datepicker"
 
 import assert from "assert";
 import {
-    Dict,
     IAssignmentData,
     ICanvasData,
     ICourseData, IDiscussionData,
@@ -14,17 +13,18 @@ import {
     IModuleData, IModuleItemData, IRubricCriterion, ITermData,
     IUserData, LookUpTable, ModuleItemType
 } from "../../canvas/canvasDataDefs";
+import {text} from "node:stream/consumers";
 
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.
 
-
-let header = [
+let fileHeader = [
     'Term', 'Instructor', 'Class', 'Section', 'Student Name', 'Student Id', 'Enrollment State',
     'Week Number', 'Module', 'Assignment Type', 'Assignment Number', 'Assignment Id', 'Assignment Title',
     'Submission Status', 'Rubric Id', 'Rubric Line', 'Line Name', 'Score', 'Max Score',
 ].join(',');
-header += '\n';
+fileHeader += '\n';
+
 
 function ExportApp() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -77,7 +77,7 @@ function ExportApp() {
             let csvRows = await csvRowsForCourse(course, assignment)
             let filename = assignment ? assignment?.name : course.fullCourseCode;
             filename ??= "COURSE CODE NOT FOUND"
-            saveDataGenFunc()([header].concat(csvRows), `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
+            saveDataGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
             window.removeEventListener("error", showError);
 
         } catch (e) {
@@ -205,7 +205,7 @@ function DateRangeExportDialog({
                 const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
 
                 console.log("Writing Final Output Document...")
-                saveDataGenFunc()([header].concat(allSectionRows),
+                saveDataGenFunc()(allSectionRows,
                     `${course.baseCode}-${exportStart?.toUTCString()}-${exportEnd?.toUTCString()}.csv`);
                 onFinishedExporting();
                 return allSectionRows;
@@ -233,15 +233,14 @@ function ModalDialog(props: {
 }
 
 
-async function getAllTerms() {
-    return await Term.searchTerms(null, 'active') ?? [];
-}
 
 function saveDataGenFunc() {
     let a = document.createElement("a");
     document.body.appendChild(a);
     a.setAttribute('display', 'none');
     return function (textArray: string[], fileName: string, type = 'text') {
+        textArray = [...textArray];
+        textArray.unshift(fileHeader)
         let blob = new Blob(textArray, {type: type}),
             url = window.URL.createObjectURL(blob);
         a.href = url;
@@ -250,41 +249,6 @@ function saveDataGenFunc() {
         window.URL.revokeObjectURL(url);
     };
 }
-
-async function exportMultipleTerms(course: Course | null = null, terms: Term[]) {
-
-    course ??= await Course.getFromUrl();
-    assert(course);
-    assert(terms, "No terms found");
-    const totalRows: string[] = [];
-    for (let term of terms) {
-        let rows = await exportSectionsInTerm(course, term);
-        totalRows.splice(totalRows.length, 0, ...rows);
-    }
-
-    totalRows.unshift(header);
-    console.log("Writing Final Output Document...")
-    saveDataGenFunc()([header].concat(totalRows), `${course.baseCode} Multiterm.csv`);
-    console.log([header].concat(totalRows))
-}
-
-async function asyncFilter<T>(list: T[], condition: (item: T, index?: number, list?: T[]) => Promise<boolean>) {
-    const outList: T[] = [];
-    for (let item of list) {
-        if (await condition(item)) outList.push(item)
-    }
-    return outList;
-}
-
-const _sectionsByTermId: Record<number, Course[]> = {};
-
-async function getSectionsInTerm(course: Course, term: Term) {
-    if (_sectionsByTermId.hasOwnProperty(term.id)) return _sectionsByTermId[term.id];
-    let code = course.baseCode;
-    _sectionsByTermId[term.id] = await Course.getAllByCode(code, term) ?? [];
-    return _sectionsByTermId[term.id];
-}
-
 
 async function exportSectionsInTerm(course: Course | null = null, term: Term | number | null = null) {
 
@@ -303,7 +267,7 @@ async function exportSectionsInTerm(course: Course | null = null, term: Term | n
     const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
 
     console.log("Writing Final Output Document...")
-    saveDataGenFunc()([header].concat(allSectionRows), `${term.name} ${course.baseCode} All Sections.csv`);
+    saveDataGenFunc()(allSectionRows, `${term.name} ${course.baseCode} All Sections.csv`);
     return allSectionRows;
 }
 
@@ -315,7 +279,7 @@ async function getRowsForSections(sections: Course[], sectionsAtATime = MAX_SECT
         sectionsLeftToProcess = sectionsLeftToProcess.slice(sectionsAtATime);
         const rowsOfRows = await Promise.all(sliceToProcessNow.map(async (section) => {
             const sectionRows = await csvRowsForCourse(section);
-            saveDataGenFunc()([header].concat(sectionRows), `Rubric Scores ${section.fullCourseCode}.csv`);
+            saveDataGenFunc()(sectionRows, `Rubric Scores ${section.fullCourseCode}.csv`);
             return sectionRows;
         }))
         for (let rowSet of rowsOfRows) {
@@ -436,7 +400,7 @@ async function getRows({
         submissions = [entry];
     }
 
-    const rows = [];
+    const rows: (string | null | undefined)[][] = [];
     const baseRow = [
         term.name,
         cachedInstructorName,
@@ -455,7 +419,7 @@ async function getRows({
         let criteriaInfo = getCriteriaInfo(assignment);
 
 
-        course_code.replace(/^.*_?(\[A-Za-z]{4}\d{3}).*$/, /\1\2/)
+        course_code.replace(/^(.*)_?(\[A-Za-z]{4}\d{3}).*$/, '$1$2')
         let moduleInfo = getModuleInfo(assignment, modules, assignmentsCollection);
         assert(moduleInfo);
         let {weekNumber, moduleName, numberInModule, type} = moduleInfo;
@@ -548,7 +512,7 @@ async function getRows({
 }
 
 // escape commas and quotes for CSV formatting
-function csvEncode(string: string) {
+function csvEncode(string: | null | undefined | string) {
 
     if (typeof (string) === 'undefined' || string === null || string === 'null') {
         return '';
@@ -643,7 +607,7 @@ function getItemInModule(contentItem: ICanvasData, module: IModuleData, assignme
 
 interface CriteriaInfo {
     order: LookUpTable<number>,
-    ratingDescriptions: LookUpTable<Dict>,
+    ratingDescriptions: Record<string, Record<string, any>>,
     critsById: LookUpTable<IRubricCriterion>
 }
 
@@ -661,7 +625,7 @@ function getCriteriaInfo(assignment: IAssignmentData): CriteriaInfo | null {
     let rubricCriteria = assignment.rubric;
 
     let order: LookUpTable<number> = {};
-    let ratingDescriptions: LookUpTable<Dict> = {};
+    let ratingDescriptions: Record<string, Record<string, any>> = {};
     let critsById: LookUpTable<IRubricCriterion> = {};
     for (let critIndex in rubricCriteria) {
         let rubricCriterion: IRubricCriterion = rubricCriteria[critIndex];
