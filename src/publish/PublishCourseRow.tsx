@@ -18,7 +18,6 @@ function PublishCourseRow({course}: CourseRowProps) {
         <div className={'col-xs-6'}>
             <a href={`/courses/${course.id}`} target={"blank_"}>{course.getItem<string>('course_code')}</a>
         </div>
-        <div className={'col-xs-3'}>{course.workflowState}</div>
         <div className={'col-xs-3'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
     </div>)
 }
