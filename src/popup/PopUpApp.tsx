@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {runtime} from "webextension-polyfill";
 import "./PopUpApp.scss"
+import "../css/source.scss"
 import 'bootstrap'
 
 function PopUpApp() {
@@ -35,6 +36,7 @@ function PopUpApp() {
                         ></input>
                     </div>
                     <div className={'col'}>
+
                         <button disabled={isDisabled} className="btn">Search</button>
                     </div>
                 </form>

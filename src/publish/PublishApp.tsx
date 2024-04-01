@@ -33,9 +33,9 @@ function PublishApp() {
         const accountId = course?.getItem<number>('account_id');
         assert(accountId);
         await Course.publishAll(associatedCourses, accountId)
-        window.setTimeout(async() => {
+        window.setTimeout(async () => {
             let newAssocCourses = await course?.getAssociatedCourses();
-            if(newAssocCourses) {
+            if (newAssocCourses) {
                 newAssocCourses = [...newAssocCourses];
             } else {
                 newAssocCourses = [];
@@ -52,15 +52,27 @@ function PublishApp() {
         >{isBlueprint ? "Publish Sections.." : "Not A Blueprint"}</Button>)
     }
 
+    function openAll(e: React.MouseEvent) {
+        e.stopPropagation();
+        for (let course of associatedCourses) {
+            window.open(course.courseUrl, "_blank");
+        }
+
+    }
+
     function associatedCourseRows() {
         return (<div className={'course-table'}>
-                <div className={'row'}>
-                    <div className={'col-sm-9'}><strong>Code</strong></div>
-                    <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
+            <div className={'row'}>
+                <div className={'col-sm-9'}>
+
+                    <div><strong>Code</strong></div>
+                    <a href={'#'} onClick={openAll}>Open All</a>
                 </div>
-                {associatedCourses && associatedCourses.map((course) => (
-                    <PublishCourseRow course={course}/>))}
-            </div>)
+                <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
+            </div>
+            {associatedCourses && associatedCourses.map((course) => (
+                <PublishCourseRow course={course}/>))}
+        </div>)
     }
 
 
@@ -81,13 +93,6 @@ function PublishApp() {
                     <div className={'col-xs-12 button-container'}>
                         <Button className="btn" disabled={!(course?.isBlueprint)} onClick={publishCourses}>
                             Publish Sections
-                        </Button>
-                        <Button className={"btn"} disabled={associatedCourses.length === 0} onClick={(e) => {
-                            for(let course of associatedCourses) {
-                                window.open(course.courseUrl, "_blank");
-                            }
-                        }}>
-                            Open All
                         </Button>
 
                     </div>

@@ -13,10 +13,10 @@ module.exports = {
     performance: {
         hints: isDevelopment ? false : 'warning'
     },
-  cache: {
-    type: 'filesystem',
-    allowCollectingMemory: true,
-  },
+    cache: {
+        type: 'filesystem',
+        allowCollectingMemory: true,
+    },
     entry: {
         'popup': './src/popup',
 
@@ -41,10 +41,10 @@ module.exports = {
                             compilerOptions: {noEmit: false},
                         }
                     }],
-                exclude: /node_modules/,
+                exclude: /node_modules|dist/,
             },
             {
-                exclude: /node_modules/,
+                exclude: /node_modules|dist/,
                 test: /\.(css|scss)$/i,
                 use: [
                     "style-loader",
@@ -73,15 +73,25 @@ module.exports = {
         }),
 
         new webpack.SourceMapDevToolPlugin({
-            exclude: /node_modules/,
+            exclude: /node_modules|dist/,
             test: /\.(ts|js|s?[ca]ss|mjs|tsx)/,
             filename: '[name][ext].map'
         }),
         new CopyPlugin({
             patterns: [
                 {from: "./README.dist.md", to: "README.md"},
-                {from: "./manifest.json", to: "manifest.json"},
-            ],
+                {
+                    from: "./manifest.json",
+                    to: "manifest.json",
+                    transform: (content, path) => {
+                        let packageJson = require('./package.json');
+                        console.log(packageJson.toString())
+                        let manifest = JSON.parse(content.toString());
+                        manifest.version = packageJson.version;
+                        return JSON.stringify(manifest, null, 2);
+                    }
+                }
+            ]
         }),
         new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
             const mod = resource.request.replace(/^node:/, "");
