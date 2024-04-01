@@ -13,22 +13,36 @@
 
   .course-row {
 
-    a:before {
+    a:after {
       content: '\e89d';
       font-family: "Material Icons";
     }
 
-    a.is-published:after {
+    a.available:before {
       content: '\e92f';
-      color: chartreuse;
+      color: #6ca538;
       font-family: "Material Icons";
     }
 
-    a.unpublished:after {
-      content: '\e644';
-      color: mistyrose;
+    a.unpublished:before {
+      content: '\f236';
+      color: #888;
       font-family: "Material Icons";
     }
+
+    a.completed:before {
+      content: '\e1c6';
+      color: #de7040;
+      font-family: "Material Icons";
+    }
+
+    a.deleted:before {
+      content: '\e92b';
+      color: #000;
+      font-family: "Material Icons";
+    }
+
+
 
   }
   .button-container {

@@ -525,7 +525,11 @@ export class Course extends BaseCanvasObject<ICourseData> {
 
     }
 
-
+    async reload() {
+        const id = this.id;
+        const reloaded = await Course.getCourseById(id);
+        this.canvasData = reloaded.rawData;
+    }
 
     get contentUrlPath() {
         return `courses/${this.id}`;

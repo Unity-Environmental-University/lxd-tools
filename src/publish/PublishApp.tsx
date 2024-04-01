@@ -5,7 +5,6 @@ import {Course} from "../canvas";
 import assert from "assert";
 import Modal from "../ui/widgets/Modal"
 import PublishCourseRow from "./PublishCourseRow"
-import {IUserData} from "../canvas/canvasDataDefs";
 
 console.log("running")
 
@@ -29,7 +28,8 @@ function PublishApp() {
         getCourse().then();
     }, [course]);
 
-    function finishedPublishing() {
+    async function finishedPublishing() {
+        setAssociatedCourses(await course?.getAssociatedCourses() ?? []);
         setInfo('Finished Publishing')
     }
 
@@ -38,7 +38,7 @@ function PublishApp() {
         const accountId = course?.getItem<number>('account_id');
         assert(accountId);
         await Course.publishAll(courses, accountId);
-        finishedPublishing();
+        await finishedPublishing();
     }
 
     function openButton() {
@@ -49,18 +49,7 @@ function PublishApp() {
         >{isBlueprint ? "Publish Sections.." : "Not A Blueprint"}</Button>)
     }
 
-    function associatedCoursesTable() {
-        return (<div className={'course-table'}>
-            <div className={'row'}>
-                <div className={'col-sm-9'}><strong>Code</strong></div>
-                <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
-            </div>
-            {associatedCourses && associatedCourses.map((course) => (<PublishCourseRow course={course}/>))}
-        </div>)
-    }
-
     return (<>
-
         {openButton()}
         <Modal id={'lxd-publish-interface'} isOpen={show} requestClose={() => setShow(false)}>
             <div>
@@ -72,10 +61,26 @@ function PublishApp() {
                         Publish sections associated with this blueprint
                     </div>
                     <div className='col-xs-12'>
-                        {associatedCoursesTable()}
+                        <div className={'course-table'}>
+                            <div className={'row'}>
+                                <div className={'col-sm-9'}><strong>Code</strong></div>
+                                <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
+                            </div>
+                            {associatedCourses && associatedCourses.map((course) => (
+                                <PublishCourseRow course={course}/>))}
+                        </div>
                     </div>
                     <div className={'col-xs-12 button-container'}>
-                        <Button className="btn" disabled={!(course?.isBlueprint)} onClick={publishCourses}>Publish Sections</Button>
+                        <Button className="btn" disabled={!(course?.isBlueprint)} onClick={publishCourses}>
+                            Publish Sections
+                        </Button>
+                        <Button className={"btn"} disabled={associatedCourses.length === 0} onClick={(e) => {
+                            for(let course of associatedCourses) {
+                                window.open(course.courseUrl, "_blank");
+                            }
+                        }}>
+                            Open All
+                        </Button>
 
                     </div>
                 </div>
@@ -84,7 +89,6 @@ function PublishApp() {
         </Modal>
     </>)
 }
-
 
 type ResetCourseProps = {
     course: Course,
@@ -99,13 +103,13 @@ type MigrationStatusUpdate = {
 
 function ResetCourse({course}: ResetCourseProps) {
     const [show, setShow] = useState<boolean>(false);
-    const [sourceCourse, setSourceCourse] = useState<Course|null>(null);
+    const [sourceCourse, setSourceCourse] = useState<Course | null>(null);
     const [potentialSources, setPotentialSources] = useState<Course[]>([]);
-    const [migrationUpdate, setMigrationUpdate] = useState<MigrationStatusUpdate|undefined>()
+    const [migrationUpdate, setMigrationUpdate] = useState<MigrationStatusUpdate | undefined>()
 
-    useEffect(()=>{
+    useEffect(() => {
         course.getParentCourse().then((course) => {
-            if(course) {
+            if (course) {
                 setSourceCourse(course);
 
             }
@@ -113,7 +117,7 @@ function ResetCourse({course}: ResetCourseProps) {
     }, [course])
 
     async function importDev() {
-        if(!sourceCourse) return;
+        if (!sourceCourse) return;
         await course.importCourse(sourceCourse, (current, total, message) => {
             setMigrationUpdate({
                 current,
@@ -123,7 +127,7 @@ function ResetCourse({course}: ResetCourseProps) {
         });
     }
 
-    return(<>
+    return (<>
         <Button className={'ui-btn'}>Reset/Import Dev</Button>
         <Modal isOpen={show} requestClose={() => setShow(false)}>
 
