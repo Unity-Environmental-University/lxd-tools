@@ -2,6 +2,7 @@
 NOTE: Almost all of this code has had to be rewritten since then.
 And starting to convert to ts
  */
+/* THis has since been almost entirely rewritten. It did not do a great job at first pass. It kept inventing code that should work but didn't */
 
 import assert from 'assert';
 import {
@@ -813,7 +814,6 @@ export class Course extends BaseCanvasObject<ICourseData> {
                 "restricted": true,
                 "_method": 'PUT'
             }
-
             console.log(body);
             await fetchApiJson(url, {
                 fetchInit: {

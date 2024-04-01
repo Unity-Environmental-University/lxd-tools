@@ -9,16 +9,15 @@ type CourseRowProps = {
 function PublishCourseRow({course}: CourseRowProps) {
     const [instructors, setInstructors] = useState<IUserData[]>([])
     const [freshCourse, setFreshCourse] = useState<Course | null>(course);
+
     useEffect(() => {
-        if (instructors.length <= 0) {
-            async function getCourse() {
-                course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
-                setFreshCourse(await Course.getCourseById(course.id))
-                console.log(course);
-            }
-            getCourse().then();
+        async function getCourse() {
+            course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
+            setFreshCourse(await Course.getCourseById(course.id))
+            console.log(course);
         }
-    }, [freshCourse, course, instructors])
+            getCourse().then();
+    }, [course])
 
     return (<div className={'row course-row'}>
         <div className={'col-xs-9'}>

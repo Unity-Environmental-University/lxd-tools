@@ -28,26 +28,41 @@ function PublishApp() {
         getCourse().then();
     }, [course]);
 
-    async function finishedPublishing() {
-        setAssociatedCourses(await course?.getAssociatedCourses() ?? []);
-        setInfo('Finished Publishing')
-    }
 
     async function publishCourses(event: React.MouseEvent) {
-        const courses: Course[] = await course?.getAssociatedCourses() ?? [];
         const accountId = course?.getItem<number>('account_id');
         assert(accountId);
-        await Course.publishAll(courses, accountId);
-        await finishedPublishing();
+        await Course.publishAll(associatedCourses, accountId)
+        window.setTimeout(async() => {
+            let newAssocCourses = await course?.getAssociatedCourses();
+            if(newAssocCourses) {
+                newAssocCourses = [...newAssocCourses];
+            } else {
+                newAssocCourses = [];
+            }
+            setAssociatedCourses(newAssocCourses);
+            setInfo('Finished Publishing');
+        }, 500);
     }
 
     function openButton() {
-
         return (course && <Button disabled={!isBlueprint}
                                   className="ui-button"
                                   onClick={(e) => setShow(true)}
         >{isBlueprint ? "Publish Sections.." : "Not A Blueprint"}</Button>)
     }
+
+    function associatedCourseRows() {
+        return (<div className={'course-table'}>
+                <div className={'row'}>
+                    <div className={'col-sm-9'}><strong>Code</strong></div>
+                    <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
+                </div>
+                {associatedCourses && associatedCourses.map((course) => (
+                    <PublishCourseRow course={course}/>))}
+            </div>)
+    }
+
 
     return (<>
         {openButton()}
@@ -61,14 +76,7 @@ function PublishApp() {
                         Publish sections associated with this blueprint
                     </div>
                     <div className='col-xs-12'>
-                        <div className={'course-table'}>
-                            <div className={'row'}>
-                                <div className={'col-sm-9'}><strong>Code</strong></div>
-                                <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
-                            </div>
-                            {associatedCourses && associatedCourses.map((course) => (
-                                <PublishCourseRow course={course}/>))}
-                        </div>
+                        {associatedCourseRows()}
                     </div>
                     <div className={'col-xs-12 button-container'}>
                         <Button className="btn" disabled={!(course?.isBlueprint)} onClick={publishCourses}>
@@ -90,51 +98,6 @@ function PublishApp() {
     </>)
 }
 
-type ResetCourseProps = {
-    course: Course,
-    show: boolean,
-}
-
-type MigrationStatusUpdate = {
-    current: number,
-    total: number,
-    message?: string
-}
-
-function ResetCourse({course}: ResetCourseProps) {
-    const [show, setShow] = useState<boolean>(false);
-    const [sourceCourse, setSourceCourse] = useState<Course | null>(null);
-    const [potentialSources, setPotentialSources] = useState<Course[]>([]);
-    const [migrationUpdate, setMigrationUpdate] = useState<MigrationStatusUpdate | undefined>()
-
-    useEffect(() => {
-        course.getParentCourse().then((course) => {
-            if (course) {
-                setSourceCourse(course);
-
-            }
-        })
-    }, [course])
-
-    async function importDev() {
-        if (!sourceCourse) return;
-        await course.importCourse(sourceCourse, (current, total, message) => {
-            setMigrationUpdate({
-                current,
-                total,
-                message
-            })
-        });
-    }
-
-    return (<>
-        <Button className={'ui-btn'}>Reset/Import Dev</Button>
-        <Modal isOpen={show} requestClose={() => setShow(false)}>
-
-        </Modal>
-    </>)
-
-}
 
 export default PublishApp
 
