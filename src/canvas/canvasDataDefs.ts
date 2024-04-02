@@ -23,6 +23,12 @@ export interface IEnrollmentData extends ICanvasData {
 export interface IUserData extends ICanvasData {
     id: number,
     name: string,
+    sortable_name: string,
+    last_name: string,
+    first_name: string,
+    short_name: string,
+    email: string,
+    bio?: string
 }
 
 
@@ -100,6 +106,22 @@ export interface IAssignmentData extends ICanvasData {
     rubric: IRubricCriterion[]
 }
 
+export interface IGradingRules {
+    drop_lowest?: number,
+    drop_highest?: number,
+    never_drop?: number[],
+}
+
+export interface IAssignmentGroup extends ICanvasData{
+    id: number,
+    name: string,
+    position: number,
+    group_weight: number,
+    assignments?: IAssignmentData[],
+    rules?: IGradingRules[]
+}
+
+
 export interface IDiscussionData extends ICanvasData {
     id: number,
 
@@ -109,6 +131,7 @@ export interface IQuizData extends ICanvasData {
     id: number,
 
 }
+
 
 
 export interface IModuleData extends ICanvasData {

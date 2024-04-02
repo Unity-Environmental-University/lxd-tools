@@ -6,6 +6,7 @@ And starting to convert to ts
 
 import assert from 'assert';
 import {
+    IAssignmentGroup,
     ICanvasData,
     ICourseData,
     IModuleData,
@@ -236,7 +237,7 @@ async function fetchOneUnknownApiJson(url: string, config: ICanvasCallConfig | n
 
 export class BaseCanvasObject<CanvasDataType extends ICanvasData> {
     static idProperty = 'id'; // The field name of the id of the canvas object type
-    static nameProperty: string | null = null; // The field name of the primary name of the canvas object type
+    static nameProperty: string | null = 'name'; // The field name of the primary name of the canvas object type
     static contentUrlTemplate: string | null = null; // A templated url to get a single item
     static allContentUrlTemplate: string | null = null; // A templated url to get all items
     protected canvasData: CanvasDataType;
@@ -463,6 +464,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
         let courseDataList: ICourseData[] | null = null;
         const accountIdsByName = await Course.getAccountIdsByName();
         for (let accountKey in accountIdsByName) {
+            if(!accountKey) continue;
             let accountId = accountIdsByName[accountKey];
             let url = `accounts/${accountId}/courses`;
             config.queryParams = config.queryParams || {};
@@ -576,6 +578,12 @@ export class Course extends BaseCanvasObject<ICourseData> {
     async getInstructors(): Promise<IUserData[] | null> {
         console.log("Getting instructors");
         return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
+    }
+
+    async getFrontPageBio() {
+        const frontPage = await this.getFrontPage();
+        if(!frontPage) return null;
+
     }
 
     async getTerms(): Promise<Term[] | null> {
@@ -736,6 +744,10 @@ export class Course extends BaseCanvasObject<ICourseData> {
         queryParams: {'include': ['due_at']}
     }): Promise<Assignment[]> {
         return await Assignment.getAllInCourse(this, config) as Assignment[];
+    }
+
+    async getAssignmentGroups(config?: ICanvasCallConfig) {
+        return await getApiPagedData<IAssignmentGroup>(`courses/${this.id}/assignment_groups`)
     }
 
     /**
@@ -1090,6 +1102,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
 
 export class BaseContentItem extends BaseCanvasObject<ICanvasData> {
     static bodyProperty: string;
+    static nameProperty: string = 'name';
 
     _course: Course;
 
