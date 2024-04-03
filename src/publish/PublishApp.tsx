@@ -5,14 +5,22 @@ import {Course, Page} from "../canvas";
 import assert from "assert";
 import Modal from "../ui/widgets/Modal"
 import {IAssignmentGroup, IModuleData, IUserData} from "../canvas/canvasDataDefs";
+import {IProfile, getPotentialFacultyProfiles} from "../canvas/profile";
 
 console.log("running")
 
-function useEffectAsync(func:() => Promise<any>, deps: React.DependencyList) {
+function useEffectAsync(func: () => Promise<any>, deps: React.DependencyList) {
     useEffect(() => {
         console.log('useeffect');
         func().then();
     }, deps)
+}
+
+function courseNameSort(a:Course, b:Course) {
+    if (a.name < b.name) return -1;
+    if (b.name < a.name) return 1;
+    return 0;
+
 }
 
 function PublishApp() {
@@ -24,17 +32,19 @@ function PublishApp() {
     const [workingSection, setWorkingSection] = useState<Course | null>(null);
 
 
-   async function getCourse() {
+    async function getCourse() {
         if (!course) {
             const tempCourse = await Course.getFromUrl();
             if (tempCourse) {
                 const fullCourses: Course[] = [];
 
                 const associatedCourses = await tempCourse.getAssociatedCourses() ?? [];
+
                 const promiseList = associatedCourses.map((course) => {
                     return (async () => {
                         console.log(course.name);
                         fullCourses.push(await Course.getCourseById(course.id));
+                        fullCourses.sort(courseNameSort);
                         setAssociatedCourses([...fullCourses]);
                     })();
                 })
@@ -45,6 +55,7 @@ function PublishApp() {
             }
         }
     }
+
     useEffectAsync(getCourse, [course]);
 
 
@@ -174,17 +185,18 @@ function SectionDetails({section, onClose}: SectionDetailsProps) {
     const [assignmentGroups, setAssignmentGroups] = useState<IAssignmentGroup[]>([])
     const [instructors, setInstructors] = useState<IUserData[]>([])
     const [frontPageBio, setFrontPageBio] = useState<string | null>(null)
-    const [facultyBioPageMatches, setFacultyBioPageMatches] = useState<Page[]>([])
+    const [facultyProfileMatches, setFacultyProfileMatches] = useState<IProfile[]>([])
 
     let facultyCourseCached: Course | null = null;
 
     useEffect(() => {
         onSectionChange().then();
-
     }, [section]);
 
 
     async function onSectionChange() {
+        setFacultyProfileMatches([]);
+        setInstructors([]);
         if (!section) {
             setModules([]);
             setAssignmentGroups([]);
@@ -198,9 +210,7 @@ function SectionDetails({section, onClose}: SectionDetailsProps) {
         }))
 
         const instructors = await getInstructors(section) ?? [];
-        await getFacultyBioPageMatches(instructors, section);
-
-
+        await getFacultyBioPageMatches(instructors);
     }
 
     async function getInstructors(section: Course) {
@@ -212,31 +222,26 @@ function SectionDetails({section, onClose}: SectionDetailsProps) {
     async function getFacultyPages(facultyCourse: Course, searchTerm: string) {
         return await facultyCourse.getPages({
             queryParams: {
-                search_term: searchTerm
+                search_term: searchTerm,
+                include: ['body']
             }
         })
     }
-    async function getFacultyBioPageMatches(instructors: IUserData[], section: Course) {
+
+    async function getFacultyBioPageMatches(instructors: IUserData[]) {
         const facultyCourse = facultyCourseCached ?? await Course.getByCode('Faculty Bios');
         facultyCourseCached = facultyCourse;
         if (facultyCourse) {
             console.log(instructors.map(instructor => instructor.name).join(' '))
-            let matches: Page[] = [];
+            let matches: IProfile[] = [];
 
             for (let instructor of instructors) {
-                let instructorPages = await getFacultyPages(facultyCourse, instructor.name);
-                for(let searchTerm of [
-                    instructor.name,
-                    instructor.last_name,
-                    instructor.first_name
-                ]) {
-                    instructorPages = await getFacultyPages(facultyCourse, searchTerm);
-                    if(instructorPages.length > 0) break;
-                }
-                matches = [...matches, ...instructorPages]
+                const potentials = await getPotentialFacultyProfiles(instructor);
+
+                matches = [...matches, ...potentials]
             }
 
-            setFacultyBioPageMatches(matches)
+            setFacultyProfileMatches(matches);
         }
     }
 
@@ -247,22 +252,49 @@ function SectionDetails({section, onClose}: SectionDetailsProps) {
         <p>{instructors.map(instructor => instructor.name).join(',')}</p>
         <div className={'row'}>
             <div className={'col-sm-8'}>
-                {facultyBioPageMatches.map((pageMatch) => (<div key={pageMatch.id} className={'row'}>
-                    <div className={'col-xs-6'}>
-                        {pageMatch.name}
-                    </div>
-                    <div className={'col-xs-6'}>
-                        <a href={`/${pageMatch.contentUrlPath}`}>Faculty Page Link</a>
-                    </div>
-                </div>))}
+                {facultyProfileMatches.map((profile, i) => (
+                    <div key={i} className={'row'} style={{border: "1px solid black", boxShadow: "10 10 2 black"}}>
+                        <div className={'col-xs-3'}>
+                            <h4>Image</h4>
+                            {profile.imageLink ? <img style={{width: '100px'}} src={profile.imageLink}></img> :
+                                <h3>No Image</h3>}
+                            <h4>Display Name</h4>
+                            <p>{profile.displayName ?? "[No Display Name Found]"}</p>
+                        </div>
+                        <div className={'col-xs-9 rawHtml'}>
+                            {profile.body ?? "[No bio found on page]"}
+                        </div>
+                        <div className={'col-xs-12'}>
+                            <Button disabled={true}>Use this for profile</Button>
+                        </div>
+
+                    </div>))}
+
             </div>
             <div className={'col-sm-4'}>
-                <h4>Modules</h4>
-                {modules.map((module) => (<div key={module.id} className={'row'}>
-                    <div className={'col-xs-12'}>{module.name}</div>
-                </div>))}
-            </div>
+                <div className={'col'}>
+                    <h4>Modules</h4>
+                    {modules.map((module) => (<div key={module.id} className={'row'}>
+                        <div className={'col-xs-12'}>{module.name}</div>
+                    </div>))}
+                </div>
+                <div className={'col'}>
+                    <h4>Assignment Groups</h4>
+                    {assignmentGroups.map((group) => (
+                        <div key={group.id} className={'row'}>
+                            <div className={'col-xs-9'}>{group.name}</div>
+                            <div className={'col-xs-3'}>{group.group_weight}%</div>
+                            <ul>
+                                {group.assignments?.map((assignment) => (
+                                    <li>{assignment.name}</li>
+                                ))}
+                            </ul>
 
+                        </div>
+                    ))}
+                </div>
+
+            </div>
         </div>
     </div>))
 }

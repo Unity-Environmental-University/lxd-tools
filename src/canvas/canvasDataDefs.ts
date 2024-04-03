@@ -195,5 +195,5 @@ export interface IRubricRating {
     points: number,
 }
 
-export type LookUpTable<T> = Record<string|number, any>
+export type LookUpTable<T> = Record<string|number, T>
 

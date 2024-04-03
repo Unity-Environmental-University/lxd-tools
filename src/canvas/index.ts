@@ -2,7 +2,8 @@
 NOTE: Almost all of this code has had to be rewritten since then.
 And starting to convert to ts
  */
-/* THis has since been almost entirely rewritten. It did not do a great job at first pass. It kept inventing code that should work but didn't */
+/* THis has since been almost entirely rewritten. It did not do a great job at first pass.
+ It kept inventing code that should work but didn't */
 
 import assert from 'assert';
 import {
@@ -43,6 +44,10 @@ const type_lut: Record<ModuleItemType, RestrictModuleItemType | null> = {
     ExternalUrl : null, //Not passable to restrict
     Subheader: null, //Not passable to restrict
 
+}
+
+function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
+    Course.registerContentClass(originalClass);
 }
 
 export function formDataify(data: Record<string, any>) {
@@ -132,6 +137,7 @@ function searchParamsFromObject(queryParams: string[][] | Record<string, string>
 async function getApiPagedData<T extends ICanvasData>(url: string, config: ICanvasCallConfig | null = null): Promise<T[]> {
     return await getPagedData<T>(`/api/v1/${url}`, config)
 }
+
 
 
 /**
@@ -353,10 +359,6 @@ export class BaseCanvasObject<CanvasDataType extends ICanvasData> {
 
     }
 
-    async delete() {
-        assert(this.contentUrlPath);
-        return await fetchApiJson(this.contentUrlPath, {fetchInit: {method: 'DELETE'}})
-    }
 
 }
 
@@ -580,14 +582,8 @@ export class Course extends BaseCanvasObject<ICourseData> {
         return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
     }
 
-    async getFrontPageBio() {
-        const frontPage = await this.getFrontPage();
-        if(!frontPage) return null;
-
-    }
 
     async getTerms(): Promise<Term[] | null> {
-
         if (this.termIds) {
             if (Array.isArray(this.termIds)) {
                 let terms = await Promise.all(this.termIds.map(async (termId) => {
@@ -1480,12 +1476,14 @@ export class Term extends BaseCanvasObject<ITermData> {
 
 }
 
+
+
+
 export class NotImplementedException extends Error {
 }
 
 export class CourseNotFoundException extends Error {
 }
 
-function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
-    Course.registerContentClass(originalClass);
-}
+
+
