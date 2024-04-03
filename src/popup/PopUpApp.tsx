@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {runtime} from "webextension-polyfill";
-import "./PopUpApp.scss"
 import "../css/source.scss"
+import "./PopUpApp.scss"
 import 'bootstrap'
 
 function PopUpApp() {

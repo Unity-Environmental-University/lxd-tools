@@ -4,11 +4,16 @@ import {Button} from 'react-bootstrap'
 import {Course, Page} from "../canvas";
 import assert from "assert";
 import Modal from "../ui/widgets/Modal"
-import PublishCourseRow from "./PublishCourseRow"
 import {IAssignmentGroup, IModuleData, IUserData} from "../canvas/canvasDataDefs";
-import {getTSInstanceFromCache} from "ts-loader/dist/instance-cache";
 
 console.log("running")
+
+function useEffectAsync(func:() => Promise<any>, deps: React.DependencyList) {
+    useEffect(() => {
+        console.log('useeffect');
+        func().then();
+    }, deps)
+}
 
 function PublishApp() {
     const [course, setCourse] = useState<Course | null>()
@@ -18,21 +23,30 @@ function PublishApp() {
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
     const [workingSection, setWorkingSection] = useState<Course | null>(null);
 
-    useEffect(() => {
 
-        getCourse().then();
-    }, [course]);
-
-    const getCourse = async () => {
+   async function getCourse() {
         if (!course) {
             const tempCourse = await Course.getFromUrl();
             if (tempCourse) {
-                setAssociatedCourses(await tempCourse.getAssociatedCourses() ?? [])
+                const fullCourses: Course[] = [];
+
+                const associatedCourses = await tempCourse.getAssociatedCourses() ?? [];
+                const promiseList = associatedCourses.map((course) => {
+                    return (async () => {
+                        console.log(course.name);
+                        fullCourses.push(await Course.getCourseById(course.id));
+                        setAssociatedCourses([...fullCourses]);
+                    })();
+                })
+                await Promise.all(promiseList);
+
                 setCourse(tempCourse)
                 setIsBlueprint(tempCourse?.isBlueprint)
             }
         }
     }
+    useEffectAsync(getCourse, [course]);
+
 
     async function publishCourses(event: React.MouseEvent) {
         const accountId = course?.getItem<number>('account_id');
@@ -126,12 +140,10 @@ type CourseRowProps = {
 
 function PublishCourseRow({course, onClickDx}: CourseRowProps) {
     const [instructors, setInstructors] = useState<IUserData[]>([])
-    const [freshCourse, setFreshCourse] = useState<Course | null>(course);
 
     useEffect(() => {
         async function getCourse() {
             course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
-            setFreshCourse(await Course.getCourseById(course.id))
             console.log(course);
         }
 
@@ -140,12 +152,12 @@ function PublishCourseRow({course, onClickDx}: CourseRowProps) {
 
     return (<div className={'row course-row'}>
         <div className={'col-xs-7'}>
-            <a href={`/courses/${course.id}`} className={freshCourse?.workflowState}
+            <a href={`/courses/${course.id}`} className={course?.workflowState}
                target={"blank_"}>{course.getItem<string>('course_code')}</a>
 
         </div>
-        <div className={'col-xs-2'}>{(onClickDx && freshCourse) && (
-            <button onClick={() => onClickDx(freshCourse)}>Details</button>)}</div>
+        <div className={'col-xs-2'}>{(onClickDx && course) && (
+            <button onClick={() => onClickDx(course)}>Details</button>)}</div>
         <div className={'col-xs-3'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
     </div>)
 }
