@@ -7,241 +7,34 @@ And starting to convert to ts
 
 import assert from 'assert';
 import {
+    CanvasData,
     IAssignmentGroup,
-    ICanvasData,
     ICourseData,
     IModuleData,
     IModuleItemData,
-    IPageData,
     ITermData,
+    IUpdateCallback,
     IUserData,
-    ModuleItemType,
-    RestrictModuleItemType
+    ModuleItemType
 } from "./canvasDataDefs";
-
+import {
+    fetchApiJson,
+    fetchJson,
+    fetchOneKnownApiJson,
+    fetchOneUnknownApiJson,
+    formDataify,
+    getApiPagedData,
+    getItemTypeAndId,
+    getModuleWeekNumber,
+    getPagedData,
+    ICanvasCallConfig
+} from "./utils";
 import {downloadFile} from "./image";
+import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "./profile";
 
 //const HOMETILE_WIDTH = 500;
 
-
-interface ICanvasCallConfig {
-    fetchInit?: RequestInit,
-    queryParams?: Record<string, any>
-}
-
-interface IUpdateCallback {
-    (current: number, total: number, message: string | undefined): void
-}
-
-
-const type_lut: Record<ModuleItemType, RestrictModuleItemType | null> = {
-    Assignment: 'assignment',
-    Discussion: 'discussion_topic',
-    Quiz: 'quiz',
-    ExternalTool: 'external_tool',
-    File: 'attachment',
-    Page: 'wiki_page',
-    ExternalUrl : null, //Not passable to restrict
-    Subheader: null, //Not passable to restrict
-
-}
-
-function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
-    Course.registerContentClass(originalClass);
-}
-
-export function formDataify(data: Record<string, any>) {
-    console.log('form', data);
-    let formData = new FormData();
-    for (let key in data) {
-        addToFormData(formData, key, data[key]);
-    }
-
-    if (document) {
-        const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
-        const authenticityToken = el ? el.value : null;
-        if (authenticityToken) formData.append('authenticity_token', authenticityToken);
-    }
-    for (let entry of formData.entries()) {
-        console.log(entry[0], entry[1]);
-    }
-    return formData;
-}
-
-function addToFormData(formData: FormData, key: string, value: any | Record<string, any> | []) {
-    if (Array.isArray(value)) {
-        for (let item of value) {
-            addToFormData(formData, `${key}[]`, item);
-        }
-    } else if (typeof value === 'object') {
-        for (let itemKey in value) {
-            const itemValue = value[itemKey];
-            addToFormData(formData, key.length > 0 ? `${key}[${itemKey}]` : itemKey, itemValue);
-        }
-    } else {
-        formData.append(key, value.toString());
-    }
-}
-
-export function getModuleWeekNumber(module: Record<string, any>) {
-    const regex = /(week|module) (\d+)/i;
-    let match = module.name.match(regex);
-    let weekNumber = !match ? null : Number(match[1]);
-    if (!weekNumber) {
-        for (let moduleItem of module.items) {
-            if (!moduleItem.hasOwnProperty('title')) {
-                continue;
-            }
-            let match = moduleItem.title.match(regex);
-            if (match) {
-                weekNumber = match[2];
-            }
-        }
-    }
-    return weekNumber;
-}
-
-
-/**
- * Takes in a module item and returns an object specifying its type and content id
- * @param item
- */
-export async function getItemTypeAndId(
-    item: IModuleItemData
-): Promise<{ type: RestrictModuleItemType | null, id: number }> {
-    let id;
-    let type;
-    assert(type_lut.hasOwnProperty(item.type), "Unexpected type " + item.type);
-
-    type = type_lut[item.type];
-    if (type === "wiki_page") {
-        assert(item.url); //wiki_page items always have a url param
-        const pageData = await fetchJson(item.url) as IPageData;
-        id = pageData.page_id;
-    } else {
-        id = item.content_id;
-    }
-
-    return {type, id}
-}
-
-
-/**
- * @param queryParams
- * @returns {URLSearchParams} The correctly formatted parameters
- */
-function searchParamsFromObject(queryParams: string[][] | Record<string, string>): URLSearchParams {
-    return new URLSearchParams(queryParams);
-}
-
-async function getApiPagedData<T extends ICanvasData>(url: string, config: ICanvasCallConfig | null = null): Promise<T[]> {
-    return await getPagedData<T>(`/api/v1/${url}`, config)
-}
-
-
-
-/**
- * @param url The entire path of the url
- * @param config a configuration object of type ICanvasCallConfig
- * @returns {Promise<Record<string, any>[]>}
- */
-async function getPagedData<T extends ICanvasData = ICanvasData>(
-    url: string, config: ICanvasCallConfig | null = null
-): Promise<T[]> {
-
-    if (config?.queryParams) {
-        url += '?' + searchParamsFromObject(config.queryParams);
-    }
-
-    if (url.includes('undefined')) {
-        console.log(url);
-    }
-    /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
-    let response = await fetch(url, config?.fetchInit);
-    let data = await response.json();
-    if (typeof data === 'object' && !Array.isArray(data)) {
-        let values = Array.from(Object.values(data));
-        if (values) {
-            data = values.find((a) => Array.isArray(a));
-        }
-    }
-    assert(Array.isArray(data));
-
-    let next_page_link = "!";
-    while (next_page_link.length !== 0 &&
-    response &&
-    response.headers.has("Link") && response.ok) {
-        const link = response.headers.get("Link");
-        assert(link);
-        const paginationLinks = link.split(",");
-
-        const nextLink = paginationLinks.find((link) => link.includes('next'));
-        if (nextLink) {
-            next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
-            response = await fetch(next_page_link, config?.fetchInit);
-            let responseData = await response.json();
-            if (typeof responseData === 'object' && !Array.isArray(data)) {
-                let values = Array.from(Object.values(data));
-                if (values) {
-                    responseData = values?.find((a) => Array.isArray(a));
-                }
-            }
-
-            data = data.concat(responseData);
-        } else {
-            next_page_link = "";
-        }
-    }
-
-    return data;
-}
-
-async function fetchJson<T extends Record<string, any>>(
-    url: string, config: ICanvasCallConfig | null = null
-): Promise<T | T[]> {
-    if (config?.queryParams) {
-        url += '?' + new URLSearchParams(config.queryParams);
-    }
-    config ??= {};
-    if (!document) {
-        config.fetchInit ??= {};
-        config.fetchInit.headers = [];
-    }
-
-    const response = await fetch(url, config.fetchInit);
-    return await response.json();
-}
-
-/**
- * Fetches a json object from /api/v1/${url}
- * @param url
- * @param config query and fetch params
- */
-async function fetchApiJson<T extends Record<string, any>>(url: string, config: ICanvasCallConfig | null = null) {
-    url = `/api/v1/${url}`;
-    return await fetchJson<T>(url, config);
-}
-
-async function fetchOneKnownApiJson<T extends Record<string, any>>(url: string, config: ICanvasCallConfig | null = null) {
-    let result = await fetchApiJson<T>(url, config);
-    assert(result);
-    if (Array.isArray(result)) return result[0];
-    return result as T;
-}
-
-async function fetchOneUnknownApiJson(url: string, config: ICanvasCallConfig | null = null) {
-    let result = await fetchApiJson(url, config);
-    if (!result) return null;
-    if (Array.isArray(result) && result.length > 0) return result[0];
-    return <ICanvasData>result;
-}
-
-
-/**
- *  A base class for objects that interact with the Canvas API
- */
-
-export class BaseCanvasObject<CanvasDataType extends ICanvasData> {
+export class BaseCanvasObject<CanvasDataType extends CanvasData> {
     static idProperty = 'id'; // The field name of the id of the canvas object type
     static nameProperty: string | null = 'name'; // The field name of the primary name of the canvas object type
     static contentUrlTemplate: string | null = null; // A templated url to get a single item
@@ -297,7 +90,7 @@ export class BaseCanvasObject<CanvasDataType extends ICanvasData> {
         return this.canvasData;
     }
 
-    static async getDataById<T extends ICanvasData = ICanvasData>(contentId: number, course: Course | null = null, config: ICanvasCallConfig | null = null): Promise<T> {
+    static async getDataById<T extends CanvasData = CanvasData>(contentId: number, course: Course | null = null, config: ICanvasCallConfig | null = null): Promise<T> {
         let url = this.getUrlPathFromIds(contentId, course ? course.id : null);
         const response = await fetchApiJson<T>(url, config);
         assert(!Array.isArray(response));
@@ -362,47 +155,6 @@ export class BaseCanvasObject<CanvasDataType extends ICanvasData> {
 
 }
 
-export class Account extends BaseCanvasObject<ICanvasData> {
-    static nameProperty = 'name'; // The field name of the primary name of the canvas object type
-    static contentUrlTemplate = 'accounts/{content_id}'; // A templated url to get a single item
-    static allContentUrlTemplate = 'accounts'; // A templated url to get all items
-    private static account: Account;
-
-    static async getFromUrl(url: string | null = null) {
-        if (url === null) {
-            url = document.documentURI;
-        }
-        let match = /accounts\/(\d+)/.exec(url);
-        if (match) {
-            console.log(match);
-            return await this.getAccountById(parseInt(match[1]));
-        }
-        return null;
-    }
-
-    static async getAccountById<T extends ICanvasData>(accountId: number, config: ICanvasCallConfig | undefined = undefined): Promise<Account> {
-        const data = await this.getDataById(accountId, null, config)
-        console.assert()
-        return new Account(data);
-    }
-
-    static async getRootAccount(resetCache = false) {
-        let accounts: Account[] = <Account[]>await this.getAll();
-        if (!resetCache && this.hasOwnProperty('account') && this.account) {
-            return this.account;
-        }
-        let root = accounts.find((a) => a.rootAccountId === null);
-        assert(root);
-        this.account = root;
-        return root;
-    }
-
-
-    get rootAccountId() {
-        return this.canvasData['root_account_id']
-    }
-
-}
 
 export class Course extends BaseCanvasObject<ICourseData> {
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
@@ -466,7 +218,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
         let courseDataList: ICourseData[] | null = null;
         const accountIdsByName = await Course.getAccountIdsByName();
         for (let accountKey in accountIdsByName) {
-            if(!accountKey) continue;
+            if (!accountKey) continue;
             let accountId = accountIdsByName[accountKey];
             let url = `accounts/${accountId}/courses`;
             config.queryParams = config.queryParams || {};
@@ -520,7 +272,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
             'event': event,
             'course_ids[]': courses.map(course => course.id)
         };
-        return await fetchApiJson<ICanvasData>(url, {
+        return await fetchApiJson<CanvasData>(url, {
             fetchInit: {
                 method: 'PUT',
                 body: JSON.stringify(data)
@@ -578,7 +330,6 @@ export class Course extends BaseCanvasObject<ICourseData> {
     }
 
     async getInstructors(): Promise<IUserData[] | null> {
-        console.log("Getting instructors");
         return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
     }
 
@@ -1034,7 +785,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
 
         assert(overview.url);
         const url = overview.url.replace(/https:\/\/.*api\/v1/, '/api/v1')
-        const pageData = await fetchJson(url) as ICanvasData;
+        const pageData = await fetchJson(url) as CanvasData;
         const overviewPage = new Page(pageData, this);
         const pageBody = document.createElement('html');
         pageBody.innerHTML = overviewPage.body;
@@ -1093,16 +844,81 @@ export class Course extends BaseCanvasObject<ICourseData> {
         }
         return false;
     }
+
+    public async getFrontPageProfile() {
+        const frontPage = await this.getFrontPage();
+        assert(frontPage && frontPage.body, "Course front page not found");
+        return getCurioPageFrontPageProfile(frontPage?.body);
+    }
+
+    public async getPotentialInstructorProfiles() {
+        const instructors = await this.getInstructors();
+        let profiles: IProfile[] = [];
+        if (!instructors) return profiles;
+        for (let instructor of instructors) {
+            profiles = profiles.concat(await getPotentialFacultyProfiles(instructor))
+        }
+        return profiles;
+
+    }
+
+}
+
+/**
+ *  A base class for objects that interact with the Canvas API
+ */
+
+
+export class Account extends BaseCanvasObject<CanvasData> {
+    static nameProperty = 'name'; // The field name of the primary name of the canvas object type
+    static contentUrlTemplate = 'accounts/{content_id}'; // A templated url to get a single item
+    static allContentUrlTemplate = 'accounts'; // A templated url to get all items
+    private static account: Account;
+
+    static async getFromUrl(url: string | null = null) {
+        if (url === null) {
+            url = document.documentURI;
+        }
+        let match = /accounts\/(\d+)/.exec(url);
+        if (match) {
+            console.log(match);
+            return await this.getAccountById(parseInt(match[1]));
+        }
+        return null;
+    }
+
+    static async getAccountById<T extends CanvasData>(accountId: number, config: ICanvasCallConfig | undefined = undefined): Promise<Account> {
+        const data = await this.getDataById(accountId, null, config)
+        console.assert()
+        return new Account(data);
+    }
+
+    static async getRootAccount(resetCache = false) {
+        let accounts: Account[] = <Account[]>await this.getAll();
+        if (!resetCache && this.hasOwnProperty('account') && this.account) {
+            return this.account;
+        }
+        let root = accounts.find((a) => a.rootAccountId === null);
+        assert(root);
+        this.account = root;
+        return root;
+    }
+
+
+    get rootAccountId() {
+        return this.canvasData['root_account_id']
+    }
+
 }
 
 
-export class BaseContentItem extends BaseCanvasObject<ICanvasData> {
+export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     static bodyProperty: string;
     static nameProperty: string = 'name';
 
     _course: Course;
 
-    constructor(canvasData: ICanvasData, course: Course) {
+    constructor(canvasData: CanvasData, course: Course) {
         super(canvasData);
         this._course = course;
     }
@@ -1259,6 +1075,10 @@ export class BaseContentItem extends BaseCanvasObject<ICanvasData> {
     }
 }
 
+export function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
+    Course.registerContentClass(originalClass);
+}
+
 @contentClass
 export class Discussion extends BaseContentItem {
     static nameProperty = 'title';
@@ -1385,7 +1205,7 @@ export class Rubric extends BaseContentItem {
         }
 
         let data = await this.myClass.getDataById(this.id, this.course, {queryParams: {'include': ['associations']}});
-        let associations = data['associations'].map((data: ICanvasData) => new RubricAssociation(data, this.course));
+        let associations = data['associations'].map((data: CanvasData) => new RubricAssociation(data, this.course));
         this.canvasData['associations'] = associations;
         return associations;
     }
@@ -1476,14 +1296,9 @@ export class Term extends BaseCanvasObject<ITermData> {
 
 }
 
-
-
-
 export class NotImplementedException extends Error {
 }
 
 export class CourseNotFoundException extends Error {
 }
-
-
 

@@ -1,13 +1,13 @@
 import "./speedGrader.scss"
 import {Modal, Col, Row, Card, Button} from "react-bootstrap";
-import {Assignment, Course, Term} from "../../canvas/index";
+import {Course, Assignment, Term} from "../../canvas/index";
 import React, {useEffect, useState} from "react";
 import DatePicker from "react-datepicker"
 
 import assert from "assert";
 import {
     IAssignmentData,
-    ICanvasData,
+    CanvasData,
     ICourseData, IDiscussionData,
     IEnrollmentData,
     IModuleData, IModuleItemData, IRubricCriterion, ITermData,
@@ -355,7 +355,7 @@ interface IGetRowsConfig {
     course: ICourseData,
     enrollment: IEnrollmentData,
     modules: IModuleData[],
-    userSubmissions: ICanvasData[],
+    userSubmissions: CanvasData[],
     assignmentsCollection: AssignmentsCollection,
     instructors: IUserData[],
     term: ITermData
@@ -533,7 +533,7 @@ interface IModuleInfo {
     type: string
 }
 
-function getModuleInfo(contentItem: ICanvasData, modules: IModuleData[], assignmentsCollection: AssignmentsCollection): IModuleInfo | null {
+function getModuleInfo(contentItem: CanvasData, modules: IModuleData[], assignmentsCollection: AssignmentsCollection): IModuleInfo | null {
     const regex = /(week|module) (\d+)/i;
 
     for (let module of modules) {
@@ -566,7 +566,7 @@ function getModuleInfo(contentItem: ICanvasData, modules: IModuleData[], assignm
 }
 
 
-function getItemInModule(contentItem: ICanvasData, module: IModuleData, assignmentsCollection: AssignmentsCollection) {
+function getItemInModule(contentItem: CanvasData, module: IModuleData, assignmentsCollection: AssignmentsCollection) {
 
     let contentId;
     let type: ModuleItemType = assignmentsCollection.getAssignmentContentType(contentItem);
@@ -645,7 +645,7 @@ async function getAllPagesAsync(url: string) {
     return getRemainingPagesAsync(url, []);
 }
 
-async function getRemainingPagesAsync(url: string, listSoFar: ICanvasData[]) {
+async function getRemainingPagesAsync(url: string, listSoFar: CanvasData[]) {
     let response = await fetch(url);
     let responseList = await response.json();
     let headers = response.headers;
@@ -730,7 +730,7 @@ class AssignmentsCollection {
      * the content item
      * @returns {string}
      */
-    getAssignmentContentType(contentItem: ICanvasData): ModuleItemType {
+    getAssignmentContentType(contentItem: CanvasData): ModuleItemType {
         if (contentItem.hasOwnProperty('submission_types')) {
             if (contentItem.submission_types.includes('external_tool')) {
                 return 'ExternalTool'

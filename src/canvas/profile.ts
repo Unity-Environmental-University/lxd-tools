@@ -1,9 +1,20 @@
 import assert from "assert";
 import {IUserData} from "./canvasDataDefs";
 import {Course, Page} from "./index";
+import {parentElement} from "./utils";
 
 
 let facultyCourseCached: Course | null = null;
+export interface IProfile {
+    user?: IUserData,
+    body?: string | null,
+    displayName?: string | null,
+    image?: HTMLImageElement | null,
+    imageLink?: string | null,
+    sourcePageLink?: string | null,
+
+}
+
 
 async function getFacultyCourse() {
     const facultyCourse = facultyCourseCached ?? await Course.getByCode('Faculty Bios');
@@ -48,14 +59,6 @@ async function getPotentialFacultyProfiles(user:IUserData) {
         }
     }
     return profiles;
-}
-
-export interface IProfile {
-    user: IUserData,
-    body?: string | null,
-    displayName?: string | null,
-    image?: HTMLImageElement | null,
-    imageLink?: string | null
 }
 
 function getProfileFromPageHtml(html:string, user: IUserData): IProfile {
@@ -137,8 +140,9 @@ type WinnowFunc<T> = ((value:T, number?: number, array?: T[])=>boolean);
  * or it runs out of filter functions. Returns post-filtered list.
  * @param originalList The list of items to run
  * @param winnowFuncs A list of filter functions, run in order
+ * @param returnLastNonEmpty If true, will return the last non-empty array found if elements are winnowed to 0
  */
-function winnow<T=string>(originalList: T[], winnowFuncs: WinnowFunc<T>[], returnLastNonEmptySet=false) {
+function winnow<T=string>(originalList: T[], winnowFuncs: WinnowFunc<T>[], returnLastNonEmpty=false) {
     let copyList = [...originalList];
     if(copyList.length === 1) return copyList; //already at 1 element
     let lastSet = [...copyList];
@@ -147,17 +151,36 @@ function winnow<T=string>(originalList: T[], winnowFuncs: WinnowFunc<T>[], retur
         copyList = copyList.filter(winnowFunc);
         if(copyList.length === 1) break;
     }
-    if(copyList.length === 0 && returnLastNonEmptySet) return lastSet;
+    if(copyList.length === 0 && returnLastNonEmpty) return lastSet;
     return copyList;
 }
 
-function parentElement(el:Element, tagName:string) {
-  while (el && el.parentElement) {
-      el = el.parentElement;
-      if (el.tagName && el.tagName.toLowerCase() == tagName) {
-          return el;
-      }
-  }
+function getCurioPageFrontPageProfile(html:string, user?: IUserData):IProfile {
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    let h2s = Array.from(el.querySelectorAll('h2'));
+    h2s = h2s.filter((h2) => h2.innerHTML.match(/Meet your instructor/i));
+    assert(h2s.length === 1, "Can't find bio section of front page.");
+
+    let header = h2s[0];
+    const match = header.innerHTML.match(/Meet your instructor ?,?(.*)!/);
+    const displayName = match && match.groups ? match.groups[1] : null;
+    const bodyEl = header.nextElementSibling;
+    assert(bodyEl, "Body element of bio not found on page.")
+
+    const image = bodyEl.querySelector('img');
+    const body = bodyEl.querySelector('.cbt-instructor-bio')?.innerHTML;
+    return {
+        user,
+        displayName,
+        image,
+        imageLink: image ? image.src : null,
+        body
+   }
 }
 
-export { getPotentialFacultyProfiles, winnow }
+export {
+    getPotentialFacultyProfiles,
+    getCurioPageFrontPageProfile,
+    winnow
+}

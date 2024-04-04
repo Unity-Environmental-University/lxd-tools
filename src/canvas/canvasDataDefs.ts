@@ -1,10 +1,9 @@
-export interface ITermsData extends ICanvasData {
-    enrollment_terms: ITermData[],
-}
 
 export type TermWorkflowState = 'all' | 'active' | 'deleted'
+export type CanvasData = Record<string, any>
 
-export interface ITermData extends ICanvasData {
+
+export interface ITermData extends CanvasData {
     start_at: string,
     end_at: string,
     workflow_state: TermWorkflowState,
@@ -12,15 +11,12 @@ export interface ITermData extends ICanvasData {
     course_count: number
 }
 
-export interface ICanvasData extends Record<string, any> {
 
-}
-
-export interface IEnrollmentData extends ICanvasData {
+export interface IEnrollmentData extends CanvasData {
     user: IUserData
 }
 
-export interface IUserData extends ICanvasData {
+export interface IUserData extends CanvasData {
     id: number,
     name: string,
     sortable_name: string,
@@ -32,7 +28,7 @@ export interface IUserData extends ICanvasData {
 }
 
 
-export interface ICourseData extends ICanvasData {
+export interface ICourseData extends CanvasData {
     id: number,
     sis_course_id?: string,
     uuid: string,
@@ -43,7 +39,7 @@ export interface ICourseData extends ICanvasData {
     account_id: number,
     root_account_id: number,
     enrollment_term_id: number[] | number,
-    grading_periods?: ICanvasData[] | null,
+    grading_periods?: CanvasData[] | null,
     grading_standard_id: number,
     grade_passback_setting?: "nightly_sync" | "disabled" | '',
     created_at: string,
@@ -52,12 +48,12 @@ export interface ICourseData extends ICanvasData {
     locale: string,
     enrollments: number | null,
     total_students?: number,
-    calendar: ICanvasData,
+    calendar: CanvasData,
     default_view: 'feed' | 'wiki' | 'modules' | 'assignments' | 'syllabus',
     syllabus_body?: string,
     needs_grading_count?: number,
     term?: ITermData,
-    course_progress: ICanvasData,
+    course_progress: CanvasData,
     apply_assignment_group_weights: boolean,
     permissions: Record<string, boolean>,
     public_description: string,
@@ -94,13 +90,13 @@ export interface IBlueprintContentRestrictions {
 }
 
 
-export interface IPageData extends ICanvasData {
+export interface IPageData extends CanvasData {
     page_id: number,
     url: string,
     title: string,
 }
 
-export interface IAssignmentData extends ICanvasData {
+export interface IAssignmentData extends CanvasData {
     id: number,
     name: string,
     rubric: IRubricCriterion[]
@@ -112,7 +108,7 @@ export interface IGradingRules {
     never_drop?: number[],
 }
 
-export interface IAssignmentGroup extends ICanvasData{
+export interface IAssignmentGroup extends CanvasData{
     id: number,
     name: string,
     position: number,
@@ -122,19 +118,19 @@ export interface IAssignmentGroup extends ICanvasData{
 }
 
 
-export interface IDiscussionData extends ICanvasData {
+export interface IDiscussionData extends CanvasData {
     id: number,
 
 }
 
-export interface IQuizData extends ICanvasData {
-    id: number,
+// export interface IQuizData extends ICanvasData {
+//     id: number,
+//
+// }
 
-}
 
 
-
-export interface IModuleData extends ICanvasData {
+export interface IModuleData extends CanvasData {
     id: number,
     name: string,
     position: number,
@@ -154,7 +150,7 @@ export type ModuleItemType = "File" | "Assignment" | "Discussion" | "Quiz" | "Ex
 export type RestrictModuleItemType = 'assignment'|'attachment'|'discussion_topic'|'external_tool'|'lti-quiz'|'quiz'|'wiki_page'
 
 
-export interface IModuleItemData extends ICanvasData {
+export interface IModuleItemData extends CanvasData {
     module_id: number,
     position: number,
     title: string,
@@ -194,6 +190,11 @@ export interface IRubricRating {
     long_description: string | null,
     points: number,
 }
+
+export interface IUpdateCallback {
+    (current: number, total: number, message: string | undefined): void
+}
+
 
 export type LookUpTable<T> = Record<string|number, T>
 

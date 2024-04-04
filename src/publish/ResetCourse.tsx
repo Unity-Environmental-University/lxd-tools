@@ -1,7 +1,8 @@
-import {Course} from "../canvas/index";
 import React, {useEffect, useState} from "react";
 import {Button} from "react-bootstrap";
 import Modal from "../ui/widgets/Modal/index";
+
+import {Course} from "../canvas/index";
 
 type ResetCourseProps = {
     course: Course,

@@ -5,18 +5,17 @@ import {Course, Page} from "../canvas";
 import assert from "assert";
 import Modal from "../ui/widgets/Modal"
 import {IAssignmentGroup, IModuleData, IUserData} from "../canvas/canvasDataDefs";
-import {IProfile, getPotentialFacultyProfiles} from "../canvas/profile";
+import {IProfile, getPotentialFacultyProfiles, getCurioPageFrontPageProfile} from "../canvas/profile";
 
 console.log("running")
 
 function useEffectAsync(func: () => Promise<any>, deps: React.DependencyList) {
     useEffect(() => {
-        console.log('useeffect');
         func().then();
     }, deps)
 }
 
-function courseNameSort(a:Course, b:Course) {
+function courseNameSort(a: Course, b: Course) {
     if (a.name < b.name) return -1;
     if (b.name < a.name) return 1;
     return 0;
@@ -27,9 +26,12 @@ function PublishApp() {
     const [course, setCourse] = useState<Course | null>()
     const [show, setShow] = useState<boolean>(false)
     const [info, setInfo] = useState<string | null | boolean>(null);
-    const [associatedCourses, setAssociatedCourses] = useState<Course[]>([])
+    const [getAssociatedCourses, setAssociatedCourses] = useState<Course[]>([])
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
     const [workingSection, setWorkingSection] = useState<Course | null>(null);
+    const [sectionProfiles, setSectionProfiles] = useState<Record<number, IProfile[]>>({})
+
+    let facultyCourseCached: Course | null = null;
 
 
     async function getCourse() {
@@ -40,15 +42,13 @@ function PublishApp() {
 
                 const associatedCourses = await tempCourse.getAssociatedCourses() ?? [];
 
-                const promiseList = associatedCourses.map((course) => {
-                    return (async () => {
-                        console.log(course.name);
-                        fullCourses.push(await Course.getCourseById(course.id));
-                        fullCourses.sort(courseNameSort);
-                        setAssociatedCourses([...fullCourses]);
-                    })();
-                })
-                await Promise.all(promiseList);
+                for (let course of associatedCourses) {
+                    console.log(course.name);
+                    const section = await Course.getCourseById(course.id);
+                    fullCourses.push(section);
+                    fullCourses.sort(courseNameSort);
+                    setAssociatedCourses([...fullCourses]);
+                }
 
                 setCourse(tempCourse)
                 setIsBlueprint(tempCourse?.isBlueprint)
@@ -58,11 +58,21 @@ function PublishApp() {
 
     useEffectAsync(getCourse, [course]);
 
+    function getSectionProfile(section: Course) {
+        const tempProfileCache = {...sectionProfiles};
+        if (!tempProfileCache[section.id]) {
+            section.getPotentialInstructorProfiles().then(profiles => {
+                tempProfileCache[section.id] = profiles;
+                setSectionProfiles({...tempProfileCache});
+            });
+        }
+        return sectionProfiles[section.id];
+    }
 
     async function publishCourses(event: React.MouseEvent) {
         const accountId = course?.getItem<number>('account_id');
         assert(accountId);
-        await Course.publishAll(associatedCourses, accountId)
+        await Course.publishAll(getAssociatedCourses, accountId)
         window.setTimeout(async () => {
             let newAssocCourses = await course?.getAssociatedCourses();
             if (newAssocCourses) {
@@ -84,11 +94,12 @@ function PublishApp() {
 
     function openAll(e: React.MouseEvent) {
         e.stopPropagation();
-        for (let course of associatedCourses) {
+        for (let course of getAssociatedCourses) {
             window.open(course.courseUrl, "_blank");
         }
 
     }
+
 
     function associatedCourseRows() {
         return (<div className={'course-table'}>
@@ -100,8 +111,9 @@ function PublishApp() {
                 </div>
                 <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
             </div>
-            {associatedCourses && associatedCourses.map((course) => (
+            {getAssociatedCourses && getAssociatedCourses.map((course) => (
                 <PublishCourseRow
+                    facultyProfileMatches={sectionProfiles[course.id]}
                     key={course.id}
                     onClickDx={(section) => setWorkingSection(section)}
                     course={course}/>))}
@@ -134,6 +146,7 @@ function PublishApp() {
             {info && <div className={'alert alert-primary'}>{info}</div>}
             <div>
                 <SectionDetails
+                    facultyProfileMatches={workingSection && getSectionProfile(workingSection)}
                     onClose={() => setWorkingSection(null)}
                     section={workingSection}
                 ></SectionDetails>
@@ -146,8 +159,10 @@ function PublishApp() {
 
 type CourseRowProps = {
     course: Course,
+    facultyProfileMatches: IProfile[],
     onClickDx?: (course: Course) => void,
 }
+
 
 function PublishCourseRow({course, onClickDx}: CourseRowProps) {
     const [instructors, setInstructors] = useState<IUserData[]>([])
@@ -155,19 +170,20 @@ function PublishCourseRow({course, onClickDx}: CourseRowProps) {
     useEffect(() => {
         async function getCourse() {
             course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
-            console.log(course);
         }
 
         getCourse().then();
     }, [course])
 
     return (<div className={'row course-row'}>
-        <div className={'col-xs-7'}>
+        <div className={'col-xs-6'}>
             <a href={`/courses/${course.id}`} className={course?.workflowState}
                target={"blank_"}>{course.getItem<string>('course_code')}</a>
 
         </div>
-        <div className={'col-xs-2'}>{(onClickDx && course) && (
+        <div className={'col-xs-2'}>
+        </div>
+        <div className={'col-xs-1'}>{(onClickDx && course) && (
             <button onClick={() => onClickDx(course)}>Details</button>)}</div>
         <div className={'col-xs-3'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
     </div>)
@@ -176,41 +192,42 @@ function PublishCourseRow({course, onClickDx}: CourseRowProps) {
 
 type SectionDetailsProps = {
     section: Course | null,
+    facultyProfileMatches: IProfile[] | null,
     onClose?: () => void,
 }
 
 
-function SectionDetails({section, onClose}: SectionDetailsProps) {
+function SectionDetails({section, onClose, facultyProfileMatches}: SectionDetailsProps) {
     const [modules, setModules] = useState<IModuleData[]>([])
     const [assignmentGroups, setAssignmentGroups] = useState<IAssignmentGroup[]>([])
     const [instructors, setInstructors] = useState<IUserData[]>([])
-    const [frontPageBio, setFrontPageBio] = useState<string | null>(null)
-    const [facultyProfileMatches, setFacultyProfileMatches] = useState<IProfile[]>([])
+    const [frontPageProfile, setFrontPageProfile] = useState<IProfile | null>(null)
 
-    let facultyCourseCached: Course | null = null;
 
-    useEffect(() => {
-        onSectionChange().then();
+    useEffectAsync(async () => {
+        await onSectionChange();
     }, [section]);
 
 
     async function onSectionChange() {
-        setFacultyProfileMatches([]);
+        /* clear out values so we don't end up rendering last window's data */
         setInstructors([]);
-        if (!section) {
-            setModules([]);
-            setAssignmentGroups([]);
-            return;
-        }
-        setModules(await section.getModules())
-        setAssignmentGroups(await section.getAssignmentGroups({
-            queryParams: {
-                include: ['assignments']
-            }
-        }))
+        setModules([]);
+        setAssignmentGroups([]);
+        setFrontPageProfile(null);
+        if (!section) return;
 
-        const instructors = await getInstructors(section) ?? [];
-        await getFacultyBioPageMatches(instructors);
+        await Promise.all([
+            async () => setFrontPageProfile(await section.getFrontPageProfile()),
+            async () => setModules(await section.getModules()),
+            async () => setInstructors(await getInstructors(section) ?? []),
+            async () => setAssignmentGroups(await section.getAssignmentGroups({
+                queryParams: {
+                    include: ['assignments']
+                }
+            }))
+        ].map(func => func()))
+
     }
 
     async function getInstructors(section: Course) {
@@ -219,31 +236,6 @@ function SectionDetails({section, onClose}: SectionDetailsProps) {
         return fetchInstructors;
     }
 
-    async function getFacultyPages(facultyCourse: Course, searchTerm: string) {
-        return await facultyCourse.getPages({
-            queryParams: {
-                search_term: searchTerm,
-                include: ['body']
-            }
-        })
-    }
-
-    async function getFacultyBioPageMatches(instructors: IUserData[]) {
-        const facultyCourse = facultyCourseCached ?? await Course.getByCode('Faculty Bios');
-        facultyCourseCached = facultyCourse;
-        if (facultyCourse) {
-            console.log(instructors.map(instructor => instructor.name).join(' '))
-            let matches: IProfile[] = [];
-
-            for (let instructor of instructors) {
-                const potentials = await getPotentialFacultyProfiles(instructor);
-
-                matches = [...matches, ...potentials]
-            }
-
-            setFacultyProfileMatches(matches);
-        }
-    }
 
     return (section && (<div>
         <h3>{section.name}
@@ -252,8 +244,8 @@ function SectionDetails({section, onClose}: SectionDetailsProps) {
         <p>{instructors.map(instructor => instructor.name).join(',')}</p>
         <div className={'row'}>
             <div className={'col-sm-8'}>
-                {facultyProfileMatches.map((profile, i) => (
-                    <div key={i} className={'row'} style={{border: "1px solid black", boxShadow: "10 10 2 black"}}>
+                {facultyProfileMatches && facultyProfileMatches.map((profile, i) => (
+                    <div key={i} className={'row'} style={{border: "1px solid black", boxShadow: "10 10 2 #888"}}>
                         <div className={'col-xs-3'}>
                             <h4>Image</h4>
                             {profile.imageLink ? <img style={{width: '100px'}} src={profile.imageLink}></img> :

@@ -1,1 +1,1 @@
-import { Course } from '../src/canvas'
+import Course from "../src/canvas/index";

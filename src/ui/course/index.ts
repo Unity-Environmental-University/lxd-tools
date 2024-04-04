@@ -1,4 +1,4 @@
-import {Assignment, BaseContentItem, Course, NotImplementedException} from "../../canvas";
+import {Course, Assignment, BaseContentItem, NotImplementedException} from "../../canvas";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);

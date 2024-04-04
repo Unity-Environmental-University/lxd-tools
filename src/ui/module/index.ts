@@ -1,5 +1,6 @@
-import {Course} from "../../canvas";
 import assert from "assert";
+
+import {Course} from "../../canvas/index";
 
 (async () => {
     const course = await Course.getFromUrl(document.documentURI);
