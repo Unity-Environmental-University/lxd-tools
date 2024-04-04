@@ -1,0 +1,38 @@
+import React, {useEffect, useState} from "react";
+import {IUserData} from "../canvas/canvasDataDefs";
+import {Course} from "../canvas/index";
+import {IProfile} from "../canvas/profile";
+
+type CourseRowProps = {
+    course: Course,
+    errors: string[],
+    facultyProfileMatches: IProfile[],
+    onClickDx?: (course: Course) => void,
+}
+
+export function PublishCourseRow({course, onClickDx, errors}: CourseRowProps) {
+    const [instructors, setInstructors] = useState<IUserData[]>([])
+
+    useEffect(() => {
+        async function getCourse() {
+            course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
+        }
+
+        getCourse().then();
+    }, [course])
+
+    return (<div className={'row course-row'}>
+        <div className={'col-xs-6'}>
+            <a href={`/courses/${course.id}`} className={course?.workflowState}
+               target={"blank_"}>{course.getItem<string>('course_code')}</a>
+        </div>
+        <div className={'col-xs-2'}>
+            {errors && errors.map((error) => (
+                <div>{error}</div>
+            ))}
+        </div>
+        <div className={'col-xs-1'}>{(onClickDx && course) && (
+            <button onClick={() => onClickDx(course)}>Details</button>)}</div>
+        <div className={'col-xs-3'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
+    </div>)
+}

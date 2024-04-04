@@ -7,7 +7,7 @@ import {parentElement} from "./utils";
 let facultyCourseCached: Course | null = null;
 export interface IProfile {
     user?: IUserData,
-    body?: string | null,
+    bio?: string | null,
     displayName?: string | null,
     image?: HTMLImageElement | null,
     imageLink?: string | null,
@@ -71,7 +71,7 @@ function getProfileFromPageHtml(html:string, user: IUserData): IProfile {
 
     return {
         user,
-        body,
+        bio: body,
         displayName,
         image,
         imageLink: image?.src
@@ -155,28 +155,73 @@ function winnow<T=string>(originalList: T[], winnowFuncs: WinnowFunc<T>[], retur
     return copyList;
 }
 
+
 function getCurioPageFrontPageProfile(html:string, user?: IUserData):IProfile {
     const el = document.createElement('div');
     el.innerHTML = html;
-    let h2s = Array.from(el.querySelectorAll('h2'));
-    h2s = h2s.filter((h2) => h2.innerHTML.match(/Meet your instructor/i));
-    assert(h2s.length === 1, "Can't find bio section of front page.");
-
-    let header = h2s[0];
+    const header = getCurioHeader(el);
     const match = header.innerHTML.match(/Meet your instructor ?,?(.*)!/);
     const displayName = match && match.groups ? match.groups[1] : null;
-    const bodyEl = header.nextElementSibling;
-    assert(bodyEl, "Body element of bio not found on page.")
-
-    const image = bodyEl.querySelector('img');
-    const body = bodyEl.querySelector('.cbt-instructor-bio')?.innerHTML;
+    const bio = getCurioBio(el);
+    const image = getCurioProfileImage(el);
     return {
         user,
         displayName,
         image,
         imageLink: image ? image.src : null,
-        body
+        bio: bio?.innerHTML
    }
+}
+
+export function renderProfileIntoCurioFrontPage(html: string, profile: IProfile) {
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    if(profile.displayName) {
+        const header = getCurioHeader(el);
+        header.innerHTML = `Meet your instructor, ${profile.displayName}!`
+    }
+
+    if(profile.bio) {
+        const bio = getCurioBio(el);
+        if(bio) bio.innerHTML = profile.bio;
+    }
+
+    if(profile.image) {
+        const image = getCurioProfileImage(el);
+        if(image) {
+            image.src = profile.image.src;
+            image.alt = profile.image.alt;
+        }
+    } else if (profile.imageLink) {
+        const image = getCurioProfileImage(el);
+        if(image) {
+            image.src = profile.imageLink;
+        }
+    }
+    return el.innerHTML;
+}
+
+function getCurioHeader(el:Element) {
+    let h2s = Array.from(el.querySelectorAll('h2'));
+    h2s = h2s.filter((h2) => h2.innerHTML.match(/Meet your instructor/i));
+    assert(h2s.length === 1, "Can't find bio section of front page.");
+    return h2s[0];
+
+}
+function getCurioBody(el:Element) {
+    const header = getCurioHeader(el);
+    const bodyEl = header.nextElementSibling;
+    assert(bodyEl, "Body element of bio not found on page.")
+    return bodyEl;
+
+}
+function getCurioBio(el:Element) {
+    return getCurioBody(el).querySelector('.cbt-instructor-bio');
+}
+
+function getCurioProfileImage(el:Element) {
+    return getCurioBody(el).querySelector('img');
+
 }
 
 export {

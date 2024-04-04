@@ -1031,7 +1031,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return this._course;
     }
 
-    async updateContent(text = null, name = null) {
+    async updateContent(text:string|null = null, name:string|null = null) {
         const data: Record<string, any> = {};
         const constructor = <typeof BaseContentItem>this.constructor;
         assert(constructor.bodyProperty);
@@ -1075,7 +1075,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     }
 }
 
-export function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
+function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
     Course.registerContentClass(originalClass);
 }
 
@@ -1179,7 +1179,8 @@ export class Page extends BaseContentItem {
         return this.canvasData[this.bodyKey];
     }
 
-    async updateContent(text = null, name = null) {
+
+    async updateContent(text: string|null = null, name:string|null = null) {
         let data: Record<string, any> = {};
         if (text) {
             this.canvasData[this.bodyKey] = text;

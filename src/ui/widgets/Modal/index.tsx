@@ -4,13 +4,13 @@ import {createPortal} from "react-dom";
 // Modal component base from ChatGPT-3.
 
 interface ModalProps extends React.PropsWithChildren {
-    id?: string,
+    id?: string;
     isOpen: boolean;
+    canClose?: boolean;
     requestClose: () => void;
 }
 
-const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, children}) => {
-    const [isClosing, setIsClosing] = useState(false);
+const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, canClose=true, children}) => {
 
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
@@ -27,11 +27,7 @@ const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, children}) => {
     }, []);
 
     const handleClose = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            setIsClosing(false);
-            requestClose();
-        }, 0); // Adjust the duration to match your CSS transition duration
+        if(canClose) requestClose();
     };
 
     const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -44,7 +40,7 @@ const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, children}) => {
         <>
             {isOpen && createPortal(
                 <div
-                    className={`lxd-modal ${isClosing ? 'closing' : ''}`}
+                    className={`lxd-modal`}
                     onClick={handleBackdropClick}
                     role="dialog"
                     aria-modal="true"
