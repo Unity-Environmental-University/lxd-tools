@@ -1,5 +1,6 @@
 import assert from "assert";
 import {CanvasData, IModuleItemData, IPageData, ModuleItemType, RestrictModuleItemType} from "./canvasDataDefs";
+import {Course} from "./index";
 
 export function parentElement(el: Element, tagName: string) {
     while (el && el.parentElement) {
@@ -122,6 +123,19 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
     url: string, config: ICanvasCallConfig | null = null
 ): Promise<T[]> {
 
+    const generator = getPagedDataGenerator<T>(url, config);
+
+    const out:T[] = [];
+    for await (let value of generator) {
+        out.push(value);
+    }
+    return out;
+}
+
+export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
+    url: string, config: ICanvasCallConfig | null = null
+): AsyncGenerator<T, T[], void> {
+
     if (config?.queryParams) {
         url += '?' + searchParamsFromObject(config.queryParams);
     }
@@ -139,6 +153,9 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
         }
     }
     assert(Array.isArray(data));
+    for(let value of data) {
+        yield value;
+    }
 
     let next_page_link = "!";
     while (next_page_link.length !== 0 &&
@@ -158,9 +175,11 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
                 if (values) {
                     responseData = values?.find((a) => Array.isArray(a));
                 }
+                data = [data, ...responseData];
             }
-
-            data = data.concat(responseData);
+            for(let value of responseData) {
+                yield value;
+            }
         } else {
             next_page_link = "";
         }
@@ -168,6 +187,7 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
 
     return data;
 }
+
 
 export async function fetchJson<T extends Record<string, any>>(
     url: string, config: ICanvasCallConfig | null = null
@@ -207,4 +227,11 @@ export async function fetchOneUnknownApiJson(url: string, config: ICanvasCallCon
     if (!result) return null;
     if (Array.isArray(result) && result.length > 0) return result[0];
     return <CanvasData>result;
+}
+
+export function courseNameSort(a: Course, b: Course) {
+    if (a.name < b.name) return -1;
+    if (b.name < a.name) return 1;
+    return 0;
+
 }

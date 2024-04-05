@@ -8,17 +8,13 @@ import {IProfile, renderProfileIntoCurioFrontPage} from "../canvas/profile";
 import {useEffectAsync} from "../ui/utils";
 import {SectionDetails} from "./SectionDetails";
 import {PublishCourseRow} from "./PublishCourseRow";
-
+import {courseNameSort} from "../canvas/utils";
 console.log("running")
 
-function courseNameSort(a: Course, b: Course) {
-    if (a.name < b.name) return -1;
-    if (b.name < a.name) return 1;
-    return 0;
-
-}
-
 function PublishApp() {
+    //-----
+    // DATA
+    //-----
     const [course, setCourse] = useState<Course | null>()
     const [show, setShow] = useState<boolean>(false)
     const [info, setInfo] = useState<string | null | boolean>(null);
@@ -28,7 +24,8 @@ function PublishApp() {
     const [sectionProfiles, setSectionProfiles] = useState<Record<number, IProfile[]>>({})
     const [publishErrors, setPublishErrors] = useState<Record<number, string[]>>({})
     const [loading, setLoading] = useState<boolean>(false);
-    /// DATA
+    const [infoClass, setInfoClass] = useState<string>('alert-secondary')
+
     async function getCourse() {
         if (!course) {
             const tempCourse = await Course.getFromUrl();
@@ -75,11 +72,16 @@ function PublishApp() {
         return sectionProfiles[section.id];
     }
 
-    /// EVENTS
+    //-----
+    // EVENTS
+    //-----
     async function publishCourses(event: React.MouseEvent) {
         const accountId = course?.getItem<number>('account_id');
         assert(accountId);
         await Course.publishAll(associatedCourses, accountId)
+        inform('publishing')
+        setLoading(true);
+        //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
             let newAssocCourses = await course?.getAssociatedCourses();
             if (newAssocCourses) {
@@ -88,7 +90,8 @@ function PublishApp() {
                 newAssocCourses = [];
             }
             setAssociatedCourses(newAssocCourses);
-            setInfo('Finished Publishing');
+            setLoading(false);
+            success('Published');
         }, 500);
     }
 
@@ -106,8 +109,10 @@ function PublishApp() {
         tempErrors[section.id] = errorSet
         setPublishErrors({...tempErrors})
     }
+
     async function applySectionProfiles(event: React.MouseEvent) {
         setLoading(true);
+        inform("Updating section profiles...")
         setPublishErrors({});
         for(let section of associatedCourses) {
             const profiles = await getSectionProfileAsync(section);
@@ -127,10 +132,25 @@ function PublishApp() {
             }
             const html = renderProfileIntoCurioFrontPage(frontPage.body, profile);
             await frontPage.updateContent(html);
+            setInfo(`Updated ${profile.displayName}...`)
         }
+        setLoading(false);
+        success("Profiles Updated")
     }
 
-    /// RENDER
+    function inform(message: string, alertClass:string='alert-secondary') {
+        setInfo(message);
+        setInfoClass(alertClass)
+    }
+
+    function success(message: string) {
+        inform(message, 'alert-success');
+    }
+
+
+    //-----
+    // RENDER
+    //-----
     function openButton() {
         return (course && <Button disabled={!isBlueprint}
                                   className={isBlueprint ? 'ui-button' : ''}
@@ -186,7 +206,7 @@ function PublishApp() {
                     </div>
                 </div>
             </div>)}
-            {info && <div className={'alert alert-primary'}>{info}</div>}
+            {info && <div className={`alert ${infoClass}`} role={'alert'}>{info}</div>}
             <div>
                 <SectionDetails
                     facultyProfileMatches={workingSection && getSectionProfileInRender(workingSection)}
@@ -198,6 +218,7 @@ function PublishApp() {
         </Modal>
     </>)
 }
+
 
 export default PublishApp
 

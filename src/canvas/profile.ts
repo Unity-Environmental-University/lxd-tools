@@ -183,7 +183,11 @@ export function renderProfileIntoCurioFrontPage(html: string, profile: IProfile)
 
     if(profile.bio) {
         const bio = getCurioBio(el);
-        if(bio) bio.innerHTML = profile.bio;
+        if(bio) {
+            const classes = bio.classList;
+            if(!classes.contains('cbt-instructor-bio')) classes.add('cbt-instructor-bio')
+            bio.innerHTML = profile.bio;
+        }
     }
 
     if(profile.image) {
@@ -208,19 +212,28 @@ function getCurioHeader(el:Element) {
     return h2s[0];
 
 }
-function getCurioBody(el:Element) {
+function getCurioProfileDiv(el:Element) {
     const header = getCurioHeader(el);
-    const bodyEl = header.nextElementSibling;
-    assert(bodyEl, "Body element of bio not found on page.")
-    return bodyEl;
+    const sectionEl = header.nextElementSibling;
+    assert(sectionEl, "Body element of bio not found on page.")
+    return sectionEl;
 
 }
+
+
 function getCurioBio(el:Element) {
-    return getCurioBody(el).querySelector('.cbt-instructor-bio');
+    const profileDiv = getCurioProfileDiv(el);
+    let bio = profileDiv.querySelector('.cbt-instructor-bio');
+    if(bio && bio.innerHTML) return bio;
+    let div = getCurioProfileDiv(el);
+    const p = div.querySelector('p');
+    return p?.parentElement;
+
+
 }
 
 function getCurioProfileImage(el:Element) {
-    return getCurioBody(el).querySelector('img');
+    return getCurioProfileDiv(el).querySelector('img');
 
 }
 
