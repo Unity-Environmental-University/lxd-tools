@@ -39,7 +39,6 @@ runtime.onMessage.addListener((
 
 })
 
-
 action.onClicked.addListener(async (tab) => {
   console.log('click');
   const id = tab.id;

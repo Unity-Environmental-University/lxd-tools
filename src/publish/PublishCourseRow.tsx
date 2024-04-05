@@ -12,12 +12,12 @@ type CourseRowProps = {
 
 export function PublishCourseRow({course, onClickDx, errors}: CourseRowProps) {
     const [instructors, setInstructors] = useState<IUserData[]>([])
-    const [fpProfile, setFpProfile] = useState<IProfile>();
+    const [frontPageProfile, setFrontPageProfile] = useState<IProfile>();
 
     useEffect(() => {
         async function getCourse() {
             course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
-            setFpProfile(await course.getFrontPageProfile())
+            setFrontPageProfile(await course.getFrontPageProfile())
         }
 
         getCourse().then();
@@ -25,11 +25,11 @@ export function PublishCourseRow({course, onClickDx, errors}: CourseRowProps) {
 
     return (<div className={'row course-row'}>
         <div className={'col-xs-6'}>
-            <a href={`/courses/${course.id}`} className={course?.workflowState}
+            <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}
                target={"blank_"}>{course.getItem<string>('course_code')}</a>
         </div>
         <div className={'col-xs-2'}>
-            {fpProfile && fpProfile.displayName}
+            {frontPageProfile && frontPageProfile.displayName}
         </div>
         <div className={'col-xs-1'}>{(onClickDx && course) && (
             <button onClick={() => onClickDx(course)}>Details</button>)}</div>

@@ -25,7 +25,7 @@ export function SectionDetails({section, onClose, facultyProfileMatches}: Sectio
 
 
     async function onSectionChange() {
-        /* clear out values so we don't end up rendering last window's data */
+        /* clear out values, so we don't end up rendering last window's data */
         setInstructors([]);
         setModules([]);
         setAssignmentGroups([]);
@@ -82,9 +82,9 @@ export function SectionDetails({section, onClose, facultyProfileMatches}: Sectio
     }
 
     return (section && (<div>
-        <h3>{section.name}
-            <button onClick={onClose}>X</button>
+        <h3>Section Details<button onClick={onClose}>X</button>
         </h3>
+        <p><a href={section.courseUrl} target={'_blank'} className={'course-link'}>{section.name}</a></p>
         {info && <div className={`alert ${infoClass}`}>{info}</div>}
         <div className={'row'}>
             <div className={'col-sm-8'}>
@@ -139,6 +139,7 @@ function FacultyProfile({profile, setProfileButton}: FacultyProfileProps) {
                     <h3>No Image</h3>}
                 <h4>Display Name</h4>
                 <p>{profile.displayName ?? "[No Display Name Found]"}</p>
+                {profile.sourcePage && <p><a href={profile.sourcePage.htmlContentUrl} target={'_blank'}>Source Page</a></p>}
             </div>
             <div className={'col-xs-9 rawHtml'}>
                 {profile.bio ?? "[No bio found on page]"}

@@ -11,12 +11,14 @@
       background-color: #f0f0f0;
   }
 
+  a.course-link:after {
+    content: '\e89d';
+    font-family: "Material Icons";
+  }
+
+
   .course-row {
 
-    a:after {
-      content: '\e89d';
-      font-family: "Material Icons";
-    }
 
     a.available:before {
       content: '\e92f';

@@ -848,7 +848,9 @@ export class Course extends BaseCanvasObject<ICourseData> {
     public async getFrontPageProfile() {
         const frontPage = await this.getFrontPage();
         assert(frontPage && frontPage.body, "Course front page not found");
-        return getCurioPageFrontPageProfile(frontPage?.body);
+        const frontPageProfile = getCurioPageFrontPageProfile(frontPage?.body);
+        frontPageProfile.sourcePage = frontPage;
+        return frontPageProfile;
     }
 
     public async getPotentialInstructorProfiles() {

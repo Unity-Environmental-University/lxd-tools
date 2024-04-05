@@ -11,7 +11,7 @@ export interface IProfile {
     displayName?: string | null,
     image?: HTMLImageElement | null,
     imageLink?: string | null,
-    sourcePageLink?: string | null,
+    sourcePage?: Page | null,
 
 }
 
@@ -46,7 +46,7 @@ async function getPotentialFacultyProfiles(user:IUserData) {
         if(pages.length > 0) break;
     }
 
-    let profiles = pages.map((page) => getProfileFromPageHtml(page.body, user), true)
+    let profiles = pages.map((page) => getProfileFromPage(page, user), true)
     // profiles = winnow(profiles, [
     //     (profile) => profile.body !== null,
     //     (profile) => profile.displayName != null,
@@ -59,6 +59,12 @@ async function getPotentialFacultyProfiles(user:IUserData) {
         }
     }
     return profiles;
+}
+
+function getProfileFromPage(page:Page, user:IUserData) {
+    const profile = getProfileFromPageHtml(page.body, user);
+    profile.sourcePage = page;
+    return profile;
 }
 
 function getProfileFromPageHtml(html:string, user: IUserData): IProfile {
