@@ -40,9 +40,6 @@ export function formDataify(data: Record<string, any>) {
         const authenticityToken = el ? el.value : null;
         if (authenticityToken) formData.append('authenticity_token', authenticityToken);
     }
-    for (let entry of formData.entries()) {
-        console.log(entry[0], entry[1]);
-    }
     return formData;
 }
 

@@ -12,10 +12,12 @@ type CourseRowProps = {
 
 export function PublishCourseRow({course, onClickDx, errors}: CourseRowProps) {
     const [instructors, setInstructors] = useState<IUserData[]>([])
+    const [fpProfile, setFpProfile] = useState<IProfile>();
 
     useEffect(() => {
         async function getCourse() {
             course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
+            setFpProfile(await course.getFrontPageProfile())
         }
 
         getCourse().then();
@@ -27,9 +29,7 @@ export function PublishCourseRow({course, onClickDx, errors}: CourseRowProps) {
                target={"blank_"}>{course.getItem<string>('course_code')}</a>
         </div>
         <div className={'col-xs-2'}>
-            {errors && errors.map((error) => (
-                <div>{error}</div>
-            ))}
+            {fpProfile && fpProfile.displayName}
         </div>
         <div className={'col-xs-1'}>{(onClickDx && course) && (
             <button onClick={() => onClickDx(course)}>Details</button>)}</div>

@@ -161,11 +161,12 @@ function PublishApp() {
     function associatedCourseRows() {
         return (<div className={'course-table'}>
             <div className={'row'}>
-                <div className={'col-sm-9'}>
+                <div className={'col-sm-6'}>
 
                     <div><strong>Code</strong></div>
                     <a href={'#'} onClick={openAll}>Open All</a>
                 </div>
+                <div className={'col-sm-3'}><strong>Name on Front Page</strong></div>
                 <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
             </div>
             {associatedCourses && associatedCourses.map((course) => (
@@ -192,7 +193,7 @@ function PublishApp() {
                     <div className={'col-xs-12 col-sm-12'}>
                         Publish sections associated with this blueprint
                     </div>
-                    <div className={'col-xs-4'}>
+                    <div className={'col-xs-2'}>
                         <Button className="btn" disabled={loading || !(course?.isBlueprint)} onClick={applySectionProfiles}>
                             Set Bios
                         </Button>

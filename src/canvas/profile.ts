@@ -155,13 +155,12 @@ function winnow<T=string>(originalList: T[], winnowFuncs: WinnowFunc<T>[], retur
     return copyList;
 }
 
-
 function getCurioPageFrontPageProfile(html:string, user?: IUserData):IProfile {
     const el = document.createElement('div');
     el.innerHTML = html;
     const header = getCurioHeader(el);
-    const match = header.innerHTML.match(/Meet your instructor ?,?(.*)!/);
-    const displayName = match && match.groups ? match.groups[1] : null;
+    const match = header.innerHTML.match(/Meet your.*, ?(.*)!/);
+    const displayName = match ? match[1] : null;
     const bio = getCurioBio(el);
     const image = getCurioProfileImage(el);
     return {
