@@ -29,8 +29,8 @@ import {
     getPagedData,
     ICanvasCallConfig
 } from "./utils";
-import {downloadFile} from "./image";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "./profile";
+import {contentResizeImage} from "./image";
 
 //const HOMETILE_WIDTH = 500;
 
@@ -766,6 +766,9 @@ export class Course extends BaseCanvasObject<ICourseData> {
         }
     }
 
+    /* Not working due to CORS; we need to set up the proxy server to be able to resize images.
+
+     */
     async generateHomeTiles() {
         const modules = await this.getModules();
         const promises: Promise<void>[] = [];
@@ -792,10 +795,11 @@ export class Course extends BaseCanvasObject<ICourseData> {
         let bannerImg: HTMLImageElement | null = pageBody.querySelector('.cbt-banner-image img')
 
         assert(bannerImg, "Page has no banner");
-        let download = await downloadFile({
-            method: 'GET',
-            url: bannerImg.src,
-        });
+        // let download = await downloadFile({
+        //     method: 'GET',
+        //     url: bannerImg.src,
+        // });
+        let resizedImage = await contentResizeImage({src: bannerImg.src, width: 500});
     }
 
     async uploadFile(file: File, path: string) {

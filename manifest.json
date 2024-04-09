@@ -52,5 +52,13 @@
       "run_at" : "document_end"
     }
   ],
-  "permissions" : ["activeTab", "scripting", "storage"]
+  "permissions" : ["activeTab", "scripting", "storage", "downloads"],
+  "host_permissions" : [
+    "*://*.inscloudgate.com/*",
+    "*://*.canvas-user-content.com/*",
+    "*://*.*.canvas-user-content.com/*",
+    "*://*.instructure.com/*"
+  ],
+  "optional_host_permissions":[
+  ]
 }

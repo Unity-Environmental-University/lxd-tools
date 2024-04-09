@@ -1,15 +1,15 @@
 // drawing from https://hackernoon.com/how-to-create-a-chrome-extension-with-react
 
 import {runtime, action, scripting, Runtime, Downloads, tabs} from 'webextension-polyfill'
+import {ResizeImageMessage, backgroundResizeImage} from "../canvas/image";
 
-type MessageHandler<T> = (
+type MessageHandler<T, Output> = (
       params: T,
       sender: Runtime.MessageSender,
-      sendResponse: () => void
-  ) => void | Promise<void>
+      sendResponse: (output: Output) => void
+  ) => void | boolean | Promise<boolean | void>
 
-
-const messageHandlers: Record<string, MessageHandler<any>> = {
+const messageHandlers: Record<string, MessageHandler<any, any>> = {
   async searchForCourse (queryString:string) {
     console.log("trying to open message " + queryString)
     const activeTab = await getActiveTab();
@@ -21,7 +21,7 @@ const messageHandlers: Record<string, MessageHandler<any>> = {
       files: ['./js/content.js']
     });
     await tabs.sendMessage(activeTab.id, {'queryString': queryString});
-  }
+  },
 }
 
 runtime.onMessage.addListener((
@@ -30,14 +30,26 @@ runtime.onMessage.addListener((
     sendResponse
 ) => {
   for(let messageKey in messageHandlers) {
+    console.log('looking for')
     if(message.hasOwnProperty(messageKey)) {
       const handler = messageHandlers[messageKey];
       const params = message[messageKey];
       handler(params, sender, sendResponse);
     }
   }
-
 })
+
+runtime.onMessage.addListener((message: { resizeImage : ResizeImageMessage }, sender, sendResponse:(value:any) => void) => {
+  if (message.resizeImage) {
+    const {src, width, height} = message.resizeImage;
+    (async () => {
+      let resized = await backgroundResizeImage(src, width, height);
+      sendResponse(resized);
+
+    })();
+    return true;
+  }
+});
 
 action.onClicked.addListener(async (tab) => {
   console.log('click');

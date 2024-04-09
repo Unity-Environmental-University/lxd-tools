@@ -2,45 +2,45 @@ import {runtime, Downloads} from "webextension-polyfill";
 import DownloadOptionsType = Downloads.DownloadOptionsType;
 import assert from "assert";
 
-export async function downloadFile(options: DownloadOptionsType) {
-    await runtime.sendMessage('downloadFile', options);
+import { Jimp as JimpType, JimpConstructors } from '@jimp/core';
+import 'jimp';
+import {fetchOneKnownApiJson} from "./utils";
+
+declare const Jimp: JimpType & JimpConstructors;
+
+export type ResizeImageMessage = {
+    src: string,
+    width: number,
+    height?: number
 }
 
-export function resizeImage(imgSrc: string, targetWidth: number, targetHeight: null | number = null): Promise<ImageData> {
-    assert(document);
-    const image = new Image();
-    image.loading = 'eager';
-    return new Promise((resolve, reject) => {
-        let callback = () => {
-            console.log("Loaded");
-            console.log(image.src, image.height, image.width);
-            const targetCanvas = document.createElement('canvas');
-            const tCtx = targetCanvas.getContext('2d');
-            if (!tCtx) {
-                reject();
-                return;
-            }
-            tCtx.imageSmoothingEnabled = true;
-            tCtx.imageSmoothingQuality = "high";
-
-            const aspectRatio = image.width / image.height;
-            targetHeight = targetHeight ? targetHeight : targetWidth / aspectRatio;
-            targetCanvas.width = targetWidth;
-            targetCanvas.height = targetHeight;
-            tCtx.drawImage(image, 0, 0, targetWidth, targetHeight);
-            resolve(tCtx.getImageData(0, 0, targetWidth, targetHeight));
-        }
-        console.log("loading", imgSrc);
-        image.src = imgSrc;
-        if (image.complete) {
-            callback();
-        } else {
-            image.addEventListener('load', callback);
-            image.addEventListener('error', (e) => {
-                console.log(e);
-                console.log(image);
-            })
-        }
-
-    });
+export async function contentResizeImage(message: ResizeImageMessage) {
+    console.log("resizing", message);
+    const image = document.createElement('img');
+    const base64 = await runtime.sendMessage({resizeImage: message});
+    image.src = base64;
+    image.width = message.width;
+    image.height = message.width;
 }
+
+export function backgroundResizeImage(src: string, width:number, height: number | undefined) {
+
+    //if(!height) height = src.height / src.width * width;
+    const imageUrl = src;
+    const dataUrl = imageUrl.replace('.com/', '.com/api/v1/').replace('/preview', '');
+
+    return new Promise(async(resolve) => {
+        const imageDataRes = await fetch(dataUrl);
+        const imageData = await imageDataRes.json();
+        const imageFileResponse = await fetch(imageUrl);
+        let reader = new FileReader();
+        reader.onload = event => {
+            console.log(event.target?.result);
+            resolve(reader.result)
+        }
+        const blob = await imageFileResponse.blob();
+        console.log(blob);
+        reader.readAsDataURL(blob);
+    })
+}
+

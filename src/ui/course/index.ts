@@ -23,6 +23,7 @@ import {Course, Assignment, BaseContentItem, NotImplementedException} from "../.
     if(currentContentItem) {
         await addOpenAllLinksButton(header, currentContentItem);
     }
+    await addHomeTilesButton(header, currentCourse);
 })();
 
 
@@ -112,15 +113,14 @@ function openAllLinksInContent(contentItem: BaseContentItem) {
  * @param course
  */
 async function addHomeTilesButton(container: HTMLElement, course: Course) {
-    throw new NotImplementedException();
-    // console.log("Adding home tile buttons");
-    // let homeTileBtn = document.createElement('btn');
-    // homeTileBtn.classList.add('btn');
-    // homeTileBtn.innerHTML = "Update Home Tiles";
-    // homeTileBtn.addEventListener('click', async () => {
-    //   await course.generateHomeTiles();
-    // })
-    // const parent = container.parentNode;
-    // if (!parent) return;
-    // parent.insertBefore(homeTileBtn, container);
+    console.log("Adding home tile buttons");
+    let homeTileBtn = document.createElement('btn');
+    homeTileBtn.classList.add('btn');
+    homeTileBtn.innerHTML = "Update Home Tiles";
+    homeTileBtn.addEventListener('click', async () => {
+      await course.generateHomeTiles();
+    })
+    const parent = container.parentNode;
+    if (!parent) return;
+    parent.insertBefore(homeTileBtn, container);
 }
