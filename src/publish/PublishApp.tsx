@@ -155,7 +155,7 @@ function PublishApp() {
         return (course && <Button disabled={!isBlueprint}
                                   className={isBlueprint ? 'ui-button' : ''}
                                   onClick={(e) => setShow(true)}
-        >{isBlueprint ? "Publishing..." : "Not A Blueprint"}</Button>)
+        >{isBlueprint ? "Manage Sections" : "Not A Blueprint"}</Button>)
     }
 
     function associatedCourseRows() {
