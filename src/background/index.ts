@@ -1,7 +1,7 @@
 // drawing from https://hackernoon.com/how-to-create-a-chrome-extension-with-react
 
 import {runtime, action, scripting, Runtime, Downloads, tabs} from 'webextension-polyfill'
-import {ResizeImageMessage, backgroundResizeImage} from "../canvas/image";
+import {ResizeImageMessage, backgroundDownloadImage} from "../canvas/image";
 
 type MessageHandler<T, Output> = (
       params: T,
@@ -39,11 +39,10 @@ runtime.onMessage.addListener((
   }
 })
 
-runtime.onMessage.addListener((message: { resizeImage : ResizeImageMessage }, sender, sendResponse:(value:any) => void) => {
-  if (message.resizeImage) {
-    const {src, width, height} = message.resizeImage;
+runtime.onMessage.addListener((message: { downloadImage : string }, sender, sendResponse:(value:any) => void) => {
+  if (message.downloadImage) {
     (async () => {
-      let resized = await backgroundResizeImage(src, width, height);
+      let resized = await backgroundDownloadImage(message.downloadImage);
       sendResponse(resized);
 
     })();

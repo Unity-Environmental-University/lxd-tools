@@ -1,4 +1,9 @@
 import {Course, Assignment, BaseContentItem, NotImplementedException} from "../../canvas";
+import ReactDOM from "react-dom/client";
+import React from "react";
+
+import assert from "assert";
+import {HomeTileApp} from "./HomeTileApp";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);
@@ -23,9 +28,26 @@ import {Course, Assignment, BaseContentItem, NotImplementedException} from "../.
     if(currentContentItem) {
         await addOpenAllLinksButton(header, currentContentItem);
     }
-    await addHomeTilesButton(header, currentCourse);
+    const homeTileHost = document.querySelector('#Modules-anchor');
+    console.log(homeTileHost);
+
+    if(homeTileHost) {
+        console.log(homeTileHost);
+        const buttonHolder = document.createElement('div');
+        homeTileHost.append(buttonHolder);
+        addHomeTileButton(buttonHolder,  currentCourse );
+    }
+
 })();
 
+function addHomeTileButton(el:HTMLElement, course:Course) {
+    const root = document.createElement("div")
+    const rootDiv = ReactDOM.createRoot(root);
+    rootDiv.render(
+        <HomeTileApp el={el} course={course} />
+    );
+    document.body.append(root);
+}
 
 async function openThisContentInTarget(currentCourse: Course, target: Course | Course[]) {
     if (!window) return;
@@ -104,23 +126,4 @@ function openAllLinksInContent(contentItem: BaseContentItem) {
 
     for(let url of urls) window.open(url, "_blank");
 
-}
-
-/**
- * NOT IMPLEMENTED
- * @ TODO: Implement this if at all possible
- * @param container
- * @param course
- */
-async function addHomeTilesButton(container: HTMLElement, course: Course) {
-    console.log("Adding home tile buttons");
-    let homeTileBtn = document.createElement('btn');
-    homeTileBtn.classList.add('btn');
-    homeTileBtn.innerHTML = "Update Home Tiles";
-    homeTileBtn.addEventListener('click', async () => {
-      await course.generateHomeTiles();
-    })
-    const parent = container.parentNode;
-    if (!parent) return;
-    parent.insertBefore(homeTileBtn, container);
 }

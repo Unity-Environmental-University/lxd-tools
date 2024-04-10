@@ -56,7 +56,7 @@
   "host_permissions" : [
     "*://*.inscloudgate.com/*",
     "*://*.canvas-user-content.com/*",
-    "*://*.*.canvas-user-content.com/*",
+    "*://*.canvas-user-content.com/*",
     "*://*.instructure.com/*"
   ],
   "optional_host_permissions":[

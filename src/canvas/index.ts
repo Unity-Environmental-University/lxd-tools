@@ -6,6 +6,8 @@ And starting to convert to ts
  It kept inventing code that should work but didn't */
 
 import assert from 'assert';
+const HOMETILE_WIDTH = 500;
+
 import {
     CanvasData,
     IAssignmentGroup,
@@ -30,7 +32,8 @@ import {
     ICanvasCallConfig
 } from "./utils";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "./profile";
-import {contentResizeImage} from "./image";
+import {contentDownloadImage, getResizedBlob} from "./image";
+import {uploadFile} from "./files";
 
 //const HOMETILE_WIDTH = 500;
 
@@ -282,12 +285,6 @@ export class Course extends BaseCanvasObject<ICourseData> {
 
     }
 
-    async reload() {
-        const id = this.id;
-        const reloaded = await Course.getCourseById(id);
-        this.canvasData = reloaded.rawData;
-    }
-
     get contentUrlPath() {
         return `courses/${this.id}`;
     }
@@ -329,27 +326,6 @@ export class Course extends BaseCanvasObject<ICourseData> {
         return id;
     }
 
-    async getInstructors(): Promise<IUserData[] | null> {
-        return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
-    }
-
-
-    async getTerms(): Promise<Term[] | null> {
-        if (this.termIds) {
-            if (Array.isArray(this.termIds)) {
-                let terms = await Promise.all(this.termIds.map(async (termId) => {
-                    return Term.getTermById(termId)
-                }))
-                terms = terms.filter((term) => {
-                    return term
-                })
-                return terms as Term[]
-            }
-        }
-        return null;
-    }
-
-
     async getTerm(): Promise<Term | null> {
         assert(typeof this.termId === 'number')
 
@@ -357,6 +333,10 @@ export class Course extends BaseCanvasObject<ICourseData> {
         else return null;
     }
 
+    get fileUploadUrl() {
+        console.log(this.id);
+        return `/api/v1/courses/${this.id}/files`;
+    }
 
     get codePrefix() {
         let match = this.codeMatch;
@@ -387,6 +367,25 @@ export class Course extends BaseCanvasObject<ICourseData> {
         let modules = <IModuleData[]>await getApiPagedData(`${this.contentUrlPath}/modules?include[]=items&include[]=content_details`);
         this._modules = modules;
         return modules;
+    }
+
+    async getInstructors(): Promise<IUserData[] | null> {
+        return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
+    }
+
+    async getTerms(): Promise<Term[] | null> {
+        if (this.termIds) {
+            if (Array.isArray(this.termIds)) {
+                let terms = await Promise.all(this.termIds.map(async (termId) => {
+                    return Term.getTermById(termId)
+                }))
+                terms = terms.filter((term) => {
+                    return term
+                })
+                return terms as Term[]
+            }
+        }
+        return null;
     }
 
     async getContentItemFromUrl(url: string | null = null) {
@@ -426,7 +425,6 @@ export class Course extends BaseCanvasObject<ICourseData> {
     }): Promise<string[]> {
         assert(target.hasOwnProperty('type'));
         let targetType: ModuleItemType = target.type;
-        let url: string | null = null;
         let contentSearchString = target.hasOwnProperty('search') ? target.search : null;
         let targetIndex = isNaN(target.index) ? null : target.index;
         let targetModuleWeekNumber;
@@ -494,7 +492,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
     }
 
     async getAssignmentGroups(config?: ICanvasCallConfig) {
-        return await getApiPagedData<IAssignmentGroup>(`courses/${this.id}/assignment_groups`)
+        return await getApiPagedData<IAssignmentGroup>(`courses/${this.id}/assignment_groups`, config)
     }
 
     /**
@@ -535,6 +533,13 @@ export class Course extends BaseCanvasObject<ICourseData> {
 
     getTab(label: string) {
         return this.canvasData.tabs.find((tab: Record<string, any>) => tab.label === label) || null;
+    }
+
+
+    async reload() {
+        const id = this.id;
+        const reloaded = await Course.getCourseById(id);
+        this.canvasData = reloaded.rawData;
     }
 
     async setNavigationTabHidden(label: string, value: boolean) {
@@ -769,13 +774,13 @@ export class Course extends BaseCanvasObject<ICourseData> {
     /* Not working due to CORS; we need to set up the proxy server to be able to resize images.
 
      */
-    async generateHomeTiles() {
+    async regenerateHomeTiles() {
         const modules = await this.getModules();
-        const promises: Promise<void>[] = [];
-        for (let module of modules) {
-            promises.push(this.generateHomeTile(module));
-        }
-        await Promise.all(promises);
+        let urls = await Promise.all(modules.map(async (module) => {
+            let dataUrl = await this.generateHomeTile(module)
+        }));
+        console.log('done');
+
     }
 
     async generateHomeTile(module: IModuleData) {
@@ -784,47 +789,21 @@ export class Course extends BaseCanvasObject<ICourseData> {
             item.type === "Page" &&
             item.title.toLowerCase().includes('overview')
         );
-        if (!overview?.url) return;
+        if(!overview?.url) return; //skip this if it's not an overview
 
-        assert(overview.url);
-        const url = overview.url.replace(/https:\/\/.*api\/v1/, '/api/v1')
+        const url = overview.url.replace(/.*\/api\/v1/, '/api/v1')
         const pageData = await fetchJson(url) as CanvasData;
         const overviewPage = new Page(pageData, this);
         const pageBody = document.createElement('html');
         pageBody.innerHTML = overviewPage.body;
         let bannerImg: HTMLImageElement | null = pageBody.querySelector('.cbt-banner-image img')
-
         assert(bannerImg, "Page has no banner");
-        // let download = await downloadFile({
-        //     method: 'GET',
-        //     url: bannerImg.src,
-        // });
-        let resizedImage = await contentResizeImage({src: bannerImg.src, width: 500});
-    }
+        let resizedImageBlob = await getResizedBlob(bannerImg.src, HOMETILE_WIDTH);
+        let fileName = `hometile${module.position}.png`;
+        assert(resizedImageBlob);
+        let file = new File([resizedImageBlob], fileName)
+        return await uploadFile(file, 'Images/hometile',this.fileUploadUrl);
 
-    async uploadFile(file: File, path: string) {
-        let url = `/api/v1/courses/${this.id}/files`;
-        file.name;
-        const initialParams = {
-            name: file.name,
-            no_redirect: true,
-            parent_folder: path,
-            on_duplicate: 'overwrite'
-        }
-        let response = await fetch(url, {
-            body: formDataify(initialParams),
-            method: 'POST'
-        });
-        assert(response.ok, await response.json());
-        const data = await response.json();
-
-        const uploadParams = data.upload_params;
-        const uploadFormData = formDataify(uploadParams);
-        uploadFormData.append('file', file);
-        response = await fetch(uploadParams.url, {
-            body: uploadFormData,
-        })
-        assert(response.ok, await response.text());
     }
 
     static registerContentClass(contentClass: typeof BaseContentItem) {
@@ -833,20 +812,6 @@ export class Course extends BaseCanvasObject<ICourseData> {
 
     public getPages(config: ICanvasCallConfig | null = null) {
         return Page.getAllInCourse(this, config) as Promise<Page[]>;
-    }
-
-    static async exists(baseCode: string, accountId: number | number[] | null = null, config: ICanvasCallConfig | null = null) {
-        if (!accountId) accountId = (await Account.getRootAccount()).id;
-        if (!Array.isArray(accountId)) {
-            accountId = [accountId];
-        }
-        let foundCount = 0;
-        for (let id of accountId) {
-            let url = this.getAllUrl(null, id)
-            let data = fetchOneUnknownApiJson(url);
-            if (Array.isArray(data) && data.length > 0) return true;
-        }
-        return false;
     }
 
     public async getFrontPageProfile() {
@@ -893,7 +858,7 @@ export class Account extends BaseCanvasObject<CanvasData> {
         return null;
     }
 
-    static async getAccountById<T extends CanvasData>(accountId: number, config: ICanvasCallConfig | undefined = undefined): Promise<Account> {
+    static async getAccountById(accountId: number, config: ICanvasCallConfig | undefined = undefined): Promise<Account> {
         const data = await this.getDataById(accountId, null, config)
         console.assert()
         return new Account(data);
@@ -1247,7 +1212,7 @@ export class Term extends BaseCanvasObject<ITermData> {
     static async getTermById(termId: number, config: ICanvasCallConfig | null = null) {
         let account = await Account.getRootAccount();
         let url = `accounts/${account.id}/terms/${termId}`;
-        let termData = await fetchApiJson(url) as ITermData | null;
+        let termData = await fetchApiJson(url, config) as ITermData | null;
         if (termData) return new Term(termData);
         return null;
     }

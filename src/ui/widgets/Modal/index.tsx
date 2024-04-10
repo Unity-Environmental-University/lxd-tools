@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from "react";
 import {createPortal} from "react-dom";
-
-// Modal component base from ChatGPT-3.
+import "./modal.scss"
+// Modal component base from ChatGPT-3.5
 
 interface ModalProps extends React.PropsWithChildren {
     id?: string;
     isOpen: boolean;
     canClose?: boolean;
-    requestClose: () => void;
+    requestClose?: () => void | undefined;
 }
 
-const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, canClose=true, children}) => {
+const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose = undefined, canClose=true, children}) => {
 
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
@@ -27,7 +27,7 @@ const Modal: React.FC<ModalProps> = ({id, isOpen, requestClose, canClose=true, c
     }, []);
 
     const handleClose = () => {
-        if(canClose) requestClose();
+        if(canClose && requestClose) requestClose();
     };
 
     const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
