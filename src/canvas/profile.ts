@@ -165,7 +165,7 @@ function getCurioPageFrontPageProfile(html:string, user?: IUserData):IProfile {
     const el = document.createElement('div');
     el.innerHTML = html;
     const header = getCurioHeader(el);
-    const match = header.innerHTML.match(/Meet your.*, ?(.*)!/);
+    const match = header.innerHTML.match(/Meet your instructor, ?(.*)!/i);
     const displayName = match ? match[1] : null;
     const bio = getCurioBio(el);
     const image = getCurioProfileImage(el);
