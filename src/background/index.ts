@@ -30,7 +30,6 @@ runtime.onMessage.addListener((
     sendResponse
 ) => {
   for(let messageKey in messageHandlers) {
-    console.log('looking for')
     if(message.hasOwnProperty(messageKey)) {
       const handler = messageHandlers[messageKey];
       const params = message[messageKey];
@@ -51,7 +50,7 @@ runtime.onMessage.addListener((message: { downloadImage : string }, sender, send
 });
 
 action.onClicked.addListener(async (tab) => {
-  console.log('click');
+
   const id = tab.id;
   if (!id) { return }
 

@@ -37,16 +37,9 @@ const failedFixes: ContentFix<T>[]= [];
 export function findReplaceFunc(find:string|RegExp, replace:string) {
     return (source: string) => {
         const output = source.replace(find, replace);
-        console.log(find, replace);
-        console.log(output.length - source.length)
-        if(find instanceof RegExp) {
-            console.log([
-                source.match(find),
-                source.length - output.length,
-                source,
-                output]);
 
-        }
+
+
 
         return output;
     };
@@ -63,8 +56,8 @@ export function inTest(find:string|RegExp, caseSensitive=true) {
         return (source: string) => (caseSensitive ? source : source.toLowerCase()).includes(findValue);
     } else {
         return (source:string) => {
-            console.log(find.toString())
-            console.log(source.match(find));
+
+
             return !!source.match(find);
         }
     }
@@ -83,8 +76,7 @@ export function notInTest(find: string|RegExp, caseSensitive = true) {
         }
     } else {
         return (source:string) => {
-            console.log(find.toString())
-            console.log(source.match(find));
+
             return !source.match(find);
         }
     }

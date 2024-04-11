@@ -9,7 +9,7 @@ import {HomeTileApp} from "./HomeTileApp";
     const currentCourse = await Course.getFromUrl(document.documentURI);
     const CurrentContentClass = Course.getContentClassFromUrl();
     const currentContentItem = await CurrentContentClass?.getFromUrl();
-    console.log(CurrentContentClass, currentContentItem);
+
     if (!currentCourse) return;
     let header: HTMLElement | null = document.querySelector('.right-of-crumbs');
     if (!header) return;
@@ -29,7 +29,6 @@ import {HomeTileApp} from "./HomeTileApp";
         await addOpenAllLinksButton(header, currentContentItem);
     }
     const homeTileHost = document.querySelector('#Modules-anchor');
-    console.log(homeTileHost);
 
     if(homeTileHost) {
         console.log(homeTileHost);

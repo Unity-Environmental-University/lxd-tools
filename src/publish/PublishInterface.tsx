@@ -43,7 +43,7 @@ export function PublishInterface({course}: PublishInterfaceProps) {
         let promises = [];
         for (let course of associatedCourses) {
             promises.push(async () => {
-                console.log(course.name);
+
                 const section = await Course.getCourseById(course.id);
                 fullCourses.push(section);
                 fullCourses.sort(courseNameSort);

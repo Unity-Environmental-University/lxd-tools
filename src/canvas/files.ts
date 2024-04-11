@@ -12,9 +12,7 @@ export async function uploadFile(file: File, path: string, url:string) {
         body: formDataify(initialParams),
         method: 'POST'
     });
-    console.log(response);
     const data = await response.json();
-    console.log(data);
     const uploadParams = data.upload_params;
     const uploadFormData = formDataify(uploadParams);
     uploadFormData.append('file', file);
@@ -23,6 +21,5 @@ export async function uploadFile(file: File, path: string, url:string) {
         method: 'POST',
         body: uploadFormData,
     })
-    console.log(await response.text())
     assert(response.ok);
 }

@@ -9,7 +9,6 @@ function PopUpApp() {
     const [queryString, setQueryString] = useState<string | null>(null)
 
     async function submitQuery(queryString: string | null) {
-        console.log(queryString)
         setIsDisabled(true);
         await runtime.sendMessage({
             searchForCourse: queryString

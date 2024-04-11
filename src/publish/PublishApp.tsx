@@ -5,7 +5,7 @@ import {useEffectAsync} from "../ui/utils";
 import {PublishInterface} from "./PublishInterface";
 import {ContentUpdateInterface} from "./ContentUpdateInterface";
 
-console.log("running")
+
 
 
 

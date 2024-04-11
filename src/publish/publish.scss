@@ -3,9 +3,6 @@
 
 
 
-
-#lxd-publish-interface, #lxd-import-interface {
-
   .course-row:nth-child(odd) {
       background-color: #f0f0f0;
   }
@@ -46,6 +43,10 @@
 
 
   }
+
+
+#lxd-publish-interface, #lxd-import-interface,  {
+
 
   .rawHtml {
     font-family: Courier;

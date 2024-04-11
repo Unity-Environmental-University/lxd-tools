@@ -11,9 +11,6 @@ import assert from "assert";
     let ugTerm: Term | undefined = activeTerms.find((term) => term.name.search(/DE(\/?HL)?-\s{3}-\d+-\d+/));
 
     let termEl = document.getElementById('termFilter');
-    console.log(termEl);
-    console.log(activeTerms);
-    console.log(gradTerm);
-    console.log(ugTerm);
+
 
 })()

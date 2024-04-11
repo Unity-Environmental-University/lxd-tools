@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {useEffectAsync} from "../ui/utils";
 import {Button} from "react-bootstrap";
 import Modal from "../ui/widgets/Modal/index";
-import {Course} from "../canvas/index";
+import {Course, Page} from "../canvas/index";
 import {fixLmAnnotations} from "../canvas/fixes/annotations";
 import assert from "assert";
 
@@ -16,9 +16,9 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
     const [isDisabled, setIsDisabled] = useState(false);
-    const [affectedUrls, setAffectedUrls] = useState<string[]>([])
-    const [unaffectedUrls, setUnaffectedUrls] = useState<string[]>([])
-    const [failedUrls, setFailedUrls] = useState<string[]>([])
+    const [affectedItems, setAffectedItems] = useState<React.ReactElement[]>([])
+    const [unaffectedItems, setUnaffectedItems] = useState<React.ReactElement[]>([])
+    const [failedItems, setFailedItems] = useState<React.ReactElement[]>([])
     const [isLoading, setIsLoading] = useState(false);
 
     useEffectAsync(async () => {
@@ -37,26 +37,33 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
     async function removeLmAnnotations() {
         assert(course);
         setIsLoading(true);
+        setFailedItems([]);
+        setAffectedItems([]);
+        setUnaffectedItems([]);
+
+        function pageToLink (page:Page) {
+            return <a className="course-link" target="_blank" href={page.htmlContentUrl}>{page.name}</a>
+        }
         const results = await fixLmAnnotations(course);
-        setAffectedUrls(results.fixedPages.map((page) => page.htmlContentUrl));
-        setUnaffectedUrls(results.unchangedPages.map((page) => page.htmlContentUrl));
-        setFailedUrls(results.failedPages.map((page) => page.htmlContentUrl));
+        setAffectedItems(results.fixedPages.map(pageToLink));
+        setUnaffectedItems(results.unchangedPages.map(pageToLink));
+        setFailedItems(results.failedPages.map(pageToLink));
         setIsLoading(false);
+
     }
 
-    function urlRows(urls: string[], className = 'lxd-cu') {
-        return urls.map((url, i) =>
+    function urlRows(links: React.ReactElement[], className = 'lxd-cu') {
+        return links.map((link, i) =>
             <div key={i} className={['row', className].join(' ')}>
-                <div className={'col'}>
-                    <a href={url} target={"_blank"}>{url}</a>
-                </div>
+                {link}
             </div>)
     }
+
 
     function removeAnnotations() {
         return (course?.isBlueprint && <div className={'row'}>
             <div className={'col-sm-4'}>
-                <Button onClick={removeLmAnnotations}>
+                <Button onClick={removeLmAnnotations} disabled={isLoading}>
                     Remove Annotation Placeholder
                 </Button>
             </div>
@@ -70,12 +77,12 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
         <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!isLoading}>
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint && removeAnnotations()}
-            {affectedUrls.length > 0 && <h3>Fixes Succeeded</h3>}
-            {urlRows(affectedUrls, 'lxd-cu-success')}
-            {unaffectedUrls.length > 0 && <h3>Fix not Needed</h3>}
-            {urlRows(unaffectedUrls, 'lxd-cu-fail')}
-            {failedUrls.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
-            {urlRows(failedUrls, 'lxd-cu-fail')}
+            {affectedItems.length > 0 && <h3>Fixes Succeeded</h3>}
+            {urlRows(affectedItems, 'lxd-cu-success')}
+            {unaffectedItems.length > 0 && <h3>Fix not Needed</h3>}
+            {urlRows(unaffectedItems, 'lxd-cu-fail')}
+            {failedItems.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
+            {urlRows(failedItems, 'lxd-cu-fail')}
         </Modal>
     </>)
 }

@@ -171,7 +171,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
         }
         let match = /courses\/(\d+)/.exec(url);
         if (match) {
-            console.log(match);
+
             const id = this.getIdFromUrl(url);
             if (!id) return null;
             return await this.getCourseById(id);
@@ -334,7 +334,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
     }
 
     get fileUploadUrl() {
-        console.log(this.id);
+
         return `/api/v1/courses/${this.id}/files`;
     }
 
