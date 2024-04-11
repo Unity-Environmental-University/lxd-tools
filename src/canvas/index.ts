@@ -360,6 +360,10 @@ export class Course extends BaseCanvasObject<ICourseData> {
         return new Date(this.getItem<string>('end_at'));
     }
 
+    get isDev() {
+        if (this.name.match(/^DEV/)) return true;
+    }
+
     async getModules(): Promise<IModuleData[]> {
         if (this._modules) {
             return this._modules;
@@ -769,6 +773,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
         } catch (e) {
             return await Course.getByCode('DEV_' + this.baseCode);
         }
+        return null;
     }
 
     /* Not working due to CORS; we need to set up the proxy server to be able to resize images.

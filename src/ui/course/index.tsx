@@ -41,6 +41,7 @@ import {HomeTileApp} from "./HomeTileApp";
 })();
 
 function addHomeTileButton(el:HTMLElement, course:Course) {
+
     const root = document.createElement("div")
     const rootDiv = ReactDOM.createRoot(root);
     rootDiv.render(

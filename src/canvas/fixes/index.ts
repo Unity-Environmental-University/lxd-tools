@@ -4,6 +4,10 @@ export type ContentFix<T = string> = {
     run: (value: T) => T
 }
 
+export type FixFailureResult<T> = {
+    failedFixes: ContentFix<T>[],
+    output: T
+}
 /**
  * Runs through a series of Content Fixes. If all is well, passes the results into the next
  * content fix.
@@ -13,19 +17,39 @@ export type ContentFix<T = string> = {
  * @param fixes
  * @param source
  */
-function runReplacements<T = string>(fixes: ContentFix<T>[], source: T) {
+export function runReplacements<T extends {toString:()=>string} = string>(fixes: ContentFix<T>[], source: T) {
+const failedFixes: ContentFix<T>[]= [];
     const output: T = fixes.reduce((accumulator, {run, tests, preflightTests}) => {
         // run through all preflight tests, if any of them fail, return the pre-transformation value
         if (preflightTests && preflightTests.map((test) => test(output)).includes(false)) return accumulator;
         let output = run(accumulator);
         // run through all tests, if any of them fail, return the pre-transformation value
-        if (tests && tests.map((test) => test(output)).includes(false)) return accumulator;
+        if (tests && tests.map((test) => test(output)).includes(false)) {
+            failedFixes.push({run, tests, preflightTests})
+            return accumulator;
+        }
         return output;
     }, source);
+
+    return {failedFixes, output} as FixFailureResult<T>;
 }
 
 export function findReplaceFunc(find:string|RegExp, replace:string) {
-    return (source: string) => source.replace(find, replace);
+    return (source: string) => {
+        const output = source.replace(find, replace);
+        console.log(find, replace);
+        console.log(output.length - source.length)
+        if(find instanceof RegExp) {
+            console.log([
+                source.match(find),
+                source.length - output.length,
+                source,
+                output]);
+
+        }
+
+        return output;
+    };
 }
 
 /**
@@ -38,7 +62,11 @@ export function inTest(find:string|RegExp, caseSensitive=true) {
         const findValue = caseSensitive ? find : find.toLowerCase();
         return (source: string) => (caseSensitive ? source : source.toLowerCase()).includes(findValue);
     } else {
-        return (source:string) => source.match(find);
+        return (source:string) => {
+            console.log(find.toString())
+            console.log(source.match(find));
+            return !!source.match(find);
+        }
     }
 }
 
@@ -48,5 +76,16 @@ export function inTest(find:string|RegExp, caseSensitive=true) {
  * @param caseSensitive (string find only) whether to match the string case sensitive-ly
  */
 export function notInTest(find: string|RegExp, caseSensitive = true) {
-    return (source:string) => !(inTest(find, caseSensitive)(source))
+    if(typeof find === "string") {
+        const findValue = caseSensitive ? find : find.toLowerCase();
+        return (source: string) => {
+            return !((caseSensitive ? source : source.toLowerCase()).includes(findValue));
+        }
+    } else {
+        return (source:string) => {
+            console.log(find.toString())
+            console.log(source.match(find));
+            return !source.match(find);
+        }
+    }
 }
