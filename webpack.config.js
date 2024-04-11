@@ -90,7 +90,8 @@ module.exports = {
                         manifest.version = packageJson.version;
                         return JSON.stringify(manifest, null, 2);
                     }
-                }
+                },
+                {from: "./img/*", to: 'img/[name][ext]'}
             ]
         }),
         new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
