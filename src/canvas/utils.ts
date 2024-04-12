@@ -7,31 +7,56 @@ import Func = jest.Func;
 
 /**
  * Takes in a list of functions and calls all of them, returning the result.
- * @param funcs
- * @param params optional params
+ * @param funcs A list of functions, or a list of { func, params } pairs to run, passing params into func
+ * @param params optional params to pass into each run of the function
  */
 function callAll<T>(funcs:(()=>T)[]):T[]
-function callAll<T, ParamsType>(funcs: ((params:ParamsType)=> T)[], params:ParamsType):T[]
+function callAll<T, ParamType>(funcs: {func:()=>ParamType, params: ParamType}[]):T[]
+function callAll<T, ParamType>(funcs: ((params:ParamType)=> T)[], params:ParamType):T[]
 function callAll<T,
-    FuncType extends  PassedInParamsType extends undefined? ()=>T : ((params:FunctionParamsType)=>T),
+    WithParamsFuncType extends (params:FunctionParamsType) => T,
+    WithoutParamsFuncType extends () => T,
+    FuncObject extends { func:WithParamsFuncType,params: FunctionParamsType },
+    FuncType extends FuncObject | WithoutParamsFuncType | WithParamsFuncType,
     PassedInParamsType extends FunctionParamsType,
-    FunctionParamsType = undefined,
->(funcs:FuncType[], params?:PassedInParamsType) {
+    FunctionParamsType extends (FuncType extends WithoutParamsFuncType? undefined : any) = undefined,
+>(funcs:FuncType[] | WithParamsFuncType[], params?:PassedInParamsType) {
     console.log(funcs);
     const output: T[] = [];
-    for(let func of funcs){
-        if(typeof params === 'undefined') {
-            output.push((func as () => T)())
-        } else {
-            output.push(func(params))
-        }
+    function isWithParamsFunc (func:FuncObject|WithParamsFuncType|WithoutParamsFuncType): func is WithParamsFuncType {
+        if('arguments' in func) return func.arguments.length > 0;
+        return false;
+    }
+    function isWithoutParamsFunc (func:FuncObject|WithParamsFuncType|WithoutParamsFuncType): func is WithoutParamsFuncType {
+        if('arguments' in func) return func.arguments.length === 0;
+        return false;
+    }
 
+    for(let func of funcs) {
+         if((typeof func === 'object')) {
+             output.push(func.func(func.params))
+             continue;
+         }
+         if(isWithoutParamsFunc(func)) {
+             output.push(func());
+             continue;
+         }
+         if(isWithParamsFunc(func) && typeof params !== 'undefined') {
+             output.push(func(params));
+             continue;
+         }
     }
     return output;
 }
 
 
+callAll([
+    (value:string)=>value.toUpperCase(),
+    (value:string)=>value.toLowerCase(),
+], 'Hello')
+
 export { callAll }
+
 export function parentElement(el: Element, tagName: string) {
     while (el && el.parentElement) {
         el = el.parentElement;
