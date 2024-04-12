@@ -8,10 +8,12 @@ import {Button} from "react-bootstrap";
 import {PublishCourseRow} from "./PublishCourseRow";
 import Modal from "../ui/widgets/Modal/index";
 import {SectionDetails} from "./SectionDetails";
+import {callAll} from "../canvas/utils";
 
 type PublishInterfaceProps = {
     course: Course | null,
 }
+
 
 export function PublishInterface({course}: PublishInterfaceProps) {
     //-----
@@ -26,48 +28,47 @@ export function PublishInterface({course}: PublishInterfaceProps) {
     const [publishErrors, setPublishErrors] = useState<Record<number, string[]>>({})
     const [loading, setLoading] = useState<boolean>(false);
     const [infoClass, setInfoClass] = useState<string>('alert-secondary')
-
+    const [emails, setEmails] = useState<string[]>([])
     async function updateCourse() {
         if (course) {
             setIsBlueprint(course.isBlueprint)
             await getFullCourses(course);
-
         }
     }
 
     useEffectAsync(updateCourse, [course]);
+    useEffectAsync(async () => {
+        const profileSet: Record<number, IProfile[]> = [];
+        for(let course of associatedCourses) {
+            profileSet[course.id] = await course.getPotentialInstructorProfiles();
+        }
+        setSectionProfiles(profileSet)
+    }, [associatedCourses])
 
     async function getFullCourses(course: Course) {
         const fullCourses: Course[] = [];
         const associatedCourses = await course.getAssociatedCourses() ?? [];
-        let promises = [];
+        console.log(associatedCourses);
+        let getSectionFuncs = [];
+        const instructorEmails:Set<string> = new Set();
         for (let course of associatedCourses) {
-            promises.push(async () => {
-
+            getSectionFuncs.push(async () => {
                 const section = await Course.getCourseById(course.id);
+                const instructors = await section.getInstructors();
+                if(instructors) {
+                    for (let instructor of instructors) {
+                        instructorEmails.add(instructor.email);
+                    }
+                }
                 fullCourses.push(section);
                 fullCourses.sort(courseNameSort);
+                console.log(courseNameSort);
                 setAssociatedCourses([...fullCourses]);
+                setEmails([...instructorEmails])
             })
         }
-        await Promise.all(promises.map((func) => func()))
-    }
 
-    async function getSectionProfileAsync(section: Course) {
-        const tempProfileCache = {...sectionProfiles};
-        if (!tempProfileCache[section.id]) {
-            const profiles = await section.getPotentialInstructorProfiles();
-            tempProfileCache[section.id] = profiles;
-            setSectionProfiles({...tempProfileCache});
-        }
-        ;
-        return tempProfileCache[section.id];
-    }
-
-    //ONLY use in Render -- may return nothing initially, then render pass updates it
-    function getSectionProfileInRender(section: Course) {
-        getSectionProfileAsync(section).then();
-        return sectionProfiles[section.id];
+        callAll(getSectionFuncs);
     }
 
     //-----
@@ -113,7 +114,7 @@ export function PublishInterface({course}: PublishInterfaceProps) {
         inform("Updating section profiles...")
         setPublishErrors({});
         for (let section of associatedCourses) {
-            const profiles = await getSectionProfileAsync(section);
+            const profiles = sectionProfiles[section.id];
             const errors = [];
             if (profiles.length < 1) {
                 sectionError(section, "No Profiles")
@@ -177,6 +178,12 @@ export function PublishInterface({course}: PublishInterfaceProps) {
         </div>)
     }
 
+
+    /**
+     * Parses the profile sets in to a list of emails, omitting when the profile does not have a user property.
+     * @param profileSets
+     */
+
     return (<>
         {openButton()}
         <Modal id={'lxd-publish-interface'} isOpen={show} canClose={!loading} requestClose={() => {
@@ -201,6 +208,9 @@ export function PublishInterface({course}: PublishInterfaceProps) {
                         </Button>
 
                     </div>
+                    <div className={'col-xs-12'}>
+                        <p>{emails.join(', ')}</p>
+                    </div>
                     <div className='col-xs-12'>
                         {associatedCourseRows()}
                     </div>
@@ -211,7 +221,7 @@ export function PublishInterface({course}: PublishInterfaceProps) {
             </div>
             <div>
                 <SectionDetails
-                    facultyProfileMatches={workingSection && getSectionProfileInRender(workingSection)}
+                    facultyProfileMatches={workingSection && sectionProfiles[workingSection.id]}
                     onClose={() => setWorkingSection(null)}
                     section={workingSection}
                 ></SectionDetails>

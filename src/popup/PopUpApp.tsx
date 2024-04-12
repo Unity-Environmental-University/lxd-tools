@@ -4,14 +4,12 @@ import "../css/source.scss"
 import "./PopUpApp.scss"
 import 'bootstrap'
 import {useEffectAsync} from "../ui/utils";
-import FormCheckInput from "react-bootstrap/FormCheckInput";
 import { Form } from "react-bootstrap";
+import {OPEN_AI_API_KEY_KEY} from "../consts";
 
-const OPEN_AI_API_KEY_KEY = "OPEN_AI_API_KEY"
 function PopUpApp() {
     const [advanced, setAdvanced] = useState(false);
     return (
-
         <div className="PopUpApp container text-center">
             <div className={['d-flex', 'flex-row-reverse'].join(' ')}>
                 <Form.Check
@@ -20,8 +18,6 @@ function PopUpApp() {
                     checked={advanced}
                     onChange={(e) => setAdvanced(e.target.checked)}
                 />
-
-
             </div>
             <CourseNavigation></CourseNavigation>
             {advanced && <>

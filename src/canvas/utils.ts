@@ -1,7 +1,37 @@
 import assert from "assert";
 import {CanvasData, IModuleItemData, IPageData, ModuleItemType, RestrictModuleItemType} from "./canvasDataDefs";
 import {Course} from "./index";
+import Func = jest.Func;
 
+
+
+/**
+ * Takes in a list of functions and calls all of them, returning the result.
+ * @param funcs
+ * @param params optional params
+ */
+function callAll<T>(funcs:(()=>T)[]):T[]
+function callAll<T, ParamsType>(funcs: ((params:ParamsType)=> T)[], params:ParamsType):T[]
+function callAll<T,
+    FuncType extends  PassedInParamsType extends undefined? ()=>T : ((params:FunctionParamsType)=>T),
+    PassedInParamsType extends FunctionParamsType,
+    FunctionParamsType = undefined,
+>(funcs:FuncType[], params?:PassedInParamsType) {
+    console.log(funcs);
+    const output: T[] = [];
+    for(let func of funcs){
+        if(typeof params === 'undefined') {
+            output.push((func as () => T)())
+        } else {
+            output.push(func(params))
+        }
+
+    }
+    return output;
+}
+
+
+export { callAll }
 export function parentElement(el: Element, tagName: string) {
     while (el && el.parentElement) {
         el = el.parentElement;
