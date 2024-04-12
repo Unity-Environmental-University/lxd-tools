@@ -21,7 +21,6 @@ function callAll<T,
     PassedInParamsType extends FunctionParamsType,
     FunctionParamsType extends (FuncType extends WithoutParamsFuncType? undefined : any) = undefined,
 >(funcs:FuncType[] | WithParamsFuncType[], params?:PassedInParamsType) {
-    console.log(funcs);
     const output: T[] = [];
     function isWithParamsFunc (func:FuncObject|WithParamsFuncType|WithoutParamsFuncType): func is WithParamsFuncType {
         if('arguments' in func) return func.arguments.length > 0;
@@ -48,12 +47,6 @@ function callAll<T,
     }
     return output;
 }
-
-
-callAll([
-    (value:string)=>value.toUpperCase(),
-    (value:string)=>value.toLowerCase(),
-], 'Hello')
 
 export { callAll }
 
