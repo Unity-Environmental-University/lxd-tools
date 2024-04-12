@@ -125,5 +125,9 @@ function openAllLinksInContent(contentItem: BaseContentItem) {
     const urls = new Set(contentItem.getAllLinks());
 
     for(let url of urls) window.open(url, "_blank");
+}
+
+function GenerateAltText() {
 
 }
+
