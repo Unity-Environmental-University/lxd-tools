@@ -5,6 +5,7 @@ import Func = jest.Func;
 
 
 
+
 /**
  * Takes in a list of functions and calls all of them, returning the result.
  * @param funcs A list of functions, or a list of { func, params } pairs to run, passing params into func
@@ -23,12 +24,10 @@ function callAll<T,
 >(funcs:FuncType[] | WithParamsFuncType[], params?:PassedInParamsType) {
     const output: T[] = [];
     function isWithParamsFunc (func:FuncObject|WithParamsFuncType|WithoutParamsFuncType): func is WithParamsFuncType {
-        if('arguments' in func) return func.arguments.length > 0;
-        return false;
+        return typeof func === 'function' && func.length > 0;
     }
     function isWithoutParamsFunc (func:FuncObject|WithParamsFuncType|WithoutParamsFuncType): func is WithoutParamsFuncType {
-        if('arguments' in func) return func.arguments.length === 0;
-        return false;
+        return typeof func === 'function' && func.length === 0;
     }
 
     for(let func of funcs) {
