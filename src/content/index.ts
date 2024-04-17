@@ -1,6 +1,6 @@
 import {CanvasData, ICourseData, ModuleItemType} from "../canvas/canvasDataDefs";
 import {extension, runtime} from "webextension-polyfill";
-import {getModuleWeekNumber} from "../canvas/utils";
+import {getModuleWeekNumber} from "../canvas/canvasUtils";
 
 import {Course} from "../canvas/index";
 

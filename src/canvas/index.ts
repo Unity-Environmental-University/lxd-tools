@@ -6,7 +6,6 @@ And starting to convert to ts
  It kept inventing code that should work but didn't */
 
 import assert from 'assert';
-const HOMETILE_WIDTH = 500;
 
 import {
     CanvasData,
@@ -30,133 +29,16 @@ import {
     getModuleWeekNumber,
     getPagedData,
     ICanvasCallConfig
-} from "./utils";
+} from "./canvasUtils";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "./profile";
-import {contentDownloadImage, getResizedBlob} from "./image";
+import {getResizedBlob} from "./image";
 import {uploadFile} from "./files";
+import {getCurrentStartDate} from "./fixes/changeStartDate";
+import {BaseCanvasObject} from "./baseCanvasObject";
+
+const HOMETILE_WIDTH = 500;
 
 //const HOMETILE_WIDTH = 500;
-
-export class BaseCanvasObject<CanvasDataType extends CanvasData> {
-    static idProperty = 'id'; // The field name of the id of the canvas object type
-    static nameProperty: string | null = 'name'; // The field name of the primary name of the canvas object type
-    static contentUrlTemplate: string | null = null; // A templated url to get a single item
-    static allContentUrlTemplate: string | null = null; // A templated url to get all items
-    protected canvasData: CanvasDataType;
-    protected accountId: null | number = null;
-
-    constructor(data: CanvasDataType) {
-        this.canvasData = data || {}; // A dict holding the decoded json representation of the object in Canvas
-    }
-
-    getClass(): typeof BaseContentItem {
-        return this.constructor as typeof BaseContentItem;
-    }
-
-    toString() {
-        return JSON.stringify(this.canvasData);
-    }
-
-    getItem<T>(item: string) {
-        return this.canvasData[item] as T;
-    }
-
-
-    get myClass() {
-        return (<typeof BaseContentItem>this.constructor)
-    }
-
-    get nameKey() {
-        assert(this.myClass.nameProperty);
-        return this.myClass.nameProperty;
-    }
-
-    get rawData(): CanvasDataType {
-        return {...this.canvasData};
-    }
-
-    get contentUrlPath(): null | string {
-        const constructor = <typeof BaseCanvasObject>this.constructor;
-
-        assert(typeof this.accountId === 'number');
-        assert(typeof constructor.contentUrlTemplate === 'string');
-        return constructor.contentUrlTemplate
-            .replace('{content_id}', this.id.toString())
-            .replace('{account_id}', this.accountId.toString());
-    }
-
-    get htmlContentUrl() {
-        return `/${this.contentUrlPath}`;
-    }
-
-    get data() {
-        return this.canvasData;
-    }
-
-    static async getDataById<T extends CanvasData = CanvasData>(contentId: number, course: Course | null = null, config: ICanvasCallConfig | null = null): Promise<T> {
-        let url = this.getUrlPathFromIds(contentId, course ? course.id : null);
-        const response = await fetchApiJson<T>(url, config);
-        assert(!Array.isArray(response));
-        return response;
-    }
-
-    static getUrlPathFromIds(
-        contentId: number,
-        courseId: number | null) {
-        assert(typeof this.contentUrlTemplate === 'string');
-        let url = this.contentUrlTemplate
-            .replace('{content_id}', contentId.toString());
-
-        if (courseId) url = url.replace('{course_id}', courseId.toString());
-
-        return url;
-    }
-
-    /**
-     *
-     * @param courseId - The course ID to get elements within, if applicable
-     * @param accountId - The account ID to get elements within, if applicable
-     */
-    static getAllUrl(courseId: number | null = null, accountId: number | null = null) {
-        assert(typeof this.allContentUrlTemplate === 'string');
-        let replaced = this.allContentUrlTemplate;
-
-        if (courseId) replaced = replaced.replace('{course_id}', courseId.toString());
-        if (accountId) replaced = replaced.replace('{account_id}', accountId.toString());
-        return replaced;
-    }
-
-    static async getAll(config: ICanvasCallConfig | null = null) {
-        let url = this.getAllUrl();
-        let data = await getApiPagedData(url, config);
-        return data.map(item => new this(item));
-    }
-
-
-    get id(): number {
-        const id = this.canvasData[(<typeof BaseCanvasObject>this.constructor).idProperty];
-        return parseInt(id);
-    }
-
-    get name() {
-        let nameProperty = this.getClass().nameProperty;
-        if (!nameProperty) return 'NAME PROPERTY NOT SET'
-        return this.getItem<string>(nameProperty);
-    }
-
-    async saveData(data: Record<string, any>) {
-        assert(this.contentUrlPath);
-        return await fetchApiJson(this.contentUrlPath, {
-            fetchInit: {
-                method: 'PUT',
-                body: formDataify(data)
-            }
-        });
-
-    }
-
-
-}
 
 
 export class Course extends BaseCanvasObject<ICourseData> {
@@ -373,6 +255,10 @@ export class Course extends BaseCanvasObject<ICourseData> {
         return modules;
     }
 
+    async getStartDateFromModules() {
+        return getCurrentStartDate(await this.getModules());
+    }
+
     async getInstructors(): Promise<IUserData[] | null> {
         return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
     }
@@ -560,7 +446,9 @@ export class Course extends BaseCanvasObject<ICourseData> {
         return await fetchApiJson(`courses/${this.id}`, {
             fetchInit: {
                 method: 'PUT',
-                body: JSON.stringify({'course[syllabus_body]': newHtml})
+                body: formDataify({ course: {
+                    syllabus_body: newHtml
+                    } })
             }
         });
     }
@@ -656,7 +544,23 @@ export class Course extends BaseCanvasObject<ICourseData> {
             }
         })
     }
+    async updateDueDates(offset:number) {
+            const promises: Promise<any>[] = [];
+            let assignments = await this.getAssignments();
+            let quizzes = await this.getQuizzes();
 
+            if (offset === 0 || offset) {
+                for (let assignment of assignments) {
+                    console.log(assignment);
+                    promises.push(assignment.dueAtTimeDelta(Number(offset)));
+                }
+
+                for (let quiz of quizzes) {
+                    promises.push(quiz.dueAtTimeDelta(Number(offset)));
+                }
+            }
+            await Promise.all(promises);
+    }
 
     async publish() {
         const url = `courses/${this.id}`;
@@ -902,7 +806,6 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     static get contentUrlPart() {
         assert(this.allContentUrlTemplate, "Not a content url template");
         const urlTermMatch = /\/([\w_]+)$/.exec(this.allContentUrlTemplate);
-        console.log(this.allContentUrlTemplate, urlTermMatch);
         if (!urlTermMatch) return null;
         const urlTerm = urlTermMatch[1];
         return urlTerm;

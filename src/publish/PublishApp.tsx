@@ -26,7 +26,7 @@ function PublishApp() {
     useEffectAsync(getCourse, [])
     return(<div>
         <PublishInterface course={course}/>
-        <ContentUpdateInterface course={course} parentCourse={parentCourse}/>
+        <ContentUpdateInterface course={course} parentCourse={parentCourse} refreshCourse={getCourse}/>
     </div>)
 }
 

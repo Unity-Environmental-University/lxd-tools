@@ -27,21 +27,8 @@ import {Course} from "../../canvas/index";
         btn.addEventListener('click', async () => {
             let offset = prompt("Days to offset by?")
             assert(course);
-            let promises = [];
-            let assignments = await course.getAssignments();
-            let quizzes = await course.getQuizzes();
-
-            if (offset === '0' || offset) {
-                for (let assignment of assignments) {
-                    console.log(assignment);
-                    promises.push(assignment.dueAtTimeDelta(Number(offset)));
-                }
-
-                for (let quiz of quizzes) {
-                    promises.push(quiz.dueAtTimeDelta(Number(offset)));
-                }
-            }
-            await Promise.all(promises);
+            assert(offset);
+            await course.updateDueDates(parseInt(offset));
             location.reload();
         })
     }

@@ -5,13 +5,19 @@ import Modal from "../ui/widgets/Modal/index";
 import {Course, Page} from "../canvas/index";
 import {fixLmAnnotations} from "../canvas/fixes/annotations";
 import assert from "assert";
+import {UpdateStartDate} from "./fixesAndUpdates/UpdateStartDate";
 
 type ContentUpdateInterfaceProps = {
     course: Course | null,
-    parentCourse: Course | null
+    parentCourse: Course | null,
+    refreshCourse: ()=>Promise<void>
 }
 
-export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInterfaceProps) {
+export class MismatchedUnloadError extends Error {
+    public name = "Mismatched Unload Error"
+}
+
+export function ContentUpdateInterface({course, parentCourse, refreshCourse}: ContentUpdateInterfaceProps) {
 
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
@@ -19,12 +25,12 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
     const [affectedItems, setAffectedItems] = useState<React.ReactElement[]>([])
     const [unaffectedItems, setUnaffectedItems] = useState<React.ReactElement[]>([])
     const [failedItems, setFailedItems] = useState<React.ReactElement[]>([])
-    const [isLoading, setIsLoading] = useState(false);
+    const [loadingCount, setLoadingCount] = useState(0);
 
     useEffectAsync(async () => {
         if (course) {
             if (course.isDev) {
-                setButtonText('No DEV Fixes Available')
+                setButtonText('DEV Content Changes/Fixes')
             } else if (course.isBlueprint) {
                 setButtonText('BP Content Fixes')
             } else {
@@ -33,13 +39,27 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
         }
     }, [course]);
 
-
-    async function removeLmAnnotations() {
-        assert(course);
-        setIsLoading(true);
+    /* increment and decrement is loading just in case we end up setting it asynchronously somehow */
+    function startLoading() {
+        setLoadingCount(1);
+        console.log(loadingCount, '+');
         setFailedItems([]);
         setAffectedItems([]);
         setUnaffectedItems([]);
+    }
+    function endLoading() {
+        setLoadingCount(0);
+        console.log(loadingCount, '-');
+        if(loadingCount < 0) throw new MismatchedUnloadError();
+    }
+
+    function isLoading() {
+        return loadingCount > 0;
+    }
+
+    async function removeLmAnnotations() {
+        assert(course);
+        startLoading();
 
         function pageToLink (page:Page) {
             return <a className="course-link" target="_blank" href={page.htmlContentUrl}>{page.name}</a>
@@ -48,9 +68,10 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
         setAffectedItems(results.fixedPages.map(pageToLink));
         setUnaffectedItems(results.unchangedPages.map(pageToLink));
         setFailedItems(results.failedPages.map(pageToLink));
-        setIsLoading(false);
-
+        endLoading();
     }
+
+
 
     function urlRows(links: React.ReactElement[], className = 'lxd-cu') {
         return links.map((link, i) =>
@@ -63,7 +84,7 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
     function removeAnnotations() {
         return (course?.isBlueprint && <div className={'row'}>
             <div className={'col-sm-4'}>
-                <Button onClick={removeLmAnnotations} disabled={isLoading}>
+                <Button onClick={removeLmAnnotations} disabled={loadingCount > 0}>
                     Remove Annotation Placeholder
                 </Button>
             </div>
@@ -72,11 +93,22 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
     }
 
     return (course && <>
-        <Button disabled={isDisabled || course.isDev} className={"ui-button"} onClick={(e) => setShow(true)}
+        <Button disabled={isDisabled} className={"ui-button"} onClick={(e) => setShow(true)}
         >{buttonText}</Button>
-        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!isLoading}>
+        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!loadingCount}>
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint && removeAnnotations()}
+            <UpdateStartDate
+                setAffectedItems={setAffectedItems}
+                setUnaffectedItems={setUnaffectedItems}
+                setFailedItems={setFailedItems}
+                refreshCourse={refreshCourse}
+                course={course}
+                isDisabled={loadingCount > 0}
+                startLoading={startLoading}
+                endLoading={endLoading}
+            />
+            <hr/>
             {affectedItems.length > 0 && <h3>Fixes Succeeded</h3>}
             {urlRows(affectedItems, 'lxd-cu-success')}
             {unaffectedItems.length > 0 && <h3>Fix not Needed</h3>}
@@ -86,3 +118,5 @@ export function ContentUpdateInterface({course, parentCourse}: ContentUpdateInte
         </Modal>
     </>)
 }
+
+

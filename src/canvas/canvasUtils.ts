@@ -1,13 +1,19 @@
 import assert from "assert";
-import {CanvasData, IModuleItemData, IPageData, ModuleItemType, RestrictModuleItemType} from "./canvasDataDefs";
+import {
+    CanvasData,
+    ICourseData,
+    IModuleItemData,
+    IPageData,
+    ModuleItemType,
+    RestrictModuleItemType
+} from "./canvasDataDefs";
 import {Course} from "./index";
-import Func = jest.Func;
-
-
+import {Temporal} from "temporal-polyfill";
 
 
 /**
  * Takes in a list of functions and calls all of them, returning the result.
+ * This is an abomination.
  * @param funcs A list of functions, or a list of { func, params } pairs to run, passing params into func
  * @param params optional params to pass into each run of the function
  */
@@ -228,7 +234,6 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
             next_page_link = "";
         }
     }
-
     return data;
 }
 
@@ -273,9 +278,31 @@ export async function fetchOneUnknownApiJson(url: string, config: ICanvasCallCon
     return <CanvasData>result;
 }
 
-export function courseNameSort(a: Course, b: Course) {
+/**
+ * sort courses (or course Data) alphabetically by name
+ * @param a item to compare.
+ * @param b item to compare.
+ */
+export function courseNameSort(a: Course|ICourseData, b: Course|ICourseData) {
     if (a.name < b.name) return -1;
     if (b.name < a.name) return 1;
     return 0;
 
+}
+
+
+export function oldDateToPlainDate(date: Date) {
+    const data = {
+        day: date.getDate(),
+        month: date.getMonth() + 1,
+        year: date.getFullYear(),
+    };
+    console.log(data);
+    return Temporal.PlainDate.from(data)
+}
+
+export function* range(start:number, end:number) {
+    for(let i = start; i <= end; i++) {
+        yield i;
+    }
 }

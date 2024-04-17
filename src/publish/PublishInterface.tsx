@@ -2,13 +2,13 @@ import {Course} from "../canvas/index";
 import React, {useState} from "react";
 import {IProfile, renderProfileIntoCurioFrontPage} from "../canvas/profile";
 import {useEffectAsync} from "../ui/utils";
-import {courseNameSort} from "../canvas/utils";
+import {courseNameSort} from "../canvas/canvasUtils";
 import assert from "assert";
 import {Button} from "react-bootstrap";
 import {PublishCourseRow} from "./PublishCourseRow";
 import Modal from "../ui/widgets/Modal/index";
 import {SectionDetails} from "./SectionDetails";
-import {callAll} from "../canvas/utils";
+import {callAll} from "../canvas/canvasUtils";
 
 type PublishInterfaceProps = {
     course: Course | null,

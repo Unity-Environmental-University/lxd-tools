@@ -1,7 +1,7 @@
 import assert from "assert";
 import {IUserData} from "./canvasDataDefs";
 import {Course, Page} from "./index";
-import {parentElement} from "./utils";
+import {parentElement} from "./canvasUtils";
 
 
 let facultyCourseCached: Course | null = null;

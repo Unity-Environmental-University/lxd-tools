@@ -1,4 +1,4 @@
-import {formDataify} from "./utils";
+import {formDataify} from "./canvasUtils";
 import assert from "assert";
 
 export async function uploadFile(file: File, path: string, url:string) {
