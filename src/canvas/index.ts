@@ -8,7 +8,7 @@ And starting to convert to ts
 import assert from 'assert';
 
 import {
-    CanvasData,
+    CanvasData, IAssignmentData,
     IAssignmentGroup,
     ICourseData,
     IModuleData,
@@ -27,6 +27,7 @@ import {
     getApiPagedData,
     getItemTypeAndId,
     getModuleWeekNumber,
+    oldDateToPlainDate,
     getPagedData,
     ICanvasCallConfig
 } from "./canvasUtils";
@@ -35,6 +36,7 @@ import {getResizedBlob} from "./image";
 import {uploadFile} from "./files";
 import {getCurrentStartDate} from "./fixes/changeStartDate";
 import {BaseCanvasObject} from "./baseCanvasObject";
+import {Temporal} from "temporal-polyfill";
 
 const HOMETILE_WIDTH = 500;
 
@@ -446,9 +448,11 @@ export class Course extends BaseCanvasObject<ICourseData> {
         return await fetchApiJson(`courses/${this.id}`, {
             fetchInit: {
                 method: 'PUT',
-                body: formDataify({ course: {
-                    syllabus_body: newHtml
-                    } })
+                body: formDataify({
+                    course: {
+                        syllabus_body: newHtml
+                    }
+                })
             }
         });
     }
@@ -544,23 +548,24 @@ export class Course extends BaseCanvasObject<ICourseData> {
             }
         })
     }
-    async updateDueDates(offset:number) {
-            const promises: Promise<any>[] = [];
-            let assignments = await this.getAssignments();
-            let quizzes = await this.getQuizzes();
 
-            if (offset === 0 || offset) {
-                for (let assignment of assignments) {
-                    console.log(assignment);
-                    promises.push(assignment.dueAtTimeDelta(Number(offset)));
-                }
+    async updateDueDates(offset: number) {
+        const promises: Promise<any>[] = [];
+        let assignments = await this.getAssignments();
+        let quizzes = await this.getQuizzes();
 
-                for (let quiz of quizzes) {
-                    promises.push(quiz.dueAtTimeDelta(Number(offset)));
-                }
+        if (offset === 0 || offset) {
+            for (let assignment of assignments) {
+                console.log(assignment);
+                promises.push(assignment.dueAtTimeDelta(Number(offset)));
             }
-            await Promise.all(promises);
-            return [...assignments, ...quizzes];
+
+            for (let quiz of quizzes) {
+                promises.push(quiz.dueAtTimeDelta(Number(offset)));
+            }
+        }
+        await Promise.all(promises);
+        return [...assignments, ...quizzes];
     }
 
     async publish() {
@@ -699,7 +704,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
             item.type === "Page" &&
             item.title.toLowerCase().includes('overview')
         );
-        if(!overview?.url) return; //skip this if it's not an overview
+        if (!overview?.url) return; //skip this if it's not an overview
 
         const url = overview.url.replace(/.*\/api\/v1/, '/api/v1')
         const pageData = await fetchJson(url) as CanvasData;
@@ -712,7 +717,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
         let fileName = `hometile${module.position}.png`;
         assert(resizedImageBlob);
         let file = new File([resizedImageBlob], fileName)
-        return await uploadFile(file, 'Images/hometile',this.fileUploadUrl);
+        return await uploadFile(file, 'Images/hometile', this.fileUploadUrl);
 
     }
 
@@ -911,7 +916,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return this._course;
     }
 
-    async updateContent(text:string|null = null, name:string|null = null) {
+    async updateContent(text: string | null = null, name: string | null = null) {
         const data: Record<string, any> = {};
         const constructor = <typeof BaseContentItem>this.constructor;
         assert(constructor.bodyProperty);
@@ -976,11 +981,36 @@ export class Assignment extends BaseContentItem {
     static allContentUrlTemplate = "courses/{course_id}/assignments";
 
     async setDueAt(dueAt: Date) {
-        let data = await this.saveData({'assignment[due_at]': dueAt.toISOString()});
+        const currentDueAt = this.dueAt ? Temporal.Instant.from(this.rawData.due_at) : null;
+        const targetDueAt = Temporal.Instant.from(dueAt.toISOString());
+
+        const payload: Record<string, { due_at: string, peer_review_due_at?: string}> = {
+            assignment: {
+                due_at: dueAt.toISOString(),
+            }
+        }
+
+        if(this.rawData.peer_reviews && 'automatic_peer_reviews' in this.rawData) {
+            const peerReviewTime = Temporal.Instant.from(this.rawData.peer_reviews_assign_at);
+            assert(currentDueAt, "Trying to set peer review date without a due date for the assignment.")
+            const peerReviewOffset = currentDueAt.until(peerReviewTime);
+            const newPeerReviewTime = targetDueAt.add(peerReviewOffset);
+            payload.assignment.peer_review_due_at = new Date(newPeerReviewTime.epochMilliseconds).toISOString();
+
+        }
+
+        let data = await this.saveData(payload);
+
+
         this.canvasData['due_at'] = dueAt.toISOString();
         return data;
 
     }
+
+    get rawData() {
+        return this.canvasData as IAssignmentData;
+    }
+
 }
 
 @contentClass
@@ -1060,7 +1090,7 @@ export class Page extends BaseContentItem {
     }
 
 
-    async updateContent(text: string|null = null, name:string|null = null) {
+    async updateContent(text: string | null = null, name: string | null = null) {
         let data: Record<string, any> = {};
         if (text) {
             this.canvasData[this.bodyKey] = text;

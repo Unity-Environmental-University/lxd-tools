@@ -102,6 +102,7 @@ export interface IAssignmentData extends CanvasData {
     rubric: IRubricCriterion[]
 }
 
+
 export interface IGradingRules {
     drop_lowest?: number,
     drop_highest?: number,

@@ -61,7 +61,6 @@ export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.Pla
 
     const oldTermName = termNameEl.innerText;
     const oldDates = datesEl.innerText;
-    console.log(datesEl);
     const termName = termNameEl.innerHTML.match(/(DE(?:.HL|)-\d\d)-(\w+)\w{2}?/i);
     const dateRange = findDateRange(datesEl.innerHTML, locale);
     if (!dateRange) throw new MalformedSyllabusError("Date range not found in syllabus");
