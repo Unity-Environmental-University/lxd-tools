@@ -1,4 +1,4 @@
-import {Course} from "../../canvas/index";
+import {BaseContentItem, Course} from "../../canvas/index";
 import React, {ChangeEvent, useState} from "react";
 import {Temporal} from "temporal-polyfill";
 import {useEffectAsync} from "../../ui/utils";
@@ -6,7 +6,11 @@ import {Button} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 import {oldDateToPlainDate} from "../../canvas/canvasUtils";
-import {SyllabusUpdateError, updatedDateSyllabusHtml} from "../../canvas/fixes/changeStartDate";
+import {
+    getStartDateAssignments,
+    SyllabusUpdateError,
+    updatedDateSyllabusHtml
+} from "../../canvas/fixes/changeStartDate";
 import {changeModuleLockDate} from "../../canvas/modules";
 
 type UpdateStartDateProps = {
@@ -48,22 +52,29 @@ export function UpdateStartDate(
         let affectedItems: React.ReactElement[] = [];
 
         try {
-            const results = updatedDateSyllabusHtml(syllabusText, workingStartDate);
-            if (syllabusText !== results.html) {
-                await course.changeSyllabus(results.html);
-                affectedItems = [...getSyllabusAffectedItemsRows(results)];
-                const modules = await course.getModules();
-                await changeModuleLockDate(course.id, modules[0], workingStartDate);
-                if(workingStartDate != startDate) {
-                    affectedItems.push(<>
-                        <div className={'col-sm-6'}>Changed Lock Date</div>
-                        <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/modules'}>Modules Page</a></div>
-                    </>)
+
+            if (syllabusText) {
+                if (!startDate) throw new StartDateNotSetError();
+
+                const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate);
+                if (syllabusChanges) affectedItems.concat(syllabusChanges);
+
+                let startOfFirstWeek = getStartDateAssignments(await course.getAssignments());
+                console.log(startOfFirstWeek.toString());
+                let contentDateOffset = startDate.until(workingStartDate).days;
+                let startOfFirstWeekOffset = startOfFirstWeek.until(workingStartDate).days;
+                console.log(startOfFirstWeekOffset)
+                if (contentDateOffset != startOfFirstWeekOffset) {
+                    affectedItems.push(<div>Note: start date mismatch. Using first week from assignments to determine
+                        content dates.</div>)
+                    contentDateOffset = startOfFirstWeekOffset;
+                }
+                const affectedContent = await course.updateDueDates(contentDateOffset);
+                for (let contentItem of affectedContent) {
+                    affectedItems.push(getContentAffectedItemRow(contentItem));
                 }
 
-                if(!startDate) throw new StartDateNotSetError();
 
-                await course.updateDueDates(startDate?.until(workingStartDate).days);
                 setAffectedItems && setAffectedItems(affectedItems)
             } else {
                 setUnaffectedItems && setUnaffectedItems([])
@@ -80,17 +91,50 @@ export function UpdateStartDate(
         endLoading();
     }
 
+    async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate) {
+        const affectedItems: React.ReactElement[] = [];
+        const results = updatedDateSyllabusHtml(syllabusText, updateStartDate);
+        if (syllabusText !== results.html) {
+            await course.changeSyllabus(results.html);
+            for (let row of getSyllabusAffectedItemsRows(results)) {
+
+            }
+            const modules = await course.getModules();
+            await changeModuleLockDate(course.id, modules[0], updateStartDate);
+            if (updateStartDate != startDate) {
+                affectedItems.push(<>
+                    <div className={'col-sm-6'}>Changed Lock Date</div>
+                    <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/modules'}>Modules Page</a></div>
+                </>)
+            }
+            return affectedItems;
+
+        }
+    }
+
+    function getContentAffectedItemRow(item: BaseContentItem) {
+        return <>
+            <div className={'col-sm-6'}><a href={item.htmlContentUrl} target={"_blank"}>{item.name}</a></div>
+            <div className={'col-sm-6'}>{item.dueAt?.toString()}</div>
+        </>
+
+
+    }
+
+
     function getSyllabusAffectedItemsRows(results: { html: string; changedText: string[] }) {
         return results.changedText.map((changedText) => <>
-            <div className={'col-sm-6'}><strong>Change:</strong>{changedText}</div>
-            <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/assignments/syllabus'}>Syllabus</a></div>
-        </>
+                <div className={'col-sm-6'}><strong>Change:</strong>{changedText}</div>
+                <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/assignments/syllabus'}
+                                               target={"_blank"}>Syllabus</a></div>
+            </>
         );
     }
 
     function updateStartDateValue(inDate: Date) {
         setWorkingStartDate(oldDateToPlainDate(inDate));
     }
+
 
     return <>
         <div className={'row'}>

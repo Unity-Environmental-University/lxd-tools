@@ -82,7 +82,6 @@ const type_lut: Record<ModuleItemType, RestrictModuleItemType | null> = {
 }
 
 export function formDataify(data: Record<string, any>) {
-    console.log('form', data);
     let formData = new FormData();
     for (let key in data) {
         addToFormData(formData, key, data[key]);
@@ -96,6 +95,12 @@ export function formDataify(data: Record<string, any>) {
     return formData;
 }
 
+/**
+ * Adds arrays and objects in the form formdata posts expects
+ * @param formData
+ * @param key
+ * @param value
+ */
 function addToFormData(formData: FormData, key: string, value: any | Record<string, any> | []) {
     if (Array.isArray(value)) {
         for (let item of value) {
@@ -297,7 +302,6 @@ export function oldDateToPlainDate(date: Date) {
         month: date.getMonth() + 1,
         year: date.getFullYear(),
     };
-    console.log(data);
     return Temporal.PlainDate.from(data)
 }
 

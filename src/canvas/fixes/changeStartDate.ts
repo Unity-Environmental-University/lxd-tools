@@ -2,6 +2,8 @@ import {Temporal} from "temporal-polyfill";
 import {IModuleData} from "../canvasDataDefs";
 import {oldDateToPlainDate} from "../canvasUtils";
 import {findDateRange} from "../../date";
+import {Assignment} from "../index";
+import assert from "assert";
 
 export function getCurrentStartDate(modules: IModuleData[]) {
     if (modules.length == 0) throw new NoOverviewModuleFoundError();
@@ -9,6 +11,31 @@ export function getCurrentStartDate(modules: IModuleData[]) {
     const lockDateString = overviewModule.unlock_at;
     const oldDate = new Date(lockDateString);
     return oldDateToPlainDate(oldDate);
+}
+
+export function getStartDateAssignments(assignments:Assignment[]) {
+    const sorted = assignments
+        .filter((assignment) => assignment.dueAt)
+        .toSorted((a, b) =>
+        {
+
+            if(a.dueAt && b.dueAt) {
+                return oldDateToPlainDate(b.dueAt).until(oldDateToPlainDate(a.dueAt)).days;
+            }
+            if(a.dueAt) return -1;
+            if(b.dueAt) return 1;
+            return 0;
+        }
+    );
+    console.log(sorted);
+    if (sorted.length == 0) throw new NoAssignmentsWithDueDatesError();
+    const firstAssignmentDue = sorted[0].dueAt;
+    assert(firstAssignmentDue, "It should be literally impossible for this to happen with current type checking.")
+
+    //Set to monday of that week.
+    const plainDateDue = oldDateToPlainDate(firstAssignmentDue);
+    const dayOfWeekOffset = 1 - plainDateDue.dayOfWeek;
+    return plainDateDue.add({days: dayOfWeekOffset});
 }
 
 export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.PlainDate, locale = 'en-US') {
@@ -72,11 +99,16 @@ function syllabusHeaderName(el:HTMLElement) {
 }
 
 export class SyllabusUpdateError extends Error {
-
+    public name = "SyllabusUpdateError";
 }
 export class NoOverviewModuleFoundError extends Error {
+    public name = "NoOverviewModuleFoundError"
 }
 
 export class MalformedSyllabusError extends Error {
+    public name="MalformedSyllabusError"
+}
 
+export class NoAssignmentsWithDueDatesError extends Error {
+    public name = "NoAssignmentsWithDueDatesError"
 }

@@ -560,6 +560,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
                 }
             }
             await Promise.all(promises);
+            return [...assignments, ...quizzes];
     }
 
     async publish() {
