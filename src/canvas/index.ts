@@ -10,7 +10,7 @@ import assert from 'assert';
 import {
     CanvasData, IAssignmentData,
     IAssignmentGroup,
-    ICourseData,
+    ICourseData, IDiscussionData,
     IModuleData,
     IModuleItemData,
     ITermData,
@@ -970,6 +970,25 @@ export class Discussion extends BaseContentItem {
     static bodyProperty = 'message';
     static contentUrlTemplate = "courses/{course_id}/discussion_topics/{content_id}";
     static allContentUrlTemplate = "courses/{course_id}/discussion_topics"
+
+
+
+    async offsetPublishDelay(days:number) {
+        const data = this.rawData
+        if(!this.rawData.delayed_post_at) return;
+        let delayedPostAt = Temporal.Instant.from(this.rawData.delayed_post_at).toZonedDateTimeISO('UTC');
+        delayedPostAt = delayedPostAt.add({days})
+
+        const payload = {
+            delayed_post_at: new Date(delayedPostAt.epochMilliseconds).toISOString()
+        }
+        await this.saveData(payload);
+    }
+
+    get rawData() {
+        return this.canvasData as IDiscussionData;
+    }
+
 
 }
 

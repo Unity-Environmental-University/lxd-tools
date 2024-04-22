@@ -1,17 +1,18 @@
-import {BaseContentItem, Course} from "../../canvas/index";
+import {BaseContentItem, Course, Discussion} from "../../canvas/index";
 import React, {ChangeEvent, useState} from "react";
 import {Temporal} from "temporal-polyfill";
 import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
-import {oldDateToPlainDate} from "../../canvas/canvasUtils";
+import {oldDateToPlainDate, getPagedDataGenerator} from "../../canvas/canvasUtils";
 import {
     getStartDateAssignments,
     SyllabusUpdateError,
     updatedDateSyllabusHtml
 } from "../../canvas/fixes/changeStartDate";
 import {changeModuleLockDate} from "../../canvas/modules";
+import {IDiscussionData} from "../../canvas/canvasDataDefs";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,
@@ -75,6 +76,19 @@ export function UpdateStartDate(
                 }
 
 
+                const announcementGenerator = getPagedDataGenerator<IDiscussionData>(`/api/v1/courses/${course.id}/discussion_topics`, {
+                    queryParams: {
+                        only_announcements: true
+                    }
+                });
+
+                for await (let value of announcementGenerator) {
+                    let discussion = new Discussion(value, course);
+                    console.log(contentDateOffset);
+                    await discussion.offsetPublishDelay(contentDateOffset);
+                    affectedItems.push(getContentAffectedItemRow(discussion))
+                }
+
                 setAffectedItems && setAffectedItems(affectedItems)
             } else {
                 setUnaffectedItems && setUnaffectedItems([])
@@ -84,6 +98,7 @@ export function UpdateStartDate(
 
         } catch (error: any) {
             console.log(error);
+            setAffectedItems && setAffectedItems(affectedItems)
             setFailedItems && setFailedItems([<div className={'ui-alert'}><h2>{error.toString()}</h2>
                 <p>{error.stack}</p></div>]);
 

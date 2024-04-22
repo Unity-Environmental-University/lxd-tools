@@ -121,6 +121,13 @@ export interface IAssignmentGroup extends CanvasData{
 
 export interface IDiscussionData extends CanvasData {
     id: number,
+    title: string,
+    message: string,
+    html_url: string,
+    posted_at: string,
+    last_reply_at: string,
+    require_initial_post: boolean,
+    delayed_post_at?:string
 
 }
 
