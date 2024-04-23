@@ -10,9 +10,9 @@ import assert from 'assert';
 import {
     CanvasData, IAssignmentData,
     IAssignmentGroup,
-    ICourseData, IDiscussionData,
+    ICourseData, ICourseSettings, IDiscussionData,
     IModuleData,
-    IModuleItemData,
+    IModuleItemData, ITabData,
     ITermData,
     IUpdateCallback,
     IUserData,
@@ -410,7 +410,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
     }
 
     async getTabs() {
-        return await fetchApiJson(`courses/${this.id}/tabs`);
+        return await fetchApiJson(`courses/${this.id}/tabs`) as ITabData[];
     }
 
     async getFrontPage() {
@@ -745,6 +745,10 @@ export class Course extends BaseCanvasObject<ICourseData> {
         }
         return profiles;
 
+    }
+
+    public async getSettings(config?:ICanvasCallConfig) {
+        return await fetchJson(`/courses/${this.id}/settings`, config) as ICourseSettings;
     }
 
 }

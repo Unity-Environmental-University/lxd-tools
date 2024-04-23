@@ -37,7 +37,25 @@ const courseCreditsInSyllabus:CourseUnitTest = {
     }
 }
 
+const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
+const extensionsInstalled:CourseUnitTest = {
+    name: "Extensions Installed",
+    description: 'Big Blue Button and Dropout Detective in nav bar',
+    run: async (course) => {
+        const missing:Set<string> = new Set(extensionsToTest);
+        const tabs = await course.getTabs();
+        for(let tab of tabs) {
+            if (missing.has(tab.label) && !tab.hidden) missing.delete(tab.label);
+        }
+        return {
+            success: missing.size === 0,
+            message: Array.from(missing).join(',') + ' missing from settings.'
+        }
+    }
+}
+
 export default [
     finalNotInGradingPolicyPara,
-    courseCreditsInSyllabus
+    courseCreditsInSyllabus,
+    extensionsInstalled
 ]

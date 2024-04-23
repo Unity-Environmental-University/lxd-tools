@@ -38,7 +38,7 @@
       "run_at" : "document_end"
     },
     {
-      "matches" : ["*://*.instructure.com/**/settings"],
+      "matches" : ["*://*.instructure.com/**/settings", "*://*.instructure.com/**/details"],
       "js": ["js/publish.js"]
     },
     {

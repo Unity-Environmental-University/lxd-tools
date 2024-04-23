@@ -82,6 +82,34 @@ export interface ICourseData extends CanvasData {
     template: boolean
 
 }
+
+export interface ICourseSettings {
+  "allow_student_discussion_topics": boolean,
+  "allow_student_forum_attachments": boolean,
+  "allow_student_discussion_editing": boolean,
+  "grading_standard_enabled": boolean,
+  "grading_standard_id": number,
+  "allow_student_organized_groups": boolean,
+  "hide_final_grades": boolean,
+  "hide_distribution_graphs": boolean,
+  "hide_sections_on_course_users_page": boolean,
+  "lock_all_announcements": boolean,
+  "usage_rights_required": boolean,
+  "homeroom_course": boolean,
+  "default_due_time": string,
+  "conditional_release": boolean
+}
+
+export interface ITabData {
+    id: string,
+    html_url: string,
+    full_url: string,
+    position: number,
+    hidden?: boolean,
+    visibility: string,
+    label: string,
+    type: string
+}
 export interface IBlueprintContentRestrictions {
     content: boolean,
     points: boolean,
