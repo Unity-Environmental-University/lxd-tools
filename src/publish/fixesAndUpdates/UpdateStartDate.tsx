@@ -174,7 +174,7 @@ export function UpdateStartDate(
                 {startDate && workingStartDate &&
                     <label>{'\u0394'} days: {startDate.until(workingStartDate).days}</label>}
             </div>
-            <div className={'col-sm-4'}>Removes annotation placeholders on Learning Material pages</div>
+            <div className={'col-sm-4'}>Update dates of assignments, announcements, and on syllabus</div>
         </div>
     </>
 }
