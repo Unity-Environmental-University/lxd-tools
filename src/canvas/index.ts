@@ -27,7 +27,6 @@ import {
     getApiPagedData,
     getItemTypeAndId,
     getModuleWeekNumber,
-    oldDateToPlainDate,
     getPagedData,
     ICanvasCallConfig
 } from "./canvasUtils";
