@@ -127,11 +127,12 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     >{buttonText}</Button>
     <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!loadingCount}>
         <div className={'d-flex justify-content-end'}>
-            {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Tests</Button>}
-            {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Fixes</Button>}
+            {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Show All Tests</Button>}
+            {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
         </div>
         {mode === 'fix' && <FixesMode course={course}></FixesMode>}
-        {mode === 'unitTest' && <UnitTestSection
+        {<UnitTestSection
+            showOnlyFailures={mode !== 'unitTest'}
             course={course}
             refreshCourse= {refreshCourse}
             tests={publishUnitTests}

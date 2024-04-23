@@ -6,6 +6,7 @@ import './CourseUnitTest.scss'
 
 type UnitTestSectionProps = {
     course: Course,
+    showOnlyFailures: boolean,
     refreshCourse: () => Promise<any>,
     tests: CourseUnitTest[]
 }
@@ -15,13 +16,14 @@ export type CourseUnitTest = {
     run:  (course: Course) => Promise<UnitTestResult>
 }
 
-export function UnitTestSection({course, tests, refreshCourse}: UnitTestSectionProps) {
+export function UnitTestSection({course, tests, refreshCourse, showOnlyFailures=false}: UnitTestSectionProps) {
     return <div className={'container'}>
-        <h2>Course Settings and Content Tests</h2>
+        {showOnlyFailures || <h2>Course Settings and Content Tests</h2>}
         {tests.map((test) => <UnitTestRow
             key={test.name}
             course={course}
             test={test}
+            showOnlyFailures={showOnlyFailures}
             refreshCourse={refreshCourse}
         />)}
     </div>
@@ -31,9 +33,10 @@ type UnitTestRowProps = {
     course: Course,
     test: CourseUnitTest,
     refreshCourse: () => Promise<any>
+    showOnlyFailures?: boolean,
 }
 
-function UnitTestRow({test, course, refreshCourse}: UnitTestRowProps) {
+function UnitTestRow({test, course, refreshCourse, showOnlyFailures=false}: UnitTestRowProps) {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<UnitTestResult>()
 
@@ -53,15 +56,18 @@ function UnitTestRow({test, course, refreshCourse}: UnitTestRowProps) {
         return result.message;
     }
 
-    return <div className={'row test-row'}>
-        <div className={'col-sm-3'}>{test.name}</div>
-        <div className={'col-sm-4'}>{test.description}</div>
-        <div className={'col-sm-4'}>{statusMessage(result)}</div>
-        <div className={'col-sm-1'}>
-            {!result && <span className={'badge badge-info'}>Running</span>}
-            {result?.success && <span className={'badge badge-success'}>OK!</span>}
-            {result && !result.success && <span className={'badge badge-warning'}>Failed</span>}
+    if(!showOnlyFailures || result?.success === false) {
+        return <div className={'row test-row'}>
+            <div className={'col-sm-3'}>{test.name}</div>
+            <div className={'col-sm-4'}>{test.description}</div>
+            <div className={'col-sm-4'}>{statusMessage(result)}</div>
+            <div className={'col-sm-1'}>
+                {!result && <span className={'badge badge-info'}>Running</span>}
+                {result?.success && <span className={'badge badge-success'}>OK!</span>}
+                {result && !result.success && <span className={'badge badge-warning'}>Failed</span>}
+            </div>
         </div>
-    </div>
+    }
+    return <></>
 }
 
