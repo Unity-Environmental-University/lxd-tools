@@ -6,16 +6,20 @@ import {Course, Page} from "../canvas/index";
 import {fixLmAnnotations} from "../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./fixesAndUpdates/UpdateStartDate";
+import {CourseUnitTest, UnitTestSection} from "./fixesAndUpdates/CourseUnitTest";
+import publishUnitTests from "./fixesAndUpdates/publishUnitTests";
 
 type ContentUpdateInterfaceProps = {
     course: Course | null,
     parentCourse: Course | null,
-    refreshCourse: ()=>Promise<void>
+    refreshCourse: () => Promise<void>
 }
 
 export class MismatchedUnloadError extends Error {
     public name = "Mismatched Unload Error"
 }
+
+type InterfaceMode = 'fix' | 'unitTest'
 
 export function ContentUpdateInterface({course, parentCourse, refreshCourse}: ContentUpdateInterfaceProps) {
 
@@ -26,6 +30,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     const [unaffectedItems, setUnaffectedItems] = useState<React.ReactElement[]>([])
     const [failedItems, setFailedItems] = useState<React.ReactElement[]>([])
     const [loadingCount, setLoadingCount] = useState(0);
+    const [mode, setMode] = useState<InterfaceMode>('fix')
 
     useEffectAsync(async () => {
         if (course) {
@@ -47,10 +52,11 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
         setAffectedItems([]);
         setUnaffectedItems([]);
     }
+
     function endLoading() {
         setLoadingCount(0);
         console.log(loadingCount, '-');
-        if(loadingCount < 0) throw new MismatchedUnloadError();
+        if (loadingCount < 0) throw new MismatchedUnloadError();
     }
 
     function isLoading() {
@@ -61,16 +67,16 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
         assert(course);
         startLoading();
 
-        function pageToLink (page:Page) {
+        function pageToLink(page: Page) {
             return <a className="course-link" target="_blank" href={page.htmlContentUrl}>{page.name}</a>
         }
+
         const results = await fixLmAnnotations(course);
         setAffectedItems(results.fixedPages.map(pageToLink));
         setUnaffectedItems(results.unchangedPages.map(pageToLink));
         setFailedItems(results.failedPages.map(pageToLink));
         endLoading();
     }
-
 
 
     function urlRows(links: React.ReactElement[], className = 'lxd-cu') {
@@ -81,23 +87,10 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     }
 
 
-    function removeAnnotations() {
-        return (course?.isBlueprint && <div className={'row'}>
-            <div className={'col-sm-4'}>
-                <Button onClick={removeLmAnnotations} disabled={loadingCount > 0}>
-                    Remove Annotation Placeholder
-                </Button>
-            </div>
-            <div className={'col-sm-8'}>Removes annotation placeholders on Learning Material pages</div>
-        </div>)
-    }
-
-    return (course && <>
-        <Button disabled={isDisabled} className={"ui-button"} onClick={(e) => setShow(true)}
-        >{buttonText}</Button>
-        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!loadingCount}>
+    function FixesMode({course}: { course: Course }) {
+        return <>
             <h2>Content Fixes for {course.name}</h2>
-            {course.isBlueprint && removeAnnotations()}
+            {course.isBlueprint && <RemoveAnnotationsSection/>}
             <UpdateStartDate
                 setAffectedItems={setAffectedItems}
                 setUnaffectedItems={setUnaffectedItems}
@@ -115,8 +108,35 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
             {urlRows(unaffectedItems, 'lxd-cu-fail')}
             {failedItems.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
             {urlRows(failedItems, 'lxd-cu-fail')}
-        </Modal>
-    </>)
-}
+        </>
+    }
 
+    function RemoveAnnotationsSection() {
+        return (course?.isBlueprint && <div className={'row'}>
+            <div className={'col-sm-4'}>
+                <Button onClick={removeLmAnnotations} disabled={loadingCount > 0}>
+                    Remove Annotation Placeholder
+                </Button>
+            </div>
+            <div className={'col-sm-8'}>Removes annotation placeholders on Learning Material pages</div>
+        </div>)
+    }
+
+    return (course && <>
+    <Button disabled={isDisabled} className={"ui-button"} onClick={(e) => setShow(true)}
+    >{buttonText}</Button>
+    <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!loadingCount}>
+        <div className={'d-flex justify-content-end'}>
+            {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Tests</Button>}
+            {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Fixes</Button>}
+        </div>
+        {mode === 'fix' && <FixesMode course={course}></FixesMode>}
+        {mode === 'unitTest' && <UnitTestSection
+            course={course}
+            refreshCourse= {refreshCourse}
+            tests={publishUnitTests}
+        />}
+    </Modal>
+</>)
+}
 

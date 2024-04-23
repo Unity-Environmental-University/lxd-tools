@@ -1,0 +1,15 @@
+.testRunning {
+  background-color: #d5c76f;
+  color: #FFF;
+  content: 'Running';
+}
+.testFailed {
+  background-color: red;
+  color: #FFF;
+  content: 'Failed';
+}
+.testSuccess {
+  background-color: darkgreen;
+  color: #FFF;
+  content: 'OK!';
+}
