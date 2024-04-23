@@ -748,7 +748,7 @@ export class Course extends BaseCanvasObject<ICourseData> {
     }
 
     public async getSettings(config?:ICanvasCallConfig) {
-        return await fetchJson(`/courses/${this.id}/settings`, config) as ICourseSettings;
+        return await fetchJson(`/api/v1/courses/${this.id}/settings`, config) as ICourseSettings;
     }
 
 }

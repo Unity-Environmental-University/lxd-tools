@@ -1,4 +1,3 @@
-
 export type TermWorkflowState = 'all' | 'active' | 'deleted'
 export type CanvasData = Record<string, any>
 
@@ -84,20 +83,21 @@ export interface ICourseData extends CanvasData {
 }
 
 export interface ICourseSettings {
-  "allow_student_discussion_topics": boolean,
-  "allow_student_forum_attachments": boolean,
-  "allow_student_discussion_editing": boolean,
-  "grading_standard_enabled": boolean,
-  "grading_standard_id": number,
-  "allow_student_organized_groups": boolean,
-  "hide_final_grades": boolean,
-  "hide_distribution_graphs": boolean,
-  "hide_sections_on_course_users_page": boolean,
-  "lock_all_announcements": boolean,
-  "usage_rights_required": boolean,
-  "homeroom_course": boolean,
-  "default_due_time": string,
-  "conditional_release": boolean
+    "allow_student_discussion_topics": boolean,
+    "allow_student_forum_attachments": boolean,
+    "allow_student_discussion_editing": boolean,
+    "grading_standard_enabled": boolean,
+    "grading_standard_id": number,
+    "allow_student_organized_groups": boolean,
+    "hide_final_grades": boolean,
+    "hide_distribution_graphs": boolean,
+    "hide_sections_on_course_users_page": boolean,
+    "lock_all_announcements": boolean,
+    "usage_rights_required": boolean,
+    "homeroom_course": boolean,
+    "default_due_time": string,
+    "conditional_release": boolean,
+    show_announcements_on_home_page?: boolean
 }
 
 export interface ITabData {
@@ -110,6 +110,7 @@ export interface ITabData {
     label: string,
     type: string
 }
+
 export interface IBlueprintContentRestrictions {
     content: boolean,
     points: boolean,
@@ -137,7 +138,7 @@ export interface IGradingRules {
     never_drop?: number[],
 }
 
-export interface IAssignmentGroup extends CanvasData{
+export interface IAssignmentGroup extends CanvasData {
     id: number,
     name: string,
     position: number,
@@ -155,7 +156,7 @@ export interface IDiscussionData extends CanvasData {
     posted_at: string,
     last_reply_at: string,
     require_initial_post: boolean,
-    delayed_post_at?:string
+    delayed_post_at?: string
 
 }
 
@@ -163,7 +164,6 @@ export interface IDiscussionData extends CanvasData {
 //     id: number,
 //
 // }
-
 
 
 export interface IModuleData extends CanvasData {
@@ -182,8 +182,23 @@ export interface IModuleData extends CanvasData {
     published: boolean
 }
 
-export type ModuleItemType = "File" | "Assignment" | "Discussion" | "Quiz" | "ExternalTool" | "ExternalUrl" | "Page" | "Subheader"
-export type RestrictModuleItemType = 'assignment'|'attachment'|'discussion_topic'|'external_tool'|'lti-quiz'|'quiz'|'wiki_page'
+export type ModuleItemType =
+    "File"
+    | "Assignment"
+    | "Discussion"
+    | "Quiz"
+    | "ExternalTool"
+    | "ExternalUrl"
+    | "Page"
+    | "Subheader"
+export type RestrictModuleItemType =
+    'assignment'
+    | 'attachment'
+    | 'discussion_topic'
+    | 'external_tool'
+    | 'lti-quiz'
+    | 'quiz'
+    | 'wiki_page'
 
 
 export interface IModuleItemData extends CanvasData {
@@ -232,5 +247,5 @@ export interface IUpdateCallback {
 }
 
 
-export type LookUpTable<T> = Record<string|number, T>
+export type LookUpTable<T> = Record<string | number, T>
 

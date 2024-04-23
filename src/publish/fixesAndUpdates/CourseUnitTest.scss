@@ -13,3 +13,11 @@
   color: #FFF;
   content: 'OK!';
 }
+
+.test-row {
+  padding-top: 0.5em;
+}
+
+.test-row:nth-child(even) {
+  background-color: #f0f0f0;
+}

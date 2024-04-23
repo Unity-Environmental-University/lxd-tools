@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {Course} from "../../canvas/index";
 import {UnitTestResult} from "./publishUnitTests";
 import {useEffectAsync} from "../../ui/utils";
+import './CourseUnitTest.scss'
 
 type UnitTestSectionProps = {
     course: Course,
@@ -18,6 +19,7 @@ export function UnitTestSection({course, tests, refreshCourse}: UnitTestSectionP
     return <div className={'container'}>
         <h2>Course Settings and Content Tests</h2>
         {tests.map((test) => <UnitTestRow
+            key={test.name}
             course={course}
             test={test}
             refreshCourse={refreshCourse}
@@ -51,7 +53,7 @@ function UnitTestRow({test, course, refreshCourse}: UnitTestRowProps) {
         return result.message;
     }
 
-    return <div className={'row'}>
+    return <div className={'row test-row'}>
         <div className={'col-sm-3'}>{test.name}</div>
         <div className={'col-sm-4'}>{test.description}</div>
         <div className={'col-sm-4'}>{statusMessage(result)}</div>
