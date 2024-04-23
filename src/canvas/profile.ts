@@ -15,7 +15,6 @@ export interface IProfile {
 
 }
 
-
 async function getFacultyCourse() {
     const facultyCourse = facultyCourseCached ?? await Course.getByCode('Faculty Bios');
     facultyCourseCached = facultyCourse;
