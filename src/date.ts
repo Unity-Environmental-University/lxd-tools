@@ -57,13 +57,13 @@ function getMonthNumberLut(locale: string) {
 
 const dateRegexStringCache: Record<string, string> = {};
 
+//TODO: Make the capture groups in this optional
 function getDateRegexString(locale = 'en-US') {
     if (dateRegexStringCache[locale]) return dateRegexStringCache[locale];
 
     const monthNames = getMonthNames('long', locale);
     const shortMonthNames = getMonthNames('short', locale);
     const monthRegexDatePart = `(?:${[...monthNames, ...shortMonthNames].join('|')})`;
-    console.log(monthRegexDatePart);
     const output = `((${monthRegexDatePart}) (\\d+))(?:\\w{2}|)`;
     dateRegexStringCache[locale] = output;
     return output;
@@ -79,13 +79,19 @@ export function findDateRange(textToSearch: string, locale = 'en-US') {
 
     const searchRegex = new RegExp(`(${dateRegExString}).*(${dateRegExString})`, 'i');
     const dateRegex = new RegExp(dateRegExString, 'i')
+
     const matchRange = textToSearch.match(searchRegex);
-    if(!matchRange) return null;
     if (!matchRange) return null; //No date range found in syllabus
-    const[start, end] = matchRange[0].split('-');
+
+    let start, end;
+    for(let separator of ['-', 'to']) {
+        [start, end] = matchRange[0].split(separator)
+        if(start && end) break;
+    }
+    if(!start || !end) throw new MalformedDateError('Cannot find date range in syllabus');
+
     const startMatch = start.match(dateRegex);
     const endMatch = end.match(dateRegex);
-    console.log(startMatch, endMatch);
     if(!startMatch) throw new MalformedDateError(`Missing Start Date ${start}`)
     if(!endMatch) throw new MalformedDateError(`Missing End Date ${end}`)
 

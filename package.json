@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
@@ -30,7 +30,8 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "watch": "webpack -w --config webpack.config.js"
+    "watch": "webpack -w --config webpack.config.js",
+    "test": "ts-jest"
   },
   "eslintConfig": {
     "extends": [
@@ -51,6 +52,7 @@
     ]
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/bootstrap": "^5.2.10",
     "@types/chrome": "^0.0.263",
     "@types/jest": "^29.5.12",
@@ -71,7 +73,7 @@
     "ts-jest": "^29.1.2",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.5",
     "webpack-cli": "^5.1.4",
     "wepback": "^1.0.0"
   }

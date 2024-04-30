@@ -21,6 +21,22 @@ const finalNotInGradingPolicyParaTest:CourseUnitTest = {
     }
 }
 
+const communication24HoursTest: CourseUnitTest = {
+    name: "Syllabus - Withing 24 Hours",
+    description: "Revise the top sentence of the \"Communication\" section of the syllabus to read: \"The instructor will " +
+        "conduct all correspondence with students related to the class in Canvas, and you should " +
+        "expect to receive a response to emails within 24 hours.\"",
+    run: async (course) => {
+        const syllabus = await course.getSyllabus();
+        const testString = 'The instructor will conduct all correspondence with students related to the class in Canvas, and you should expect to receive a response to emails within 24 hours'.toLocaleLowerCase();
+        const el = document.createElement('div');
+        el.innerHTML = syllabus;
+        return {
+            success: el.innerText.toLowerCase().includes(testString),
+            message: "Communication language section in syllabus does not look right."
+        }
+    }
+}
 
 const courseCreditsInSyllabusTest:CourseUnitTest = {
     name: "Syllabus Credits",
@@ -37,6 +53,27 @@ const courseCreditsInSyllabusTest:CourseUnitTest = {
             message: "Can't find credits in syllabus"
         }
     }
+}
+
+const bottomOfSyllabusLanguageTest: CourseUnitTest = {
+    name: "Bottom-of-Syllabus Test",
+    description: "Replace language at the bottom of the syllabus with: \"Learning materials for Weeks 2 forward are organized with the rest of the class in your weekly modules. The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
+    run: async(course) => {
+        const text = getPlainTextFromHtml(await course.getSyllabus());
+
+        return {
+            success: text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase()),
+            message: "Text at the bottom of the syllabus looks incorrect."
+        }
+
+    }
+}
+
+
+function getPlainTextFromHtml(html:string) {
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    return el.innerText;
 }
 
 
@@ -71,27 +108,11 @@ const announcementsOnHomePageTest:CourseUnitTest = {
     }
 }
 
-const communication24HoursTest: CourseUnitTest = {
-    name: "Syllabus - Withing 24 Hours",
-    description: "Revise the top sentence of the \"Communication\" section of the syllabus to read: \"The instructor will " +
-        "conduct all correspondence with students related to the class in Canvas, and you should " +
-        "expect to receive a response to emails within 24 hours.\"",
-    run: async (course) => {
-        const syllabus = await course.getSyllabus();
-        const testString = 'The instructor will conduct all correspondence with students related to the class in Canvas, and you should expect to receive a response to emails within 24 hours'.toLocaleLowerCase();
-        const el = document.createElement('div');
-        el.innerHTML = syllabus;
-        return {
-            success: el.innerText.toLowerCase().includes(testString),
-            message: "Communication language section in syllabus does not look right."
-        }
-    }
-}
-
 export default [
     announcementsOnHomePageTest,
     extensionsInstalledTest,
     courseCreditsInSyllabusTest,
     finalNotInGradingPolicyParaTest,
     communication24HoursTest,
+    bottomOfSyllabusLanguageTest,
 ]

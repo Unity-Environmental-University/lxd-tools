@@ -3,6 +3,8 @@ import {Course} from "../../canvas/index";
 import {UnitTestResult} from "./publishUnitTests";
 import {useEffectAsync} from "../../ui/utils";
 import './CourseUnitTest.scss'
+import {Urlbar} from "webextension-polyfill";
+import Result = Urlbar.Result;
 
 type UnitTestSectionProps = {
     course: Course,
@@ -33,13 +35,18 @@ type UnitTestRowProps = {
     course: Course,
     test: CourseUnitTest,
     refreshCourse: () => Promise<any>
+    onResult? : (result:UnitTestResult, test:CourseUnitTest) => any,
     showOnlyFailures?: boolean,
 }
 
-function UnitTestRow({test, course, refreshCourse, showOnlyFailures=false}: UnitTestRowProps) {
+function UnitTestRow({test, course, refreshCourse, onResult, showOnlyFailures=false}: UnitTestRowProps) {
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<UnitTestResult>()
+    const [result, _setResult] = useState<UnitTestResult>()
 
+    function setResult(result:UnitTestResult) {
+        _setResult(result);
+        onResult && onResult(result, test);
+    }
     async function reRun() {
         await refreshCourse();
         setResult(await test.run(course))
