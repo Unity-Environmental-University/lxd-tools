@@ -18,7 +18,7 @@ import {Temporal} from "temporal-polyfill";
  * @param params optional params to pass into each run of the function
  */
 function callAll<T>(funcs:(()=>T)[]):T[]
-function callAll<T, ParamType>(funcs: {func:()=>ParamType, params: ParamType}[]):T[]
+function callAll<T, ParamType>(funcs: {func:(params:ParamType)=>T, params: ParamType}[]):T[]
 function callAll<T, ParamType>(funcs: ((params:ParamType)=> T)[], params:ParamType):T[]
 function callAll<T,
     WithParamsFuncType extends (params:FunctionParamsType) => T,
@@ -55,13 +55,20 @@ function callAll<T,
 
 export { callAll }
 
-export function parentElement(el: Element, tagName: string) {
+/**
+ * Traverses up the DOM and finds a parent with a matching Tag
+ * @param el
+ * @param tagName
+ */
+export function parentElement(el: Element | null, tagName: string) {
+    if(!el) return null;
     while (el && el.parentElement) {
         el = el.parentElement;
         if (el.tagName && el.tagName.toLowerCase() == tagName) {
             return el;
         }
     }
+    return null;
 }
 
 export interface ICanvasCallConfig {
@@ -161,7 +168,7 @@ export async function getItemTypeAndId(
  * @param queryParams
  * @returns {URLSearchParams} The correctly formatted parameters
  */
-function searchParamsFromObject(queryParams: string[][] | Record<string, string>): URLSearchParams {
+export function searchParamsFromObject(queryParams: string[][] | Record<string, string>): URLSearchParams {
     return new URLSearchParams(queryParams);
 }
 

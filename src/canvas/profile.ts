@@ -46,11 +46,6 @@ async function getPotentialFacultyProfiles(user:IUserData) {
     }
 
     let profiles = pages.map((page) => getProfileFromPage(page, user), true)
-    // profiles = winnow(profiles, [
-    //     (profile) => profile.body !== null,
-    //     (profile) => profile.displayName != null,
-    //     (profile) => profile.imageLink != null,
-    // ])
 
     if(profiles.length > 0) {
         for(let profile of profiles) {
