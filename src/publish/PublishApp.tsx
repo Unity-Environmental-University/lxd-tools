@@ -6,9 +6,6 @@ import {PublishInterface} from "./PublishInterface";
 import {ContentUpdateInterface} from "./ContentUpdateInterface";
 
 
-
-
-
 function PublishApp() {
 
     const [course, setCourse] = useState<Course|null>(null);

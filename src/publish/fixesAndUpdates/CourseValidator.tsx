@@ -1,27 +1,26 @@
 import React, {useState} from "react";
 import {Course} from "../../canvas/index";
-import {UnitTestResult} from "./publishUnitTests";
+import {UnitTestResult} from "./publishValidation";
 import {useEffectAsync} from "../../ui/utils";
-import './CourseUnitTest.scss'
-import {Urlbar} from "webextension-polyfill";
-import Result = Urlbar.Result;
+import './CourseValidTest.scss'
+import {ICanvasCallConfig} from "../../canvas/canvasUtils";
 
-type UnitTestSectionProps = {
-    course: Course,
+type ValidateSectionTestProps<T = Course> = {
+    course: T,
     showOnlyFailures: boolean,
     refreshCourse: () => Promise<any>,
-    tests: CourseUnitTest[]
+    tests: CourseValidationTest<T>[]
 }
-export type CourseUnitTest = {
+export type CourseValidationTest<T = Course> = {
     name: string,
     description: string,
-    run:  (course: Course) => Promise<UnitTestResult>
+    run:  (course: T, config?:ICanvasCallConfig) => Promise<UnitTestResult>
 }
 
-export function UnitTestSection({course, tests, refreshCourse, showOnlyFailures=false}: UnitTestSectionProps) {
+export function ValidateSectionTest({course, tests, refreshCourse, showOnlyFailures=false}: ValidateSectionTestProps) {
     return <div className={'container'}>
         {showOnlyFailures || <h2>Course Settings and Content Tests</h2>}
-        {tests.map((test) => <UnitTestRow
+        {tests.map((test) => <ValidationRow
             key={test.name}
             course={course}
             test={test}
@@ -31,15 +30,15 @@ export function UnitTestSection({course, tests, refreshCourse, showOnlyFailures=
     </div>
 }
 
-type UnitTestRowProps = {
+type ValidationRowProps = {
     course: Course,
-    test: CourseUnitTest,
+    test: CourseValidationTest,
     refreshCourse: () => Promise<any>
-    onResult? : (result:UnitTestResult, test:CourseUnitTest) => any,
+    onResult? : (result:UnitTestResult, test:CourseValidationTest) => any,
     showOnlyFailures?: boolean,
 }
 
-function UnitTestRow({test, course, refreshCourse, onResult, showOnlyFailures=false}: UnitTestRowProps) {
+function ValidationRow({test, course, refreshCourse, onResult, showOnlyFailures=false}: ValidationRowProps) {
     const [loading, setLoading] = useState(false);
     const [result, _setResult] = useState<UnitTestResult>()
 

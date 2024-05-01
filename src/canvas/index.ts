@@ -42,7 +42,12 @@ const HOMETILE_WIDTH = 500;
 //const HOMETILE_WIDTH = 500;
 
 
-export class Course extends BaseCanvasObject<ICourseData> {
+export interface ISyllabusHaver {
+    getSyllabus: (config?:ICanvasCallConfig) => Promise<string>,
+    changeSyllabus: (newHtml:string, config?:ICanvasCallConfig) => any
+}
+
+export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHaver {
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
     private _modules: IModuleData[] | undefined = undefined;
     private modulesByWeekNumber: Record<string | number, IModuleData> | undefined = undefined;
@@ -358,13 +363,11 @@ export class Course extends BaseCanvasObject<ICourseData> {
         return urls;
     }
 
-    async getSyllabus(): Promise<string> {
+    async getSyllabus(config:ICanvasCallConfig = {queryParams:{}}): Promise<string> {
         if (!this.canvasData.syllabus_body) {
-            const data = await Course.getCourseById(this.id, {
-                queryParams: {
-                    include: 'syllabus_body'
-                }
-            });
+
+            config.queryParams = {...config.queryParams, include: 'syllabus_body'};
+            const data = await Course.getCourseById(this.id, config);
             assert(data.canvasData.syllabus_body)
             this.canvasData.syllabus_body = data.canvasData.syllabus_body;
         }
@@ -376,9 +379,8 @@ export class Course extends BaseCanvasObject<ICourseData> {
      * @returns {Promise<Assignment[]>}
      * @param config
      */
-    async getAssignments(config: ICanvasCallConfig = {
-        queryParams: {'include': ['due_at']}
-    }): Promise<Assignment[]> {
+    async getAssignments(config: ICanvasCallConfig = {queryParams: {}}): Promise<Assignment[]> {
+        config.queryParams = {...config.queryParams, include: ['due_at']}
         return await Assignment.getAllInCourse(this, config) as Assignment[];
     }
 
@@ -409,8 +411,8 @@ export class Course extends BaseCanvasObject<ICourseData> {
 
     }
 
-    async getTabs() {
-        return await fetchApiJson(`courses/${this.id}/tabs`) as ITabData[];
+    async getTabs(config?:ICanvasCallConfig) {
+        return await fetchApiJson(`courses/${this.id}/tabs`, config) as ITabData[];
     }
 
     async getFrontPage() {
@@ -821,25 +823,6 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
 
     }
 
-    static get contentUrlRegex(): RegExp {
-        assert(this.contentUrlTemplate, `Class ${this.toString()} does not have a content url property`);
-        let contentString = this.contentUrlTemplate.replace(/\{[^}]+\}/, '(\d+)');
-        return new RegExp(contentString);
-    }
-
-    static getIdFromUrl(url: string) {
-        //let _contentUrlTemplate = "courses/{course_id}/discussion_topics/{content_id}";
-        assert(this.contentUrlTemplate);
-        // use the content url template as a basis to generate
-        let match = /courses\/(\d+)/.exec(url);
-        if (match) {
-            return parseInt(match[1]);
-        }
-        return null;
-
-    }
-
-
     static async getAllInCourse(course: Course, config: ICanvasCallConfig | null = null) {
         let url = this.getAllUrl(course.id);
         let data = await getApiPagedData(url, config);
@@ -1058,46 +1041,28 @@ export class Page extends BaseContentItem {
     static contentUrlTemplate = "courses/{course_id}/pages/{content_id}";
     static allContentUrlTemplate = "courses/{course_id}/pages";
 
-    static async getFromUrl(url: string | null = null, course: null | Course = null) {
-        if (url === null) {
-            url = document.documentURI;
-        }
-
-        url = url.replace(/\.com/, '.com/api/v1')
-        let data = await fetchJson(url);
-        if (!course) {
-            course = await Course.getFromUrl();
-            if (!course) return null;
-        }
-        //If this is a collection of data, we can't process it as a Canvas Object
-        if (Array.isArray(data)) return null;
-        assert(!Array.isArray(data));
-        if (data) {
-            return new this(data, course);
-        }
-        return null;
-    }
+    // static async getFromUrl(url: string | null = null, course: null | Course = null) {
+    //     if (url === null) {
+    //         url = document.documentURI;
+    //     }
+    //
+    //     url = url.replace(/\.com/, '.com/api/v1')
+    //     let data = await fetchJson(url);
+    //     if (!course) {
+    //         course = await Course.getFromUrl();
+    //         if (!course) return null;
+    //     }
+    //     //If this is a collection of data, we can't process it as a Canvas Object
+    //     if (Array.isArray(data)) return null;
+    //     assert(!Array.isArray(data));
+    //     if (data) {
+    //         return new this(data, course);
+    //     }
+    //     return null;
+    // }
 
     async getRevisions() {
         return getPagedData(`${this.contentUrlPath}/revisions`);
-    }
-
-    async revertLastChangeSet(stepsBack = 1) {
-        let revisions = await this.getRevisions();
-        revisions.sort((a, b) => b['revision_id'] - a['revision_id']);
-        if (revisions.length <= stepsBack) {
-            console.warn(`Tried to revert ${this.name} but there isn't a previous revision`);
-            return null;
-        }
-        let revision = revisions[stepsBack];
-        await this.applyRevision(revision);
-    }
-
-    async resetContent(revisionId = 1) {
-        let revisions = await this.getRevisions();
-        let revision = revisions.find(r => r['revision_id'] === revisionId);
-        if (!revision) throw new Error(`No revision found for ${revisionId}`);
-        await this.applyRevision(revision);
     }
 
     async applyRevision(revision: Record<string, any>) {
@@ -1213,18 +1178,6 @@ export class Term extends BaseCanvasObject<ITermData> {
             return null;
         }
         return terms.map(term => new Term(term));
-    }
-
-    get courseCount(): number {
-        return this.getItem('course_count');
-    }
-
-    get startDate(): Date {
-        return new Date(this.data.start_at);
-    }
-
-    get endDate(): Date {
-        return new Date(this.data.end_at);
     }
 
 }
