@@ -8,11 +8,16 @@ And starting to convert to ts
 import assert from 'assert';
 
 import {
-    CanvasData, IAssignmentData,
+    CanvasData,
+    IAssignmentData,
     IAssignmentGroup,
-    ICourseData, ICourseSettings, IDiscussionData,
+    ICourseData,
+    ICourseSettings,
+    IDiscussionData,
+    ILatePolicyData,
     IModuleData,
-    IModuleItemData, ITabData,
+    IModuleItemData,
+    ITabData,
     ITermData,
     IUpdateCallback,
     IUserData,
@@ -40,14 +45,27 @@ import {Temporal} from "temporal-polyfill";
 const HOMETILE_WIDTH = 500;
 
 //const HOMETILE_WIDTH = 500;
-
-
 export interface ISyllabusHaver {
+    id: number,
     getSyllabus: (config?:ICanvasCallConfig) => Promise<string>,
     changeSyllabus: (newHtml:string, config?:ICanvasCallConfig) => any
 }
 
-export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHaver {
+export interface ICourseSettingsHaver {
+    id: number,
+    getSettings: (config?:ICanvasCallConfig) => Promise<ICourseSettings>
+}
+
+export interface ILatePolicyHaver {
+    id: number,
+    getLatePolicy: (config?:ICanvasCallConfig) => Promise<ILatePolicyData>
+}
+
+export class Course extends BaseCanvasObject<ICourseData> implements
+    ISyllabusHaver,
+    ICourseSettingsHaver,
+    ILatePolicyHaver
+{
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
     private _modules: IModuleData[] | undefined = undefined;
     private modulesByWeekNumber: Record<string | number, IModuleData> | undefined = undefined;
@@ -73,7 +91,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
             return parseInt(match[1]);
         }
         return null;
-
     }
 
     /**
@@ -268,6 +285,13 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
     async getInstructors(): Promise<IUserData[] | null> {
         return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
     }
+    async getLatePolicy(this: { id: number }, config?:ICanvasCallConfig) {
+        const latePolicyResult = await fetchJson(`/api/v1/courses/${this.id}/late_policy`, config);
+        assert('late_policy' in latePolicyResult);
+        return latePolicyResult.late_policy as ILatePolicyData;
+
+    }
+
 
     async getTerms(): Promise<Term[] | null> {
         if (this.termIds) {
@@ -289,6 +313,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
         if (!ContentClass) return null;
         return ContentClass.getFromUrl(url);
     }
+
 
     async getModulesByWeekNumber() {
         if (this.modulesByWeekNumber) return this.modulesByWeekNumber;
@@ -754,6 +779,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
     }
 
 }
+
 
 /**
  *  A base class for objects that interact with the Canvas API

@@ -8,7 +8,6 @@ import {
     RestrictModuleItemType
 } from "./canvasDataDefs";
 import {Course} from "./index";
-import {Temporal} from "temporal-polyfill";
 
 
 /**
@@ -302,18 +301,14 @@ export function courseNameSort(a: Course|ICourseData, b: Course|ICourseData) {
 
 }
 
-
-export function oldDateToPlainDate(date: Date) {
-    const data = {
-        day: date.getDate(),
-        month: date.getMonth() + 1,
-        year: date.getFullYear(),
-    };
-    return Temporal.PlainDate.from(data)
-}
-
 export function* range(start:number, end:number) {
     for(let i = start; i <= end; i++) {
         yield i;
     }
+}
+
+export function getPlainTextFromHtml(html: string) {
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    return el.innerText || el.textContent || "";
 }

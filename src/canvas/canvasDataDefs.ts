@@ -249,3 +249,25 @@ export interface IUpdateCallback {
 
 export type LookUpTable<T> = Record<string | number, T>
 
+
+export interface ILatePolicyUpdate {
+    "id"?: number,
+    "missing_submission_deduction_enabled"?: boolean,
+    "missing_submission_deduction"?: number,
+    "late_submission_deduction_enabled"?: boolean,
+    "late_submission_deduction"?: number,
+    "late_submission_interval"?: string,
+    "late_submission_minimum_percent_enabled"?: boolean,
+    "late_submission_minimum_percent"?: number
+}
+
+export interface ILatePolicyData extends ILatePolicyUpdate{
+    "id": number,
+    "missing_submission_deduction_enabled": boolean,
+    "missing_submission_deduction": number,
+    "late_submission_deduction_enabled": boolean,
+    "late_submission_deduction": number,
+    "late_submission_interval": string,
+    "late_submission_minimum_percent_enabled": boolean,
+    "late_submission_minimum_percent": number
+}

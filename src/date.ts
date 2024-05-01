@@ -101,6 +101,15 @@ export function findDateRange(textToSearch: string, locale = 'en-US') {
     }
 }
 
+export function oldDateToPlainDate(date: Date) {
+    const data = {
+        day: date.getDate(),
+        month: date.getMonth() + 1,
+        year: date.getFullYear(),
+    };
+    return Temporal.PlainDate.from(data)
+}
+
 export class StringNotAMonthDateError extends Error {
     name = "StringNotAMonthDateError"
 }

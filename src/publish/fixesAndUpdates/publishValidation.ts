@@ -1,16 +1,16 @@
 import {CourseValidationTest} from "./CourseValidator";
-import {ISyllabusHaver} from "../../canvas/index";
+import {ILatePolicyHaver, ISyllabusHaver} from "../../canvas/index";
+import {getPlainTextFromHtml} from "../../canvas/canvasUtils";
+import {ILatePolicyData} from "../../canvas/canvasDataDefs";
 
 export type UnitTestResult = {
     success: boolean,
-    message: string
+    message: string,
+    link?: string
 }
 
-///Syllabus Fixes
-
-
-
-const finalNotInGradingPolicyParaTest:CourseValidationTest<ISyllabusHaver> = {
+//Syllabus Tests
+export const finalNotInGradingPolicyParaTest: CourseValidationTest<ISyllabusHaver> = {
     name: "Remove Final",
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
@@ -23,8 +23,8 @@ const finalNotInGradingPolicyParaTest:CourseValidationTest<ISyllabusHaver> = {
     }
 }
 
-const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
-    name: "Syllabus - Withing 24 Hours",
+export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
+    name: "Syllabus - Within 24 Hours",
     description: "Revise the top sentence of the \"Communication\" section of the syllabus to read: \"The instructor will " +
         "conduct all correspondence with students related to the class in Canvas, and you should " +
         "expect to receive a response to emails within 24 hours.\"",
@@ -41,7 +41,7 @@ const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
     }
 }
 
-const courseCreditsInSyllabusTest:CourseValidationTest<ISyllabusHaver> = {
+export const courseCreditsInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
     name: "Syllabus Credits",
     description: 'Credits displayed in summary box of syllabus',
     run: async (course: ISyllabusHaver, config) => {
@@ -57,10 +57,10 @@ const courseCreditsInSyllabusTest:CourseValidationTest<ISyllabusHaver> = {
     }
 }
 
-const aiPolicyInSyllabusTest:CourseValidationTest<ISyllabusHaver> = {
+export const aiPolicyInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
     name: "AI Policy in Syllabus Test",
     description: "The AI policy is present in the syllabus",
-    run: async (course: ISyllabusHaver, config ) => {
+    run: async (course: ISyllabusHaver, config) => {
         const text = await course.getSyllabus(config);
         const success = text.includes('Generative Artificial Intelligence');
         return {
@@ -71,10 +71,10 @@ const aiPolicyInSyllabusTest:CourseValidationTest<ISyllabusHaver> = {
 }
 
 
-const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> = {
+export const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> = {
     name: "Bottom-of-Syllabus Test",
     description: "Replace language at the bottom of the syllabus with: \"Learning materials for Weeks 2 forward are organized with the rest of the class in your weekly modules. The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
-    run: async(course, config) => {
+    run: async (course, config) => {
         const text = getPlainTextFromHtml(await course.getSyllabus(config));
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
         return {
@@ -85,24 +85,15 @@ const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> = {
     }
 }
 
-
-function getPlainTextFromHtml(html:string) {
-    const el = document.createElement('div');
-    el.innerHTML = html;
-    return el.innerText || el.textContent || "";
-}
-
-
 /// Course Settings
-
-const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
-const extensionsInstalledTest:CourseValidationTest = {
+export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
+export const extensionsInstalledTest: CourseValidationTest = {
     name: "Extensions Installed",
     description: 'Big Blue Button and Dropout Detective in nav bar',
     run: async (course, config) => {
-        const missing:Set<string> = new Set(extensionsToTest);
+        const missing: Set<string> = new Set(extensionsToTest);
         const tabs = await course.getTabs(config);
-        for(let tab of tabs) {
+        for (let tab of tabs) {
             if (missing.has(tab.label) && !tab.hidden) missing.delete(tab.label);
         }
         return {
@@ -112,7 +103,7 @@ const extensionsInstalledTest:CourseValidationTest = {
     }
 }
 
-const announcementsOnHomePageTest:CourseValidationTest = {
+export const announcementsOnHomePageTest: CourseValidationTest = {
     name: "Show Announcements",
     description: 'Confirm under "Settings" --> "more options" that the "Show announcements" box is checked',
     run: async (course) => {
@@ -124,6 +115,24 @@ const announcementsOnHomePageTest:CourseValidationTest = {
     }
 }
 
+/// Etc
+
+export const latePolicyTest: CourseValidationTest<ILatePolicyHaver> = {
+    name: "Late Policy Correct",
+    description: "Go to the gradebook and  click the cog in the upper right-hand corner, then check the box to automatically apply a 0 for missing submissions; or confirm that this setting has already been made.",
+    run: async (course: ILatePolicyHaver, config) => {
+        const latePolicy = await course.getLatePolicy(config);
+        console.log(latePolicy);
+
+        const success = latePolicy.missing_submission_deduction_enabled;
+        const result = {
+            success: latePolicy.missing_submission_deduction_enabled,
+            message: "'Automatically apply grade for missing submission' not turned on",
+        }
+        console.log(result);
+        return result;
+    }
+}
 
 export default [
     announcementsOnHomePageTest,
@@ -133,14 +142,6 @@ export default [
     communication24HoursTest,
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
+    latePolicyTest
 ]
 
-export {
-    aiPolicyInSyllabusTest,
-    announcementsOnHomePageTest,
-    extensionsInstalledTest,
-    courseCreditsInSyllabusTest,
-    finalNotInGradingPolicyParaTest,
-    communication24HoursTest,
-    bottomOfSyllabusLanguageTest,
-}

@@ -1,7 +1,6 @@
 import {findDateRange} from "../src/date";
 import {Temporal} from "temporal-polyfill";
-import assert = require('assert');
-
+import assert from "assert";
 const testStart = {
     month: 4,
     day: 1,

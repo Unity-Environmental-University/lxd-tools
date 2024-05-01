@@ -1,7 +1,6 @@
 import {Temporal} from "temporal-polyfill";
 import {IModuleData} from "../canvasDataDefs";
-import {oldDateToPlainDate} from "../canvasUtils";
-import {findDateRange} from "../../date";
+import {findDateRange, oldDateToPlainDate} from "../../date";
 import {Assignment} from "../index";
 import assert from "assert";
 

@@ -14,7 +14,6 @@ type PublishInterfaceProps = {
     course: Course | null,
 }
 
-
 export function PublishInterface({course}: PublishInterfaceProps) {
     //-----
     // DATA

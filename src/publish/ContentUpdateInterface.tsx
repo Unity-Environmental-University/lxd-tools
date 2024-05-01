@@ -6,7 +6,7 @@ import {Course, Page} from "../canvas/index";
 import {fixLmAnnotations} from "../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./fixesAndUpdates/UpdateStartDate";
-import {CourseValidationTest, ValidateSectionTest} from "./fixesAndUpdates/CourseValidator";
+import {CourseValidator} from "./fixesAndUpdates/CourseValidator";
 import publishUnitTests from "./fixesAndUpdates/publishValidation";
 
 type ContentUpdateInterfaceProps = {
@@ -131,7 +131,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
             {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
         </div>
         {mode === 'fix' && <FixesMode course={course}></FixesMode>}
-        {<ValidateSectionTest
+        {<CourseValidator
             showOnlyFailures={mode !== 'unitTest'}
             course={course}
             refreshCourse= {refreshCourse}

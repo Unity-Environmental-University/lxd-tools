@@ -7,7 +7,7 @@ import DatePicker from "react-datepicker";
 
 
 
-import {oldDateToPlainDate, getPagedDataGenerator} from "../../canvas/canvasUtils";
+import {getPagedDataGenerator} from "../../canvas/canvasUtils";
 import {
     getStartDateAssignments,
     SyllabusUpdateError,
@@ -15,6 +15,7 @@ import {
 } from "../../canvas/fixes/changeStartDate";
 import {changeModuleLockDate} from "../../canvas/modules";
 import {IDiscussionData} from "../../canvas/canvasDataDefs";
+import {oldDateToPlainDate} from "../../date";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,
