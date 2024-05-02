@@ -45,7 +45,7 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
             </div>
             <div className={'col-sm-4'}>
                 <p>{statusMessage(result)}</p>
-                {result?.links?.map(link => <div>
+                {result?.links?.map(link => <div key={link}>
                     <a href={link} target={'_blank'}>{link}</a>
                 </div>)}
 

@@ -148,7 +148,7 @@ export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
     run: async (course, config) => {
         let overviews = await course.getPages({
             ...config,
-            queryParams: {...config?.queryParams, search_term: 'Overview'}
+            queryParams: {...config?.queryParams, search_term: 'Overview', include: ['body']}
         });
         overviews = overviews.filter(overview => /week \d overview/i.test(overview.name));
 

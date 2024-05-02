@@ -20,7 +20,7 @@ export type CourseValidationTest<T = Course> = {
 export function CourseValidator({course, tests, refreshCourse, showOnlyFailures=false}: CourseValidatorProps) {
     return <div className={'container'}>
         {showOnlyFailures || <h2>Course Settings and Content Tests</h2>}
-        {tests.map((test) => <ValidationRow
+        {tests.map((test, i) => <ValidationRow
             key={test.name}
             course={course}
             test={test}
