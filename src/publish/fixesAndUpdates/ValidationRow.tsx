@@ -1,8 +1,8 @@
 import React, {useState} from "react";
 import {UnitTestResult} from "./publishValidation";
 import {useEffectAsync} from "../../ui/utils";
-import {Course} from "../../canvas/index";
 import {CourseValidationTest} from "./CourseValidator";
+import {Course} from "../../canvas/course";
 
 type ValidationRowProps = {
     course: Course,

@@ -1,9 +1,9 @@
 import React from "react";
-import {Course} from "../../canvas/index";
 import {UnitTestResult} from "./publishValidation";
 import './CourseValidTest.scss'
 import {ICanvasCallConfig} from "../../canvas/canvasUtils";
 import {ValidationRow} from "./ValidationRow";
+import {Course} from "../../canvas/course";
 
 type CourseValidatorProps<T = Course> = {
     course: T,

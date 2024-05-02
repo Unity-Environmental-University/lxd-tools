@@ -7,7 +7,8 @@ import {
     ModuleItemType,
     RestrictModuleItemType
 } from "./canvasDataDefs";
-import {Course} from "./index";
+
+import {Course} from "./course";
 
 
 /**
@@ -102,7 +103,7 @@ export function formDataify(data: Record<string, any>) {
 }
 
 /**
- * Adds arrays and objects in the form formdata posts expects
+ * Adds arrays and objects in the form formData posts expects
  * @param formData
  * @param key
  * @param value

@@ -1,13 +1,14 @@
 import React, {useState} from "react";
-import {useEffectAsync} from "../ui/utils";
+import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
-import Modal from "../ui/widgets/Modal/index";
-import {Course, Page} from "../canvas/index";
-import {fixLmAnnotations} from "../canvas/fixes/annotations";
+import Modal from "../../ui/widgets/Modal/index";
+import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
-import {UpdateStartDate} from "./fixesAndUpdates/UpdateStartDate";
-import {CourseValidator} from "./fixesAndUpdates/CourseValidator";
-import publishUnitTests from "./fixesAndUpdates/publishValidation";
+import {UpdateStartDate} from "./UpdateStartDate";
+import {CourseValidator} from "./CourseValidator";
+import publishUnitTests from "./publishValidation";
+import {Page} from "../../canvas/content";
+import {Course} from "../../canvas/course";
 
 type ContentUpdateInterfaceProps = {
     course: Course | null,

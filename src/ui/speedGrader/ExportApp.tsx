@@ -1,6 +1,8 @@
+// noinspection SpellCheckingInspection
+
 import "./speedGrader.scss"
 import {Modal, Col, Row, Card, Button} from "react-bootstrap";
-import {Course, Assignment, Term} from "../../canvas/index";
+import {Term} from "../../canvas/index";
 import React, {useEffect, useState} from "react";
 import DatePicker from "react-datepicker"
 
@@ -14,6 +16,8 @@ import {
     IUserData, LookUpTable, ModuleItemType
 } from "../../canvas/canvasDataDefs";
 import {text} from "node:stream/consumers";
+import {Assignment} from "../../canvas/content";
+import {Course} from "../../canvas/course";
 
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.

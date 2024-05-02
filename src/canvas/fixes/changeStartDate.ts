@@ -1,8 +1,8 @@
 import {Temporal} from "temporal-polyfill";
 import {IModuleData} from "../canvasDataDefs";
 import {findDateRange, oldDateToPlainDate} from "../../date";
-import {Assignment} from "../index";
 import assert from "assert";
+import {Assignment} from "../content";
 
 export function getCurrentStartDate(modules: IModuleData[]) {
     if (modules.length == 0) throw new NoOverviewModuleFoundError();

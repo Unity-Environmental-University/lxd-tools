@@ -1,4 +1,3 @@
-import {BaseContentItem, Course, Discussion} from "../../canvas/index";
 import React, {ChangeEvent, useState} from "react";
 import {Temporal} from "temporal-polyfill";
 import {useEffectAsync} from "../../ui/utils";
@@ -13,9 +12,11 @@ import {
     SyllabusUpdateError,
     updatedDateSyllabusHtml
 } from "../../canvas/fixes/changeStartDate";
-import {changeModuleLockDate} from "../../canvas/modules";
+import {changeModuleLockDate} from "../../canvas/course/modules";
 import {IDiscussionData} from "../../canvas/canvasDataDefs";
 import {oldDateToPlainDate} from "../../date";
+import {BaseContentItem, Discussion} from "../../canvas/content";
+import {Course} from "../../canvas/course";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {IUserData} from "../canvas/canvasDataDefs";
-import {Course} from "../canvas/index";
 import {IProfile} from "../canvas/profile";
+import {Course} from "../canvas/course";
 
 type CourseRowProps = {
     course: Course,

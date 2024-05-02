@@ -1,6 +1,6 @@
 import {CourseValidationTest} from "./CourseValidator";
-import {ILatePolicyHaver, IPagesHaver, ISyllabusHaver} from "../../canvas/index";
 import {getPlainTextFromHtml} from "../../canvas/canvasUtils";
+import {ILatePolicyHaver, IPagesHaver, ISyllabusHaver} from "../../canvas/course";
 
 export type UnitTestResult<T = undefined> = {
     success: boolean,
@@ -134,7 +134,8 @@ export const noEvaluationTest: CourseValidationTest<IPagesHaver> = {
     run: async (course, config) => {
         config = {...config};
         config.queryParams = {...config.queryParams, search_term: 'Course Evaluation'}
-        const evalPages = await (course.getPages(config));
+        const pages = await (course.getPages(config))
+        const evalPages = pages.filter(page => /Course Evaluation/i.test(page.name));
         const success = evalPages.length === 0;
         const result = testResult(success, "Course eval found");
         if (!success) result.links = evalPages.map(page => page.htmlContentUrl);

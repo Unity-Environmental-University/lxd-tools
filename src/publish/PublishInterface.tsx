@@ -1,4 +1,3 @@
-import {Course} from "../canvas/index";
 import React, {useState} from "react";
 import {IProfile, renderProfileIntoCurioFrontPage} from "../canvas/profile";
 import {useEffectAsync} from "../ui/utils";
@@ -9,6 +8,7 @@ import {PublishCourseRow} from "./PublishCourseRow";
 import Modal from "../ui/widgets/Modal/index";
 import {SectionDetails} from "./SectionDetails";
 import {callAll} from "../canvas/canvasUtils";
+import {Course} from "../canvas/course";
 
 type PublishInterfaceProps = {
     course: Course | null,

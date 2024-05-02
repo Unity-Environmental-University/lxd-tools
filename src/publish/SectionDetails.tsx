@@ -1,9 +1,9 @@
-import {Course} from "../canvas/index";
 import {IProfile, renderProfileIntoCurioFrontPage} from "../canvas/profile";
 import React, {useState} from "react";
 import {IAssignmentGroup, IModuleData, IUserData} from "../canvas/canvasDataDefs";
 import {useEffectAsync} from "../ui/utils";
 import {Button} from "react-bootstrap";
+import {Course} from "../canvas/course";
 
 type SectionDetailsProps = {
     section: Course | null,

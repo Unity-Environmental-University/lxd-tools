@@ -1,9 +1,11 @@
-import {Course, Assignment, BaseContentItem, NotImplementedException} from "../../canvas";
+import {NotImplementedException} from "../../canvas";
 import ReactDOM from "react-dom/client";
 import React from "react";
 
 import assert from "assert";
 import {HomeTileApp} from "./HomeTileApp";
+import {Assignment, BaseContentItem} from "../../canvas/content";
+import {Course} from "../../canvas/course";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);

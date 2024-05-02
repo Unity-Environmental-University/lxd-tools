@@ -1,9 +1,9 @@
 import "./publish.scss"
 import React, {useState} from 'react';
-import {Course} from "../canvas";
 import {useEffectAsync} from "../ui/utils";
 import {PublishInterface} from "./PublishInterface";
-import {ContentUpdateInterface} from "./ContentUpdateInterface";
+import {ContentUpdateInterface} from "./fixesAndUpdates/ContentUpdateInterface";
+import {Course} from "../canvas/course";
 
 
 function PublishApp() {

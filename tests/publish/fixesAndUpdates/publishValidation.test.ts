@@ -1,5 +1,4 @@
 import {ICanvasCallConfig} from "../../../src/canvas/canvasUtils"
-import {Course, ILatePolicyHaver, IPagesHaver, ISyllabusHaver} from "../../../src/canvas/index";
 import * as fs from "fs";
 import publishUnitTests, {
     aiPolicyInSyllabusTest,
@@ -13,8 +12,9 @@ import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/CourseV
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "./dummyLatePolicy";
 import {range} from '../../../src/canvas/canvasUtils'
-import {Page} from '../../../src/canvas'
 import dummyPageData from "./dummyPageData";
+import {Page} from "../../../src/canvas/content";
+import {Course, ILatePolicyHaver, IPagesHaver, ISyllabusHaver} from "../../../src/canvas/course";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
@@ -39,24 +39,25 @@ test('Late policy test works', async () => {
 
 test('Evaluation not present in course test works', async() => {
     const dummyPages =  Array.from(range(1,20)).map((a:number) => (new Page({ ...dummyPageData, title: a.toString()}, 0)))
+    const goofus: IPagesHaver = {
+        id: 0,
+        getPages: async (config?) => {
+            return [new Page({...dummyPageData, title: 'Course Evaluation'}, 0),  ...dummyPages];
+        }
+    };
     const gallant:IPagesHaver = {
         id: 0,
         getPages: async (config?) => {
             return dummyPages;
         }
     };
-    const goofus: IPagesHaver = {
-        id: 0,
-        getPages: async (config?) => {
-            return [new Page({...dummyPageData, name: 'Course Evaluation'}, 0),  ...dummyPages];
-        }
-    };
 
-    const gallantResult = await noEvaluationTest.run(gallant)
-    expect(gallantResult.success).toBe(true);
     const goofusResult = await noEvaluationTest.run(goofus)
     expect(goofusResult.success).toBe(false);
     expect(goofusResult.links?.length).toBe(1);
+
+    const gallantResult = await noEvaluationTest.run(gallant)
+    expect(gallantResult.success).toBe(true);
 
 })
 
