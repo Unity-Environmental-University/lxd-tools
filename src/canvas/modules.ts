@@ -1,7 +1,13 @@
 import {Temporal} from "temporal-polyfill";
 import {ICourseData, IModuleData} from "./canvasDataDefs";
 import {Course} from "./index";
-import {fetchApiJson, formDataify} from "./canvasUtils";
+import {ICanvasCallConfig, fetchApiJson, formDataify} from "./canvasUtils";
+
+
+
+interface IModuleHaver {
+    getModules(config:ICanvasCallConfig): IModuleData[],
+}
 
 
 //TODO -- migrate some of the functionality built into course into functions here

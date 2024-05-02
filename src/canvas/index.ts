@@ -36,11 +36,11 @@ import {
     ICanvasCallConfig
 } from "./canvasUtils";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "./profile";
-import {getResizedBlob} from "./image";
 import {uploadFile} from "./files";
 import {getCurrentStartDate} from "./fixes/changeStartDate";
 import {BaseCanvasObject} from "./baseCanvasObject";
 import {Temporal} from "temporal-polyfill";
+import {getResizedBlob} from "./image";
 
 const HOMETILE_WIDTH = 500;
 
@@ -61,10 +61,22 @@ export interface ILatePolicyHaver {
     getLatePolicy: (config?:ICanvasCallConfig) => Promise<ILatePolicyData>
 }
 
+export interface IAssignmentsHaver {
+    id: number,
+    getAssignments(config?:ICanvasCallConfig):Promise<Assignment[]>
+}
+
+export interface IPagesHaver {
+    id: number,
+    getPages(config?:ICanvasCallConfig):Promise<Page[]>
+}
+
 export class Course extends BaseCanvasObject<ICourseData> implements
     ISyllabusHaver,
     ICourseSettingsHaver,
-    ILatePolicyHaver
+    ILatePolicyHaver,
+    IAssignmentsHaver,
+    IPagesHaver
 {
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
     private _modules: IModuleData[] | undefined = undefined;
@@ -406,7 +418,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements
      */
     async getAssignments(config: ICanvasCallConfig = {queryParams: {}}): Promise<Assignment[]> {
         config.queryParams = {...config.queryParams, include: ['due_at']}
-        return await Assignment.getAllInCourse(this, config) as Assignment[];
+        return await Assignment.getAllInCourse(this.id, config) as Assignment[];
     }
 
     async getAssignmentGroups(config?: ICanvasCallConfig) {
@@ -419,7 +431,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements
      * @returns {Promise<Quiz[]>}
      */
     async getQuizzes(queryParams = {'include': ['due_at']}): Promise<Quiz[]> {
-        return <Quiz[]>await Quiz.getAllInCourse(this, {queryParams});
+        return <Quiz[]>await Quiz.getAllInCourse(this.id, {queryParams});
     }
 
     async getAssociatedCourses() {
@@ -752,7 +764,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements
     }
 
     public getPages(config: ICanvasCallConfig | null = null) {
-        return Page.getAllInCourse(this, config) as Promise<Page[]>;
+        return Page.getAllInCourse(this.id, config) as Promise<Page[]>;
     }
 
     public async getFrontPageProfile() {
@@ -833,11 +845,11 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     static bodyProperty: string;
     static nameProperty: string = 'name';
 
-    _course: Course;
+    _courseId: number;
 
-    constructor(canvasData: CanvasData, course: Course) {
+    constructor(canvasData: CanvasData, course: Course | number) {
         super(canvasData);
-        this._course = course;
+        this._courseId = typeof course === 'number'? course : course.id;
     }
 
     static get contentUrlPart() {
@@ -849,10 +861,10 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
 
     }
 
-    static async getAllInCourse(course: Course, config: ICanvasCallConfig | null = null) {
-        let url = this.getAllUrl(course.id);
+    static async getAllInCourse(courseId: number, config: ICanvasCallConfig | null = null) {
+        let url = this.getAllUrl(courseId);
         let data = await getApiPagedData(url, config);
-        return data.map(item => new this(item, course));
+        return data.map(item => new this(item, courseId));
     }
 
     static clearAddedContentTags(text: string) {
@@ -881,8 +893,8 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return null;
     }
 
-    static async getById<T extends BaseContentItem>(contentId: number, course: Course) {
-        return new this(await this.getDataById<T>(contentId, course), course)
+    static async getById<T extends BaseContentItem>(contentId: number, courseId: number) {
+        return new this(await this.getDataById<T>(contentId, courseId), courseId)
     }
 
 
@@ -918,14 +930,14 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     get contentUrlPath() {
         let url = (<typeof BaseContentItem>this.constructor).contentUrlTemplate;
         assert(url);
-        url = url.replace('{course_id}', this.course.id.toString());
+        url = url.replace('{course_id}', this.courseId.toString());
         url = url.replace('{content_id}', this.id.toString());
 
         return url;
     }
 
-    get course() {
-        return this._course;
+    get courseId() {
+        return this._courseId;
     }
 
     async updateContent(text: string | null = null, name: string | null = null) {
@@ -948,9 +960,12 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return this.saveData(data);
     }
 
-    async getMeInAnotherCourse(targetCourse: Course) {
+    async getMeInAnotherCourse(targetCourse: Course | number) {
         let ContentClass = this.constructor as typeof BaseContentItem
-        let targets = await ContentClass.getAllInCourse(targetCourse, {queryParams: {search_term: this.name}})
+        let targets = await ContentClass.getAllInCourse(
+            typeof targetCourse === 'number'? targetCourse : targetCourse.id,
+            {queryParams: {search_term: this.name}}
+        )
         return targets.find((target: BaseContentItem) => target.name == this.name);
     }
 
@@ -1067,26 +1082,6 @@ export class Page extends BaseContentItem {
     static contentUrlTemplate = "courses/{course_id}/pages/{content_id}";
     static allContentUrlTemplate = "courses/{course_id}/pages";
 
-    // static async getFromUrl(url: string | null = null, course: null | Course = null) {
-    //     if (url === null) {
-    //         url = document.documentURI;
-    //     }
-    //
-    //     url = url.replace(/\.com/, '.com/api/v1')
-    //     let data = await fetchJson(url);
-    //     if (!course) {
-    //         course = await Course.getFromUrl();
-    //         if (!course) return null;
-    //     }
-    //     //If this is a collection of data, we can't process it as a Canvas Object
-    //     if (Array.isArray(data)) return null;
-    //     assert(!Array.isArray(data));
-    //     if (data) {
-    //         return new this(data, course);
-    //     }
-    //     return null;
-    // }
-
     async getRevisions() {
         return getPagedData(`${this.contentUrlPath}/revisions`);
     }
@@ -1128,8 +1123,8 @@ export class Rubric extends BaseContentItem {
             return this.canvasData['associations'];
         }
 
-        let data = await this.myClass.getDataById(this.id, this.course, {queryParams: {'include': ['associations']}});
-        let associations = data['associations'].map((data: CanvasData) => new RubricAssociation(data, this.course));
+        let data = await this.myClass.getDataById(this.id, this.courseId, {queryParams: {'include': ['associations']}});
+        let associations = data['associations'].map((data: CanvasData) => new RubricAssociation(data, this.courseId));
         this.canvasData['associations'] = associations;
         return associations;
     }

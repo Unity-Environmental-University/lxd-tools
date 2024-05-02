@@ -1,8 +1,6 @@
 import {runtime} from "webextension-polyfill";
 import assert from "assert";
 
-
-
 export type ResizeImageMessage = {
     src: string,
     image: HTMLImageElement,

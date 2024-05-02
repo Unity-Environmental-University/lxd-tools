@@ -3,7 +3,12 @@ import assert from "assert";
 import {fetchApiJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseContentItem, Course} from "./index";
 
-export class BaseCanvasObject<CanvasDataType extends CanvasData> {
+
+interface ICanvasObject<CanvasDataType extends CanvasData> {
+    rawData: CanvasDataType,
+}
+
+export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICanvasObject<CanvasDataType>{
     static idProperty = 'id'; // The field name of the id of the canvas object type
     static nameProperty: string | null = 'name'; // The field name of the primary name of the canvas object type
     static contentUrlTemplate: string | null = null; // A templated url to get a single item
@@ -19,9 +24,6 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> {
         return this.constructor as typeof BaseContentItem;
     }
 
-    toString() {
-        return JSON.stringify(this.canvasData);
-    }
 
     getItem<T>(item: string) {
         return this.canvasData[item] as T;
@@ -59,8 +61,8 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> {
         return this.canvasData;
     }
 
-    static async getDataById<T extends CanvasData = CanvasData>(contentId: number, course: Course | null = null, config: ICanvasCallConfig | null = null): Promise<T> {
-        let url = this.getUrlPathFromIds(contentId, course ? course.id : null);
+    static async getDataById<T extends CanvasData = CanvasData>(contentId: number, courseId: number | null = null, config: ICanvasCallConfig | null = null): Promise<T> {
+        let url = this.getUrlPathFromIds(contentId, courseId);
         const response = await fetchApiJson<T>(url, config);
         assert(!Array.isArray(response));
         return response;

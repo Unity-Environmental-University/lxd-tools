@@ -46,7 +46,7 @@ function ExportApp() {
             }
             if (!assignment) {
                 assert(course);
-                const assignment = assignmentId ? (await Assignment.getById(parseInt(assignmentId), course)) as Assignment : null;
+                const assignment = assignmentId ? (await Assignment.getById(parseInt(assignmentId), course.id)) as Assignment : null;
                 setAssignment(assignment);
             }
         }
