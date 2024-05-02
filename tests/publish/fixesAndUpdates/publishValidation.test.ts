@@ -7,13 +7,14 @@ import publishUnitTests, {
     communication24HoursTest,
     courseCreditsInSyllabusTest,
     finalNotInGradingPolicyParaTest,
-    latePolicyTest, noEvaluationTest
+    latePolicyTest, noEvaluationTest, weeklyObjectivesTest
 } from "../../../src/publish/fixesAndUpdates/publishValidation";
 import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/CourseValidator";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "./dummyLatePolicy";
 import {range} from '../../../src/canvas/canvasUtils'
 import {Page} from '../../../src/canvas'
+import dummyPageData from "./dummyPageData";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
@@ -36,21 +37,58 @@ test('Late policy test works', async () => {
     expect(gallantResult).toHaveProperty('success', true)
 })
 
-test('Evaluation not present in course', async() => {
-    const dummyPages =  Array.from(range(1,20)).map((a:number) => (new Page({ name: a.toString()}, 0)))
+test('Evaluation not present in course test works', async() => {
+    const dummyPages =  Array.from(range(1,20)).map((a:number) => (new Page({ ...dummyPageData, title: a.toString()}, 0)))
     const gallant:IPagesHaver = {
         id: 0,
         getPages: async (config?) => {
             return dummyPages;
         }
     };
-    const goofus = {
-        getPages: async () => {
-            return [{ name: 'Course Evaluation'},  ...dummyPages];
+    const goofus: IPagesHaver = {
+        id: 0,
+        getPages: async (config?) => {
+            return [new Page({...dummyPageData, name: 'Course Evaluation'}, 0),  ...dummyPages];
         }
     };
 
     const gallantResult = await noEvaluationTest.run(gallant)
+    expect(gallantResult.success).toBe(true);
+    const goofusResult = await noEvaluationTest.run(goofus)
+    expect(goofusResult.success).toBe(false);
+    expect(goofusResult.links?.length).toBe(1);
+
+})
+
+test('Weekly Objectives headers not present test works', async() => {
+    const goofusPages = Array.from(range(1,5)).map(weekNum => new Page({
+        ...dummyPageData,
+        title: `Week ${weekNum} Overview`,
+        body: '<h2>Learning objectives</h2>'
+    }, 0));
+    console.log(goofusPages[0])
+    console.log(goofusPages[0].name);
+    const goofus:IPagesHaver = {
+        id: 0,
+        getPages: async(config?) => goofusPages,
+    }
+    const goofusResult = await weeklyObjectivesTest.run(goofus);
+    expect(goofusResult.success).toBe(false);
+    expect(goofusResult.links?.length).toBe(5)
+
+
+    const gallantPages = Array.from(range(1,5)).map(weekNum => new Page({
+        ...dummyPageData,
+        title: `Week ${weekNum} Overview`,
+        body: '<h2>Weekly Objectives</h2>'
+    }, 0));
+
+    const gallant:IPagesHaver = {
+        id: 0,
+        getPages: async(config?) => gallantPages,
+    }
+    const gallantResult = await weeklyObjectivesTest.run(gallant);
+    expect(gallantResult.success).toBe(true);
 
 })
 

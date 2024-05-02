@@ -16,7 +16,7 @@ import {
     IDiscussionData,
     ILatePolicyData,
     IModuleData,
-    IModuleItemData,
+    IModuleItemData, IPageData,
     ITabData,
     ITermData,
     IUpdateCallback,
@@ -454,8 +454,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements
 
     async getFrontPage() {
         try {
-            const data = await fetchOneKnownApiJson(`${this.contentUrlPath}/front_page`);
-            return new Page(data, this);
+            const data = await fetchOneKnownApiJson(`${this.contentUrlPath}/front_page`) as IPageData;
+            return new Page(data, this.id);
         } catch (error) {
             return null;
         }
@@ -745,8 +745,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements
         if (!overview?.url) return; //skip this if it's not an overview
 
         const url = overview.url.replace(/.*\/api\/v1/, '/api/v1')
-        const pageData = await fetchJson(url) as CanvasData;
-        const overviewPage = new Page(pageData, this);
+        const pageData = await fetchJson(url) as IPageData;
+        const overviewPage = new Page(pageData, this.id);
         const pageBody = document.createElement('html');
         pageBody.innerHTML = overviewPage.body;
         let bannerImg: HTMLImageElement | null = pageBody.querySelector('.cbt-banner-image img')
@@ -1082,6 +1082,9 @@ export class Page extends BaseContentItem {
     static contentUrlTemplate = "courses/{course_id}/pages/{content_id}";
     static allContentUrlTemplate = "courses/{course_id}/pages";
 
+    constructor(canvasData:IPageData, courseId:number) {
+        super(canvasData, courseId);
+    }
     async getRevisions() {
         return getPagedData(`${this.contentUrlPath}/revisions`);
     }

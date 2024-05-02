@@ -40,8 +40,16 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
     if (!showOnlyFailures || (result && !result.success)) {
         return <div className={'row test-row'}>
             <div className={'col-sm-3'}>{test.name}</div>
-            <div className={'col-sm-4'}>{test.description}</div>
-            <div className={'col-sm-4'}>{statusMessage(result)}</div>
+            <div className={'col-sm-4'}>
+                <p>{test.description}</p>
+            </div>
+            <div className={'col-sm-4'}>
+                <p>{statusMessage(result)}</p>
+                {result?.links?.map(link => <div>
+                    <a href={link} target={'_blank'}>{link}</a>
+                </div>)}
+
+            </div>
             <div className={'col-sm-1'}>
                 {!result && <span className={'badge badge-info'}>Running</span>}
                 {result?.success && <span className={'badge badge-success'}>OK!</span>}

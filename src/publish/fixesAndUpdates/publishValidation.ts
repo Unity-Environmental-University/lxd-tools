@@ -1,11 +1,12 @@
 import {CourseValidationTest} from "./CourseValidator";
 import {ILatePolicyHaver, IPagesHaver, ISyllabusHaver} from "../../canvas/index";
-import {getPlainTextFromHtml, ICanvasCallConfig} from "../../canvas/canvasUtils";
-import {ILatePolicyData} from "../../canvas/canvasDataDefs";
-export type UnitTestResult = {
+import {getPlainTextFromHtml} from "../../canvas/canvasUtils";
+
+export type UnitTestResult<T = undefined> = {
     success: boolean,
     message: string,
-    link?: string
+    links?: string[],
+    userData?: T
 }
 
 //Syllabus Tests
@@ -15,7 +16,8 @@ export const finalNotInGradingPolicyParaTest: CourseValidationTest<ISyllabusHave
     run: async (course, config) => {
         const syllabus = await course.getSyllabus(config);
         const match = /off the final grade/gi.test(syllabus);
-        return testResult(!match, "'off the final grade' found in syllabus");
+        return testResult(!match, "'off the final grade' found in syllabus", [`/course/${course.id}/syllabus`]
+        );
     }
 }
 
@@ -31,8 +33,9 @@ export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
         el.innerHTML = syllabus;
         const text = el.textContent?.toLowerCase() || "";
         return testResult(
-        text.includes(testString) && !text.match(/48 hours .* weekends/),
-        "Communication language section in syllabus does not look right."
+            text.includes(testString) && !text.match(/48 hours .* weekends/),
+            "Communication language section in syllabus does not look right.",
+            [`/course/${course.id}/syllabus`]
         )
     }
 }
@@ -46,7 +49,11 @@ export const courseCreditsInSyllabusTest: CourseValidationTest<ISyllabusHaver> =
         el.innerHTML = syllabus;
         let strongs = el.querySelectorAll('strong');
         const creditList = Array.from(strongs).filter((strong) => /credits/i.test(strong.textContent || ""));
-        return testResult(creditList && creditList.length > 0,"Can't find credits in syllabus")
+        return testResult(
+            creditList && creditList.length > 0,
+            "Can't find credits in syllabus",
+            [`/course/${course.id}/syllabus`]
+        )
 
     }
 }
@@ -57,7 +64,8 @@ export const aiPolicyInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
     run: async (course: ISyllabusHaver, config) => {
         const text = await course.getSyllabus(config);
         const success = text.includes('Generative Artificial Intelligence');
-        return testResult(success, `Can't find AI boilerplate in syllabus`)
+        return testResult(success, `Can't find AI boilerplate in syllabus`, [`/course/${course.id}/syllabus`]
+        )
     }
 }
 
@@ -70,7 +78,8 @@ export const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> 
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
         return testResult(
             success,
-            "Text at the bottom of the syllabus looks incorrect."
+            "Text at the bottom of the syllabus looks incorrect.",
+            [`/course/${course.id}/syllabus`]
         )
     }
 }
@@ -101,7 +110,7 @@ export const announcementsOnHomePageTest: CourseValidationTest = {
         const success = !!settings.show_announcements_on_home_page
         return {
             success,
-            message: success? 'success' : "'show announcements on home page' not turned on"
+            message: success ? 'success' : "'show announcements on home page' not turned on"
         }
     }
 }
@@ -113,33 +122,61 @@ export const latePolicyTest: CourseValidationTest<ILatePolicyHaver> = {
     description: "Go to the gradebook and  click the cog in the upper right-hand corner, then check the box to automatically apply a 0 for missing submissions; or confirm that this setting has already been made.",
     run: async (course: ILatePolicyHaver, config) => {
         const latePolicy = await course.getLatePolicy(config);
-        console.log(latePolicy);
-
-        const result = testResult(
+        return testResult(
             latePolicy.missing_submission_deduction_enabled,
             "'Automatically apply grade for missing submission' not turned on");
-        return result;
     }
 }
 
 export const noEvaluationTest: CourseValidationTest<IPagesHaver> = {
-    name: "Course Evaluation removed",
+    name: "Remove Course Evaluation",
     description: 'Course Eval page (in final module) entirely deleted from the course.',
-    run: async(course, config) => {
-        config = { ...config};
-        config.queryParams = { ...config.queryParams, search_term: 'Course Evaluation'}
-        const evalPages = await(course.getPages(config));
+    run: async (course, config) => {
+        config = {...config};
+        config.queryParams = {...config.queryParams, search_term: 'Course Evaluation'}
+        const evalPages = await (course.getPages(config));
         const success = evalPages.length === 0;
-        const result = testResult(success,"Course eval found")
+        const result = testResult(success, "Course eval found");
+        if (!success) result.links = evalPages.map(page => page.htmlContentUrl);
         return result;
     }
 }
 
-function testResult(success: boolean, failureMessage: string, successMessage = 'success') {
-    return {
-        success,
-        message: success? successMessage : failureMessage
+export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
+    name: "Learning Objectives -> Weekly Objectives",
+    description: 'Make sure weekly objectives are called "Weekly Objectives" and not "Learning Objectives" throughout',
+    run: async (course, config) => {
+        let overviews = await course.getPages({
+            ...config,
+            queryParams: {...config?.queryParams, search_term: 'Overview'}
+        });
+        overviews = overviews.filter(overview => /week \d overview/i.test(overview.name));
+
+        const badOverviews = overviews.filter(overview => {
+            const el = document.createElement('div');
+            el.innerHTML = overview.body;
+            const h2s = el.querySelectorAll('h2');
+            const weeklyObjectivesHeaders = Array.from(h2s).filter(h2 => /Weekly Objectives/i.test(h2.textContent || ''))
+            return weeklyObjectivesHeaders.length === 0;
+
+        })
+        const success = badOverviews.length === 0;
+        const result = testResult(
+            badOverviews.length === 0,
+            "No weekly objectives header found on " + badOverviews.map(page => page.name).sort().join(','))
+        if (!success) result.links = badOverviews.map(page => page.htmlContentUrl)
+        return result;
     }
+}
+
+function testResult(success: boolean, failureMessage: string, links?: string[], successMessage = 'success'): UnitTestResult {
+    const response: UnitTestResult = {
+        success,
+        message: success ? successMessage : failureMessage
+
+    }
+    if (links) response.links = links;
+    return response;
 }
 
 
@@ -152,6 +189,7 @@ export default [
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
     latePolicyTest,
-    noEvaluationTest
+    noEvaluationTest,
+    weeklyObjectivesTest
 ]
 

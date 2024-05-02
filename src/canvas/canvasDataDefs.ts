@@ -123,6 +123,7 @@ export interface IPageData extends CanvasData {
     page_id: number,
     url: string,
     title: string,
+    body?: string,
 }
 
 export interface IAssignmentData extends CanvasData {
