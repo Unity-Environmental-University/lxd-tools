@@ -13,7 +13,7 @@ import {
     IUserData,
     ModuleItemType
 } from "../canvasDataDefs";
-import {Assignment, BaseContentItem, Page, Quiz} from "../content";
+import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../content";
 import {
     fetchApiJson,
     fetchJson,
@@ -71,7 +71,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
     private _modules: IModuleData[] | undefined = undefined;
     private modulesByWeekNumber: Record<string | number, IModuleData> | undefined = undefined;
-    private static contentClasses: (typeof BaseContentItem)[] = [];
+    private static contentClasses: (typeof BaseContentItem)[] = [Assignment, Discussion, Quiz, Page];
 
     static async getFromUrl(url: string | null = null) {
         if (url === null) {
@@ -750,9 +750,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
 
     }
 
-    static registerContentClass(contentClass: typeof BaseContentItem) {
-        this.contentClasses.push(contentClass);
-    }
 
     public getPages(config: ICanvasCallConfig | null = null) {
         return Page.getAllInCourse(this.id, config) as Promise<Page[]>;

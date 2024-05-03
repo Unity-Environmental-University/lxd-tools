@@ -10,7 +10,6 @@ export interface ITermData extends CanvasData {
     course_count: number
 }
 
-
 export interface IEnrollmentData extends CanvasData {
     user: IUserData
 }
@@ -117,7 +116,6 @@ export interface IBlueprintContentRestrictions {
     due_dates: boolean,
     availability_dates: boolean
 }
-
 
 export interface IPageData extends CanvasData {
     page_id: number,

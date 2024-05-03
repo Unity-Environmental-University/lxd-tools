@@ -1,10 +1,16 @@
 import {Temporal} from "temporal-polyfill";
 import {CanvasData, IAssignmentData, IDiscussionData, IPageData} from "../canvasDataDefs";
-import {fetchJson, fetchOneKnownApiJson, getApiPagedData, getPagedData, ICanvasCallConfig} from "../canvasUtils";
+import {
+    fetchJson,
+    fetchOneKnownApiJson,
+    getApiPagedData,
+    getCourseIdFromUrl,
+    getPagedData,
+    ICanvasCallConfig
+} from "../canvasUtils";
 import {BaseCanvasObject} from "../baseCanvasObject";
 import assert from "assert";
 import {NotImplementedException} from "../index";
-import {Course} from "../course";
 
 export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     static bodyProperty: string;
@@ -12,9 +18,9 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
 
     _courseId: number;
 
-    constructor(canvasData: CanvasData, course: Course | number) {
+    constructor(canvasData: CanvasData, courseId: number) {
         super(canvasData);
-        this._courseId = typeof course === 'number' ? course : course.id;
+        this._courseId = courseId;
     }
 
     static get contentUrlPart() {
@@ -38,22 +44,22 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return out;
     }
 
-    static async getFromUrl(url: string | null = null, course: null | Course = null) {
+    static async getFromUrl(url: string | null = null, courseId: number | null = null) {
         if (url === null) {
             url = document.documentURI;
         }
 
         url = url.replace(/\.com/, '.com/api/v1')
         let data = await fetchJson(url);
-        if (!course) {
-            course = await Course.getFromUrl();
-            if (!course) return null;
+        if (!courseId) {
+            courseId = getCourseIdFromUrl(url)
+            if (!courseId) return null;
         }
         //If this is a collection of data, we can't process it as a Canvas Object
         if (Array.isArray(data)) return null;
         assert(!Array.isArray(data));
         if (data) {
-            return new this(data, course);
+            return new this(data, courseId);
         }
         return null;
     }
@@ -125,10 +131,10 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return this.saveData(data);
     }
 
-    async getMeInAnotherCourse(targetCourse: Course | number) {
+    async getMeInAnotherCourse(targetCourseId:number) {
         let ContentClass = this.constructor as typeof BaseContentItem
         let targets = await ContentClass.getAllInCourse(
-            typeof targetCourse === 'number' ? targetCourse : targetCourse.id,
+            targetCourseId,
             {queryParams: {search_term: this.name}}
         )
         return targets.find((target: BaseContentItem) => target.name == this.name);
@@ -152,11 +158,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     }
 }
 
-function contentClass(originalClass: typeof BaseContentItem, _context: ClassDecoratorContext) {
-    Course.registerContentClass(originalClass);
-}
 
-@contentClass
 export class Discussion extends BaseContentItem {
     static nameProperty = 'title';
     static bodyProperty = 'message';
@@ -183,7 +185,6 @@ export class Discussion extends BaseContentItem {
 
 }
 
-@contentClass
 export class Assignment extends BaseContentItem {
     static nameProperty = 'name';
     static bodyProperty = 'description';
@@ -223,7 +224,6 @@ export class Assignment extends BaseContentItem {
 
 }
 
-@contentClass
 export class Quiz extends BaseContentItem {
     static nameProperty = 'title';
     static bodyProperty = 'description';
@@ -238,7 +238,6 @@ export class Quiz extends BaseContentItem {
 
 }
 
-@contentClass
 export class Page extends BaseContentItem {
     static idProperty = 'page_id';
     static nameProperty = 'title';

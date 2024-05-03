@@ -58,7 +58,7 @@ async function openThisContentInTarget(currentCourse: Course, target: Course | C
     let targetInfos = targetCourses.map((targetCourse) => {
         return {
             course: targetCourse,
-            contentItemPromise: currentContentItem?.getMeInAnotherCourse(targetCourse)
+            contentItemPromise: currentContentItem?.getMeInAnotherCourse(targetCourse.id)
         }
     });
 

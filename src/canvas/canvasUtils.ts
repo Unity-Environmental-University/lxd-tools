@@ -313,3 +313,11 @@ export function getPlainTextFromHtml(html: string) {
     el.innerHTML = html;
     return el.innerText || el.textContent || "";
 }
+
+export function getCourseIdFromUrl(url:string) {
+    let match = /courses\/(\d+)/.exec(url);
+    if (match) {
+        return parseInt(match[1]);
+    }
+    return null;
+}

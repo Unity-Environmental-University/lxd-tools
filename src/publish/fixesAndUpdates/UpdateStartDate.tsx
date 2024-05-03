@@ -87,7 +87,7 @@ export function UpdateStartDate(
                 });
 
                 for await (let value of announcementGenerator) {
-                    let discussion = new Discussion(value, course);
+                    let discussion = new Discussion(value, course.id);
                     console.log(contentDateOffset);
                     await discussion.offsetPublishDelay(contentDateOffset);
                     affectedItems.push(getContentAffectedItemRow(discussion))
