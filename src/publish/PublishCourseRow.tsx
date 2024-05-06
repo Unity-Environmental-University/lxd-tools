@@ -2,26 +2,19 @@ import React, {useEffect, useState} from "react";
 import {IUserData} from "../canvas/canvasDataDefs";
 import {IProfile} from "../canvas/profile";
 import {Course} from "../canvas/course";
+import {useEffectAsync} from "../ui/utils";
 
 type CourseRowProps = {
     course: Course,
     errors: string[],
+    instructors?: IUserData[],
     facultyProfileMatches: IProfile[],
+    frontPageProfile: IProfile | null,
     onClickDx?: (course: Course) => void,
 }
 
-export function PublishCourseRow({course, onClickDx, errors}: CourseRowProps) {
-    const [instructors, setInstructors] = useState<IUserData[]>([])
-    const [frontPageProfile, setFrontPageProfile] = useState<IProfile>();
+export function PublishCourseRow({course, frontPageProfile, instructors, onClickDx, errors}: CourseRowProps) {
 
-    useEffect(() => {
-        async function getCourse() {
-            course.getInstructors().then((instructors) => instructors && setInstructors(instructors));
-            setFrontPageProfile(await course.getFrontPageProfile())
-        }
-
-        getCourse().then();
-    }, [course])
 
     return (<div className={'row course-row'}>
         <div className={'col-xs-6'}>
@@ -33,6 +26,6 @@ export function PublishCourseRow({course, onClickDx, errors}: CourseRowProps) {
         </div>
         <div className={'col-xs-1'}>{(onClickDx && course) && (
             <button onClick={() => onClickDx(course)}>Details</button>)}</div>
-        <div className={'col-xs-3'}>{instructors.map((instructor) => instructor.name).join(', ')}</div>
+        <div className={'col-xs-3'}>{instructors?.map((instructor) => instructor.name).join(', ')}</div>
     </div>)
 }

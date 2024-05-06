@@ -9,6 +9,7 @@ import Modal from "../ui/widgets/Modal/index";
 import {SectionDetails} from "./SectionDetails";
 import {callAll} from "../canvas/canvasUtils";
 import {Course} from "../canvas/course";
+import {IUserData} from "../canvas/canvasDataDefs";
 
 type PublishInterfaceProps = {
     course: Course | null,
@@ -23,51 +24,69 @@ export function PublishInterface({course}: PublishInterfaceProps) {
     const [associatedCourses, setAssociatedCourses] = useState<Course[]>([])
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
     const [workingSection, setWorkingSection] = useState<Course | null>(null);
-    const [sectionProfiles, setSectionProfiles] = useState<Record<number, IProfile[]>>({})
+    const [potentialSectionProfiles, setPotentialSectionProfiles] = useState<Record<number, IProfile[]>>({})
+    const [sectionFrontPageProfiles, setSectionFrontPageProfiles] = useState<Record<number, IProfile>>({});
+    const [instructorsForCourse, setInstructorsForCourse] = useState<Record<number, IUserData[]>>({});
+
     const [publishErrors, setPublishErrors] = useState<Record<number, string[]>>({})
     const [loading, setLoading] = useState<boolean>(false);
     const [infoClass, setInfoClass] = useState<string>('alert-secondary')
     const [emails, setEmails] = useState<string[]>([])
+
     async function updateCourse() {
         if (course) {
             setIsBlueprint(course.isBlueprint)
             await getFullCourses(course);
         }
     }
-
     useEffectAsync(updateCourse, [course]);
+
     useEffectAsync(async () => {
         const profileSet: Record<number, IProfile[]> = [];
-        for(let course of associatedCourses) {
+        for (let course of associatedCourses) {
             profileSet[course.id] = await course.getPotentialInstructorProfiles();
         }
-        setSectionProfiles(profileSet)
+        setPotentialSectionProfiles(profileSet)
     }, [associatedCourses])
 
     async function getFullCourses(course: Course) {
-        const fullCourses: Course[] = [];
-        const associatedCourses = await course.getAssociatedCourses() ?? [];
-        console.log(associatedCourses);
-        let getSectionFuncs = [];
-        const instructorEmails:Set<string> = new Set();
-        for (let course of associatedCourses) {
-            getSectionFuncs.push(async () => {
-                const section = await Course.getCourseById(course.id);
-                const instructors = await section.getInstructors();
-                if(instructors) {
-                    for (let instructor of instructors) {
-                        instructorEmails.add(instructor.email);
-                    }
-                }
-                fullCourses.push(section);
-                fullCourses.sort(courseNameSort);
-                console.log(courseNameSort);
-                setAssociatedCourses([...fullCourses]);
-                setEmails([...instructorEmails])
-            })
-        }
+        const sections: Course[] = [];
+        const fetchedCourses = await course.getAssociatedCourses() ?? [];
+        const frontPageProfiles: typeof sectionFrontPageProfiles = {};
+        const allInstructors: typeof instructorsForCourse = {};
+        const allEmails = new Set<string>();
+        const batchLoadSize = 5;
+        for (let i = 0; i < fetchedCourses.length; i += batchLoadSize) {
+            const batch = fetchedCourses.slice(i, i + batchLoadSize);
+            const results = await Promise.all(batch.map(course => loadSection(course)));
 
-        callAll(getSectionFuncs);
+            for(let {section, instructors, frontPageProfile} of results) {
+
+                sections.push(section);
+                setAssociatedCourses([...sections]);
+
+                frontPageProfiles[section.id] = frontPageProfile;
+                setSectionFrontPageProfiles({...frontPageProfiles});
+
+                if(instructors) {
+                    allInstructors[section.id] = instructors;
+                    setInstructorsForCourse({...allInstructors})
+                }
+
+                const emails = instructors?.map(a => a.email);
+                emails?.forEach(email => allEmails.add(email));
+                if(emails) setEmails([...allEmails]);
+
+            }
+
+        }
+    }
+
+    async function loadSection(course: Course) {
+        const section = await Course.getCourseById(course.id);
+        const frontPageProfile = await section.getFrontPageProfile();
+        const instructors = await section.getInstructors();
+        return { section, instructors, frontPageProfile, emails }
     }
 
     //-----
@@ -110,10 +129,11 @@ export function PublishInterface({course}: PublishInterfaceProps) {
 
     async function applySectionProfiles(event: React.MouseEvent) {
         setLoading(true);
-        inform("Updating section profiles...")
+        inform("Updating section profiles...");
+        const currentProfiles = {...sectionFrontPageProfiles};
         setPublishErrors({});
         for (let section of associatedCourses) {
-            const profiles = sectionProfiles[section.id];
+            const profiles = potentialSectionProfiles[section.id];
             const errors = [];
             if (profiles.length < 1) {
                 sectionError(section, "No Profiles")
@@ -130,6 +150,8 @@ export function PublishInterface({course}: PublishInterfaceProps) {
             }
             const html = renderProfileIntoCurioFrontPage(frontPage.body, profile);
             await frontPage.updateContent(html);
+            currentProfiles[section.id] = profile;
+            setSectionFrontPageProfiles({...currentProfiles});
             setInfo(`Updated ${profile.displayName}...`)
         }
         setLoading(false);
@@ -169,7 +191,9 @@ export function PublishInterface({course}: PublishInterfaceProps) {
             </div>
             {associatedCourses && associatedCourses.map((course) => (
                 <PublishCourseRow
-                    facultyProfileMatches={sectionProfiles[course.id]}
+                    instructors={instructorsForCourse[course.id]}
+                    frontPageProfile={sectionFrontPageProfiles[course.id]}
+                    facultyProfileMatches={potentialSectionProfiles[course.id]}
                     key={course.id}
                     errors={publishErrors[course.id]}
                     onClickDx={(section) => setWorkingSection(section)}
@@ -182,7 +206,6 @@ export function PublishInterface({course}: PublishInterfaceProps) {
      * Parses the profile sets in to a list of emails, omitting when the profile does not have a user property.
      * @param profileSets
      */
-
     return (<>
         {openButton()}
         <Modal id={'lxd-publish-interface'} isOpen={show} canClose={!loading} requestClose={() => {
@@ -220,7 +243,7 @@ export function PublishInterface({course}: PublishInterfaceProps) {
             </div>
             <div>
                 <SectionDetails
-                    facultyProfileMatches={workingSection && sectionProfiles[workingSection.id]}
+                    facultyProfileMatches={workingSection && potentialSectionProfiles[workingSection.id]}
                     onClose={() => setWorkingSection(null)}
                     section={workingSection}
                 ></SectionDetails>
