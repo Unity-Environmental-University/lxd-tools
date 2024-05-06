@@ -240,9 +240,8 @@ export function PublishInterface({course}: PublishInterfaceProps) {
             </div>)}
             {info && <div className={`alert ${infoClass}`} role={'alert'}>{info}</div>}
             <div>
-            </div>
-            <div>
                 <SectionDetails
+                    onUpdateFrontPageProfile={newProfile => workingSection && setSectionFrontPageProfiles({...sectionFrontPageProfiles, [workingSection.id]: newProfile})}
                     facultyProfileMatches={workingSection && potentialSectionProfiles[workingSection.id]}
                     onClose={() => setWorkingSection(null)}
                     section={workingSection}

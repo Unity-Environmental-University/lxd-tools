@@ -7,11 +7,12 @@ import {Course} from "../canvas/course";
 
 type SectionDetailsProps = {
     section: Course | null,
+    onUpdateFrontPageProfile? (profile:IProfile): void,
     facultyProfileMatches: IProfile[] | null,
     onClose?: () => void,
 }
 
-export function SectionDetails({section, onClose, facultyProfileMatches}: SectionDetailsProps) {
+export function SectionDetails({section, onClose, onUpdateFrontPageProfile, facultyProfileMatches}: SectionDetailsProps) {
     const [modules, setModules] = useState<IModuleData[]>([])
     const [assignmentGroups, setAssignmentGroups] = useState<IAssignmentGroup[]>([])
     const [instructors, setInstructors] = useState<IUserData[]>([])
@@ -77,7 +78,9 @@ export function SectionDetails({section, onClose, facultyProfileMatches}: Sectio
         message('Applying new profile')
         const newText = renderProfileIntoCurioFrontPage(frontPage.body, profile);
         await frontPage.updateContent(newText);
-        setFrontPageProfile(await section.getFrontPageProfile())
+        const newProfile = await section.getFrontPageProfile();
+        setFrontPageProfile(newProfile)
+        if (onUpdateFrontPageProfile) onUpdateFrontPageProfile(newProfile);
         success("Profile updated")
     }
 
