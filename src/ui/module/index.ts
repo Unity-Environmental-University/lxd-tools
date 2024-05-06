@@ -15,8 +15,11 @@ import {Course} from "../../canvas/course";
             moduleHeader.insertBefore(btn, moduleHeader.firstChild);
             btn.classList.add('btn');
             btn.addEventListener('click', async () => {
+                btn.innerHTML = "Locking...";
                 await course.lockBlueprint();
+                btn.innerHTML = "Locked!";
                 location.reload();
+
             })
         }
 

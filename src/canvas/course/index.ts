@@ -497,6 +497,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
         const promises = items.map(async (item) => {
             const url = `${this.contentUrlPath}/blueprint_templates/default/restrict_item`;
             let {type, id} = await getItemTypeAndId(item);
+            if (!id) return;
             let body = {
                 "content_type": type,
                 "content_id": id,
