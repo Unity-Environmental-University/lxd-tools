@@ -5,6 +5,7 @@ export type CanvasData = Record<string, any>
 export interface ITermData extends CanvasData {
     start_at: string,
     end_at: string,
+    name: string,
     workflow_state: TermWorkflowState,
     overrides?: Record<string, any>,
     course_count: number
