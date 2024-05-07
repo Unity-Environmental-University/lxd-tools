@@ -16,7 +16,7 @@ export const finalNotInGradingPolicyParaTest: CourseValidationTest<ISyllabusHave
     run: async (course, config) => {
         const syllabus = await course.getSyllabus(config);
         const match = /off the final grade/gi.test(syllabus);
-        return testResult(!match, "'off the final grade' found in syllabus", [`/course/${course.id}/syllabus`]
+        return testResult(!match, "'off the final grade' found in syllabus", [`/courses/${course.id}/assignments/syllabus`]
         );
     }
 }
@@ -35,7 +35,7 @@ export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
         return testResult(
             text.includes(testString) && !text.match(/48 hours .* weekends/),
             "Communication language section in syllabus does not look right.",
-            [`/course/${course.id}/syllabus`]
+            [`/courses/${course.id}/assignments/syllabus`]
         )
     }
 }
@@ -52,7 +52,7 @@ export const courseCreditsInSyllabusTest: CourseValidationTest<ISyllabusHaver> =
         return testResult(
             creditList && creditList.length > 0,
             "Can't find credits in syllabus",
-            [`/course/${course.id}/syllabus`]
+            [`/courses/${course.id}/assignments/syllabus`]
         )
 
     }
@@ -64,7 +64,7 @@ export const aiPolicyInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
     run: async (course: ISyllabusHaver, config) => {
         const text = await course.getSyllabus(config);
         const success = text.includes('Generative Artificial Intelligence');
-        return testResult(success, `Can't find AI boilerplate in syllabus`, [`/course/${course.id}/syllabus`]
+        return testResult(success, `Can't find AI boilerplate in syllabus`, [`/courses/${course.id}/assignments/syllabus`]
         )
     }
 }
@@ -79,7 +79,7 @@ export const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> 
         return testResult(
             success,
             "Text at the bottom of the syllabus looks incorrect.",
-            [`/course/${course.id}/syllabus`]
+            [`/courses/${course.id}/assignments/syllabus`]
         )
     }
 }
