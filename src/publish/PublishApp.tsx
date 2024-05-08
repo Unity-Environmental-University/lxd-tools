@@ -14,8 +14,8 @@ function PublishApp() {
     const [parentCourse, setParentCourse] = useState<Course|null>(null);
     const [user, setUser] = useState<IUserData>();
 
-    async function getCourse() {
-        if (!course) {
+    async function getCourse(force:boolean = false) {
+        if (!course || force) {
             const tempCourse = await Course.getFromUrl();
             if (tempCourse) {
                 setCourse(tempCourse)

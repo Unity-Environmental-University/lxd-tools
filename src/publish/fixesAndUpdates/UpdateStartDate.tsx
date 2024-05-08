@@ -23,7 +23,7 @@ type UpdateStartDateProps = {
     setUnaffectedItems?: (elements: React.ReactElement[]) => any,
     setFailedItems?: (elements: React.ReactElement[]) => any,
     course: Course,
-    refreshCourse: () => Promise<void>,
+    refreshCourse: (force?:boolean) => Promise<void>,
     isDisabled: boolean,
     startLoading: () => void,
     endLoading: () => void
@@ -97,7 +97,7 @@ export function UpdateStartDate(
             } else {
                 setUnaffectedItems && setUnaffectedItems([])
             }
-            await refreshCourse();
+            await refreshCourse(true);
             setStartDate(workingStartDate);
 
         } catch (error: any) {
