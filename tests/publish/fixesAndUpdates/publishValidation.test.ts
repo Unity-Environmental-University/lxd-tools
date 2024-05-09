@@ -4,17 +4,17 @@ import publishUnitTests, {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
     communication24HoursTest,
-    courseCreditsInSyllabusTest, courseProjectOutlineTest,
-    finalNotInGradingPolicyParaTest,
-    latePolicyTest, noEvaluationTest, weeklyObjectivesTest
-} from "../../../src/publish/fixesAndUpdates/publishValidation";
-import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/CourseValidator";
+    courseCreditsInSyllabusTest, finalNotInGradingPolicyParaTest
+} from "../../../src/publish/fixesAndUpdates/validations/syllabusTests";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "./dummyLatePolicy";
 import {range} from '../../../src/canvas/canvasUtils'
 import dummyPageData from "./dummyPageData";
 import {Page} from "../../../src/canvas/content";
 import {Course, ILatePolicyHaver, IPagesHaver, ISyllabusHaver} from "../../../src/canvas/course";
+import {courseProjectOutlineTest, weeklyObjectivesTest} from "../../../src/publish/fixesAndUpdates/validations/courseContent";
+import {latePolicyTest, noEvaluationTest} from "../../../src/publish/fixesAndUpdates/validations/courseSettings";
+import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/validations";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()

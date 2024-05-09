@@ -13,6 +13,9 @@ module.exports = {
     performance: {
         hints: isDevelopment ? false : 'warning'
     },
+    optimization: {
+        minimize: false,
+    },
     cache: {
         type: 'filesystem',
         allowCollectingMemory: true,

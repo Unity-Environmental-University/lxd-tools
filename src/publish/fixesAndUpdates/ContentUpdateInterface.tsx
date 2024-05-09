@@ -6,7 +6,9 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import publishUnitTests from "./publishValidation";
+import syllabusTests from "./validations/syllabusTests";
+import courseSettingsTests from "./validations/courseSettings";
+import courseContentTests from "./validations/courseContent";
 import {Page} from "../../canvas/content";
 import {Course} from "../../canvas/course";
 
@@ -136,7 +138,11 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
             showOnlyFailures={mode !== 'unitTest'}
             course={course}
             refreshCourse= {refreshCourse}
-            tests={publishUnitTests}
+            tests={[
+                ...syllabusTests,
+                ...courseSettingsTests,
+                ...courseContentTests,
+            ]}
         />}
     </Modal>
 </>)

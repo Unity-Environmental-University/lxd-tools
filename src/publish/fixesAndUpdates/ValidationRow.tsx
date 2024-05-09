@@ -1,22 +1,21 @@
 import React, {useState} from "react";
-import {UnitTestResult} from "./publishValidation";
 import {useEffectAsync} from "../../ui/utils";
-import {CourseValidationTest} from "./CourseValidator";
 import {Course} from "../../canvas/course";
+import {CourseValidationTest, ValidationTestResult} from "./validations";
 
 type ValidationRowProps = {
     course: Course,
     test: CourseValidationTest,
     refreshCourse: () => Promise<any>
-    onResult?: (result: UnitTestResult, test: CourseValidationTest) => any,
+    onResult?: (result: ValidationTestResult, test: CourseValidationTest) => any,
     showOnlyFailures?: boolean,
 }
 
 export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFailures = false}: ValidationRowProps) {
     const [loading, setLoading] = useState(false);
-    const [result, _setResult] = useState<UnitTestResult>()
+    const [result, _setResult] = useState<ValidationTestResult>()
 
-    function setResult(result: UnitTestResult) {
+    function setResult(result: ValidationTestResult) {
         _setResult(result);
         onResult && onResult(result, test);
     }
@@ -30,7 +29,7 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
         setResult(await test.run(course));
     }, [course, test])
 
-    function statusMessage(result: UnitTestResult | undefined) {
+    function statusMessage(result: ValidationTestResult | undefined) {
         if (loading) return "running..."
         if (!result) return "No result. An error may have occurred."
         if (result.success) return "Succeeded!"

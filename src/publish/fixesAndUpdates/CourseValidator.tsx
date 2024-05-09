@@ -1,20 +1,14 @@
 import React from "react";
-import {UnitTestResult} from "./publishValidation";
 import './CourseValidTest.scss'
-import {ICanvasCallConfig} from "../../canvas/canvasUtils";
 import {ValidationRow} from "./ValidationRow";
 import {Course} from "../../canvas/course";
+import {CourseValidationTest} from "./validations";
 
 type CourseValidatorProps<T = Course> = {
     course: T,
     showOnlyFailures: boolean,
     refreshCourse: () => Promise<any>,
     tests: CourseValidationTest<T>[]
-}
-export type CourseValidationTest<T = Course> = {
-    name: string,
-    description: string,
-    run:  (course: T, config?:ICanvasCallConfig) => Promise<UnitTestResult>
 }
 
 export function CourseValidator({course, tests, refreshCourse, showOnlyFailures=false}: CourseValidatorProps) {
