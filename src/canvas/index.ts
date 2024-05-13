@@ -18,8 +18,6 @@ import {BaseContentItem} from "./content";
 /**
  *  A base class for objects that interact with the Canvas API
  */
-
-
 export class Account extends BaseCanvasObject<CanvasData> {
     static nameProperty = 'name'; // The field name of the primary name of the canvas object type
     static contentUrlTemplate = 'accounts/{content_id}'; // A templated url to get a single item

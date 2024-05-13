@@ -75,14 +75,14 @@ export interface IDiscussionsHaver extends IIdHaver {
     getDiscussions(config?: ICanvasCallConfig): Promise<Discussion[]>
 }
 
-export interface IQuizzesHaver extends IIdHaver{
-    getQuizzes(config?: ICanvasCallConfig) : Promise<Quiz[]>
+export interface IQuizzesHaver extends IIdHaver {
+    getQuizzes(config?: ICanvasCallConfig): Promise<Quiz[]>
 }
 
 export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
-getContent(config?: ICanvasCallConfig): Promise<(Discussion | Assignment | Page | Quiz )[]>
-}
+    getContent(config?: ICanvasCallConfig): Promise<(Discussion | Assignment | Page | Quiz)[]>,
 
+}
 
 
 export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,

@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {Course} from "../../canvas/course";
 import {CourseValidationTest, ValidationTestResult} from "./validations";
+import assert from "assert";
 
 type ValidationRowProps = {
     course: Course,
@@ -14,6 +15,7 @@ type ValidationRowProps = {
 export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFailures = false}: ValidationRowProps) {
     const [loading, setLoading] = useState(false);
     const [result, _setResult] = useState<ValidationTestResult>()
+    const [fixText, setFixText] = useState("Fix?")
 
     function setResult(result: ValidationTestResult) {
         _setResult(result);
@@ -24,6 +26,16 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
         await refreshCourse();
         setResult(await test.run(course))
     }
+
+    async function fix() {
+        setFixText('Fixing..');
+        assert(test.fix);
+        await test.fix(course);
+        await refreshCourse();
+        setFixText('Fixed...');
+        setResult(await test.run(course))
+    }
+
 
     useEffectAsync(async () => {
         setResult(await test.run(course));
@@ -38,8 +50,8 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
 
     if (!showOnlyFailures || loading || (!result?.success)) {
         return <div className={'row test-row'}>
-            <div className={'col-sm-3'}>{test.name}</div>
-            <div className={'col-sm-4'}>
+            <div className={'col-sm-2'}>{test.name}</div>
+            <div className={'col-sm-3'}>
                 <p>{test.description}</p>
             </div>
             <div className={'col-sm-4'}>
@@ -49,6 +61,14 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
                 </div>)}
 
             </div>
+            <div className={'col-sm-1'}>
+                {test.fix && !result?.success && <button
+                    onClick={fix}
+                >
+                    {fixText}
+                </button>}
+            </div>
+
             <div className={'col-sm-1'}>
                 {!result && <span className={'badge badge-info'}>Running</span>}
                 {result?.success && <span className={'badge badge-success'}>OK!</span>}

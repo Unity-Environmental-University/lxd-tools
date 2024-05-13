@@ -65,32 +65,33 @@ export function badContentRunFunc(badTest: RegExp) {
 
 }
 
-export function badContentFixFunc(badTest: RegExp, replace: string) {
-    return async (course: IContentHaver) => {
+export function badContentFixFunc(validateRegEx: RegExp, replace: string) {
+    return async (course: IContentHaver): Promise<ValidationFixResult> => {
         let success = false;
         let message = "Fix failed for unknown reasons";
 
         const errors = [];
         const includeBody = {queryParams: {include: ['body']}};
         let content = await course.getContent(includeBody);
-        content = content.filter(item => item.body && badTest.test(item.body));
+        content = content.filter(item => item.body && validateRegEx.test(item.body));
 
         const syllabus = await course.getSyllabus();
-        if (badTest.test(syllabus)) {
-            const newText = syllabus.replace(badTest, replace);
-            if (badTest.test(newText)) throw new Error("Fix broken for syllabus " + badTest.toString());
+        if (validateRegEx.test(syllabus)) {
+            const newText = syllabus.replace(validateRegEx, replace);
+            if (validateRegEx.test(newText)) throw new Error("Fix broken for syllabus " + validateRegEx.toString());
             await course.changeSyllabus(newText);
         }
 
         for (let item of content) {
             if (!item.body) continue;
-            if (!badTest.test(item.body)) continue;
-            const newText = item.body.replace(badTest, replace);
-            if (badTest.test(newText)) throw new Error(`Fix broken for ${item.name})`);
-            await item.updateContent(newText)
+            if (!validateRegEx.test(item.body)) continue;
+            const newText = item.body.replace(validateRegEx, replace);
+            if (validateRegEx.test(newText)) throw new Error(`Fix broken for ${item.name})`);
+            await item.updateContent(newText);
         }
 
-        return <ValidationFixResult>{
+
+        return {
             success,
             message
         }

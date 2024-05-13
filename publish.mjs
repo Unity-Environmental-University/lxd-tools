@@ -5,8 +5,6 @@ import fs from "node:fs";
 import {workerData} from "node:worker_threads";
 
 
-
-
 async function  main() {
     const packageTag = getPackageTag();
     const tags = getGitTags('./')

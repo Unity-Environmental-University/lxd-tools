@@ -7,7 +7,7 @@ import {
 } from "../../../src/publish/fixesAndUpdates/validations/syllabusTests";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "./dummyLatePolicy";
-import {range} from '../../../src/canvas/canvasUtils'
+import {fetchApiJson, formDataify, range} from '../../../src/canvas/canvasUtils'
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../src/canvas/content/index";
 import {
     IAssignmentsHaver, IContentHaver, IDiscussionsHaver,
@@ -20,12 +20,19 @@ import {
     weeklyObjectivesTest
 } from "../../../src/publish/fixesAndUpdates/validations/courseContent";
 import {latePolicyTest, noEvaluationTest} from "../../../src/publish/fixesAndUpdates/validations/courseSettings";
-import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/validations/index";
+import {CourseValidationTest, ValidationFixResult} from "../../../src/publish/fixesAndUpdates/validations/index";
 import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "./dummyContentData";
 import proxyServerLinkValidation from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkValidation";
+import assert from "assert";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
+
+
+jest.spyOn(BaseContentItem.prototype, 'saveData')
+    .mockImplementation(async (data) => {
+        return data
+    });
 
 describe('Syllabus validation', () => {
     test('AI policy present test correct', syllabusTestTest(aiPolicyInSyllabusTest))
@@ -156,43 +163,68 @@ describe("Bad Link Tests and Fixes", () => {
     const proxiedUrl = encodeURI('https://unity.instructure.com')
     const badProxyLinkPageHtml = `<div><a href="https://login.proxy1.unity.edu/login?auth=shibboleth&url=${proxiedUrl}">PROXY LINK</a></div>`;
     const goodProxyLinkPageHtml = `<div><a href="https://login.unity.idm.oclc.org/login?url=${proxiedUrl}">PROXY LINK</a></div>`;
-    test("Old Proxy Server link exists in course test works", badContentTextValidationTest(proxyServerLinkValidation,  badProxyLinkPageHtml, goodProxyLinkPageHtml));
+    test("Old Proxy Server link exists in course test works", badContentTextValidationTest(proxyServerLinkValidation, badProxyLinkPageHtml, goodProxyLinkPageHtml));
+    test("Old Proxy Server link replace fix works.", badContentTextValidationFixTest(proxyServerLinkValidation, badProxyLinkPageHtml, goodProxyLinkPageHtml));
+
 });
 
 
-
-
-function badContentTextValidationTest(test:CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
+function badContentTextValidationTest(test: CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
     return async () => {
-        const goofuses: BaseContentItem[][] = [
-            [new Quiz({...dummyQuizData, description: badHtml}, 0)],
-            [new Page({...dummyPageData, body: badHtml}, 0)],
-            [new Assignment({...dummyAssignmentData, description: badHtml}, 0)],
-            [new Discussion({...dummyDiscussionData, message: badHtml}, 0)],
-        ]
+        const goofuses: IContentHaver[] = contentGoofuses(badHtml, goodHtml);
 
-        const gallant = dummyContentHaver(goodHtml,
-            [
-                new Page({...dummyPageData, body: goodHtml}, 0),
-                new Assignment({...dummyAssignmentData, description: goodHtml}, 0),
-                new Discussion({...dummyDiscussionData, message: goodHtml}, 0),
-                new Quiz({...dummyQuizData, body: goodHtml}, 0),
-            ]
-        );
-
-
-        const goofusResult = await test.run(dummyContentHaver(badHtml, [])) ;
-        expect(goofusResult.success).toBe(false);
         for (let goofus of goofuses) {
-            const result = await test.run(dummyContentHaver(goodHtml, goofus));
+            const result = await test.run(goofus);
             expect(result.success).toBe(false);
         }
 
+
+        const gallant = contentGallant(badHtml, goodHtml);
         const result = await test.run(gallant);
         expect(result.success).toBe(true);
     };
 }
 
+
+function badContentTextValidationFixTest(test: CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
+    return async () => {
+        assert(test.fix);
+        const goofuses: IContentHaver[] = contentGoofuses(badHtml, goodHtml);
+
+
+        for (let goofus of goofuses) {
+            let testResult = await test.run(goofus);
+            expect(testResult.success).toBe(false);
+            const fixResult = await test.fix(goofus);
+            testResult = await test.run(goofus);
+            expect(testResult.success).toBe(true);
+        }
+        const gallant = contentGallant(badHtml, goodHtml);
+        const result = await test.run(gallant);
+    }
+}
+
+function contentGoofuses(badHtml: string, goodHtml: string) {
+    return [
+        dummyContentHaver(badHtml, []),
+        ...[
+            [new Quiz({...dummyQuizData, description: badHtml}, 0)],
+            [new Page({...dummyPageData, body: badHtml}, 0)],
+            [new Assignment({...dummyAssignmentData, description: badHtml}, 0)],
+            [new Discussion({...dummyDiscussionData, message: badHtml}, 0)],
+        ].map(content => dummyContentHaver(goodHtml, content))]
+
+}
+
+function contentGallant(badHtml: string, goodHtml: string) {
+    return dummyContentHaver(goodHtml,
+        [
+            new Page({...dummyPageData, body: goodHtml}, 0),
+            new Assignment({...dummyAssignmentData, description: goodHtml}, 0),
+            new Discussion({...dummyDiscussionData, message: goodHtml}, 0),
+            new Quiz({...dummyQuizData, body: goodHtml}, 0),
+        ]);
+}
 
 function dummyPagesHaver(pages: Page[]): IPagesHaver {
 
@@ -232,6 +264,7 @@ export function dummyContentHaver(syllabus: string, content: BaseContentItem[]):
     const quizzes = content.filter(item => item instanceof Quiz) as Discussion[];
     const assignments = content.filter(item => item instanceof Assignment) as Assignment[];
     const pages = content.filter(item => item instanceof Page) as Page[];
+
 
     return {
         ...dummySyllabusHaver(syllabus),
