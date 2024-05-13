@@ -31,9 +31,9 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
         setFixText('Fixing..');
         assert(test.fix);
         await test.fix(course);
-        await refreshCourse();
         setFixText('Fixed...');
         setResult(await test.run(course))
+        await refreshCourse();
     }
 
 
@@ -62,7 +62,7 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
 
             </div>
             <div className={'col-sm-1'}>
-                {test.fix && !result?.success && <button
+                {test.fix && result && !result.success && <button
                     onClick={fix}
                 >
                     {fixText}
