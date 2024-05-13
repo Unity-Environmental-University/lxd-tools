@@ -71,9 +71,13 @@ export function parentElement(el: Element | null, tagName: string) {
     return null;
 }
 
+
+export interface IQueryParams extends Record<string, any> {
+    include?: (string|number)[]
+}
 export interface ICanvasCallConfig {
     fetchInit?: RequestInit,
-    queryParams?: Record<string, any>
+    queryParams?: IQueryParams
 }
 
 const type_lut: Record<ModuleItemType, RestrictModuleItemType | null> = {

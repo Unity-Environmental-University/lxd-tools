@@ -9,17 +9,20 @@ type MessageHandler<T, Output> = (
       sendResponse: (output: Output) => void
   ) => void | boolean | Promise<boolean | void>
 
+let searchInserted = false;
 const messageHandlers: Record<string, MessageHandler<any, any>> = {
   async searchForCourse (queryString:string) {
-    console.log("trying to open message " + queryString)
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
       return;
     }
-    await scripting.executeScript({
-      target: {tabId: activeTab.id},
-      files: ['./js/content.js']
-    });
+    if(!searchInserted) {
+      await scripting.executeScript({
+        target: {tabId: activeTab.id},
+        files: ['./js/content.js']
+      });
+      searchInserted = true;
+    }
     await tabs.sendMessage(activeTab.id, {'queryString': queryString});
   },
 }

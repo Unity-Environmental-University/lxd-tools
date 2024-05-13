@@ -31,43 +31,52 @@ import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
 import {NotImplementedException, Term} from "../index";
+import {overrideConfig} from "@src/publish/fixesAndUpdates/validations/proxyServerLinkTest";
 
 const HOMETILE_WIDTH = 500;
 
 //const HOMETILE_WIDTH = 500;
-export interface ISyllabusHaver {
+interface IIdHaver {
     id: number,
+}
+
+export interface ISyllabusHaver extends IIdHaver{
     getSyllabus: (config?: ICanvasCallConfig) => Promise<string>,
     changeSyllabus: (newHtml: string, config?: ICanvasCallConfig) => any
 }
 
-export interface ICourseSettingsHaver {
+export interface ICourseSettingsHaver  extends IIdHaver{
     id: number,
     getSettings: (config?: ICanvasCallConfig) => Promise<ICourseSettings>
 }
 
-export interface ILatePolicyHaver {
+
+export interface ILatePolicyHaver  extends IIdHaver{
     id: number,
     getLatePolicy: (config?: ICanvasCallConfig) => Promise<ILatePolicyData>
 }
 
-export interface IAssignmentsHaver {
-    id: number,
+export interface IAssignmentsHaver extends IIdHaver {
+    getAssignments: (config?: ICanvasCallConfig) => Promise<Assignment[]>;
 
-    getAssignments(config?: ICanvasCallConfig): Promise<Assignment[]>
 }
 
-export interface IPagesHaver {
+export interface IPagesHaver  extends IIdHaver{
     id: number,
-
     getPages(config?: ICanvasCallConfig): Promise<Page[]>
 }
 
-export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHaver,
+export interface IDiscussionsHaver extends IIdHaver{
+    id: number,
+    getDiscussions(config?: ICanvasCallConfig): Promise<Discussion[]>
+}
+
+export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver {}
+
+
+export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,
     ICourseSettingsHaver,
-    ILatePolicyHaver,
-    IAssignmentsHaver,
-    IPagesHaver {
+    ILatePolicyHaver {
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
     private _modules: IModuleData[] | undefined = undefined;
     private modulesByWeekNumber: Record<string | number, IModuleData> | undefined = undefined;
@@ -394,7 +403,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
     async getSyllabus(config: ICanvasCallConfig = {queryParams: {}}): Promise<string> {
         if (!this.canvasData.syllabus_body) {
 
-            config.queryParams = {...config.queryParams, include: 'syllabus_body'};
+            config.queryParams = {...config.queryParams, include: ['syllabus_body']};
             const data = await Course.getCourseById(this.id, config);
             assert(data.canvasData.syllabus_body)
             this.canvasData.syllabus_body = data.canvasData.syllabus_body;
@@ -407,9 +416,13 @@ export class Course extends BaseCanvasObject<ICourseData> implements ISyllabusHa
      * @returns {Promise<Assignment[]>}
      * @param config
      */
-    async getAssignments(config: ICanvasCallConfig = {queryParams: {}}): Promise<Assignment[]> {
-        config.queryParams = {...config.queryParams, include: ['due_at']}
+    async getAssignments(config?: ICanvasCallConfig): Promise<Assignment[]> {
+        config = overrideConfig(config, { queryParams: { include: ['due_at']}})
         return await Assignment.getAllInCourse(this.id, config) as Assignment[];
+    }
+
+    async getDiscussions(config?:ICanvasCallConfig) : Promise<Discussion[]> {
+        return await Discussion.getAllInCourse(this.id, config) as Discussion[];
     }
 
     async getAssignmentGroups(config?: ICanvasCallConfig) {

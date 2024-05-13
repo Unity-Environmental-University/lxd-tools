@@ -15,7 +15,6 @@ runtime.onMessage.addListener(async(
     }
 })
 
-
 async function openTargetCourse(queryString: string) {
     console.log(queryString);
     const params = queryString.split('|');
@@ -116,10 +115,8 @@ function getCourseToNavTo(searchCode: string, courses: ICourseData[], maxMatches
 async function getJson(url: string) {
     console.log(url);
     const response = await fetch(url);
-    console.log(response);
 
     const data = await response.json();
-    console.log(data);
     return data;
 
 }

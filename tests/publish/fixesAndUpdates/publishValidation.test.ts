@@ -1,4 +1,3 @@
-import {ICanvasCallConfig} from "../../../src/canvas/canvasUtils"
 import * as fs from "fs";
 import publishUnitTests, {
     aiPolicyInSyllabusTest,
@@ -8,13 +7,21 @@ import publishUnitTests, {
 } from "../../../src/publish/fixesAndUpdates/validations/syllabusTests";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "./dummyLatePolicy";
-import {range} from '../../../src/canvas/canvasUtils'
-import dummyPageData from "./dummyPageData";
-import {Page} from "../../../src/canvas/content";
-import {Course, ILatePolicyHaver, IPagesHaver, ISyllabusHaver} from "../../../src/canvas/course";
+import {ICanvasCallConfig, range} from '../../../src/canvas/canvasUtils'
+import {Assignment, BaseContentItem, Discussion, Page} from "../../../src/canvas/content/index";
+import {
+    IAssignmentsHaver, IDiscussionsHaver,
+    ILatePolicyHaver,
+    IPagesHaver,
+    ISyllabusHaver
+} from "@src/canvas/course/index";
 import {courseProjectOutlineTest, weeklyObjectivesTest} from "../../../src/publish/fixesAndUpdates/validations/courseContent";
 import {latePolicyTest, noEvaluationTest} from "../../../src/publish/fixesAndUpdates/validations/courseSettings";
-import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/validations";
+import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/validations/index";
+import GenericMediaMetadata = chrome.cast.media.GenericMediaMetadata;
+import assert from "assert";
+import {dummyAssignmentData, dummyDiscussionData, dummyPageData} from "./dummyContentData";
+import proxyServerLinkTest from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkTest";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
@@ -28,8 +35,8 @@ describe('Syllabus validation', () => {
 });
 
 test('Late policy test works', async () => {
-    const gallant = GetDummyLatePolicyHaver({missing_submission_deduction_enabled: true});
-    const goofus = GetDummyLatePolicyHaver({missing_submission_deduction_enabled: false});
+    const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});
+    const goofus = getDummyLatePolicyHaver({missing_submission_deduction_enabled: false});
 
     const gallantResult = await latePolicyTest.run(gallant);
     const goofusResult = await latePolicyTest.run(goofus);
@@ -139,30 +146,87 @@ test('Course project outline header not "Project outline" test works', async () 
 
     const gallant = dummyPagesHaver(gallantPages)
     const gallantResult = await courseProjectOutlineTest.run(gallant);
-    expect (gallantResult.success).toBe(true)
+    expect(gallantResult.success).toBe(true)
 
 
 })
 
+
+describe("Bad Link Tests and Fixes", () => {
+    const proxiedUrl = encodeURI('https://unity.instructure.com')
+    const badProxyLinkPageHtml = `<div><a href="https://login.proxy1.unity.edu/login?auth=shibboleth&url=${proxiedUrl}">PROXY LINK</a></div>`;
+    const goodProxyLinkPageHtml = `<div><a href="https://login.unity.idm.oclc.org/login?url=${proxiedUrl}">PROXY LINK</a></div>`;
+
+    async function getContent(course: IPagesHaver & IAssignmentsHaver & IDiscussionsHaver) {
+        let promises = [course.getDiscussions, course.getAssignments, course.getPages];
+        const contentItems = await Promise.all((promises.map(a => a())));
+        return contentItems.reduce(((accumulator: BaseContentItem[], currentValue) => {
+            return [...accumulator, ...currentValue]
+        }), [])
+    }
+
+
+    test("Old Proxy Server link exists in course test works", async () => {
+        const goofuses = [
+            dummyPagesHaver([new Page({...dummyPageData, body: badProxyLinkPageHtml}, 0)]),
+            dummyAssignmentsHaver([new Assignment({...dummyAssignmentData, description: badProxyLinkPageHtml}, 0)]),
+            dummyDiscussionsHaver([new Discussion({...dummyDiscussionData, message: badProxyLinkPageHtml}, 0)])
+        ]
+        const gallant = {
+            ...getDummySyllabusHaver(gallantSyllabusHtml),
+            ...dummyPagesHaver([new Page({...dummyPageData, body: goodProxyLinkPageHtml}, 0)]),
+            ...dummyAssignmentsHaver([new Assignment({...dummyAssignmentData, description: goodProxyLinkPageHtml}, 0)]),
+            ...dummyDiscussionsHaver([new Discussion({...dummyDiscussionData, message: goodProxyLinkPageHtml}, 0)])
+        }
+
+        await Promise.all(goofuses.map(async (goofus) => {
+            const result = await proxyServerLinkTest.run({...gallant, ...goofus});
+            expect(result.success).toBe(false);
+        }))
+        const result = await proxyServerLinkTest.run(gallant);
+        expect(result.success).toBe(true);
+    });
+});
+
+
 function dummyPagesHaver(pages: Page[]): IPagesHaver {
     return {
         id: 0,
-        getPages: async(_config?) => pages
+        getPages: async (_config?) => pages
     }
 }
+
+
+function dummyAssignmentsHaver(assignments: Assignment[]): IAssignmentsHaver {
+    return {
+        id: 0,
+        getAssignments: async (_config?) => assignments
+
+    }
+}
+
+function dummyDiscussionsHaver(discussions: Discussion[]): IDiscussionsHaver {
+    return {
+        id: 0,
+        getDiscussions: async (_config?) => discussions
+
+    }
+}
+
+
 function syllabusTestTest(test: CourseValidationTest<ISyllabusHaver>) {
     return async () => {
-        const gallantCourse: ISyllabusHaver = GetDummySyllabusHaver(gallantSyllabusHtml);
+        const gallantCourse: ISyllabusHaver = getDummySyllabusHaver(gallantSyllabusHtml);
         const gallantResult = await test.run(gallantCourse)
         expect(gallantResult).toHaveProperty('success', true);
 
-        const goofusCourse: ISyllabusHaver = GetDummySyllabusHaver(goofusSyllabusHtml);
+        const goofusCourse: ISyllabusHaver = getDummySyllabusHaver(goofusSyllabusHtml);
         const goofusResult = await test.run(goofusCourse);
         expect(goofusResult).toHaveProperty('success', false);
     }
 }
 
-function GetDummyLatePolicyHaver(policyDetails: ILatePolicyUpdate): ILatePolicyHaver {
+function getDummyLatePolicyHaver(policyDetails: ILatePolicyUpdate): ILatePolicyHaver {
     const policy = dummyLatePolicy;
     return {
         id: 1,
@@ -172,7 +236,7 @@ function GetDummyLatePolicyHaver(policyDetails: ILatePolicyUpdate): ILatePolicyH
     }
 }
 
-function GetDummySyllabusHaver(syllabus: string): ISyllabusHaver {
+function getDummySyllabusHaver(syllabus: string): ISyllabusHaver {
     return {
         id: 1,
         getSyllabus: async function (config) {
@@ -183,3 +247,5 @@ function GetDummySyllabusHaver(syllabus: string): ISyllabusHaver {
         }
     }
 }
+
+

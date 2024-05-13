@@ -32,10 +32,10 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
 
     }
 
-    static async getAllInCourse(courseId: number, config: ICanvasCallConfig | null = null) {
+    static async getAllInCourse<T extends BaseContentItem>(courseId: number, config: ICanvasCallConfig | null = null) {
         let url = this.getAllUrl(courseId);
         let data = await getApiPagedData(url, config);
-        return data.map(item => new this(item, courseId));
+        return data.map(item => new this(item, courseId)) as T[];
     }
 
     static clearAddedContentTags(text: string) {
