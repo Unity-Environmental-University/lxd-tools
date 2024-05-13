@@ -1,4 +1,4 @@
-import {Course} from "../../../canvas/course/index";
+import {Course, IContentHaver} from "../../../canvas/course/index";
 import {ICanvasCallConfig} from "../../../canvas/canvasUtils";
 
 export type ValidationTestResult = {
@@ -28,4 +28,87 @@ export function testResult(success: boolean, failureMessage: string, links?: str
     }
     if (links) response.links = links;
     return response;
+}
+
+export function badContentRunFunc(badTest: RegExp) {
+    return async (course: IContentHaver, config?: ICanvasCallConfig) => {
+        const includeBody = {queryParams: {include: ['body']}};
+        let content = await course.getContent(overrideConfig(config, includeBody));
+        for (let item of content) {
+            console.log(item.name, item.constructor.name, item.body, item.body && badTest.test(item.body));
+        }
+
+        const badContent = content.filter(item => item.body && badTest.test(item.body))
+
+        const syllabus = await course.getSyllabus(config);
+        const success = badContent.length === 0 && !badTest.test(syllabus);
+        let links: string[] = [];
+        let failureMessage = '';
+        if (badContent.length > 0) {
+            failureMessage += "Bad content found:" + badContent.map(a => a.name).join(',') + '\n'
+            links = [...links, ...badContent.map(a => a.htmlContentUrl)];
+        }
+        if (badTest.test(syllabus)) {
+            failureMessage += 'Syllabus broken'
+            links.push(`/courses/${course.id}/assignments/syllabus`)
+        }
+
+        const result = testResult(
+            success,
+            failureMessage,
+            links
+        )
+
+        if (!success) result.links = badContent.map(content => content.htmlContentUrl)
+        return result;
+    }
+
+}
+
+export function badContentFixFunc(badTest: RegExp, replace: string) {
+    return async (course: IContentHaver) => {
+        let success = false;
+        let message = "Fix failed for unknown reasons";
+
+        const errors = [];
+        const includeBody = {queryParams: {include: ['body']}};
+        let content = await course.getContent(includeBody);
+        content = content.filter(item => item.body && badTest.test(item.body));
+
+        const syllabus = await course.getSyllabus();
+        if (badTest.test(syllabus)) {
+            const newText = syllabus.replace(badTest, replace);
+            if (badTest.test(newText)) throw new Error("Fix broken for syllabus " + badTest.toString());
+            await course.changeSyllabus(newText);
+        }
+
+        for (let item of content) {
+            if (!item.body) continue;
+            if (!badTest.test(item.body)) continue;
+            const newText = item.body.replace(badTest, replace);
+            if (badTest.test(newText)) throw new Error(`Fix broken for ${item.name})`);
+            await item.updateContent(newText)
+        }
+
+        return <ValidationFixResult>{
+            success,
+            message
+        }
+    }
+}
+
+export function overrideConfig(source: ICanvasCallConfig | undefined, override: ICanvasCallConfig | undefined): ICanvasCallConfig {
+    const out = {
+        queryParams: {
+            ...source?.queryParams,
+            ...override?.queryParams,
+        },
+        fetchInit: {...source?.fetchInit, ...override?.fetchInit}
+    }
+
+    if (source?.queryParams?.include && override?.queryParams?.include) {
+        out.queryParams.include = [...source?.queryParams.include, ...override?.queryParams.include]
+    }
+
+    return out;
 }

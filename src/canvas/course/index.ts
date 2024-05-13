@@ -31,27 +31,29 @@ import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
 import {NotImplementedException, Term} from "../index";
-import {overrideConfig} from "@src/publish/fixesAndUpdates/validations/proxyServerLinkTest";
+import {config} from "dotenv";
+
+import {overrideConfig} from "../../publish/fixesAndUpdates/validations/index";
 
 const HOMETILE_WIDTH = 500;
 
 //const HOMETILE_WIDTH = 500;
-interface IIdHaver {
-    id: number,
+interface IIdHaver<IdType = number> {
+    id: IdType,
 }
 
-export interface ISyllabusHaver extends IIdHaver{
+export interface ISyllabusHaver extends IIdHaver {
     getSyllabus: (config?: ICanvasCallConfig) => Promise<string>,
     changeSyllabus: (newHtml: string, config?: ICanvasCallConfig) => any
 }
 
-export interface ICourseSettingsHaver  extends IIdHaver{
+export interface ICourseSettingsHaver extends IIdHaver {
     id: number,
     getSettings: (config?: ICanvasCallConfig) => Promise<ICourseSettings>
 }
 
 
-export interface ILatePolicyHaver  extends IIdHaver{
+export interface ILatePolicyHaver extends IIdHaver {
     id: number,
     getLatePolicy: (config?: ICanvasCallConfig) => Promise<ILatePolicyData>
 }
@@ -61,17 +63,26 @@ export interface IAssignmentsHaver extends IIdHaver {
 
 }
 
-export interface IPagesHaver  extends IIdHaver{
+export interface IPagesHaver extends IIdHaver {
     id: number,
+
     getPages(config?: ICanvasCallConfig): Promise<Page[]>
 }
 
-export interface IDiscussionsHaver extends IIdHaver{
+export interface IDiscussionsHaver extends IIdHaver {
     id: number,
+
     getDiscussions(config?: ICanvasCallConfig): Promise<Discussion[]>
 }
 
-export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver {}
+export interface IQuizzesHaver extends IIdHaver{
+    getQuizzes(config?: ICanvasCallConfig) : Promise<Quiz[]>
+}
+
+export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
+getContent(config?: ICanvasCallConfig): Promise<(Discussion | Assignment | Page | Quiz )[]>
+}
+
 
 
 export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,
@@ -417,11 +428,27 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
      * @param config
      */
     async getAssignments(config?: ICanvasCallConfig): Promise<Assignment[]> {
-        config = overrideConfig(config, { queryParams: { include: ['due_at']}})
+        config = overrideConfig(config, {queryParams: {include: ['due_at']}})
         return await Assignment.getAllInCourse(this.id, config) as Assignment[];
     }
 
-    async getDiscussions(config?:ICanvasCallConfig) : Promise<Discussion[]> {
+
+    async getContent(config?: ICanvasCallConfig) {
+        let discussions = await this.getDiscussions(config);
+        let assignments = await this.getAssignments(config);
+        let quizzes = await this.getQuizzes(config);
+        let pages = await this.getPages(config);
+
+        return [
+            ...discussions,
+            ...assignments,
+            ...quizzes,
+            ...pages
+        ]
+    }
+
+
+    async getDiscussions(config?: ICanvasCallConfig): Promise<Discussion[]> {
         return await Discussion.getAllInCourse(this.id, config) as Discussion[];
     }
 
@@ -434,8 +461,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
      * @param queryParams a json object representing the query param string. Defaults to including due dates     *
      * @returns {Promise<Quiz[]>}
      */
-    async getQuizzes(queryParams = {'include': ['due_at']}): Promise<Quiz[]> {
-        return <Quiz[]>await Quiz.getAllInCourse(this.id, {queryParams});
+    async getQuizzes(config?: ICanvasCallConfig) {
+        return await Quiz.getAllInCourse(this.id, config) as Quiz[];
     }
 
     async getAssociatedCourses() {

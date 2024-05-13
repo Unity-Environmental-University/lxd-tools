@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import publishUnitTests, {
+import {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
     communication24HoursTest,
@@ -7,21 +7,22 @@ import publishUnitTests, {
 } from "../../../src/publish/fixesAndUpdates/validations/syllabusTests";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "./dummyLatePolicy";
-import {ICanvasCallConfig, range} from '../../../src/canvas/canvasUtils'
-import {Assignment, BaseContentItem, Discussion, Page} from "../../../src/canvas/content/index";
+import {range} from '../../../src/canvas/canvasUtils'
+import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../src/canvas/content/index";
 import {
-    IAssignmentsHaver, IDiscussionsHaver,
+    IAssignmentsHaver, IContentHaver, IDiscussionsHaver,
     ILatePolicyHaver,
-    IPagesHaver,
+    IPagesHaver, IQuizzesHaver,
     ISyllabusHaver
-} from "@src/canvas/course/index";
-import {courseProjectOutlineTest, weeklyObjectivesTest} from "../../../src/publish/fixesAndUpdates/validations/courseContent";
+} from "../../../src/canvas/course"
+import {
+    courseProjectOutlineTest,
+    weeklyObjectivesTest
+} from "../../../src/publish/fixesAndUpdates/validations/courseContent";
 import {latePolicyTest, noEvaluationTest} from "../../../src/publish/fixesAndUpdates/validations/courseSettings";
 import {CourseValidationTest} from "../../../src/publish/fixesAndUpdates/validations/index";
-import GenericMediaMetadata = chrome.cast.media.GenericMediaMetadata;
-import assert from "assert";
-import {dummyAssignmentData, dummyDiscussionData, dummyPageData} from "./dummyContentData";
-import proxyServerLinkTest from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkTest";
+import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "./dummyContentData";
+import proxyServerLinkValidation from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkValidation";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
@@ -51,13 +52,13 @@ test('Evaluation not present in course test works', async () => {
     }, 0)))
     const goofus: IPagesHaver = {
         id: 0,
-        getPages: async (config?) => {
+        getPages: async (_config?) => {
             return [new Page({...dummyPageData, title: 'Course Evaluation'}, 0), ...dummyPages];
         }
     };
     const gallant: IPagesHaver = {
         id: 0,
-        getPages: async (config?) => {
+        getPages: async (_config?) => {
             return dummyPages;
         }
     };
@@ -81,7 +82,7 @@ test('Weekly Objectives headers not present test works', async () => {
     console.log(goofusPages[0].name);
     const goofus: IPagesHaver = {
         id: 0,
-        getPages: async (config?) => goofusPages,
+        getPages: async (_config?) => goofusPages,
     }
     const goofusResult = await weeklyObjectivesTest.run(goofus);
     expect(goofusResult.success).toBe(false);
@@ -96,7 +97,7 @@ test('Weekly Objectives headers not present test works', async () => {
 
     const gallant: IPagesHaver = {
         id: 0,
-        getPages: async (config?) => gallantPages,
+        getPages: async (_config?) => gallantPages,
     }
     const gallantResult = await weeklyObjectivesTest.run(gallant);
     expect(gallantResult.success).toBe(true);
@@ -151,44 +152,50 @@ test('Course project outline header not "Project outline" test works', async () 
 
 })
 
-
 describe("Bad Link Tests and Fixes", () => {
     const proxiedUrl = encodeURI('https://unity.instructure.com')
     const badProxyLinkPageHtml = `<div><a href="https://login.proxy1.unity.edu/login?auth=shibboleth&url=${proxiedUrl}">PROXY LINK</a></div>`;
     const goodProxyLinkPageHtml = `<div><a href="https://login.unity.idm.oclc.org/login?url=${proxiedUrl}">PROXY LINK</a></div>`;
-
-    async function getContent(course: IPagesHaver & IAssignmentsHaver & IDiscussionsHaver) {
-        let promises = [course.getDiscussions, course.getAssignments, course.getPages];
-        const contentItems = await Promise.all((promises.map(a => a())));
-        return contentItems.reduce(((accumulator: BaseContentItem[], currentValue) => {
-            return [...accumulator, ...currentValue]
-        }), [])
-    }
-
-    test("Old Proxy Server link exists in course test works", async () => {
-        const goofuses = [
-            dummyPagesHaver([new Page({...dummyPageData, body: badProxyLinkPageHtml}, 0)]),
-            dummyAssignmentsHaver([new Assignment({...dummyAssignmentData, description: badProxyLinkPageHtml}, 0)]),
-            dummyDiscussionsHaver([new Discussion({...dummyDiscussionData, message: badProxyLinkPageHtml}, 0)])
-        ]
-        const gallant = {
-            ...getDummySyllabusHaver(gallantSyllabusHtml),
-            ...dummyPagesHaver([new Page({...dummyPageData, body: goodProxyLinkPageHtml}, 0)]),
-            ...dummyAssignmentsHaver([new Assignment({...dummyAssignmentData, description: goodProxyLinkPageHtml}, 0)]),
-            ...dummyDiscussionsHaver([new Discussion({...dummyDiscussionData, message: goodProxyLinkPageHtml}, 0)])
-        }
-
-        await Promise.all(goofuses.map(async (goofus) => {
-            const result = await proxyServerLinkTest.run({...gallant, ...goofus});
-            expect(result.success).toBe(false);
-        }))
-        const result = await proxyServerLinkTest.run(gallant);
-        expect(result.success).toBe(true);
-    });
+    test("Old Proxy Server link exists in course test works", badContentTextValidationTest(proxyServerLinkValidation,  badProxyLinkPageHtml, goodProxyLinkPageHtml));
 });
 
 
+
+
+function badContentTextValidationTest(test:CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
+    return async () => {
+        const goofuses: BaseContentItem[][] = [
+            [new Quiz({...dummyQuizData, description: badHtml}, 0)],
+            [new Page({...dummyPageData, body: badHtml}, 0)],
+            [new Assignment({...dummyAssignmentData, description: badHtml}, 0)],
+            [new Discussion({...dummyDiscussionData, message: badHtml}, 0)],
+        ]
+
+        const gallant = dummyContentHaver(goodHtml,
+            [
+                new Page({...dummyPageData, body: goodHtml}, 0),
+                new Assignment({...dummyAssignmentData, description: goodHtml}, 0),
+                new Discussion({...dummyDiscussionData, message: goodHtml}, 0),
+                new Quiz({...dummyQuizData, body: goodHtml}, 0),
+            ]
+        );
+
+
+        const goofusResult = await test.run(dummyContentHaver(badHtml, [])) ;
+        expect(goofusResult.success).toBe(false);
+        for (let goofus of goofuses) {
+            const result = await test.run(dummyContentHaver(goodHtml, goofus));
+            expect(result.success).toBe(false);
+        }
+
+        const result = await test.run(gallant);
+        expect(result.success).toBe(true);
+    };
+}
+
+
 function dummyPagesHaver(pages: Page[]): IPagesHaver {
+
     return {
         id: 0,
         getPages: async (_config?) => pages
@@ -212,14 +219,40 @@ function dummyDiscussionsHaver(discussions: Discussion[]): IDiscussionsHaver {
     }
 }
 
+export function dummyQuizzesHaver(quizzes: Quiz[]): IQuizzesHaver {
+    return {
+        id: 0,
+        getQuizzes: async (_config?) => quizzes
+
+    }
+}
+
+export function dummyContentHaver(syllabus: string, content: BaseContentItem[]): IContentHaver {
+    const discussions = content.filter(item => item instanceof Discussion) as Discussion[];
+    const quizzes = content.filter(item => item instanceof Quiz) as Discussion[];
+    const assignments = content.filter(item => item instanceof Assignment) as Assignment[];
+    const pages = content.filter(item => item instanceof Page) as Page[];
+
+    return {
+        ...dummySyllabusHaver(syllabus),
+        ...dummyQuizzesHaver(quizzes),
+        ...dummyDiscussionsHaver(discussions),
+        ...dummyAssignmentsHaver(assignments),
+        ...dummyPagesHaver(pages),
+        async getContent() {
+            return [...discussions, ...quizzes, ...assignments, ...quizzes, ...pages]
+        }
+    }
+}
+
 
 function syllabusTestTest(test: CourseValidationTest<ISyllabusHaver>) {
     return async () => {
-        const gallantCourse: ISyllabusHaver = getDummySyllabusHaver(gallantSyllabusHtml);
+        const gallantCourse: ISyllabusHaver = dummySyllabusHaver(gallantSyllabusHtml);
         const gallantResult = await test.run(gallantCourse)
         expect(gallantResult).toHaveProperty('success', true);
 
-        const goofusCourse: ISyllabusHaver = getDummySyllabusHaver(goofusSyllabusHtml);
+        const goofusCourse: ISyllabusHaver = dummySyllabusHaver(goofusSyllabusHtml);
         const goofusResult = await test.run(goofusCourse);
         expect(goofusResult).toHaveProperty('success', false);
     }
@@ -229,22 +262,23 @@ function getDummyLatePolicyHaver(policyDetails: ILatePolicyUpdate): ILatePolicyH
     const policy = dummyLatePolicy;
     return {
         id: 1,
-        getLatePolicy: async function (config) {
+        getLatePolicy: async function (_config) {
             return {...policy, ...policyDetails};
         }
     }
 }
 
-function getDummySyllabusHaver(syllabus: string): ISyllabusHaver {
+function dummySyllabusHaver(syllabus: string): ISyllabusHaver {
     return {
         id: 1,
-        getSyllabus: async function (config) {
+        getSyllabus: async function (_config) {
             return syllabus;
         },
-        changeSyllabus: async function (newHtml, config) {
+        changeSyllabus: async function (newHtml, _config) {
             syllabus = newHtml;
         }
     }
 }
+
 
 

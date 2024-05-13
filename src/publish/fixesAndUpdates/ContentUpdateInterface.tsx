@@ -11,6 +11,7 @@ import courseSettingsTests from "./validations/courseSettings";
 import courseContentTests from "./validations/courseContent";
 import {Page} from "../../canvas/content";
 import {Course} from "../../canvas/course";
+import proxyServerLinkValidation from "./validations/proxyServerLinkValidation"
 
 type ContentUpdateInterfaceProps = {
     course: Course | null,
@@ -142,6 +143,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
                 ...syllabusTests,
                 ...courseSettingsTests,
                 ...courseContentTests,
+                proxyServerLinkValidation
             ]}
         />}
     </Modal>

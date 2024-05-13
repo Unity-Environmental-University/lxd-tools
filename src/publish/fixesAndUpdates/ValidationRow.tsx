@@ -36,7 +36,7 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
         return result.message;
     }
 
-    if (!showOnlyFailures || (result && !result.success)) {
+    if (!showOnlyFailures || loading || (!result?.success)) {
         return <div className={'row test-row'}>
             <div className={'col-sm-3'}>{test.name}</div>
             <div className={'col-sm-4'}>

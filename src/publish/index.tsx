@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import PublishApp from "./PublishApp";
-import assert from "assert";
 
 const root = document.createElement("div")
 let courseStatusEl = document.body.querySelector("#course_status")
