@@ -165,7 +165,6 @@ describe("Bad Link Tests and Fixes", () => {
         }), [])
     }
 
-
     test("Old Proxy Server link exists in course test works", async () => {
         const goofuses = [
             dummyPagesHaver([new Page({...dummyPageData, body: badProxyLinkPageHtml}, 0)]),
