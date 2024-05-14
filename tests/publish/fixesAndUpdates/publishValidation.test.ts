@@ -7,7 +7,7 @@ import {
 } from "../../../src/publish/fixesAndUpdates/validations/syllabusTests";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "./dummyLatePolicy";
-import {fetchApiJson, formDataify, range} from '../../../src/canvas/canvasUtils'
+import {range} from '../../../src/canvas/canvasUtils'
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../src/canvas/content/index";
 import {
     IAssignmentsHaver, IContentHaver, IDiscussionsHaver,
@@ -20,7 +20,11 @@ import {
     weeklyObjectivesTest
 } from "../../../src/publish/fixesAndUpdates/validations/courseContent";
 import {latePolicyTest, noEvaluationTest} from "../../../src/publish/fixesAndUpdates/validations/courseSettings";
-import {CourseValidationTest, ValidationFixResult} from "../../../src/publish/fixesAndUpdates/validations/index";
+import {
+    capitalize,
+    CourseValidationTest, matchHighlights,
+    preserveCapsReplace,
+} from "../../../src/publish/fixesAndUpdates/validations/index";
 import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "./dummyContentData";
 import proxyServerLinkValidation from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkValidation";
 import assert from "assert";
@@ -33,6 +37,29 @@ jest.spyOn(BaseContentItem.prototype, 'saveData')
     .mockImplementation(async (data) => {
         return data
     });
+
+
+test('caps replace test', () => {
+
+    expect(capitalize("moose munch")).toBe("Moose Munch")
+    expect(capitalize("moose Munch")).toBe("Moose Munch")
+    expect(capitalize("moose MuncH")).toBe("Moose MuncH")
+    let replacement = "Hello hello There".replace(/hello/ig, preserveCapsReplace('goodbye'))
+    expect(replacement).toBe('Goodbye goodbye There');
+
+    replacement = "HELLO HELLO THERE".replace(/hello/ig, preserveCapsReplace('goodbye'))
+    expect(replacement).toBe('GOODBYE GOODBYE THERE');
+
+    //Does not currently support capture groups
+
+})
+
+test('match hilights test', () => {
+    expect(matchHighlights("bob", /bob/g, 2, 1)).toStrictEqual(['b...b']);
+    expect(matchHighlights("bob", /o/g, 3, 1)).toStrictEqual(['bob']);
+    expect(matchHighlights("bob", /b/g, 2, 1)).toStrictEqual(['bo', 'ob']);
+
+})
 
 describe('Syllabus validation', () => {
     test('AI policy present test correct', syllabusTestTest(aiPolicyInSyllabusTest))
@@ -159,9 +186,12 @@ test('Course project outline header not "Project outline" test works', async () 
 
 })
 
+
+
+
 describe("Bad Link Tests and Fixes", () => {
     const proxiedUrl = encodeURI('https://unity.instructure.com')
-    const badProxyLinkPageHtml = `<div><a href="https://login.proxy1.unity.edu/login?auth=shibboleth&url=${proxiedUrl}">PROXY LINK</a></div>`;
+    const badProxyLinkPageHtml = `<div><a href="https://login.proxy1.unity.edu/login?auth=shibboleth&amp;url=${proxiedUrl}">PROXY LINK</a></div>`;
     const goodProxyLinkPageHtml = `<div><a href="https://login.unity.idm.oclc.org/login?url=${proxiedUrl}">PROXY LINK</a></div>`;
     test("Old Proxy Server link exists in course test works", badContentTextValidationTest(proxyServerLinkValidation, badProxyLinkPageHtml, goodProxyLinkPageHtml));
     test("Old Proxy Server link replace fix works.", badContentTextValidationFixTest(proxyServerLinkValidation, badProxyLinkPageHtml, goodProxyLinkPageHtml));
@@ -184,6 +214,7 @@ function badContentTextValidationTest(test: CourseValidationTest<IContentHaver>,
         expect(result.success).toBe(true);
     };
 }
+
 
 
 function badContentTextValidationFixTest(test: CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {

@@ -9,7 +9,7 @@ export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
             ...config,
             queryParams: {...config?.queryParams, search_term: 'Overview', include: ['body']}
         });
-        overviews = overviews.filter(overview => /week \d overview/i.test(overview.name));
+        overviews = overviews.filter(overview => /week \d overview/ig.test(overview.name));
 
         const badOverviews = overviews.filter(overview => {
             const el = document.createElement('div');
