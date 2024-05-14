@@ -723,12 +723,12 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         try {
             for (let migration of migrations) {
                 let course = await Course.getCourseById(migration['settings']['source_course_id'])
-                if (course.codePrefix === "DEV") return course;
+                if (course && course.codePrefix.includes("DEV")) return course;
             }
         } catch (e) {
             return await Course.getByCode('DEV_' + this.baseCode);
         }
-        return null;
+        return await Course.getByCode('DEV_' + this.baseCode);
     }
 
     /* Not working due to CORS; we need to set up the proxy server to be able to resize images.

@@ -25,7 +25,7 @@ import {
     badContentRunFunc,
     capitalize,
     CourseValidationTest, matchHighlights,
-    preserveCapsReplace,
+    preserveCapsReplace, TextReplaceValidationText,
 } from "../../../src/publish/fixesAndUpdates/validations/index";
 import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "./dummyContentData";
 import proxyServerLinkValidation from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkValidation";
@@ -330,7 +330,7 @@ export function dummyContentHaver(syllabus: string, content: BaseContentItem[], 
 }
 
 
-function syllabusTestTest(test: CourseValidationTest<ISyllabusHaver>) {
+function syllabusTestTest(test: CourseValidationTest<ISyllabusHaver> | TextReplaceValidationText<ISyllabusHaver>) {
     return async () => {
         const gallantCourse: ISyllabusHaver = dummySyllabusHaver(gallantSyllabusHtml);
         const gallantResult = await test.run(gallantCourse)
@@ -339,6 +339,15 @@ function syllabusTestTest(test: CourseValidationTest<ISyllabusHaver>) {
         const goofusCourse: ISyllabusHaver = dummySyllabusHaver(goofusSyllabusHtml);
         const goofusResult = await test.run(goofusCourse);
         expect(goofusResult).toHaveProperty('success', false);
+
+        if('negativeExemplars' in test && test.fix) {
+            for(let [goofus, gallant] of test.negativeExemplars) {
+                const goofusCourse: ISyllabusHaver = dummySyllabusHaver(goofus);
+                await test.fix(goofusCourse);
+                const syllabus = await goofusCourse.getSyllabus();
+                expect(syllabus).toBe(gallant);
+            }
+        }
     }
 }
 
