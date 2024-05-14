@@ -37,11 +37,7 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
         setFixText('Fixed...');
         await refreshCourse();
         setResult(await test.run(course))
-<<<<<<< HEAD
-        await refreshCourse();
-=======
         setLoading(false);
->>>>>>> dev
     }
 
 
