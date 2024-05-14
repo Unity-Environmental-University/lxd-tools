@@ -9,7 +9,7 @@ export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
             ...config,
             queryParams: {...config?.queryParams, search_term: 'Overview', include: ['body']}
         });
-        overviews = overviews.filter(overview => /week \d overview/i.test(overview.name));
+        overviews = overviews.filter(overview => /week \d overview/ig.test(overview.name));
 
         const badOverviews = overviews.filter(overview => {
             const el = document.createElement('div');
@@ -22,7 +22,7 @@ export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
         const success = badOverviews.length === 0;
         const result = testResult(
             badOverviews.length === 0,
-            "No weekly objectives header found on " + badOverviews.map(page => page.name).sort().join(','))
+             badOverviews.map(page => page.name).sort())
         if (!success) result.links = badOverviews.map(page => page.htmlContentUrl)
         return result;
     }
@@ -60,7 +60,7 @@ export const courseProjectOutlineTest: CourseValidationTest<IPagesHaver> = {
 
         const response = testResult(
             projectHeadings.length < 1,
-            "Course project page has 'Project overview' as a header",
+            ["Course project page has 'Project overview' as a header"],
         )
         if (!response.success) response.links = [projectOverview.htmlContentUrl];
         return response;

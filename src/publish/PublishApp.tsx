@@ -32,7 +32,7 @@ function PublishApp() {
 
     return(user && <div>
         <PublishInterface course={course} user={user}/>
-        <ContentUpdateInterface course={course} parentCourse={parentCourse} refreshCourse={getCourse}/>
+        <ContentUpdateInterface course={course} parentCourse={parentCourse} refreshCourse={() => getCourse(true)}/>
     </div>)
 }
 

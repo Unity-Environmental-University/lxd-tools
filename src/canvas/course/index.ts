@@ -80,7 +80,8 @@ export interface IQuizzesHaver extends IIdHaver {
 }
 
 export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
-    getContent(config?: ICanvasCallConfig): Promise<(Discussion | Assignment | Page | Quiz)[]>,
+    name: string,
+    getContent(config?: ICanvasCallConfig, refresh?:boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
 
 }
 
@@ -433,18 +434,25 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
 
-    async getContent(config?: ICanvasCallConfig) {
-        let discussions = await this.getDiscussions(config);
-        let assignments = await this.getAssignments(config);
-        let quizzes = await this.getQuizzes(config);
-        let pages = await this.getPages(config);
+    cachedContent: BaseContentItem[] = []
+    async getContent(config?: ICanvasCallConfig, refresh=false) {
+        if(refresh || this.cachedContent.length == 0) {
+            let discussions = await this.getDiscussions(config);
+            let assignments = await this.getAssignments(config);
+            let quizzes = await this.getQuizzes(config);
+            let pages = await this.getPages(config);
+            this.cachedContent = [
+                ...discussions,
+                ...assignments,
+                ...quizzes,
+                ...pages
 
-        return [
-            ...discussions,
-            ...assignments,
-            ...quizzes,
-            ...pages
-        ]
+            ]
+
+        }
+
+        return this.cachedContent;
+
     }
 
 

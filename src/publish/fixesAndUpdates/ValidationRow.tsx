@@ -23,36 +23,50 @@ export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFa
     }
 
     async function reRun() {
+        setLoading(true);
         await refreshCourse();
         setResult(await test.run(course))
+        setLoading(false);
     }
 
     async function fix() {
         setFixText('Fixing..');
+        setLoading(true);
         assert(test.fix);
         await test.fix(course);
         setFixText('Fixed...');
-        setResult(await test.run(course))
         await refreshCourse();
+        setResult(await test.run(course))
+<<<<<<< HEAD
+        await refreshCourse();
+=======
+        setLoading(false);
+>>>>>>> dev
     }
 
 
     useEffectAsync(async () => {
+        setLoading(true);
         setResult(await test.run(course));
+        setLoading(false);
     }, [course, test])
 
     function statusMessage(result: ValidationTestResult | undefined) {
         if (loading) return "running..."
-        if (!result) return "No result. An error may have occurred."
+        if (!result) return loading? "still running" : "No Result, an error may have occured."
         if (result.success) return "Succeeded!"
-        return result.message;
+        return typeof result.message === 'string' ?
+            <p>{result.message}</p>
+            : result.message.map(message => (<div>
+                {message}
+                </div>))
     }
 
     if (!showOnlyFailures || loading || (!result?.success)) {
         return <div className={'row test-row'}>
             <div className={'col-sm-2'}>{test.name}</div>
             <div className={'col-sm-3'}>
-                <p>{test.description}</p>
+                {test.description}
             </div>
             <div className={'col-sm-4'}>
                 <p>{statusMessage(result)}</p>

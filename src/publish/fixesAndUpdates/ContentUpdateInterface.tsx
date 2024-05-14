@@ -6,12 +6,14 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
+import {CourseValidationTest} from "./validations/index";
+import {Page} from "../../canvas/content";
+import {Course} from "../../canvas/course";
 import syllabusTests from "./validations/syllabusTests";
 import courseSettingsTests from "./validations/courseSettings";
 import courseContentTests from "./validations/courseContent";
-import {Page} from "../../canvas/content";
-import {Course} from "../../canvas/course";
-import proxyServerLinkValidation from "./validations/proxyServerLinkValidation"
+import proxyServerLinkValidation from "./validations/proxyServerLinkValidation";
+import capstoneProjectValidations from "./validations/courseSpecific/capstoneProjectValidations";
 
 type ContentUpdateInterfaceProps = {
     course: Course | null,
@@ -25,8 +27,17 @@ export class MismatchedUnloadError extends Error {
 
 type InterfaceMode = 'fix' | 'unitTest'
 
+const allValidations = [
+    ...capstoneProjectValidations,
+    ...syllabusTests,
+    ...courseSettingsTests,
+    ...courseContentTests,
+    proxyServerLinkValidation,
+]
+
 export function ContentUpdateInterface({course, parentCourse, refreshCourse}: ContentUpdateInterfaceProps) {
 
+    const [validations, setValidations] = useState<CourseValidationTest[]>(allValidations);
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
     const [isDisabled, setIsDisabled] = useState(false);
@@ -37,15 +48,25 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     const [mode, setMode] = useState<InterfaceMode>('fix')
 
     useEffectAsync(async () => {
-        if (course) {
-            if (course.isDev) {
-                setButtonText('DEV Content Changes/Fixes')
-            } else if (course.isBlueprint) {
-                setButtonText('BP Content Fixes')
-            } else {
-                setButtonText("Can Only Fix from BP or DEV")
-            }
+        if (!course) return;
+
+        if (course.isDev) {
+            setButtonText('DEV Content Changes/Fixes')
+        } else if (course.isBlueprint) {
+            setButtonText('BP Content Fixes')
+        } else {
+            setButtonText("Can Only Fix from BP or DEV")
         }
+
+        setValidations(allValidations.filter(validation => {
+            if(!validation.courseCodes) return true;
+            for(let code of validation.courseCodes) {
+                if ( course.courseCode?.toUpperCase().includes(code.toLocaleUpperCase('en-US'))) {
+                    return true;
+                }
+            }
+            return false;
+        }))
     }, [course]);
 
     /* increment and decrement is loading just in case we end up setting it asynchronously somehow */
@@ -127,26 +148,21 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     }
 
     return (course && <>
-    <Button disabled={isDisabled} className={"ui-button"} onClick={(e) => setShow(true)}
-    >{buttonText}</Button>
-    <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!loadingCount}>
-        <div className={'d-flex justify-content-end'}>
-            {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Show All Tests</Button>}
-            {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
-        </div>
-        {mode === 'fix' && <FixesMode course={course}></FixesMode>}
-        {<CourseValidator
-            showOnlyFailures={mode !== 'unitTest'}
-            course={course}
-            refreshCourse= {refreshCourse}
-            tests={[
-                ...syllabusTests,
-                ...courseSettingsTests,
-                ...courseContentTests,
-                proxyServerLinkValidation
-            ]}
-        />}
-    </Modal>
-</>)
+        <Button disabled={isDisabled} className={"ui-button"} onClick={(e) => setShow(true)}
+        >{buttonText}</Button>
+        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!loadingCount}>
+            <div className={'d-flex justify-content-end'}>
+                {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Show All Tests</Button>}
+                {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
+            </div>
+            {mode === 'fix' && <FixesMode course={course}></FixesMode>}
+            {<CourseValidator
+                showOnlyFailures={mode !== 'unitTest'}
+                course={course}
+                refreshCourse={refreshCourse}
+                tests={validations}
+            />}
+        </Modal>
+    </>)
 }
 
