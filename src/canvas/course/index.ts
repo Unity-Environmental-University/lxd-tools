@@ -670,39 +670,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         this.canvasData = {...(await Course.getCourseById(this.id)).canvasData};
     }
 
-    async contentUpdatesAndFixes(_fixesToRun = null) {
-        throw new NotImplementedException();
-        // await this.setNavigationTabHidden('Dropout Detective', false);
-        // await this.setNavigationTabHidden('BigBlueButton', false);
-        //
-        // const appliedTo = [];
-        // if (fixesToRun === null) {
-        //     fixesToRun = this.fixesToRun;
-        // }
-        //
-        // for (const page of EvalFix.findContent(this)) {
-        //     page.delete();
-        //     appliedTo.push(page);
-        // }
-        //
-        // for (const fixSet of fixesToRun) {
-        //     const pages = fixSet.findContent(this);
-        //     for (const page of pages) {
-        //         const text = fixSet.fix(page.body);
-        //         page.updateContent(text);
-        //         appliedTo.push(page);
-        //     }
-        // }
-        //
-        // const syllabus = SyllabusFix.fix(this.syllabus);
-        // await fetchApiJson(`courses/${this.id}`, {}, {
-        //     method: 'PUT',
-        //     body: JSON.stringify({'course[syllabus_body]': syllabus})
-        // });
-        // this.canvasData['syllabus_body'] = syllabus;
-        // return appliedTo;
-    }
-
     async reset(prompt = true) {
         if (prompt && !confirm(`Are you sure you want to reset ${this.courseCode}?`)) {
             return false;
@@ -798,7 +765,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return await uploadFile(file, 'Images/hometile', this.fileUploadUrl);
 
     }
-
 
     public getPages(config: ICanvasCallConfig | null = null) {
         return Page.getAllInCourse(this.id, config) as Promise<Page[]>;
