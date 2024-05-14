@@ -6,7 +6,7 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {CourseValidationTest} from "./validations/index";
+import {badContentFixFunc, badContentRunFunc, CourseValidationTest, preserveCapsReplace} from "./validations/index";
 import {Page} from "../../canvas/content";
 import {Course} from "../../canvas/course";
 import syllabusTests from "./validations/syllabusTests";
@@ -26,8 +26,17 @@ export class MismatchedUnloadError extends Error {
 }
 
 type InterfaceMode = 'fix' | 'unitTest'
+// const regex = /rovide at least one citation of a peer reviewed source is provided in/ig;
+// const oneOffFix:CourseValidationTest =     {
+//         name: "One Off Fix",
+//         courseCodes: ['ANIM301'],
+//         description: "Replace bad text in ANIM301",
+//         run: badContentRunFunc(regex),
+//         fix: badContentFixFunc(regex, preserveCapsReplace(regex, 'rovide at least one citation of a peer reviewed source in'))
+//     }
 
-const allValidations = [
+
+const allValidations: CourseValidationTest[] = [
     ...capstoneProjectValidations,
     ...syllabusTests,
     ...courseSettingsTests,
