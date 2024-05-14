@@ -10,7 +10,6 @@ async function  main() {
     const tags = getGitTags('./')
 
     updateTag(packageTag, './');
-    updateTag(packageTag, '../dist');
 
     let distManifest = JSON.parse(fs.readFileSync('../dist/manifest.json').toString())
 
@@ -22,6 +21,8 @@ async function  main() {
     console.log(commitMessages)
     console.log(execSync('git add .', distOptions).toString());
     console.log(execSync(`git commit -m "${packageTag}\n${commitMessages.join('\n')}"`, distOptions).toString())
+    updateTag(packageTag, '../dist');
+
     const process = exec('git push', distOptions)
     process.on('message', (message) => {
 
