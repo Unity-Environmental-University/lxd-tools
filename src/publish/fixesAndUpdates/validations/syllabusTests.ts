@@ -1,17 +1,25 @@
 import {getPlainTextFromHtml} from "../../../canvas/canvasUtils";
 import {ISyllabusHaver} from "../../../canvas/course/index";
-import {CourseValidationTest, testResult} from "./index";
+import {
+    badContentFixFunc,
+    badSyllabusFixFunc,
+    CourseValidationTest,
+    testResult,
+    TextReplaceValidationText
+} from "./index";
 
 //Syllabus Tests
-export const finalNotInGradingPolicyParaTest: CourseValidationTest<ISyllabusHaver> = {
+export const finalNotInGradingPolicyParaTest: TextReplaceValidationText<ISyllabusHaver> = {
     name: "Remove Final",
+    negativeExemplars:[['off the final grade', 'off the grade'], ['final exam', 'final exam']],
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
         const syllabus = await course.getSyllabus(config);
         const match = /off the final grade/gi.test(syllabus);
         return testResult(!match, ["'off the final grade' found in syllabus"], [`/courses/${course.id}/assignments/syllabus`]
         );
-    }
+    },
+    fix: badSyllabusFixFunc(/off the final grade/gi, 'off the grade')
 }
 
 export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
@@ -36,6 +44,7 @@ export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
 export const courseCreditsInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
     name: "Syllabus Credits",
     description: 'Credits displayed in summary box of syllabus',
+
     run: async (course: ISyllabusHaver, config) => {
         const syllabus = await course.getSyllabus(config);
         const el = document.createElement('div');
@@ -74,7 +83,8 @@ export const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> 
             ["Text at the bottom of the syllabus looks incorrect."],
             [`/courses/${course.id}/assignments/syllabus`]
         )
-    }
+    },
+
 }
 
 /// Etc
