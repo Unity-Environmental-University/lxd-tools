@@ -9,7 +9,7 @@ export const finalNotInGradingPolicyParaTest: CourseValidationTest<ISyllabusHave
     run: async (course, config) => {
         const syllabus = await course.getSyllabus(config);
         const match = /off the final grade/gi.test(syllabus);
-        return testResult(!match, "'off the final grade' found in syllabus", [`/courses/${course.id}/assignments/syllabus`]
+        return testResult(!match, ["'off the final grade' found in syllabus"], [`/courses/${course.id}/assignments/syllabus`]
         );
     }
 }
@@ -27,7 +27,7 @@ export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
         const text = el.textContent?.toLowerCase() || "";
         return testResult(
             text.includes(testString) && !text.match(/48 hours .* weekends/),
-            "Communication language section in syllabus does not look right.",
+            ["Communication language section in syllabus does not look right."],
             [`/courses/${course.id}/assignments/syllabus`]
         )
     }
@@ -44,7 +44,7 @@ export const courseCreditsInSyllabusTest: CourseValidationTest<ISyllabusHaver> =
         const creditList = Array.from(strongs).filter((strong) => /credits/i.test(strong.textContent || ""));
         return testResult(
             creditList && creditList.length > 0,
-            "Can't find credits in syllabus",
+            ["Can't find credits in syllabus"],
             [`/courses/${course.id}/assignments/syllabus`]
         )
 
@@ -57,7 +57,7 @@ export const aiPolicyInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
     run: async (course: ISyllabusHaver, config) => {
         const text = await course.getSyllabus(config);
         const success = text.includes('Generative Artificial Intelligence');
-        return testResult(success, `Can't find AI boilerplate in syllabus`, [`/courses/${course.id}/assignments/syllabus`]
+        return testResult(success, [`Can't find AI boilerplate in syllabus`], [`/courses/${course.id}/assignments/syllabus`]
         )
     }
 }
@@ -71,7 +71,7 @@ export const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> 
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
         return testResult(
             success,
-            "Text at the bottom of the syllabus looks incorrect.",
+            ["Text at the bottom of the syllabus looks incorrect."],
             [`/courses/${course.id}/assignments/syllabus`]
         )
     }

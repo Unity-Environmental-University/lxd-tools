@@ -21,6 +21,8 @@ import {
 } from "../../../src/publish/fixesAndUpdates/validations/courseContent";
 import {latePolicyTest, noEvaluationTest} from "../../../src/publish/fixesAndUpdates/validations/courseSettings";
 import {
+    badContentFixFunc,
+    badContentRunFunc,
     capitalize,
     CourseValidationTest, matchHighlights,
     preserveCapsReplace,
@@ -28,6 +30,10 @@ import {
 import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "./dummyContentData";
 import proxyServerLinkValidation from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkValidation";
 import assert from "assert";
+import capstoneProjectValidations, {
+    courseProjectToCapstoneProjectProposal, partnershipToCollaboration, partnerToCollaborator
+} from "../../../src/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
+import * as repl from "repl";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
@@ -44,12 +50,15 @@ test('caps replace test', () => {
     expect(capitalize("moose munch")).toBe("Moose Munch")
     expect(capitalize("moose Munch")).toBe("Moose Munch")
     expect(capitalize("moose MuncH")).toBe("Moose MuncH")
-    let replacement = "Hello hello There".replace(/hello/ig, preserveCapsReplace('goodbye'))
+    expect(capitalize("moose MuncH")).toBe("Moose MuncH")
+    let replacement = "Hello hello There".replace(/hello/ig, preserveCapsReplace(/hello/ig, 'goodbye'))
     expect(replacement).toBe('Goodbye goodbye There');
 
-    replacement = "HELLO HELLO THERE".replace(/hello/ig, preserveCapsReplace('goodbye'))
+    replacement = "HELLO HELLO THERE".replace(/hello/ig, preserveCapsReplace(/hello/ig, 'goodbye'))
     expect(replacement).toBe('GOODBYE GOODBYE THERE');
 
+    replacement = "Whoopsie".replace(/wh(oops)/ig, preserveCapsReplace(/wh(oops)/ig, '$1'))
+    expect(replacement).toBe('Oopsie');
     //Does not currently support capture groups
 
 })
@@ -187,8 +196,6 @@ test('Course project outline header not "Project outline" test works', async () 
 })
 
 
-
-
 describe("Bad Link Tests and Fixes", () => {
     const proxiedUrl = encodeURI('https://unity.instructure.com')
     const badProxyLinkPageHtml = `<div><a href="https://login.proxy1.unity.edu/login?auth=shibboleth&amp;url=${proxiedUrl}">PROXY LINK</a></div>`;
@@ -198,6 +205,15 @@ describe("Bad Link Tests and Fixes", () => {
 
 });
 
+describe("Capstone content tests", () => {
+    for (let validation of capstoneProjectValidations) {
+        for (const [badExample, goodExample] of validation.negativeExemplars) {
+            test(`Find ${validation.name} test: ${badExample}`, badContentTextValidationTest(validation, badExample, goodExample));
+            test(`Fix ${validation.name} test: ${badExample}`, badContentTextValidationFixTest(validation, badExample, goodExample));
+        }
+    }
+
+})
 
 function badContentTextValidationTest(test: CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
     return async () => {
@@ -210,11 +226,11 @@ function badContentTextValidationTest(test: CourseValidationTest<IContentHaver>,
 
 
         const gallant = contentGallant(badHtml, goodHtml);
+        console.log(await gallant.getSyllabus())
         const result = await test.run(gallant);
         expect(result.success).toBe(true);
     };
 }
-
 
 
 function badContentTextValidationFixTest(test: CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
@@ -227,23 +243,26 @@ function badContentTextValidationFixTest(test: CourseValidationTest<IContentHave
             let testResult = await test.run(goofus);
             expect(testResult.success).toBe(false);
             const fixResult = await test.fix(goofus);
+            console.log(goofus.name);
             testResult = await test.run(goofus);
             expect(testResult.success).toBe(true);
         }
         const gallant = contentGallant(badHtml, goodHtml);
         const result = await test.run(gallant);
+        expect(result.success).toBe(true);
     }
 }
 
 function contentGoofuses(badHtml: string, goodHtml: string) {
+
+
     return [
-        dummyContentHaver(badHtml, []),
-        ...[
-            [new Quiz({...dummyQuizData, description: badHtml}, 0)],
-            [new Page({...dummyPageData, body: badHtml}, 0)],
-            [new Assignment({...dummyAssignmentData, description: badHtml}, 0)],
-            [new Discussion({...dummyDiscussionData, message: badHtml}, 0)],
-        ].map(content => dummyContentHaver(goodHtml, content))]
+        dummyContentHaver(badHtml, [], "Syllabus"),
+        dummyContentHaver(goodHtml, [new Quiz({...dummyQuizData, description: badHtml}, 0)], "Quiz"),
+        dummyContentHaver(goodHtml, [new Assignment({...dummyAssignmentData, description: badHtml}, 0)], "Assignment"),
+        dummyContentHaver(goodHtml, [new Discussion({...dummyDiscussionData, message: badHtml}, 0)], "Discussion"),
+        dummyContentHaver(goodHtml, [new Page({...dummyPageData, body: badHtml}, 0)], "Page"),
+    ]
 
 }
 
@@ -254,7 +273,7 @@ function contentGallant(badHtml: string, goodHtml: string) {
             new Assignment({...dummyAssignmentData, description: goodHtml}, 0),
             new Discussion({...dummyDiscussionData, message: goodHtml}, 0),
             new Quiz({...dummyQuizData, body: goodHtml}, 0),
-        ]);
+        ], "Gallant");
 }
 
 function dummyPagesHaver(pages: Page[]): IPagesHaver {
@@ -290,7 +309,7 @@ export function dummyQuizzesHaver(quizzes: Quiz[]): IQuizzesHaver {
     }
 }
 
-export function dummyContentHaver(syllabus: string, content: BaseContentItem[]): IContentHaver {
+export function dummyContentHaver(syllabus: string, content: BaseContentItem[], name: string): IContentHaver {
     const discussions = content.filter(item => item instanceof Discussion) as Discussion[];
     const quizzes = content.filter(item => item instanceof Quiz) as Discussion[];
     const assignments = content.filter(item => item instanceof Assignment) as Assignment[];
@@ -305,7 +324,8 @@ export function dummyContentHaver(syllabus: string, content: BaseContentItem[]):
         ...dummyPagesHaver(pages),
         async getContent() {
             return [...discussions, ...quizzes, ...assignments, ...quizzes, ...pages]
-        }
+        },
+        name,
     }
 }
 

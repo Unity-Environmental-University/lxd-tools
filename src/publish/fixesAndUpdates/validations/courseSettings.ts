@@ -37,7 +37,8 @@ export const latePolicyTest: CourseValidationTest<ILatePolicyHaver> = {
         const latePolicy = await course.getLatePolicy(config);
         return testResult(
             latePolicy.missing_submission_deduction_enabled,
-            "'Automatically apply grade for missing submission' not turned on");
+            ["'Automatically apply grade for missing submission' not turned on"]
+        );
     }
 }
 export const noEvaluationTest: CourseValidationTest<IPagesHaver> = {
@@ -49,7 +50,7 @@ export const noEvaluationTest: CourseValidationTest<IPagesHaver> = {
         const pages = await (course.getPages(config))
         const evalPages = pages.filter(page => /Course Evaluation/i.test(page.name));
         const success = evalPages.length === 0;
-        const result = testResult(success, "Course eval found");
+        const result = testResult(success, ["Course eval found"]);
         if (!success) result.links = evalPages.map(page => page.htmlContentUrl);
         return result;
     }

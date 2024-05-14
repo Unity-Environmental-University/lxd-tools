@@ -131,7 +131,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return this.saveData(data);
     }
 
-    async getMeInAnotherCourse(targetCourseId:number) {
+    async getMeInAnotherCourse(targetCourseId: number) {
         let ContentClass = this.constructor as typeof BaseContentItem
         let targets = await ContentClass.getAllInCourse(
             targetCourseId,
@@ -222,6 +222,22 @@ export class Assignment extends BaseContentItem {
         return this.canvasData as IAssignmentData;
     }
 
+
+    async updateContent(text: string | null = null, name: string | null = null) {
+        const assignmentData: Record<string, any> = {};
+        if (text) {
+            assignmentData.description = text
+            this.rawData.description = text
+        }
+        if (name) {
+            assignmentData.name = name;
+            this.rawData.name = name;
+        }
+
+        return await this.saveData({
+            assignment: assignmentData
+        })
+    }
 }
 
 export class Quiz extends BaseContentItem {
