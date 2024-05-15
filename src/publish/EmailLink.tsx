@@ -87,12 +87,6 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
                 href={'cmalmberg@unity.edu'}>cmalmberg@unity.edu</a>).
             </li>
         </ul>
-        <p>You’ll notice that the courses appear different than they have in the past. This new format will look
-            different
-            but should not impact how you interact with your course and/or students. There are no changes to Canvas
-            Inbox,
-            announcements, the gradebook or SpeedGrader. For a more comprehensive overview of the new style, review this
-            announcement.</p>
         <p>We appreciate your help in making sure these courses are good to go. Have a wonderful term.</p>
         <p>Cheers,</p>
         <p>{user.name}</p>
