@@ -11,7 +11,7 @@ import {
     getStartDateAssignments,
     SyllabusUpdateError,
     updatedDateSyllabusHtml
-} from "../../canvas/fixes/changeStartDate";
+} from "../../canvas/course/changeStartDate";
 import {changeModuleLockDate} from "../../canvas/course/modules";
 import {IDiscussionData} from "../../canvas/canvasDataDefs";
 import {oldDateToPlainDate} from "../../date";

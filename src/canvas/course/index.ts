@@ -26,7 +26,7 @@ import {
     ICanvasCallConfig
 } from "../canvasUtils";
 import assert from "assert";
-import {getCurrentStartDate} from "../fixes/changeStartDate";
+import {getCurrentStartDate} from "./changeStartDate";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
