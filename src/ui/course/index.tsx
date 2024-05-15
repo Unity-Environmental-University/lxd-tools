@@ -4,13 +4,17 @@ import React from "react";
 
 import assert from "assert";
 import {HomeTileApp} from "./HomeTileApp";
-import {Assignment, BaseContentItem} from "../../canvas/content";
+import {BaseContentItem, Page} from "../../canvas/content";
 import {Course} from "../../canvas/course";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);
-    const CurrentContentClass = Course.getContentClassFromUrl();
-    const currentContentItem = await CurrentContentClass?.getFromUrl();
+    let CurrentContentClass = Course.getContentClassFromUrl();
+    let currentContentItem = await CurrentContentClass?.getFromUrl();
+    if(!CurrentContentClass && /courses\/\d+/.test(document.URL)) {
+        currentContentItem = await currentCourse?.getFrontPage();
+
+    }
 
     if (!currentCourse) return;
     let header: HTMLElement | null = document.querySelector('.right-of-crumbs');
@@ -29,6 +33,7 @@ import {Course} from "../../canvas/course";
     }
     if(currentContentItem) {
         await addOpenAllLinksButton(header, currentContentItem);
+        highlightBigImages();
     }
     const homeTileHost = document.querySelector('#Modules-anchor');
 
@@ -42,7 +47,6 @@ import {Course} from "../../canvas/course";
 })();
 
 function addHomeTileButton(el:HTMLElement, course:Course) {
-
     const root = document.createElement("div")
     const rootDiv = ReactDOM.createRoot(root);
     rootDiv.render(
@@ -129,7 +133,24 @@ function openAllLinksInContent(contentItem: BaseContentItem) {
     for(let url of urls) window.open(url, "_blank");
 }
 
-function GenerateAltText() {
+function highlightBigImages() {
+    const bannerImageContainer = document.querySelector<HTMLDivElement>('div.cbt-banner-image');
+    console.log(bannerImageContainer);
+    if(!bannerImageContainer) return;
+    const image = bannerImageContainer.querySelector('img')
+    console.log(image?.naturalWidth);
+    if(!image) return;
 
+    if(image.naturalWidth > 2000) {
+        console.log(image.width);
+        console.log(image.naturalWidth);
+        const notification = document.createElement('div');
+        notification.style.backgroundColor = 'rgba(255,255,255,0.75)';
+        notification.style.border = "10px dashed red";
+        notification.style.fontSize = "64px";
+        notification.style.color = "rgba(64,0,0,1)"
+        notification.innerHTML = ` <h2>IMAGE REAL BIG</h2>
+<h4><strong>This warning will not appear on student-facing canvas.</strong></h4>`
+        bannerImageContainer.parentElement?.append(notification)
+    }
 }
-
