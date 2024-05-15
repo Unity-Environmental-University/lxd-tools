@@ -88,7 +88,7 @@ module.exports = {
                     to: "manifest.json",
                     transform: (content, path) => {
                         let packageJson = require('./package.json');
-                        console.log(packageJson.toString())
+                        console.log(JSON.stringify(packageJson));
                         let manifest = JSON.parse(content.toString());
                         manifest.version = packageJson.version;
                         return JSON.stringify(manifest, null, 2);

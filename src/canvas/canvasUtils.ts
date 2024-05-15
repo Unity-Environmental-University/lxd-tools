@@ -236,13 +236,14 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
             next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
             response = await fetch(next_page_link, config?.fetchInit);
             let responseData = await response.json();
-            if (typeof responseData === 'object' && !Array.isArray(data)) {
-                let values = Array.from(Object.values(data));
+            if (typeof responseData === 'object' && !Array.isArray(responseData)) {
+                let values = Array.from(Object.values(responseData));
                 if (values) {
                     responseData = values?.find((a) => Array.isArray(a));
                 }
                 data = [data, ...responseData];
             }
+
             for(let value of responseData) {
                 yield value;
             }

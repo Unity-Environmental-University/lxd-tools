@@ -9,20 +9,16 @@ type MessageHandler<T, Output> = (
       sendResponse: (output: Output) => void
   ) => void | boolean | Promise<boolean | void>
 
-let searchInserted = false;
 const messageHandlers: Record<string, MessageHandler<any, any>> = {
   async searchForCourse (queryString:string) {
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
       return;
     }
-    if(!searchInserted) {
-      await scripting.executeScript({
-        target: {tabId: activeTab.id},
-        files: ['./js/content.js']
-      });
-      searchInserted = true;
-    }
+    await scripting.executeScript({
+      target: {tabId: activeTab.id},
+      files: ['./js/content.js']
+    });
     await tabs.sendMessage(activeTab.id, {'queryString': queryString});
   },
 }
@@ -60,7 +56,11 @@ action.onClicked.addListener(async (tab) => {
 });
 
 async function getActiveTab() {
-  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const windowTabs = await tabs.query({lastFocusedWindow: true})
+  const activeTabs = await tabs.query({active:true});
+  const activeLastWindow = await tabs.query({ active: true, lastFocusedWindow: true });
+
+  const [tab] = windowTabs.filter(tab => tab.active)
   return tab
 }
 
