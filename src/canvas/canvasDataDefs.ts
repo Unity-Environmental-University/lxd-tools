@@ -375,3 +375,32 @@ export interface IQuizData {
 
 type QuizPermissions = Record<string, any>
 type LockInfo = Record<string, any>
+
+export interface IFile {
+  "id": number,
+  "uuid": string,
+  "folder_id": number,
+  "display_name": string,
+  "filename": string,
+  "content-type": string,
+  "url": string,
+  "size": number,
+  "created_at": string,
+  "updated_at": string,
+  "unlock_at"?: string,
+  "locked": boolean,
+  "hidden": boolean,
+  "lock_at"?: string,
+  "hidden_for_user": boolean,
+  "visibility_level"?: "course" | "institution" | "public" | "inherit",
+  "thumbnail_url"?: string | null,
+  "modified_at": string,
+  // simplified content-type mapping
+  "mime_class": string,
+  // identifier for file in third-party transcoding service
+  "media_entry_id"?: string,
+  "locked_for_user": boolean,
+  "lock_info"?: any,
+  "lock_explanation"?: string,
+  "preview_url"?: string
+}

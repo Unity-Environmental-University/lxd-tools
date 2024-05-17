@@ -14,7 +14,6 @@ type HomeTileAppProps = {
 export function HomeTileApp({course, el}: HomeTileAppProps) {
 
     const [showModal, setShowModal] = useState(false);
-    const [message, setMessage] = useState<string|null>();
     const [running, setRunning] = useState(false);
     async function regenerate() {
         setRunning(true);

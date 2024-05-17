@@ -66,6 +66,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
         let url = this.getUrlPathFromIds(contentId, courseId);
         const response = await fetchApiJson<T>(url, config);
         assert(!Array.isArray(response));
+
         return response;
     }
 
@@ -82,7 +83,6 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
     }
 
     /**
-     *
      * @param courseId - The course ID to get elements within, if applicable
      * @param accountId - The account ID to get elements within, if applicable
      */
@@ -100,7 +100,6 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
         let data = await getApiPagedData(url, config);
         return data.map(item => new this(item));
     }
-
 
     get id(): number {
         const id = this.canvasData[(<typeof BaseCanvasObject>this.constructor).idProperty];

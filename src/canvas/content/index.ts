@@ -1,5 +1,5 @@
 import {Temporal} from "temporal-polyfill";
-import {CanvasData, IAssignmentData, IDiscussionData, IPageData} from "../canvasDataDefs";
+import {CanvasData, IAssignmentData, IDiscussionData, IFile, IPageData} from "../canvasDataDefs";
 import {
     fetchJson,
     fetchOneKnownApiJson,
@@ -11,6 +11,10 @@ import {
 import {BaseCanvasObject} from "../baseCanvasObject";
 import assert from "assert";
 import {NotImplementedException} from "../index";
+import {getResizedBlob} from "../image";
+import {uploadFile} from "../files";
+
+const SAFE_MAX_BANNER_WIDTH = 1400;
 
 export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     static bodyProperty: string;
@@ -156,8 +160,37 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         el.innerHTML = this.body;
         return el;
     }
+
+    async resizeBanner(maxWidth=SAFE_MAX_BANNER_WIDTH) {
+        const bannerImg = getBannerImage(this);
+        if(!bannerImg) throw new Error("No banner");
+        let fileData = await getFileDataFromUrl(bannerImg.src, this.courseId)
+        if(!fileData) throw new Error("File not found");
+        if(bannerImg.naturalWidth < maxWidth) return; //Dont resize image unless we're shrinking it
+        let resizedImageBlob = await getResizedBlob(bannerImg.src,  maxWidth);
+        let fileName = fileData.filename;
+        let fileUploadUrl = `/api/v1/courses/${this.courseId}/files`
+        assert(resizedImageBlob);
+        let file = new File([resizedImageBlob], fileName)
+        return await uploadFile(file, fileData.folder_id, fileUploadUrl);
+
+    }
 }
 
+async function getFileDataFromUrl(url:string, courseId:number) {
+    const match = /.*\/files\/(\d+)/.exec(url);
+    if(!match) return null;
+    if(match) {
+        const fileId = parseInt(match[1]);
+        const file = await getFileData(fileId, courseId)
+        return file;
+    }
+}
+
+async function getFileData(fileId:number, courseId:number) {
+    const url = `/api/v1/courses/${courseId}/files/${fileId}`
+    return await fetchJson(url) as IFile;
+}
 
 export class Discussion extends BaseContentItem {
     static nameProperty = 'title';
@@ -294,4 +327,13 @@ export class Page extends BaseContentItem {
 
         return this.saveData(data);
     }
+}
+
+
+export function getBannerImage(overviewPage:BaseContentItem) {
+    const pageBody = document.createElement('html');
+    if(!overviewPage.body) throw new Error(`Content item ${overviewPage.name} has no html body`)
+    pageBody.innerHTML = overviewPage.body;
+    let bannerImg: HTMLImageElement | null = pageBody.querySelector('.cbt-banner-image img')
+    return bannerImg;
 }

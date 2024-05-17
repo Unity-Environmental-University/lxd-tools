@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "1.10.6",
+  "version": "1.11",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
@@ -27,6 +27,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "watch": "webpack -w --config webpack.config.js",
+    "publish" : "node publish.mjs",
     "test": "ts-jest"
   },
   "eslintConfig": {

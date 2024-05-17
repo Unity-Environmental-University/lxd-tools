@@ -127,23 +127,30 @@ function addToFormData(formData: FormData, key: string, value: any | Record<stri
     }
 }
 
-export function getModuleWeekNumber(module: Record<string, any>) {
-    const regex = /(week|module) (\d+)/i;
-    let match = module.name.match(regex);
-    let weekNumber = !match ? null : Number(match[1]);
-    if (!weekNumber) {
-        for (let moduleItem of module.items) {
-            if (!moduleItem.hasOwnProperty('title')) {
-                continue;
-            }
-            let match = moduleItem.title.match(regex);
-            if (match) {
-                weekNumber = match[2];
-            }
-        }
-    }
-    return weekNumber;
+
+export function queryStringify(data:Record<string, any>) {
+    let searchParams = new URLSearchParams();
+    for(let key in data) {
+        addToQuery(searchParams, key, data[key])
+    };
+    return searchParams;
 }
+
+function addToQuery(searchParams:URLSearchParams, key: string, value: any | Record<string, any> | []) {
+    if (Array.isArray(value)) {
+        for (let item of value) {
+            addToQuery(searchParams, `${key}[]`, item);
+        }
+    } else if (typeof value === 'object') {
+        for (let itemKey in value) {
+            const itemValue = value[itemKey];
+            addToQuery(searchParams, key.length > 0 ? `${key}[${itemKey}]` : itemKey, itemValue);
+        }
+    } else {
+        searchParams.append(key, value)
+    }
+}
+
 
 /**
  * Takes in a module item and returns an object specifying its type and content id
@@ -173,7 +180,9 @@ export async function getItemTypeAndId(
  * @returns {URLSearchParams} The correctly formatted parameters
  */
 export function searchParamsFromObject(queryParams: string[][] | Record<string, string>): URLSearchParams {
-    return new URLSearchParams(queryParams);
+    return queryStringify(queryParams);
+
+
 }
 
 export async function getApiPagedData<T extends CanvasData>(url: string, config: ICanvasCallConfig | null = null): Promise<T[]> {
@@ -257,7 +266,7 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
 
 export async function fetchJson<T extends Record<string, any>>(
     url: string, config: ICanvasCallConfig | null = null
-): Promise<T | T[]> {
+): Promise<T> {
     if (config?.queryParams) {
         url += '?' + new URLSearchParams(config.queryParams);
     }
@@ -268,7 +277,7 @@ export async function fetchJson<T extends Record<string, any>>(
     }
 
     const response = await fetch(url, config.fetchInit);
-    return await response.json();
+    return await response.json() as T;
 }
 
 /**

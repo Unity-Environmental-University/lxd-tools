@@ -1,17 +1,18 @@
-import {NotImplementedException} from "../../canvas";
 import ReactDOM from "react-dom/client";
-import React from "react";
+import React, {useState} from "react";
 
 import assert from "assert";
 import {HomeTileApp} from "./HomeTileApp";
 import {BaseContentItem, Page} from "../../canvas/content";
 import {Course} from "../../canvas/course";
+import {createPortal} from "react-dom";
+import Modal from "../widgets/Modal/index";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);
     let CurrentContentClass = Course.getContentClassFromUrl();
     let currentContentItem = await CurrentContentClass?.getFromUrl();
-    if(!CurrentContentClass && /courses\/\d+/.test(document.URL)) {
+    if (!CurrentContentClass && /courses\/\d+/.test(document.URL)) {
         currentContentItem = await currentCourse?.getFrontPage();
 
     }
@@ -31,26 +32,26 @@ import {Course} from "../../canvas/course";
             await addSectionsButton(header, bp, currentCourse);
         }
     }
-    if(currentContentItem) {
+    if (currentContentItem) {
         await addOpenAllLinksButton(header, currentContentItem);
-        highlightBigImages();
+        addHilightBigImageResizer(currentContentItem);
     }
     const homeTileHost = document.querySelector('#Modules-anchor');
 
-    if(homeTileHost) {
+    if (homeTileHost) {
         console.log(homeTileHost);
         const buttonHolder = document.createElement('div');
         homeTileHost.append(buttonHolder);
-        addHomeTileButton(buttonHolder,  currentCourse );
+        addHomeTileButton(buttonHolder, currentCourse);
     }
 
 })();
 
-function addHomeTileButton(el:HTMLElement, course:Course) {
+function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
     const rootDiv = ReactDOM.createRoot(root);
     rootDiv.render(
-        <HomeTileApp el={el} course={course} />
+        <HomeTileApp el={el} course={course}/>
     );
     document.body.append(root);
 }
@@ -122,7 +123,7 @@ async function addOpenAllLinksButton(
     btn.innerHTML = "Links";
     btn.title = "Open all links in the content of this page into their own tabs."
     header.append(btn);
-    if(!currentContentItem) return;
+    if (!currentContentItem) return;
     btn.addEventListener('click', () => openAllLinksInContent(currentContentItem))
 }
 
@@ -130,27 +131,73 @@ async function addOpenAllLinksButton(
 function openAllLinksInContent(contentItem: BaseContentItem) {
     const urls = new Set(contentItem.getAllLinks());
 
-    for(let url of urls) window.open(url, "_blank");
+    for (let url of urls) window.open(url, "_blank");
 }
 
-function highlightBigImages() {
+function addHilightBigImageResizer(currentContentItem: BaseContentItem) {
     const bannerImageContainer = document.querySelector<HTMLDivElement>('div.cbt-banner-image');
     console.log(bannerImageContainer);
-    if(!bannerImageContainer) return;
+    if (!bannerImageContainer) return;
     const image = bannerImageContainer.querySelector('img')
     console.log(image?.naturalWidth);
-    if(!image) return;
+    if (!image) return;
 
-    if(image.naturalWidth > 2000) {
-        console.log(image.width);
-        console.log(image.naturalWidth);
+    if (image.naturalWidth > 2000) {
         const notification = document.createElement('div');
-        notification.style.backgroundColor = 'rgba(255,255,255,0.75)';
-        notification.style.border = "10px dashed red";
-        notification.style.fontSize = "64px";
-        notification.style.color = "rgba(64,0,0,1)"
-        notification.innerHTML = ` <h2>IMAGE REAL BIG</h2>
-<h4><strong>This warning will not appear on student-facing canvas.</strong></h4>`
         bannerImageContainer.parentElement?.append(notification)
+        const root = document.createElement("div")
+        const rootDiv = ReactDOM.createRoot(root);
+        rootDiv.render(
+            <HighlightBigImages el={notification} bannerImage={image} currentContentItem={currentContentItem}
+                                resizeTo={1200}/>
+        );
+        document.body.append(root);
     }
+}
+
+interface IHighlightBigImagesProps {
+    el: HTMLElement,
+    bannerImage: HTMLImageElement,
+    resizeTo: number,
+    currentContentItem: BaseContentItem | null
+}
+
+function HighlightBigImages({el, bannerImage, currentContentItem, resizeTo = 1200}: IHighlightBigImagesProps) {
+    const [showModal, setShowModal] = useState(false);
+    const [running, setRunning] = useState(false);
+    const [finished, setFinished] = useState(false);
+
+    async function resizeBanner() {
+        setRunning(true);
+        setShowModal(true);
+        await currentContentItem?.resizeBanner(resizeTo);
+        await fetch(bannerImage.src, {cache: 'reload', mode: 'no-cors'});
+        bannerImage.src = bannerImage.src + '?' + Date.now();
+        setRunning(false);
+        setFinished(true);
+    }
+
+
+    function notificationBoxStyle() {
+        if (finished) return {}
+        else
+            return {
+                backgroundColor: 'rgba(255,255,255,0.75)',
+                border: "10px dashed red",
+                fontSize: "64px",
+                color: 'rgba(64,0,0,1)'
+            }
+    }
+
+    return (<>
+        {createPortal(<div style={notificationBoxStyle()}>
+            <h2>IMAGE REAL BIG</h2>
+            <h4><strong>This warning will not appear on student-facing canvas.</strong></h4>
+        </div>, el)}
+        <Modal isOpen={showModal}>
+            <p>{running ? "Replacing banner" : "Finished replacing banner"}</p>
+            {!running && <button onClick={() => setShowModal(false)}>Close</button>}
+        </Modal>
+
+    </>)
 }

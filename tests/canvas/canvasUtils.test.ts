@@ -1,4 +1,4 @@
-import { callAll, range, parentElement, formDataify } from '../../src/canvas/canvasUtils'
+import { callAll, range, parentElement, formDataify, queryStringify } from '../../src/canvas/canvasUtils'
 import {describe, expect} from "@jest/globals";
 
 const TEST_STRING = String.fromCharCode(...Array.from(range(32, 126)))
@@ -62,4 +62,25 @@ test('FormDatify properly serializes objects', () => {
     expect(entries[1]).toStrictEqual(['b', 'hello!'])
     expect(entries[2]).toStrictEqual(['c[c1][]', '1'])
     expect(entries[3]).toStrictEqual(['c[c2]', '2'])
+})
+
+
+test('Querystringify', () => {
+    const testData = {
+        a: [1, 2, 3],
+        b: 'hello!',
+        c: {
+            c1: [1],
+            c2: 2
+        }
+    }
+
+    const data = queryStringify(testData);
+    const entries = Array.from(data);
+    expect(entries[0]).toStrictEqual(['a[]', '1'])
+    expect(entries[1]).toStrictEqual(['a[]', '2'])
+    expect(entries[2]).toStrictEqual(['a[]', '3'])
+    expect(entries[3]).toStrictEqual(['b', 'hello!'])
+    expect(entries[4]).toStrictEqual(['c[c1][]', '1'])
+    expect(entries[5]).toStrictEqual(['c[c2]', '2'])
 })

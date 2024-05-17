@@ -1,6 +1,13 @@
 /// Course Settings
-import {ILatePolicyHaver, IPagesHaver} from "../../../canvas/course/index";
+import {
+    ICourseSettingsHaver,
+    IGradingStandardsHaver,
+    ILatePolicyHaver,
+    IModulesHaver,
+    IPagesHaver
+} from "../../../canvas/course/index";
 import {CourseValidationTest, testResult} from "./index";
+import {config} from "dotenv";
 
 export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
 export const extensionsInstalledTest: CourseValidationTest = {
@@ -57,8 +64,31 @@ export const noEvaluationTest: CourseValidationTest<IPagesHaver> = {
 }
 
 
+export const badGradingPolicyTest: CourseValidationTest<IModulesHaver & IGradingStandardsHaver> = {
+    name: "Correct grading policy selected",
+    description: "5 week courses have REVISED DE Undergraduate Programs grading scheme selected. 8 week courses have  DE Graduate Programs grading scheme selected",
+    run: async (course, config) => {
+        const gradingStandards = await course.getAvailableGradingStandards(config);
+        const currentGradingStandard = await course.getCurrentGradingStandard(config);
+
+        const modulesByWeekNumber = await course.getModulesByWeekNumber(config);
+        const isGrad = modulesByWeekNumber.hasOwnProperty(8);
+
+        const [undergradStandard] = gradingStandards.filter(standard => /REVISED DE Undergraduate Programs/.test(standard.title))
+        const [gradStandard] = gradingStandards.filter(standard => /DE Graduate Programs/.test(standard.title))
+        const expectedStandard = isGrad ? gradStandard : undergradStandard;
+
+        let success = currentGradingStandard?.id == expectedStandard.id;
+        const result = testResult(success, [`Grading standard set to ${currentGradingStandard?.title} expected to be ${expectedStandard.title}`]);
+
+        if(!success) result.links = [`/course/${course.id}/settings`];
+        return result;
+    }
+}
+
 export default [
     noEvaluationTest,
     latePolicyTest,
-    extensionsInstalledTest
+    extensionsInstalledTest,
+    badGradingPolicyTest
 ]
