@@ -173,7 +173,6 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         assert(resizedImageBlob);
         let file = new File([resizedImageBlob], fileName)
         return await uploadFile(file, fileData.folder_id, fileUploadUrl);
-
     }
 }
 
@@ -284,7 +283,6 @@ export class Quiz extends BaseContentItem {
         this.canvasData['due_at'] = dueAt.toISOString();
         return result;
     }
-
 }
 
 export class Page extends BaseContentItem {
@@ -313,7 +311,6 @@ export class Page extends BaseContentItem {
         return this.canvasData[this.bodyKey];
     }
 
-
     async updateContent(text: string | null = null, name: string | null = null) {
         let data: Record<string, any> = {};
         if (text) {
@@ -324,7 +321,6 @@ export class Page extends BaseContentItem {
             this.canvasData[this.nameKey] = name;
             data[this.nameKey] = name;
         }
-
         return this.saveData(data);
     }
 }

@@ -41,7 +41,7 @@ const allValidations: CourseValidationTest[] = [
     ...syllabusTests,
     ...courseSettingsTests,
     ...courseContentTests,
-    proxyServerLinkValidation,
+    //proxyServerLinkValidation,
 ]
 
 export function ContentUpdateInterface({course, parentCourse, refreshCourse}: ContentUpdateInterfaceProps) {
@@ -81,7 +81,6 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     /* increment and decrement is loading just in case we end up setting it asynchronously somehow */
     function startLoading() {
         setLoadingCount(1);
-        console.log(loadingCount, '+');
         setFailedItems([]);
         setAffectedItems([]);
         setUnaffectedItems([]);

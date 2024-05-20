@@ -102,8 +102,31 @@ export function formDataify(data: Record<string, any>) {
         const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
         const authenticityToken = el ? el.value : null;
         if (authenticityToken) formData.append('authenticity_token', authenticityToken);
+        else {
+            const cookies = getCookies();
+            let csrfToken =  cookies['_csrf_token'];
+            csrfToken = csrfToken.replaceAll(/%([0-9A-F]{2})/g, (substring, hex) => {
+                const hexCode = hex;
+                return String.fromCharCode(parseInt(hexCode, 16))
+            })
+
+            console.log(csrfToken);
+            formData.append('authenticity_token', csrfToken);
+        }
     }
     return formData;
+}
+
+
+function getCookies() {
+    const cookieString = document.cookie;
+    const cookies = cookieString.split('; ')
+    const out:Record<string, string> = {};
+    for(let cookie of cookies) {
+        const [key, value] = cookie.split('=')
+        out[key] = value;
+    }
+    return out;
 }
 
 /**

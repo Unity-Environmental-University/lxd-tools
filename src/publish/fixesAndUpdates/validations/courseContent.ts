@@ -60,7 +60,7 @@ export const courseProjectOutlineTest: CourseValidationTest<IPagesHaver> = {
 
         const response = testResult(
             projectHeadings.length < 1,
-            ["Course project page has 'Project overview' as a header"],
+            ["Course project page has 'Project outline' as a header"],
         )
         if (!response.success) response.links = [projectOverview.htmlContentUrl];
         return response;

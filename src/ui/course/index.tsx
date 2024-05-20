@@ -1,12 +1,9 @@
 import ReactDOM from "react-dom/client";
-import React, {useState} from "react";
-
-import assert from "assert";
+import React from "react";
 import {HomeTileApp} from "./HomeTileApp";
-import {BaseContentItem, Page} from "../../canvas/content";
+import {BaseContentItem} from "../../canvas/content";
 import {Course} from "../../canvas/course";
-import {createPortal} from "react-dom";
-import Modal from "../widgets/Modal/index";
+import {HighlightBigImages} from "./HighlightBigImages";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);
@@ -34,7 +31,7 @@ import Modal from "../widgets/Modal/index";
     }
     if (currentContentItem) {
         await addOpenAllLinksButton(header, currentContentItem);
-        addHilightBigImageResizer(currentContentItem);
+        addHighlightBigImageResizer(currentContentItem);
     }
     const homeTileHost = document.querySelector('#Modules-anchor');
 
@@ -134,7 +131,7 @@ function openAllLinksInContent(contentItem: BaseContentItem) {
     for (let url of urls) window.open(url, "_blank");
 }
 
-function addHilightBigImageResizer(currentContentItem: BaseContentItem) {
+function addHighlightBigImageResizer(currentContentItem: BaseContentItem) {
     const bannerImageContainer = document.querySelector<HTMLDivElement>('div.cbt-banner-image');
     console.log(bannerImageContainer);
     if (!bannerImageContainer) return;
@@ -155,49 +152,3 @@ function addHilightBigImageResizer(currentContentItem: BaseContentItem) {
     }
 }
 
-interface IHighlightBigImagesProps {
-    el: HTMLElement,
-    bannerImage: HTMLImageElement,
-    resizeTo: number,
-    currentContentItem: BaseContentItem | null
-}
-
-function HighlightBigImages({el, bannerImage, currentContentItem, resizeTo = 1200}: IHighlightBigImagesProps) {
-    const [showModal, setShowModal] = useState(false);
-    const [running, setRunning] = useState(false);
-    const [finished, setFinished] = useState(false);
-
-    async function resizeBanner() {
-        setRunning(true);
-        setShowModal(true);
-        await currentContentItem?.resizeBanner(resizeTo);
-        await fetch(bannerImage.src, {cache: 'reload', mode: 'no-cors'});
-        bannerImage.src = bannerImage.src + '?' + Date.now();
-        setRunning(false);
-        setFinished(true);
-    }
-
-
-    function notificationBoxStyle() {
-        if (finished) return {}
-        else
-            return {
-                backgroundColor: 'rgba(255,255,255,0.75)',
-                border: "10px dashed red",
-                fontSize: "64px",
-                color: 'rgba(64,0,0,1)'
-            }
-    }
-
-    return (<>
-        {createPortal(<div style={notificationBoxStyle()}>
-            <h2>IMAGE REAL BIG</h2>
-            <h4><strong>This warning will not appear on student-facing canvas.</strong></h4>
-        </div>, el)}
-        <Modal isOpen={showModal}>
-            <p>{running ? "Replacing banner" : "Finished replacing banner"}</p>
-            {!running && <button onClick={() => setShowModal(false)}>Close</button>}
-        </Modal>
-
-    </>)
-}

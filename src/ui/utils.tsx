@@ -5,3 +5,4 @@ export function useEffectAsync<T>(func : () => Promise<T>, deps: React.Dependenc
         func().then();
     }, deps)
 }
+
