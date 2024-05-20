@@ -224,10 +224,10 @@ export class Assignment extends BaseContentItem {
     static allContentUrlTemplate = "courses/{course_id}/assignments";
 
     async setDueAt(dueAt: Date) {
-        const currentDueAt = this.dueAt ? Temporal.Instant.from(this.rawData.due_at) : null;
+        const sourceDueAt = this.dueAt ? Temporal.Instant.from(this.rawData.due_at) : null;
         const targetDueAt = Temporal.Instant.from(dueAt.toISOString());
 
-        const payload: Record<string, { due_at: string, peer_review_due_at?: string }> = {
+        const payload: Record<string, { due_at: string, peer_reviews_assign_at?: string }> = {
             assignment: {
                 due_at: dueAt.toISOString(),
             }
@@ -235,10 +235,11 @@ export class Assignment extends BaseContentItem {
 
         if (this.rawData.peer_reviews && 'automatic_peer_reviews' in this.rawData) {
             const peerReviewTime = Temporal.Instant.from(this.rawData.peer_reviews_assign_at);
-            assert(currentDueAt, "Trying to set peer review date without a due date for the assignment.")
-            const peerReviewOffset = currentDueAt.until(peerReviewTime);
+            assert(sourceDueAt, "Trying to set peer review date without a due date for the assignment.")
+            const peerReviewOffset = sourceDueAt.until(peerReviewTime);
             const newPeerReviewTime = targetDueAt.add(peerReviewOffset);
-            payload.assignment.peer_review_due_at = new Date(newPeerReviewTime.epochMilliseconds).toISOString();
+            const newIsoString = new Date(newPeerReviewTime.epochMilliseconds).toISOString();
+            payload.assignment.peer_reviews_assign_at = newIsoString;
 
         }
 

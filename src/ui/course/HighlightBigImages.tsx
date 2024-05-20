@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {createPortal} from "react-dom";
 import Modal from "../widgets/Modal/index";
 import {BaseContentItem} from "../../canvas/content/index";
+import "./bigImages.scss"
 
 interface IHighlightBigImagesProps {
     el: HTMLElement,
@@ -44,8 +45,8 @@ export function HighlightBigImages({el, bannerImage, currentContentItem, resizeT
             <h4><strong>This warning will not appear on student-facing canvas.</strong></h4>
             {showButton && <>
             <button onClick={resizeBanner}>Try Resize</button>
-                <div>This button works about half the time. It may upload the file but not replace the old one sometimes?</div>
-                <div>Using it won't break anything</div>
+                <div className={"lxd-notice"}>This button works about half the time. It may upload the file but not replace the old one sometimes?</div>
+                <div className={"lxd-notice"}>Using it won't break anything</div>
             </>}
         </div>, el)}
         <Modal isOpen={showModal}>
