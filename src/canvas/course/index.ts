@@ -779,9 +779,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return await Course.getByCode('DEV_' + this.baseCode);
     }
 
-    /* Not working due to CORS; we need to set up the proxy server to be able to resize images.
-
-     */
     async regenerateHomeTiles() {
         const modules = await this.getModules();
         let urls = await Promise.all(modules.map(async (module) => {
