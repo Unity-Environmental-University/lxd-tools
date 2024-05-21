@@ -101,10 +101,10 @@ export function formDataify(data: Record<string, any>) {
     if (document) {
         const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
         const authenticityToken = el ? el.value : null;
+        const cookies = getCookies();
+        let csrfToken =  cookies['_csrf_token'];
         if (authenticityToken) formData.append('authenticity_token', authenticityToken);
-        else {
-            const cookies = getCookies();
-            let csrfToken =  cookies['_csrf_token'];
+        else if (csrfToken) {
             csrfToken = csrfToken.replaceAll(/%([0-9A-F]{2})/g, (substring, hex) => {
                 const hexCode = hex;
                 return String.fromCharCode(parseInt(hexCode, 16))

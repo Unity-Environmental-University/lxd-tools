@@ -9,7 +9,7 @@ export const proxyServerLinkValidation: CourseValidationTest<IContentHaver> = {
     name: "Proxy Server Link Validation",
     description: `proxy server link should be ${newProxyReplace.replace('$1', '')} not ${oldProxy}`,
     run: badContentRunFunc(oldProxyRegex),
-    //fix: badContentFixFunc(oldProxyRegex, newProxyReplace),
+    fix: badContentFixFunc(oldProxyRegex, newProxyReplace),
 }
 
 
