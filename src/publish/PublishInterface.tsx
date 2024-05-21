@@ -3,14 +3,14 @@ import {IProfile, renderProfileIntoCurioFrontPage} from "../canvas/profile";
 import {useEffectAsync} from "../ui/utils";
 import assert from "assert";
 import {Button} from "react-bootstrap";
-import {PublishCourseRow} from "./PublishCourseRow";
+import {PublishCourseRow} from "./publish/PublishCourseRow";
 import Modal from "../ui/widgets/Modal/index";
-import {SectionDetails} from "./SectionDetails";
+import {SectionDetails} from "./publish/SectionDetails";
 import {Course} from "../canvas/course";
 import {IUserData} from "../canvas/canvasDataDefs";
 import {Term} from "../canvas/index";
 import {Temporal} from "temporal-polyfill";
-import {EmailLink} from "./EmailLink";
+import {EmailLink} from "./publish/EmailLink";
 
 type PublishInterfaceProps = {
     course: Course | null,

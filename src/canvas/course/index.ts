@@ -785,7 +785,12 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     async regenerateHomeTiles() {
         const modules = await this.getModules();
         let urls = await Promise.all(modules.map(async (module) => {
-            let dataUrl = await this.generateHomeTile(module)
+            try {
+                let dataUrl = await this.generateHomeTile(module)
+
+            } catch (e) {
+                console.log(e);
+            }
         }));
         console.log('done');
 

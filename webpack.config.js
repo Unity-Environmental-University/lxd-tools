@@ -47,7 +47,6 @@ module.exports = {
                 exclude: /node_modules|dist/,
             },
             {
-                exclude: /node_modules|dist/,
                 test: /\.(css|scss)$/i,
                 use: [
                     "style-loader",

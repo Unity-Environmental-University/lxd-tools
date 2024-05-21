@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {IUserData} from "../canvas/canvasDataDefs";
-import {IProfile} from "../canvas/profile";
-import {Course} from "../canvas/course";
-import {useEffectAsync} from "../ui/utils";
+import {IUserData} from "../../canvas/canvasDataDefs";
+import {IProfile} from "../../canvas/profile";
+import {Course} from "../../canvas/course/index";
+import {useEffectAsync} from "../../ui/utils";
 
 type CourseRowProps = {
     course: Course,
