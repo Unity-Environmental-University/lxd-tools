@@ -66,7 +66,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
         <ul>
             <li>Please do not make any corrections or changes to your live course yourself, no matter how small. In
                 order to maintain consistency between the live section and the course template,
-                submit any issues via the Course Edit and Feedback Form so a Learning Technology Support Specialist can
+                submit any issues via the <a href={'https://docs.google.com/forms/d/e/1FAIpQLSeybl9b-xk-pL1bsWX7x9esQYoHHyi3rPPOq75mK4Q4n4b5tQ/viewform'}>Course Edit and Feedback Form</a> so a Learning Technology Support Specialist can
                 make sure the changes are made everywhere they need to be made.
             </li>
             <li>Let me know, when you have a chance to look, if you have any questions, or spot any issues with the
