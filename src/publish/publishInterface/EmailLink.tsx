@@ -62,7 +62,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             have access to the syllabus and homepage on <strong>Monday, {getPublishDate()}</strong>.
             Actual course assignments will become available to the students
             on <strong>Monday, {getCourseStart()}</strong>,
-            the official start of the term.</p>q
+            the official start of the term.</p>
         <ul>
             <li>Please do not make any corrections or changes to your live course yourself, no matter how small. In
                 order to maintain consistency between the live section and the course template,

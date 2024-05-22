@@ -130,5 +130,4 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
         this.canvasData = {...this.canvasData, ...results};
         return this.canvasData;
     }
-
 }
