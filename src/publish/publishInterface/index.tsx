@@ -1,23 +1,23 @@
 import React, {useState} from "react";
-import {IProfile, renderProfileIntoCurioFrontPage} from "../canvas/profile";
-import {useEffectAsync} from "../ui/utils";
+import {IProfile, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
+import {useEffectAsync} from "../../ui/utils";
 import assert from "assert";
 import {Button} from "react-bootstrap";
-import {PublishCourseRow} from "./publish/PublishCourseRow";
-import Modal from "../ui/widgets/Modal/index";
-import {SectionDetails} from "./publish/SectionDetails";
-import {Course} from "../canvas/course";
-import {IUserData} from "../canvas/canvasDataDefs";
-import {Term} from "../canvas/index";
+import {PublishCourseRow} from "./PublishCourseRow";
+import Modal from "../../ui/widgets/Modal/index";
+import {SectionDetails} from "./SectionDetails";
+import {Course} from "../../canvas/course/index";
+import {IUserData} from "../../canvas/canvasDataDefs";
+import {Term} from "../../canvas/index";
 import {Temporal} from "temporal-polyfill";
-import {EmailLink} from "./publish/EmailLink";
+import {EmailLink} from "./EmailLink";
 
 type PublishInterfaceProps = {
     course: Course | null,
     user: IUserData,
 }
 
-export function PublishInterface({course, user}: PublishInterfaceProps) {
+export function Index({course, user}: PublishInterfaceProps) {
     //-----
     // DATA
     //-----

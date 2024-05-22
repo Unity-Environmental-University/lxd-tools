@@ -404,3 +404,20 @@ export interface IFile {
   "lock_explanation"?: string,
   "preview_url"?: string
 }
+
+export interface IAccountData {
+    root_account_id: number|null;
+    integration_id?: string;
+    default_time_zone: string;
+    default_group_storage_quota_mb: number;
+    sis_account_id?: string;
+    default_user_storage_quota_mb: number;
+    uuid: string;
+    lti_guid: string;
+    parent_account_id: number|null;
+    name: string;
+    default_storage_quota_mb: number;
+    workflow_state: 'active' | 'deleted';
+    id: number;
+    sis_import_id: number
+}

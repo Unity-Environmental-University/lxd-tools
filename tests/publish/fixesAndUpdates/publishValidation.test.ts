@@ -22,7 +22,7 @@ import {
     matchHighlights,
     preserveCapsReplace,
 } from "../../../src/publish/fixesAndUpdates/validations/index";
-import {dummyPageData} from "./dummyContentData";
+import {dummyPageData} from "../../dummyData/dummyContentData";
 import proxyServerLinkValidation from "../../../src/publish/fixesAndUpdates/validations/proxyServerLinkValidation";
 import capstoneProjectValidations
     from "../../../src/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
@@ -34,7 +34,7 @@ import {
     syllabusTestTest
 } from "./index";
 import {IModuleData} from "../../../src/canvas/canvasDataDefs";
-import {dummyGradModules, dummyUgModules} from "./dummyModuleData";
+import {dummyGradModules, dummyUgModules} from "../../dummyData/dummyModuleData";
 import {getModulesByWeekNumber} from "../../../src/canvas/course/modules";
 
 

@@ -1,4 +1,4 @@
-import {IModuleData, IModuleItemData, ModuleItemType} from "../../../src/canvas/canvasDataDefs";
+import {IModuleData, IModuleItemData, ModuleItemType} from "../../src/canvas/canvasDataDefs";
 
 
 

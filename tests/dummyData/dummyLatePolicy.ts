@@ -1,4 +1,4 @@
-import {ILatePolicyData} from "../../../src/canvas/canvasDataDefs";
+import {ILatePolicyData} from "../../src/canvas/canvasDataDefs";
 
 const latePolicyDummyData: ILatePolicyData = {
     id: 1,

@@ -3,10 +3,14 @@ import assert from "assert";
 import {fetchApiJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseContentItem} from "./content";
 import {Course} from "./course";
+import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
 
 
-interface ICanvasObject<CanvasDataType extends CanvasData> {
+export interface ICanvasObject<CanvasDataType extends CanvasData> {
     rawData: CanvasDataType,
+    name: string,
+
+    saveData(data: Record<string, any>, config: ICanvasCallConfig | undefined): Promise<Record<string, any>>
 }
 
 export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICanvasObject<CanvasDataType>{
@@ -112,16 +116,19 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
         return this.getItem<string>(nameProperty);
     }
 
-    async saveData(data: Record<string, any>) {
+    async saveData(data: Record<string, any>, config?: ICanvasCallConfig) {
         assert(this.contentUrlPath);
-        return await fetchApiJson(this.contentUrlPath, {
+        config = overrideConfig({
             fetchInit: {
                 method: 'PUT',
                 body: formDataify(data)
             }
-        });
+        }, config);
 
+        let results = await fetchApiJson(this.contentUrlPath, config) as Partial<CanvasDataType> | Partial<CanvasDataType>[];
+        if(Array.isArray(results)) results = results[0];
+        this.canvasData = {...this.canvasData, ...results};
+        return this.canvasData;
     }
-
 
 }

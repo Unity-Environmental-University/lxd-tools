@@ -19,7 +19,7 @@ import {HighlightBigImages} from "./HighlightBigImages";
     if (!header) return;
     let bp: Course | null;
 
-    if (currentCourse.isBlueprint) {
+    if (currentCourse.isBlueprint()) {
         await addDevButton(header, currentCourse);
         await addSectionsButton(header, currentCourse);
     } else {

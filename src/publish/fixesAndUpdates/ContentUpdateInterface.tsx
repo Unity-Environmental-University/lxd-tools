@@ -61,7 +61,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
 
         if (course.isDev) {
             setButtonText('DEV Content Changes/Fixes')
-        } else if (course.isBlueprint) {
+        } else if (course.isBlueprint()) {
             setButtonText('BP Content Fixes')
         } else {
             setButtonText("Can Only Fix from BP or DEV")
@@ -123,7 +123,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     function FixesMode({course}: { course: Course }) {
         return <>
             <h2>Content Fixes for {course.name}</h2>
-            {course.isBlueprint && <RemoveAnnotationsSection/>}
+            {course.isBlueprint() && <RemoveAnnotationsSection/>}
             <UpdateStartDate
                 setAffectedItems={setAffectedItems}
                 setUnaffectedItems={setUnaffectedItems}

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import PublishApp from "./publish/PublishApp";
+import PublishApp from "./PublishApp";
 
 const root = document.createElement("div")
 let courseStatusEl = document.body.querySelector("#course_status")

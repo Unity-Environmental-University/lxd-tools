@@ -1,4 +1,4 @@
-import {ICourseData} from "../../../src/canvas/canvasDataDefs";
+import {ICourseData} from "../../src/canvas/canvasDataDefs";
 
 export const dummyCourseData: ICourseData = {
     account_id: 0,

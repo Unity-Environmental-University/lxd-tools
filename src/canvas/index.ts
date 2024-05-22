@@ -13,6 +13,7 @@ import {CanvasData, ITermData} from "./canvasDataDefs";
 import {fetchApiJson, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseCanvasObject} from "./baseCanvasObject";
 import {BaseContentItem} from "./content";
+import {config} from "dotenv";
 
 
 /**
@@ -99,9 +100,9 @@ export class RubricAssociation extends BaseCanvasObject<CanvasData> {
         return this.canvasData['use_for_grading'];
     }
 
-    async setUseForGrading(value: boolean) {
+    async setUseForGrading(value: boolean, config?:ICanvasCallConfig) {
         this.canvasData['use_for_grading'] = value;
-        return await this.saveData({'rubric_association[use_for_grading]': value});
+        return await this.saveData({'rubric_association[use_for_grading]': value}, config);
     }
 }
 

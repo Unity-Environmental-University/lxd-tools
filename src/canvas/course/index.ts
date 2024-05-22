@@ -31,21 +31,25 @@ import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
 import {NotImplementedException, Term} from "../index";
-import {config} from "dotenv";
 
 import {overrideConfig} from "../../publish/fixesAndUpdates/validations/index";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber} from "./modules";
+import {cachedGetAssociatedCoursesFunc, getAssociatedCourses, IBlueprintCourse, isBlueprint} from "./blueprint";
 
 const HOMETILE_WIDTH = 500;
 
 //const HOMETILE_WIDTH = 500;
-interface IIdHaver<IdType = number> {
+export interface IIdHaver<IdType = number> {
     id: IdType,
 }
 
 export interface ISyllabusHaver extends IIdHaver {
     getSyllabus: (config?: ICanvasCallConfig) => Promise<string>,
     changeSyllabus: (newHtml: string, config?: ICanvasCallConfig) => any
+}
+
+export interface ICourseDataHaver {
+    rawData: ICourseData,
 }
 
 export interface ICourseSettingsHaver extends IIdHaver {
@@ -113,15 +117,38 @@ export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussi
 }
 
 
+export interface ICourseCodeHaver {
+    name: string,
+    courseCode: string | null,
+    fullCourseCode: string | null,
+    codeMatch: RegExpExecArray | null,
+    baseCode: string,
+}
+
+
 export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,
+    ICourseDataHaver,
     ICourseSettingsHaver,
     IGradingStandardsHaver,
     ILatePolicyHaver,
+    IBlueprintCourse,
+    ICourseCodeHaver,
     IModulesHaver{
+
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
+    static nameProperty = 'name';
     private _modules: IModuleData[] | undefined = undefined;
     private modulesByWeekNumber: Record<string | number, IModuleData> | undefined = undefined;
     private static contentClasses: (typeof BaseContentItem)[] = [Assignment, Discussion, Quiz, Page];
+
+    isBlueprint: ()=>boolean;
+    getAssociatedCourses:(redownload?:boolean)=> Promise<Course[]>;
+
+    constructor(data:ICourseData) {
+        super(data);
+        this.isBlueprint = (() => isBlueprint(data));
+        this.getAssociatedCourses = cachedGetAssociatedCoursesFunc(this)
+    }
 
     static async getFromUrl(url: string | null = null) {
         if (url === null) {
@@ -271,16 +298,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return match ? match[2] : '';
     }
 
-
-    get termIds(): number | number[] | null {
-
-        return (this.canvasData as ICourseData).enrollment_term_id;
-    }
-
     get termId(): number | null {
         const id = (this.canvasData as ICourseData).enrollment_term_id;
-        assert(typeof id === "number")
-        return id;
+        if(typeof id === 'number') return id;
+        else return id[0];
     }
 
     async getTerm(): Promise<Term | null> {
@@ -300,10 +321,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return match ? match[1] : '';
     }
 
-    get isBlueprint() {
-        return 'blueprint' in this.canvasData && this.canvasData['blueprint'];
-    }
-
     get workflowState() {
         return this.canvasData.workflow_state
     }
@@ -311,10 +328,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     get start() {
         return new Date(this.getItem<string>('start_at'));
-    }
-
-    get end() {
-        return new Date(this.getItem<string>('end_at'));
     }
 
     get isDev() {
@@ -369,22 +382,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         }
         return null;
 
-    }
-
-
-    async getTerms(): Promise<Term[] | null> {
-        if (this.termIds) {
-            if (Array.isArray(this.termIds)) {
-                let terms = await Promise.all(this.termIds.map(async (termId) => {
-                    return Term.getTermById(termId)
-                }))
-                terms = terms.filter((term) => {
-                    return term
-                })
-                return terms as Term[]
-            }
-        }
-        return null;
     }
 
     async getContentItemFromUrl(url: string | null = null) {
@@ -512,21 +509,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return await getApiPagedData<IAssignmentGroup>(`courses/${this.id}/assignment_groups`, config)
     }
 
-    /**
-     *Gets all quizzes in a course
-     * @param queryParams a json object representing the query param string. Defaults to including due dates     *
-     * @returns {Promise<Quiz[]>}
-     */
     async getQuizzes(config?: ICanvasCallConfig) {
         return await Quiz.getAllInCourse(this.id, config) as Quiz[];
-    }
-
-    async getAssociatedCourses() {
-        if (!this.isBlueprint) return null;
-
-        const url = `courses/${this.id}/blueprint_templates/default/associated_courses`;
-        const courses = await getApiPagedData<ICourseData>(url, {queryParams: {per_page: 50}});
-        return courses.map(courseData => new Course(courseData));
     }
 
     async getSubsections() {
@@ -833,7 +817,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
 }
-
 
 async function getGradingStandards(contextId:number, contextType:'account' | 'course', config?:ICanvasCallConfig) {
     const url = `/api/v1/${contextType}s/${contextId}/grading_standards`

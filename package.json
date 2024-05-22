@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "1.11.2",
+  "version": "1.11.3",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^16.18.82",
     "@types/react-dom": "^18.2.20",
+    "assert": "^2.1.0",
     "autoprefixer": "^10.4.18",
     "bootstrap": "^5.3.3",
     "dotenv": "^16.4.5",
@@ -27,7 +28,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "watch": "webpack -w --config webpack.config.js",
-    "publish" : "node publish.mjs",
+    "publish": "node publish.mjs",
     "test": "ts-jest"
   },
   "eslintConfig": {
@@ -62,6 +63,7 @@
     "css-loader": "^6.10.0",
     "html-webpack-plugin": "^5.6.0",
     "jest": "^29.7.0",
+    "jest-fetch-mock": "^3.0.3",
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-error-overlay": "^6.0.9",

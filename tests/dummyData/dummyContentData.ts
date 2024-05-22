@@ -1,4 +1,4 @@
-import {IAssignmentData, IDiscussionData, IQuizData, IPageData} from "../../../src/canvas/canvasDataDefs";
+import {IAssignmentData, IDiscussionData, IQuizData, IPageData} from "../../src/canvas/canvasDataDefs";
 
 
 export const dummyPageData :IPageData = {

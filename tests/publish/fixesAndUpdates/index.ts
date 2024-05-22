@@ -9,10 +9,10 @@ import {
     ISyllabusHaver
 } from "../../../src/canvas/course/index";
 import fs from "fs";
-import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "./dummyContentData";
+import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../dummyData/dummyContentData";
 import {CourseValidationTest, TextReplaceValidationText} from "../../../src/publish/fixesAndUpdates/validations/index";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
-import dummyLatePolicy from "./dummyLatePolicy";
+import dummyLatePolicy from "../../dummyData/dummyLatePolicy";
 import assert from "assert";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()

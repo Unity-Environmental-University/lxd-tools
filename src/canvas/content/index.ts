@@ -13,6 +13,7 @@ import assert from "assert";
 import {NotImplementedException} from "../index";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
+import {config} from "dotenv";
 
 const SAFE_MAX_BANNER_WIDTH = 1400;
 
@@ -115,7 +116,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return this._courseId;
     }
 
-    async updateContent(text: string | null = null, name: string | null = null) {
+    async updateContent(text?: string | null, name?: string | null, config?:ICanvasCallConfig) {
         const data: Record<string, any> = {};
         const constructor = <typeof BaseContentItem>this.constructor;
         assert(constructor.bodyProperty);
@@ -132,7 +133,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
             data[nameProp] = name;
         }
 
-        return this.saveData(data);
+        return this.saveData(data, config);
     }
 
     async getMeInAnotherCourse(targetCourseId: number) {
@@ -198,7 +199,7 @@ export class Discussion extends BaseContentItem {
     static allContentUrlTemplate = "courses/{course_id}/discussion_topics"
 
 
-    async offsetPublishDelay(days: number) {
+    async offsetPublishDelay(days: number, config?:ICanvasCallConfig) {
         const data = this.rawData
         if (!this.rawData.delayed_post_at) return;
         let delayedPostAt = Temporal.Instant.from(this.rawData.delayed_post_at).toZonedDateTimeISO('UTC');
@@ -207,7 +208,7 @@ export class Discussion extends BaseContentItem {
         const payload = {
             delayed_post_at: new Date(delayedPostAt.epochMilliseconds).toISOString()
         }
-        await this.saveData(payload);
+        await this.saveData(payload, config);
     }
 
     get rawData() {
@@ -223,7 +224,7 @@ export class Assignment extends BaseContentItem {
     static contentUrlTemplate = "courses/{course_id}/assignments/{content_id}";
     static allContentUrlTemplate = "courses/{course_id}/assignments";
 
-    async setDueAt(dueAt: Date) {
+    async setDueAt(dueAt: Date, config?:ICanvasCallConfig) {
         const sourceDueAt = this.dueAt ? Temporal.Instant.from(this.rawData.due_at) : null;
         const targetDueAt = Temporal.Instant.from(dueAt.toISOString());
 
@@ -243,7 +244,7 @@ export class Assignment extends BaseContentItem {
 
         }
 
-        let data = await this.saveData(payload);
+        let data = await this.saveData(payload, config);
 
 
         this.canvasData['due_at'] = dueAt.toISOString();
@@ -256,7 +257,7 @@ export class Assignment extends BaseContentItem {
     }
 
 
-    async updateContent(text: string | null = null, name: string | null = null) {
+    async updateContent(text?: string | null, name?: string | null, config?:ICanvasCallConfig) {
         const assignmentData: Record<string, any> = {};
         if (text) {
             assignmentData.description = text
@@ -269,7 +270,7 @@ export class Assignment extends BaseContentItem {
 
         return await this.saveData({
             assignment: assignmentData
-        })
+        }, config)
     }
 }
 
@@ -279,11 +280,6 @@ export class Quiz extends BaseContentItem {
     static contentUrlTemplate = "courses/{course_id}/quizzes/{content_id}";
     static allContentUrlTemplate = "courses/{course_id}/quizzes";
 
-    async setDueAt(dueAt: Date) {
-        let result = await this.saveData({'quiz[due_at]': dueAt.toISOString()})
-        this.canvasData['due_at'] = dueAt.toISOString();
-        return result;
-    }
 }
 
 export class Page extends BaseContentItem {
@@ -312,7 +308,7 @@ export class Page extends BaseContentItem {
         return this.canvasData[this.bodyKey];
     }
 
-    async updateContent(text: string | null = null, name: string | null = null) {
+    async updateContent(text?: string | null, name?: string|null, config?:ICanvasCallConfig) {
         let data: Record<string, any> = {};
         if (text) {
             this.canvasData[this.bodyKey] = text;
@@ -322,7 +318,7 @@ export class Page extends BaseContentItem {
             this.canvasData[this.nameKey] = name;
             data[this.nameKey] = name;
         }
-        return this.saveData(data);
+        return this.saveData(data, config);
     }
 }
 
