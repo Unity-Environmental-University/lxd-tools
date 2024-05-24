@@ -4,7 +4,8 @@ import {ICanvasCallConfig} from "../../../canvas/canvasUtils";
 //number of characters to show around a match
 const SHOW_WINDOW = 5;
 const MAX_SEARCH_RETURN_SIZE = 20;
-export type ValidationTestResult = {
+export type ValidationTestResult<UserDataType = undefined> = {
+    userData?: UserDataType,
     success: boolean | 'unknown',
     message: string | string[],
     links?: string[],
@@ -16,10 +17,11 @@ export type ValidationFixResult = {
     links?: string[],
 }
 
-export type CourseValidationTest<T = Course> = {
+export type CourseValidationTest<T = Course, UserDataType = undefined> = {
     courseCodes?: string[],
     name: string,
     description: string,
+    userData?: UserDataType,
     run: (course: T, config?: ICanvasCallConfig) => Promise<ValidationTestResult>
     fix?: (course: T) => Promise<ValidationFixResult>
 }
@@ -30,7 +32,8 @@ export interface TextReplaceValidationText<T = Course> extends CourseValidationT
     fix: (course: T) => Promise<ValidationFixResult>
 }
 
-export function testResult(success: boolean, failureMessage: string[], links?: string[], successMessage = ['success']): ValidationTestResult {
+export function testResult(success: boolean | undefined, failureMessage: string[], links?: string[], successMessage = ['success']): ValidationTestResult {
+    success = !!success;
     const response: ValidationTestResult = {
         success,
         message: success ? successMessage : failureMessage

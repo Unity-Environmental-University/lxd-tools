@@ -7,6 +7,7 @@ import {ContentUpdateInterface} from "./fixesAndUpdates/ContentUpdateInterface";
 import {Course} from "../canvas/course/index";
 import {IUserData} from "../canvas/canvasDataDefs";
 import { fetchJson } from "../canvas/canvasUtils";
+import {AdminApp} from "../admin/AdminApp";
 
 
 function PublishApp() {
@@ -34,6 +35,7 @@ function PublishApp() {
     return(user && <div>
         <Index course={course} user={user}/>
         <ContentUpdateInterface course={course} parentCourse={parentCourse} refreshCourse={() => getCourse(true)}/>
+        <AdminApp course={course}/>
     </div>)
 }
 

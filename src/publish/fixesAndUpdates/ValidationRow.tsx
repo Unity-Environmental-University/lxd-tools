@@ -7,14 +7,15 @@ import assert from "assert";
 type ValidationRowProps = {
     course: Course,
     test: CourseValidationTest,
+    initialResult?: ValidationTestResult,
     refreshCourse: () => Promise<any>
     onResult?: (result: ValidationTestResult, test: CourseValidationTest) => any,
     showOnlyFailures?: boolean,
 }
 
-export function ValidationRow({test, course, refreshCourse, onResult, showOnlyFailures = false}: ValidationRowProps) {
+export function ValidationRow({test, initialResult, course, refreshCourse, onResult, showOnlyFailures = false}: ValidationRowProps) {
     const [loading, setLoading] = useState(false);
-    const [result, _setResult] = useState<ValidationTestResult>()
+    const [result, _setResult] = useState(initialResult);
     const [fixText, setFixText] = useState("Fix?")
 
     function setResult(result: ValidationTestResult) {

@@ -1,4 +1,4 @@
-import { callAll, range, parentElement, formDataify, queryStringify } from '../../src/canvas/canvasUtils'
+import {callAll, range, parentElement, formDataify, queryStringify, batchify} from '../../src/canvas/canvasUtils'
 import {describe, expect} from "@jest/globals";
 
 const TEST_STRING = String.fromCharCode(...Array.from(range(32, 126)))
@@ -83,4 +83,11 @@ test('Querystringify', () => {
     expect(entries[3]).toStrictEqual(['b', 'hello!'])
     expect(entries[4]).toStrictEqual(['c[c1][]', '1'])
     expect(entries[5]).toStrictEqual(['c[c2]', '2'])
+})
+
+test('Batchify', () => {
+    expect(batchify([1, 2, 3, 4], 2)).toStrictEqual([[1, 2], [3, 4]])
+    expect(batchify([1, 2, 3, 4, 5], 2)).toStrictEqual([[1, 2], [3, 4], [5]])
+    expect(batchify([1, 2, 3, 4, 5], 5)).toStrictEqual([[1, 2, 3, 4, 5]])
+    expect(batchify([1, 2, 3, 4, 5], 6)).toStrictEqual([[1, 2, 3, 4, 5]])
 })

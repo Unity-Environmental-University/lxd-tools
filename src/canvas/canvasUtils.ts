@@ -17,43 +17,45 @@ import {Course} from "./course";
  * @param funcs A list of functions, or a list of { func, params } pairs to run, passing params into func
  * @param params optional params to pass into each run of the function
  */
-function callAll<T>(funcs:(()=>T)[]):T[]
-function callAll<T, ParamType>(funcs: {func:(params:ParamType)=>T, params: ParamType}[]):T[]
-function callAll<T, ParamType>(funcs: ((params:ParamType)=> T)[], params:ParamType):T[]
+function callAll<T>(funcs: (() => T)[]): T[]
+function callAll<T, ParamType>(funcs: { func: (params: ParamType) => T, params: ParamType }[]): T[]
+function callAll<T, ParamType>(funcs: ((params: ParamType) => T)[], params: ParamType): T[]
 function callAll<T,
-    WithParamsFuncType extends (params:FunctionParamsType) => T,
+    WithParamsFuncType extends (params: FunctionParamsType) => T,
     WithoutParamsFuncType extends () => T,
-    FuncObject extends { func:WithParamsFuncType,params: FunctionParamsType },
+    FuncObject extends { func: WithParamsFuncType, params: FunctionParamsType },
     FuncType extends FuncObject | WithoutParamsFuncType | WithParamsFuncType,
     PassedInParamsType extends FunctionParamsType,
-    FunctionParamsType extends (FuncType extends WithoutParamsFuncType? undefined : any) = undefined,
->(funcs:FuncType[] | WithParamsFuncType[], params?:PassedInParamsType) {
+    FunctionParamsType extends (FuncType extends WithoutParamsFuncType ? undefined : any) = undefined,
+>(funcs: FuncType[] | WithParamsFuncType[], params?: PassedInParamsType) {
     const output: T[] = [];
-    function isWithParamsFunc (func:FuncObject|WithParamsFuncType|WithoutParamsFuncType): func is WithParamsFuncType {
+
+    function isWithParamsFunc(func: FuncObject | WithParamsFuncType | WithoutParamsFuncType): func is WithParamsFuncType {
         return typeof func === 'function' && func.length > 0;
     }
-    function isWithoutParamsFunc (func:FuncObject|WithParamsFuncType|WithoutParamsFuncType): func is WithoutParamsFuncType {
+
+    function isWithoutParamsFunc(func: FuncObject | WithParamsFuncType | WithoutParamsFuncType): func is WithoutParamsFuncType {
         return typeof func === 'function' && func.length === 0;
     }
 
-    for(let func of funcs) {
-         if((typeof func === 'object')) {
-             output.push(func.func(func.params))
-             continue;
-         }
-         if(isWithoutParamsFunc(func)) {
-             output.push(func());
-             continue;
-         }
-         if(isWithParamsFunc(func) && typeof params !== 'undefined') {
-             output.push(func(params));
-             continue;
-         }
+    for (let func of funcs) {
+        if ((typeof func === 'object')) {
+            output.push(func.func(func.params))
+            continue;
+        }
+        if (isWithoutParamsFunc(func)) {
+            output.push(func());
+            continue;
+        }
+        if (isWithParamsFunc(func) && typeof params !== 'undefined') {
+            output.push(func(params));
+            continue;
+        }
     }
     return output;
 }
 
-export { callAll }
+export {callAll}
 
 /**
  * Traverses up the DOM and finds a parent with a matching Tag
@@ -61,7 +63,7 @@ export { callAll }
  * @param tagName
  */
 export function parentElement(el: Element | null, tagName: string) {
-    if(!el) return null;
+    if (!el) return null;
     while (el && el.parentElement) {
         el = el.parentElement;
         if (el.tagName && el.tagName.toLowerCase() == tagName) {
@@ -73,11 +75,12 @@ export function parentElement(el: Element | null, tagName: string) {
 
 
 export interface IQueryParams extends Record<string, any> {
-    include?: (string|number)[]
+    include?: (string | number)[]
 }
-export interface ICanvasCallConfig {
+
+export interface ICanvasCallConfig<QueryParamsType extends IQueryParams = IQueryParams> {
     fetchInit?: RequestInit,
-    queryParams?: IQueryParams
+    queryParams?: QueryParamsType
 }
 
 const type_lut: Record<ModuleItemType, RestrictModuleItemType | null> = {
@@ -102,7 +105,7 @@ export function formDataify(data: Record<string, any>) {
         const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
         const authenticityToken = el ? el.value : null;
         const cookies = getCookies();
-        let csrfToken =  cookies['_csrf_token'];
+        let csrfToken = cookies['_csrf_token'];
         if (authenticityToken) formData.append('authenticity_token', authenticityToken);
         else if (csrfToken) {
             csrfToken = csrfToken.replaceAll(/%([0-9A-F]{2})/g, (substring, hex) => {
@@ -121,8 +124,8 @@ export function formDataify(data: Record<string, any>) {
 function getCookies() {
     const cookieString = document.cookie;
     const cookies = cookieString.split('; ')
-    const out:Record<string, string> = {};
-    for(let cookie of cookies) {
+    const out: Record<string, string> = {};
+    for (let cookie of cookies) {
         const [key, value] = cookie.split('=')
         out[key] = value;
     }
@@ -151,15 +154,16 @@ function addToFormData(formData: FormData, key: string, value: any | Record<stri
 }
 
 
-export function queryStringify(data:Record<string, any>) {
+export function queryStringify(data: Record<string, any>) {
     let searchParams = new URLSearchParams();
-    for(let key in data) {
+    for (let key in data) {
         addToQuery(searchParams, key, data[key])
-    };
+    }
+    ;
     return searchParams;
 }
 
-function addToQuery(searchParams:URLSearchParams, key: string, value: any | Record<string, any> | []) {
+function addToQuery(searchParams: URLSearchParams, key: string, value: any | Record<string, any> | []) {
     if (Array.isArray(value)) {
         for (let item of value) {
             addToQuery(searchParams, `${key}[]`, item);
@@ -223,16 +227,28 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
 
     const generator = getPagedDataGenerator<T>(url, config);
 
-    const out:T[] = [];
+    const out: T[] = [];
     for await (let value of generator) {
         out.push(value);
     }
     return out;
 }
 
+
+/**
+ * returns a single pagedDataGenerator that returns generator results from each, looping through results for each
+ * @param generators
+ */
+export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData>(generators:AsyncGenerator<T, T[], void>[]) {
+    for(let generator of generators) {
+        for await(let result of generator) yield result;
+    }
+}
+
+
 export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     url: string, config: ICanvasCallConfig | null = null
-): AsyncGenerator<T, T[], void> {
+): AsyncGenerator<T> {
 
     if (config?.queryParams) {
         url += '?' + searchParamsFromObject(config.queryParams);
@@ -251,7 +267,7 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
         }
     }
     assert(Array.isArray(data));
-    for(let value of data) {
+    for (let value of data) {
         yield value;
     }
 
@@ -276,15 +292,16 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
                 data = [data, ...responseData];
             }
 
-            for(let value of responseData) {
+            for (let value of responseData) {
                 yield value;
             }
         } else {
             next_page_link = "";
         }
     }
-    return data;
 }
+
+
 
 
 export async function fetchJson<T extends Record<string, any>>(
@@ -332,18 +349,19 @@ export async function fetchOneUnknownApiJson(url: string, config: ICanvasCallCon
  * @param a item to compare.
  * @param b item to compare.
  */
-export function courseNameSort(a: Course|ICourseData, b: Course|ICourseData) {
+export function courseNameSort(a: Course | ICourseData, b: Course | ICourseData) {
     if (a.name < b.name) return -1;
     if (b.name < a.name) return 1;
     return 0;
 
 }
 
-export function* range(start:number, end:number) {
-    for(let i = start; i <= end; i++) {
+export function* range(start: number, end: number) {
+    for (let i = start; i <= end; i++) {
         yield i;
     }
 }
+
 
 export function getPlainTextFromHtml(html: string) {
     const el = document.createElement('div');
@@ -351,10 +369,20 @@ export function getPlainTextFromHtml(html: string) {
     return el.innerText || el.textContent || "";
 }
 
-export function getCourseIdFromUrl(url:string) {
+
+export function getCourseIdFromUrl(url: string) {
     let match = /courses\/(\d+)/.exec(url);
     if (match) {
         return parseInt(match[1]);
     }
     return null;
+}
+
+export function batchify<T>(toBatch: T[], batchsize: number) {
+    const out: T[][] = [];
+    for (let i = 0; i < toBatch.length; i += batchsize) {
+        out.push(toBatch.slice(i, i + batchsize));
+
+    }
+    return out;
 }

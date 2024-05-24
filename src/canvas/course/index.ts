@@ -23,7 +23,10 @@ import {
     getApiPagedData,
     getItemTypeAndId,
     getPagedData,
-    ICanvasCallConfig
+    getPagedDataGenerator,
+    ICanvasCallConfig,
+    IQueryParams,
+    mergePagedDataGenerators
 } from "../canvasUtils";
 import assert from "assert";
 import {getCurrentStartDate} from "./changeStartDate";
@@ -60,7 +63,7 @@ export interface ICourseSettingsHaver extends IIdHaver {
 
 export interface ILatePolicyHaver extends IIdHaver {
     id: number,
-    getLatePolicy: (config?: ICanvasCallConfig) => Promise<ILatePolicyData>
+    getLatePolicy: (config?: ICanvasCallConfig) => Promise<ILatePolicyData|undefined>
 }
 
 export interface IAssignmentsHaver extends IIdHaver {
@@ -87,13 +90,15 @@ export interface IQuizzesHaver extends IIdHaver {
 
 export interface IModulesHaver extends IIdHaver {
     getModules(config?: ICanvasCallConfig): Promise<IModuleData[]>,
-    getModulesByWeekNumber(config?:ICanvasCallConfig): Promise<Record<number|string, IModuleData>>
+
+    getModulesByWeekNumber(config?: ICanvasCallConfig): Promise<Record<number | string, IModuleData>>
 }
 
 
 export interface IGradingStandardsHaver extends IIdHaver {
-    getAvailableGradingStandards(config?:ICanvasCallConfig): Promise<IGradingStandardData[]>,
-    getCurrentGradingStandard(config?:ICanvasCallConfig): Promise<IGradingStandardData|null>
+    getAvailableGradingStandards(config?: ICanvasCallConfig): Promise<IGradingStandardData[]>,
+
+    getCurrentGradingStandard(config?: ICanvasCallConfig): Promise<IGradingStandardData | null>
 }
 
 
@@ -112,7 +117,8 @@ export interface IGradingSchemeEntry {
 
 export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
     name: string,
-    getContent(config?: ICanvasCallConfig, refresh?:boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
+
+    getContent(config?: ICanvasCallConfig, refresh?: boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
 
 }
 
@@ -133,7 +139,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     ILatePolicyHaver,
     IBlueprintCourse,
     ICourseCodeHaver,
-    IModulesHaver{
+    IModulesHaver {
 
     static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
     static nameProperty = 'name';
@@ -141,10 +147,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     private modulesByWeekNumber: Record<string | number, IModuleData> | undefined = undefined;
     private static contentClasses: (typeof BaseContentItem)[] = [Assignment, Discussion, Quiz, Page];
 
-    isBlueprint: ()=>boolean;
-    getAssociatedCourses:(redownload?:boolean)=> Promise<Course[]>;
+    isBlueprint: () => boolean;
+    getAssociatedCourses: (redownload?: boolean) => Promise<Course[]>;
 
-    constructor(data:ICourseData) {
+    constructor(data: ICourseData) {
         super(data);
         this.isBlueprint = (() => isBlueprint(data));
         this.getAssociatedCourses = cachedGetAssociatedCoursesFunc(this)
@@ -201,7 +207,16 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return new Course(data);
     }
 
+
+    /**
+     * TODO: Replace this whole pipeline with something that returns a getApiPagesData generator instead.
+     * @param code
+     * @param term
+     * @param config
+     * @private
+     */
     private static async getCoursesByString(code: string, term: Term | null = null, config: ICanvasCallConfig = {}) {
+        console.warn("Replace this with getCourseGenerator")
         let courseDataList: ICourseData[] | null = null;
         const accountIdsByName = await Course.getAccountIdsByName();
         for (let accountKey in accountIdsByName) {
@@ -247,8 +262,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             return {};
         }
         return {
-            'root': course.canvasData['root_account_id'],
-            'current': course.canvasData['accountId']
+            'root': course.canvasData.root_account_id,
+            'current': course.canvasData.account_id
         }
     }
 
@@ -282,7 +297,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (!match) return null;
         let prefix = match[1] || "";
         let courseCode = match[2] || "";
-        return `${prefix}_${courseCode}`;
+        if(prefix.length > 0) {
+            return `${prefix}_${courseCode}`;
+        }
+        return courseCode;
     }
 
     get fullCourseCode(): null | string {
@@ -300,7 +318,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     get termId(): number | null {
         const id = (this.canvasData as ICourseData).enrollment_term_id;
-        if(typeof id === 'number') return id;
+        if (typeof id === 'number') return id;
         else return id[0];
     }
 
@@ -334,7 +352,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (this.name.match(/^DEV/)) return true;
     }
 
-    async getModules(config?:ICanvasCallConfig): Promise<IModuleData[]> {
+    async getModules(config?: ICanvasCallConfig): Promise<IModuleData[]> {
         if (this._modules) {
             return this._modules;
         }
@@ -358,8 +376,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async getLatePolicy(this: { id: number }, config?: ICanvasCallConfig) {
         const latePolicyResult = await fetchJson(`/api/v1/courses/${this.id}/late_policy`, config);
-        assert('late_policy' in latePolicyResult);
-        return latePolicyResult.late_policy as ILatePolicyData;
+        if('late_policy' in latePolicyResult) return latePolicyResult.late_policy as ILatePolicyData;
+        return undefined;
 
     }
 
@@ -367,8 +385,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         const courseGradingStandards = await getGradingStandards(this.id, "course", config);
         const accountGradingStandards = await getGradingStandards(this.rawData.account_id, 'account', config);
         const rootAccountGradingStandards = await getGradingStandards(this.rawData.root_account_id, 'account', config);
-        return[...accountGradingStandards, ...rootAccountGradingStandards,  ...courseGradingStandards];
+        return [...accountGradingStandards, ...rootAccountGradingStandards, ...courseGradingStandards];
     }
+
     async getCurrentGradingStandard(config?: ICanvasCallConfig | undefined): Promise<IGradingStandardData | null> {
         const urls = [
             `/api/v1/accounts/${this.rawData.root_account_id}/grading_standards/${this.rawData.grading_standard_id}`,
@@ -376,9 +395,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             `/api/v1/courses/${this.id}/grading_standards/${this.rawData.grading_standard_id}`
         ]
 
-        for(let url of urls) {
-            let gradingStandard =await fetchJson<IGradingStandardData | {errors: string[]}>(url);
-            if(!('errors' in gradingStandard)) return gradingStandard;
+        for (let url of urls) {
+            let gradingStandard = await fetchJson<IGradingStandardData | { errors: string[] }>(url);
+            if (!('errors' in gradingStandard)) return gradingStandard;
         }
         return null;
 
@@ -395,7 +414,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (this.modulesByWeekNumber) return this.modulesByWeekNumber;
         let modules = await this.getModules(config);
         this.modulesByWeekNumber = await getModulesByWeekNumber(modules);
-        return(this.modulesByWeekNumber);
+        return (this.modulesByWeekNumber);
     }
 
     /**
@@ -480,8 +499,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
 
     cachedContent: BaseContentItem[] = []
-    async getContent(config?: ICanvasCallConfig, refresh=false) {
-        if(refresh || this.cachedContent.length == 0) {
+
+    async getContent(config?: ICanvasCallConfig, refresh = false) {
+        if (refresh || this.cachedContent.length == 0) {
             let discussions = await this.getDiscussions(config);
             let assignments = await this.getAssignments(config);
             let quizzes = await this.getQuizzes(config);
@@ -779,9 +799,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async generateHomeTile(module: IModuleData) {
         const overviewPage = await getModuleOverview(module, this.id);
-        if(!overviewPage) throw new Error("Module does not have an overview");
+        if (!overviewPage) throw new Error("Module does not have an overview");
         const bannerImg = getBannerImage(overviewPage);
-        if(!bannerImg) throw new Error("No banner image on page");
+        if (!bannerImg) throw new Error("No banner image on page");
         let resizedImageBlob = await getResizedBlob(bannerImg.src, HOMETILE_WIDTH);
         let fileName = `hometile${module.position}.png`;
         assert(resizedImageBlob);
@@ -818,10 +838,43 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
 }
 
-async function getGradingStandards(contextId:number, contextType:'account' | 'course', config?:ICanvasCallConfig) {
+async function getGradingStandards(contextId: number, contextType: 'account' | 'course', config?: ICanvasCallConfig) {
     const url = `/api/v1/${contextType}s/${contextId}/grading_standards`
     return await getPagedData<IGradingStandardData>(url, config)
 }
 
-export class CourseNotFoundException extends Error {
+
+async function* generatorMap<T, MapOutput>(
+    generator:AsyncGenerator<T>,
+    nextMapFunc:(value:T, index:number, generator:AsyncGenerator<T>)=>MapOutput,
+) {
+
+    let i = 0;
+    for await(let value of generator) {
+        yield nextMapFunc(value, i, generator);
+        i++;
+    }
 }
+
+export function getCourseGenerator(queryString: string, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig) {
+    if (!Array.isArray(accountIds)) accountIds = [accountIds];
+
+    interface IGetCourseQueryParams extends IQueryParams {
+        enrollment_term_id?: number,
+    }
+
+    const defaultConfig: ICanvasCallConfig<IGetCourseQueryParams> = {
+        queryParams: {
+            search_term: queryString,
+        }
+    }
+    if(term && defaultConfig.queryParams) defaultConfig.queryParams.enrollment_term_id = term.id;
+    config = overrideConfig(defaultConfig, config);
+    const generators = accountIds.map(accountId => {
+        let url = `/api/v1/accounts/${accountId}/courses`;
+        return getPagedDataGenerator<ICourseData>(url, config);
+    })
+    return generatorMap(mergePagedDataGenerators(generators), courseData => new Course(courseData));
+}
+
+export class CourseNotFoundException extends Error {}

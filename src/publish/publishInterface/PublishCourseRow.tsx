@@ -14,8 +14,6 @@ type CourseRowProps = {
 }
 
 export function PublishCourseRow({course, frontPageProfile, instructors, onClickDx, errors}: CourseRowProps) {
-
-
     return (<div className={'row course-row'}>
         <div className={'col-xs-6'}>
             <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}

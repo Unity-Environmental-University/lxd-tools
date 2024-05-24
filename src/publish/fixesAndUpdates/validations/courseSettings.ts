@@ -43,7 +43,7 @@ export const latePolicyTest: CourseValidationTest<ILatePolicyHaver> = {
     run: async (course: ILatePolicyHaver, config) => {
         const latePolicy = await course.getLatePolicy(config);
         return testResult(
-            latePolicy.missing_submission_deduction_enabled,
+            latePolicy?.missing_submission_deduction_enabled,
             ["'Automatically apply grade for missing submission' not turned on"]
         );
     }
