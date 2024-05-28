@@ -386,3 +386,7 @@ export function batchify<T>(toBatch: T[], batchsize: number) {
     }
     return out;
 }
+
+export function filterUniqueFunc<T>(item:T, index:number, array:T[]) {
+    return array.indexOf(item) === index;
+}

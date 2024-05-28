@@ -6,9 +6,9 @@ import {Button} from "react-bootstrap";
 import {Course} from "../../canvas/course/index";
 
 type SectionDetailsProps = {
-    section: Course | null,
+    section?: Course | null,
     onUpdateFrontPageProfile? (profile:IProfile): void,
-    facultyProfileMatches: IProfile[] | null,
+    facultyProfileMatches?: IProfile[] | null,
     onClose?: () => void,
 }
 

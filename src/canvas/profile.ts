@@ -5,7 +5,7 @@ import {Page} from "./content";
 import {Course} from "./course";
 
 
-let facultyCourseCached: Course | null = null;
+let facultyCourseCached: Course;
 export interface IProfile {
     user?: IUserData,
     bio?: string | null,

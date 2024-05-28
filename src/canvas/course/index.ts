@@ -117,7 +117,6 @@ export interface IGradingSchemeEntry {
 
 export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
     name: string,
-
     getContent(config?: ICanvasCallConfig, refresh?: boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
 
 }
@@ -252,7 +251,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     static async getByCode(code: string, term: Term | null = null, config: ICanvasCallConfig | undefined = undefined) {
         const courses = await this.getCoursesByString(code, term, config);
         if (Array.isArray(courses)) return courses[0];
-        return null;
     }
 
     static async getAccountIdsByName(): Promise<Record<string, any>> {
@@ -768,7 +766,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             console.log('no migrations found');
             if (return_dev_search) {
                 return Course.getByCode('DEV_' + this.baseCode);
-            } else return null;
+            } else return;
         }
         migrations.sort((a, b) => b.id - a.id);
 

@@ -1,6 +1,7 @@
-import {Course, getCourseGenerator} from "../canvas/course/index";
-import React, {FormEventHandler, useEffect, useState} from "react";
+import {Course, getCourseGenerator,} from "../canvas/course/index";
+import React, {FormEventHandler, useEffect, useReducer, useState} from "react";
 import {
+    badContentRunFunc,
     CourseValidationTest,
     ValidationTestResult
 } from "../publish/fixesAndUpdates/validations/index";
@@ -11,21 +12,26 @@ import MultiSelect, {IMultiSelectOption, optionize} from "../ui/widgets/MuliSele
 import {useEffectAsync} from "../ui/utils";
 import Modal from "../ui/widgets/Modal/index";
 import {Col, Container, Form, Row} from "react-bootstrap";
-import {batchify} from "../canvas/canvasUtils";
+import {batchify, filterUniqueFunc} from "../canvas/canvasUtils";
 import {ValidationRow} from "../publish/fixesAndUpdates/ValidationRow";
 import {Account} from "../canvas/index";
-import onSelectionChanged = chrome.tabs.onSelectionChanged;
-import {selectOptions} from "@testing-library/user-event/dist/select-options";
+import {collectionLutDispatcher, lutDispatcher} from "../reducerDispatchers";
 
 
 interface IAdminAppProps {
-    course: Course | null,
+    course?: Course,
 }
 
 const tests: CourseValidationTest[] = [
     ...courseContent,
     ...courseSettings,
     ...syllabusTests,
+    {
+        //courseCodes: ['PROF590', 'PROF690'],
+        name: "Pseudo-ruminant",
+        description: ``,
+        run: badContentRunFunc(/pseudo[- ]?ruminant/ig),
+    }
 ]
 
 function getTestName(test: CourseValidationTest) {
@@ -37,18 +43,32 @@ interface IIncludesTestAndCourseId extends ValidationTestResult {
     courseId: number,
 }
 
+
 export function AdminApp({course}: IAdminAppProps) {
+    const [isOpen, setIsOpen] = useState(false);
+
     const [courseSearchString, setCourseSearchString] = useState('');
     const [seekCourseCodes, setSeekCourseCodes] = useState<string[]>([]);
     const [foundCourses, setFoundCourses] = useState<(Course & IMultiSelectOption)[]>([]);
     const [coursesToRunOn, setCoursesToRunOn] = useState<(Course & IMultiSelectOption)[]>([])
+
     const [allValidations, _] = useState(optionize(tests, getTestName, getTestName))
-    const [testsToRun, setTestsToRun] = useState<(CourseValidationTest & IMultiSelectOption)[]>([])
-    const [isOpen, setIsOpen] = useState(false);
+    const [validationsToRun, setValidationsToRun] = useState<(CourseValidationTest & IMultiSelectOption)[]>([])
+    const [validationResults, setValidationResults] = useState<IIncludesTestAndCourseId[]>([])
+
+    const [validationResultsLut, dispatchValidationResultsLut] =
+        useReducer(collectionLutDispatcher<IIncludesTestAndCourseId>, {});
+
     const [onlySearchBlueprints, setOnlySearchBlueprints] = useState(true);
-    const [isTesting, setIsTesting] = useState(false);
-    const [testResults, setTestResults] = useState<IIncludesTestAndCourseId[]>([])
+    const [includeDev, setIncludeDev] = useState(false);
+    const [includeSections, setIncludeSections] = useState(false);
+
+    const [isValidating, setIsValidating] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+
+    const [parentCourseLut, dispatchParentCourseLut] = useReducer(lutDispatcher<number, Course|null>, {});
+    const [sectionLut, dispatchSectionLut] = useReducer(collectionLutDispatcher<Course>, {})
+
     const courseCache: Record<string, Course[]> = {};
 
 
@@ -71,18 +91,46 @@ export function AdminApp({course}: IAdminAppProps) {
     }, [seekCourseCodes])
 
 
-    //Handlers
+    function cacheAssociatedCourses(bpId: number, toAdd: Course[] | Course) {
+        const sections = Array.isArray(toAdd) ? toAdd : [toAdd];
+        console.log(bpId, sections.map(a => a.courseCode))
+        dispatchSectionLut({add: {key:bpId, items:sections}});
+    }
+
+    function cacheParentCourse(bpId: number, toAdd: Course | null) {
+        dispatchParentCourseLut({set:{ key:bpId, item: toAdd}})
+    }
+
+    async function getAssociatedCourses(course: Course) {
+        const cached = sectionLut[course.id];
+        if (cached) return cached;
+        if (!cached) {
+            const associatedCourses = await course.getAssociatedCourses();
+            cacheAssociatedCourses(course.id, associatedCourses);
+            return associatedCourses
+        }
+
+    }
+
+    async function getParentCourse(course: Course) {
+        const cached = parentCourseLut[course.id];
+        if (cached || cached === null) return cached;
+        const parentCourse = await course.getParentCourse(true) || null;
+        cacheParentCourse(course.id, parentCourse);
+        return parentCourse;
+    }
+
+//Handlers
     function updateCourseSearchString() {
-        let query = courseSearchString;
-        let replaceString = query.replaceAll(/(\w+)\t(\d+)\s*/gs, '$1$2,')
+        let replaceString = courseSearchString.replaceAll(/(\w+)\t(\d+)\s*/gs, '$1$2,')
         replaceString = replaceString.replaceAll(/(\w+\d+,)\1+/gs, '$1')
 
         setCourseSearchString(replaceString.replace(/,$/, ''))
 
     }
 
-    function getResultsForCourse(course: Course) {
-        return testResults.filter(result => result.courseId === course.id)
+    function getResultsForCourse(courseId: number) {
+        return validationResults.filter(result => result.courseId === courseId)
     }
 
     const search: FormEventHandler = async (e) => {
@@ -118,40 +166,103 @@ export function AdminApp({course}: IAdminAppProps) {
     async function runTests(e: React.FormEvent) {
         e.stopPropagation();
         e.preventDefault();
-        if (isTesting) return false;
-        setIsTesting(true);
-        let allTestResults: typeof testResults = [];
-        const batches = batchify(coursesToRunOn, 5);
+        if (isValidating) return false;
+        setIsValidating(true);
+        let allTestResults: typeof validationResults = [];
+        let coursesToValidate: typeof coursesToRunOn = [];
 
-        for (let batch of batches) {
-            for (let test of testsToRun) {
-                const testResults = await Promise.all(batch.map(async (course) => {
-                    const result = await test.run(course);
-                    return {
-                        ...result,
-                        courseId: course.id,
-                        test,
-                    }
-                }));
+
+        for (let course of coursesToRunOn) {
+            coursesToValidate = [...coursesToValidate, course].filter(filterUniqueFunc);
+            if (includeDev) {
+                const dev = await getParentCourse(course);
+                if (dev) {
+                    cacheParentCourse(course.id, dev);
+                    coursesToValidate = [...coursesToValidate, ...optionize([dev])];
+                }
+
+            }
+            if (includeSections) {
+                const sections = await getAssociatedCourses(course);
+                cacheAssociatedCourses(course.id, sections ?? [])
+                if (sections) coursesToValidate = [...coursesToValidate, ...optionize(sections)];
+            }
+        }
+
+        async function getTestResultOption(
+            course: typeof coursesToRunOn[number],
+            test: typeof validationsToRun[number],
+        ) {
+            const result = await test.run(course);
+            return {
+                ...result,
+                courseId: course.id,
+                test,
+            }
+        }
+
+        for (let batch of batchify(coursesToValidate, 5)) {
+
+            for (let test of validationsToRun) {
+                console.log('running', test.name);
+                let testResults = await Promise.all(batch.map((course) => getTestResultOption(course, test)));
+
+                for(let result of testResults) {
+                    dispatchValidationResultsLut({
+                        add: {key: result.courseId, items: [result]}
+                    })
+                }
                 allTestResults = [...allTestResults, ...testResults].toSorted((a, b) => {
                     return a.test.name.localeCompare(b.test.name);
                 })
-                setTestResults(allTestResults);
+                setValidationResults(allTestResults);
+                console.log(allTestResults);
             }
         }
-        setIsTesting(false);
+        setIsValidating(false);
     }
 
 
     function ResultsDisplay() {
         return <Row>
-            {coursesToRunOn.map(course =>
-                <ValidationResultsForCourse
-                    key={course.id}
-                    results={getResultsForCourse(course)}
-                    course={course}/>
-            )}
+            {coursesToRunOn.map(course => <ResultsDisplayRow
+                course={course}
+                key={course.id}
+                parentCourse={parentCourseLut[course.id]}
+                sections={sectionLut[course.id]}
+            />)}
         </Row>
+    }
+
+    interface IResultsDisplayRowProps {
+        course: Course,
+        parentCourse?: Course | null,
+        sections?: Course[] | null
+    }
+
+    function ResultsDisplayRow({course, parentCourse, sections}: IResultsDisplayRowProps) {
+        return <>
+            <ValidationResultsForCourse
+                key={course.id}
+                slim={false}
+                results={validationResultsLut[course.id]}
+                course={course}/>
+
+            {includeDev && parentCourse && <ValidationResultsForCourse
+                key={course.id}
+                slim={true}
+                course={parentCourse}
+                results={validationResultsLut[parentCourse.id]}
+            />}
+            {includeSections && sections?.map(section => <ValidationResultsForCourse
+                key={section.id}
+                slim={true}
+                course={section}
+                results={validationResultsLut[section.id]}
+            />)}
+
+
+        </>
     }
 
     function FoundCoursesDisplay() {
@@ -180,19 +291,38 @@ export function AdminApp({course}: IAdminAppProps) {
                 <Row>
                     <Col sm={9}>
                         <Row>
-                            <Col><SearchCourses
-                                search={search}
-                                courseSearchString={courseSearchString}
-                                setCourseSearchString={setCourseSearchString}
-                                setOnlySearchBlueprints={setOnlySearchBlueprints}
-                                onlySearchBlueprints={onlySearchBlueprints}
-                            /></Col>
+                            <Col>
+                                <Form.Check
+                                    label={'Only Search Blueprints'}
+                                    checked={onlySearchBlueprints}
+                                    onChange={(e) => setOnlySearchBlueprints(e.target.checked)}
+                                ></Form.Check>
+                                {onlySearchBlueprints && <>
+                                    <Form.Check
+                                        disabled={!onlySearchBlueprints}
+                                        checked={includeDev}
+                                        label='Include Dev'
+                                        onChange={(e) => setIncludeDev(e.target.checked)}
+                                    ></Form.Check>
+                                    <Form.Check
+                                        disabled={!onlySearchBlueprints}
+                                        checked={includeSections}
+                                        label='Include Sections'
+                                        onChange={(e) => setIncludeSections(e.target.checked)}
+                                    ></Form.Check>
+                                </>}
+                                <SearchCourses
+                                    search={search}
+                                    courseSearchString={courseSearchString}
+                                    setCourseSearchString={setCourseSearchString}
+                                />
+                            </Col>
                             <Col><SelectValidations
                                 runTests={runTests}
                                 options={allValidations}
-                                testsToRun={testsToRun}
+                                testsToRun={validationsToRun}
                                 setCoursesToRunOn={setCoursesToRunOn}
-                                setTestsToRun={setTestsToRun}/></Col>
+                                setTestsToRun={setValidationsToRun}/></Col>
                         </Row>
 
                         <ResultsDisplay/>
@@ -208,15 +338,14 @@ export function AdminApp({course}: IAdminAppProps) {
 
 
 interface IValidationResultsForCourseProps {
-    results: IIncludesTestAndCourseId[],
+    results?: IIncludesTestAndCourseId[],
+    slim?: boolean,
     course: Course,
 }
 
 
 interface SearchCoursesProps {
     search: FormEventHandler,
-    onlySearchBlueprints: boolean,
-    setOnlySearchBlueprints: (value: boolean) => void,
     setCourseSearchString: (value: string) => void,
     courseSearchString: string,
 }
@@ -224,18 +353,10 @@ interface SearchCoursesProps {
 //render
 function SearchCourses({
                            search,
-                           setOnlySearchBlueprints,
-                           onlySearchBlueprints,
                            courseSearchString,
                            setCourseSearchString
                        }: SearchCoursesProps) {
     return <Form onSubmit={search}>
-        <Form.Check
-            checked={onlySearchBlueprints}
-            type={"switch"}
-            label='Only Search Blueprints'
-            onChange={(e) => setOnlySearchBlueprints(e.target.checked)}
-        ></Form.Check>
         <input type={'text'} value={courseSearchString}
                onChange={(e) => setCourseSearchString(e.target.value)}></input>
         <button>Get Courses</button>
@@ -268,16 +389,21 @@ function SelectValidations({runTests, options, testsToRun, setTestsToRun, setCou
 
 }
 
-
-function ValidationResultsForCourse({course, results}: IValidationResultsForCourseProps) {
+function ValidationResultsForCourse({course, results, slim}: IValidationResultsForCourseProps) {
     return <Container>
-        <Row><Col><h3>{course.courseCode ?? course.name}</h3></Col></Row>
-        {results.map(result => <ValidationRow
+
+        <Row><Col>
+            <h3 style={{fontSize: slim ? '0.5em' : '1em'}}>
+                <a href={course.htmlContentUrl} target={'_blank'}>{course.courseCode ?? course.name}</a>
+            </h3></Col></Row>
+        {results && results.map(result => <ValidationRow
             key={result.test.name + course.id}
             course={course}
+            slim={slim}
+            initialResult={result}
             test={result.test}
+            potemkinVillage={true}
             refreshCourse={async () => undefined}
         />)}
-
     </Container>
 }

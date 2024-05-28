@@ -17,7 +17,7 @@ import {HighlightBigImages} from "./HighlightBigImages";
     if (!currentCourse) return;
     let header: HTMLElement | null = document.querySelector('.right-of-crumbs');
     if (!header) return;
-    let bp: Course | null;
+    let bp: Course | undefined;
 
     if (currentCourse.isBlueprint()) {
         await addDevButton(header, currentCourse);

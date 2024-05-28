@@ -3,17 +3,29 @@ import {useEffectAsync} from "../../ui/utils";
 import {Course} from "../../canvas/course";
 import {CourseValidationTest, ValidationTestResult} from "./validations";
 import assert from "assert";
+import {Row} from "react-bootstrap";
 
 type ValidationRowProps = {
     course: Course,
+    potemkinVillage?: boolean,
     test: CourseValidationTest,
+    slim?: boolean,
     initialResult?: ValidationTestResult,
     refreshCourse: () => Promise<any>
     onResult?: (result: ValidationTestResult, test: CourseValidationTest) => any,
     showOnlyFailures?: boolean,
 }
 
-export function ValidationRow({test, initialResult, course, refreshCourse, onResult, showOnlyFailures = false}: ValidationRowProps) {
+export function ValidationRow({
+                                  test,
+                                  slim,
+                                  potemkinVillage,
+                                  initialResult,
+                                  course,
+                                  refreshCourse,
+                                  onResult,
+                                  showOnlyFailures = false
+                              }: ValidationRowProps) {
     const [loading, setLoading] = useState(false);
     const [result, _setResult] = useState(initialResult);
     const [fixText, setFixText] = useState("Fix?")
@@ -25,45 +37,82 @@ export function ValidationRow({test, initialResult, course, refreshCourse, onRes
 
     async function reRun() {
         setLoading(true);
-        await refreshCourse();
-        setResult(await test.run(course))
+        try {
+            await refreshCourse();
+            setResult(await (test.run(course)))
+
+        } catch (e) {
+            setResult({
+                success: false,
+                message: [e?.toString() || 'Error', test.name, e instanceof Error ? e.stack ?? '' : '']
+            })
+        }
+
+
         setLoading(false);
     }
 
     async function fix() {
         setFixText('Fixing..');
         setLoading(true);
-        assert(test.fix);
-        await test.fix(course);
-        setFixText('Fixed...');
-        await refreshCourse();
-        setResult(await test.run(course))
+        try {
+            assert(test.fix);
+            await test.fix(course);
+            setFixText('Fixed...');
+            await refreshCourse();
+            setResult(await test.run(course))
+
+        } catch (e) {
+            setResult({
+                success: false,
+                message: [e?.toString() || 'Error', test.name, e instanceof Error ? e.stack ?? '' : '']
+            })
+        }
         setLoading(false);
     }
 
-
     useEffectAsync(async () => {
+        if (result) return; //only run once and only if we don't have a result. MUST call r
+        if (potemkinVillage) return;
         setLoading(true);
-        setResult(await test.run(course));
+        try {
+            setResult(await test.run(course));
+
+        } catch (e) {
+            setResult({
+                success: false,
+                message: [e?.toString() || 'Error', test.name, e instanceof Error ? e.stack ?? '' : '']
+            })
+        }
+
+
         setLoading(false);
     }, [course, test])
 
+    function truncateMessage(messageString: string) {
+        if (slim) return messageString.replace(/^(.{20}).*$/, '$1...')
+        return messageString;
+    }
+
     function statusMessage(result: ValidationTestResult | undefined) {
         if (loading) return "running..."
-        if (!result) return loading? "still running" : "No Result, an error may have occured."
+        if (!result) return loading ? "still running" : "No Result, an error may have occurred."
         if (result.success) return "Succeeded!"
+
+
         return typeof result.message === 'string' ?
-            <p>{result.message}</p>
+            <p>{truncateMessage(result.message)}</p>
             : result.message.map(message => (<div>
-                {message}
-                </div>))
+                {truncateMessage(message)}
+            </div>))
     }
 
     if (!showOnlyFailures || loading || (!result?.success)) {
-        return <div className={'row test-row'}>
+        return <Row className={slim ? 'test-row-slim' : 'test-row'}>
             <div className={'col-sm-2'}>{test.name}</div>
             <div className={'col-sm-3'}>
-                {test.description}
+                {slim ? truncateMessage(test.description) : test.description}
+
             </div>
             <div className={'col-sm-4'}>
                 <p>{statusMessage(result)}</p>
@@ -85,7 +134,7 @@ export function ValidationRow({test, initialResult, course, refreshCourse, onRes
                 {result?.success && <span className={'badge badge-success'}>OK!</span>}
                 {result && !result.success && <span className={'badge badge-warning'}>Failed</span>}
             </div>
-        </div>
+        </Row>
     }
     return <></>
 }

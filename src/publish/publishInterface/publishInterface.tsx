@@ -13,11 +13,11 @@ import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 
 type PublishInterfaceProps = {
-    course: Course | null,
+    course?: Course,
     user: IUserData,
 }
 
-export function Index({course, user}: PublishInterfaceProps) {
+export function PublishInterface({course, user}: PublishInterfaceProps) {
     //-----
     // DATA
     //-----
@@ -27,7 +27,7 @@ export function Index({course, user}: PublishInterfaceProps) {
     const [term, setTerm] = useState<Term | null>();
     const[sectionStart, setSectionStart] = useState<Temporal.PlainDateTime>();
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
-    const [workingSection, setWorkingSection] = useState<Course | null>(null);
+    const [workingSection, setWorkingSection] = useState<Course|null>();
 
     const [potentialSectionProfiles, setPotentialSectionProfiles] = useState<Record<number, IProfile[]>>({})
     const [sectionFrontPageProfiles, setSectionFrontPageProfiles] = useState<Record<number, IProfile>>({});

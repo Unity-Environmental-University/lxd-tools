@@ -79,17 +79,16 @@ export function matchHighlights(content: string, search: RegExp, maxHighlightLen
     })
 }
 
+
+
 export function badContentRunFunc(badTest: RegExp) {
     return async (course: IContentHaver, config?: ICanvasCallConfig) => {
-        const includeBody = {queryParams: {include: ['body']}};
-        let content = await course.getContent(overrideConfig(config, includeBody));
-        for (let item of content) {
-            //console.log(item.name, item.constructor.name, item.body, item.body && badTest.exec(item.body));
-        }
+        const defaultConfig = {queryParams: {include: ['body'], per_page: 50}};
+        let content = await course.getContent(overrideConfig(config, defaultConfig));
 
         const badContent = content.filter(item => item.body && item.body.search(badTest) > -1)
         const syllabus = await course.getSyllabus(config);
-        const syllabusTest = syllabus.search(badTest) > -1;
+        let syllabusTest = syllabus.search(badTest) > -1;
         const success = badContent.length === 0 && !syllabusTest;
         let links: string[] = [];
         let failureMessage: string[] = []

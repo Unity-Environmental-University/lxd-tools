@@ -16,8 +16,8 @@ import proxyServerLinkValidation from "./validations/proxyServerLinkValidation";
 import capstoneProjectValidations from "./validations/courseSpecific/capstoneProjectValidations";
 
 type ContentUpdateInterfaceProps = {
-    course: Course | null,
-    parentCourse: Course | null,
+    course?: Course,
+    parentCourse?: Course,
     refreshCourse: () => Promise<void>
 }
 
@@ -145,7 +145,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
     }
 
     function RemoveAnnotationsSection() {
-        return (course?.isBlueprint && <div className={'row'}>
+        return (course?.isBlueprint() && <div className={'row'}>
             <div className={'col-sm-4'}>
                 <Button onClick={removeLmAnnotations} disabled={loadingCount > 0}>
                     Remove Annotation Placeholder

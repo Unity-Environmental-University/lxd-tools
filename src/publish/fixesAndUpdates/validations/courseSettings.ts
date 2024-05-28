@@ -73,6 +73,7 @@ export const badGradingPolicyTest: CourseValidationTest<IModulesHaver & IGrading
 
         const modulesByWeekNumber = await course.getModulesByWeekNumber(config);
         const isGrad = modulesByWeekNumber.hasOwnProperty(8);
+        if(!gradingStandards) return testResult(false, [`Grading standards not accessible from ${course.id}`])
 
         const [undergradStandard] = gradingStandards.filter(standard => /REVISED DE Undergraduate Programs/.test(standard.title))
         const [gradStandard] = gradingStandards.filter(standard => /DE Graduate Programs/.test(standard.title))

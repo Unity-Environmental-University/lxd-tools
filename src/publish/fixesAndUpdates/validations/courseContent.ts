@@ -27,6 +27,7 @@ export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
         return result;
     }
 }
+
 export const courseProjectOutlineTest: CourseValidationTest<IPagesHaver> = {
     name: "Project outline -> Course Project Outline",
     description: "On the Course Project Overview page, make sure the heading reads \"Course Project Outline\" and not \"Project outline\"",
