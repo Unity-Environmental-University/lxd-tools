@@ -321,7 +321,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (typeof id === 'number') return id;
         else return id[0];
     }
-
+    //comment for no reason for publish
     async getTerm(): Promise<Term | null> {
         assert(typeof this.termId === 'number')
 

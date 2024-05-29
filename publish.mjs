@@ -20,7 +20,7 @@ async function  main() {
     const distOptions = {cwd: '../dist'};
     console.log(commitMessages)
     console.log(execSync('git add .', distOptions).toString());
-    console.log(execSync(`git commit -m '${packageTag} -- ${commitMessages.join('\n')}'`, distOptions).toString())
+    console.log(execSync(`git commit -m '${packageTag}' ${commitMessages.map(text => ` -m '${text}`)}'`, distOptions).toString())
     updateTag(packageTag, '../dist');
 
     const process = exec('git push', distOptions)
