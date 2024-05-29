@@ -5,6 +5,7 @@ import {useEffectAsync} from "../../../ui/utils";
 import {Course} from "../../../canvas/course/index";
 import {FacultyProfile} from "./FacultyProfile";
 import {FacultyProfileSearch} from "./FacultyProfileSearch";
+import {Col, Row} from "react-bootstrap";
 
 type SectionDetailsProps = {
     section?: Course | null,
@@ -97,7 +98,7 @@ export function SectionDetails({
         </h3>
         <p><a href={section.courseUrl} target={'_blank'} className={'course-link'}>{section.name}</a></p>
         {info && <div className={`alert ${infoClass}`}>{info}</div>}
-        <div className={'row'}>
+        <Row>
             <div className={'col-sm-8'}>
                 {frontPageProfile && <FacultyProfile profile={frontPageProfile}/>}
             </div>
@@ -112,21 +113,19 @@ export function SectionDetails({
                     <AssignmentGroups assignmentGroups={assignmentGroups}/>
                 </div>
             </div>
-            <div className={'row'}>
-                <div className={'col'}>
-
-                </div>
-                {<FacultyProfileSearch
-                    onProfileSelect={applyProfile}
-                    user={instructors && instructors[0]}
-                />}
-                {facultyProfileMatches && facultyProfileMatches.map((profile, i) => (
-                    <FacultyProfile profile={profile} key={i}
-                                    setProfileButton={async () => await applyProfile(profile)}/>
-                ))}
-            </div>
-        </div>
-    </div>))
+        </Row>
+        <Row><Col>
+            <FacultyProfileSearch
+                onProfileSelect={applyProfile}
+                user={instructors && instructors[0]}
+            />
+        </Col></Row>
+        <Row><Col>
+            {facultyProfileMatches && facultyProfileMatches.map((profile, i) => (
+                <FacultyProfile profile={profile} key={i}
+                                setProfileButton={async () => await applyProfile(profile)}/>
+            ))}
+        </Col></Row></div>))
 }
 
 

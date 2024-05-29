@@ -17,7 +17,7 @@ type PublishInterfaceProps = {
     user: IUserData,
 }
 
-export function Index({course, user}: PublishInterfaceProps) {
+export function PublishInterface({course, user}: PublishInterfaceProps) {
     //-----
     // DATA
     //-----
@@ -191,11 +191,6 @@ export function Index({course, user}: PublishInterfaceProps) {
     //-----
     // RENDER
     //-----
-
-    function mailTo(emails: string[], subject = '') {
-        return `mailto:no-reply@unity.edu?bcc=${emails.join(',')}&subject=${subject}`;
-
-    }
 
     function openButton() {
         return (course && <Button disabled={!isBlueprint}
