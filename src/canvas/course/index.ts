@@ -19,6 +19,7 @@ import {
     fetchJson,
     fetchOneKnownApiJson,
     fetchOneUnknownApiJson,
+    filterUniqueFunc,
     formDataify,
     getApiPagedData,
     getItemTypeAndId,
@@ -37,7 +38,7 @@ import {NotImplementedException, Term} from "../index";
 
 import {overrideConfig} from "../../publish/fixesAndUpdates/validations/index";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber} from "./modules";
-import {cachedGetAssociatedCoursesFunc, getAssociatedCourses, IBlueprintCourse, isBlueprint} from "./blueprint";
+import {cachedGetAssociatedCoursesFunc, getSections, IBlueprintCourse, isBlueprint} from "./blueprint";
 
 const HOMETILE_WIDTH = 500;
 
@@ -63,7 +64,7 @@ export interface ICourseSettingsHaver extends IIdHaver {
 
 export interface ILatePolicyHaver extends IIdHaver {
     id: number,
-    getLatePolicy: (config?: ICanvasCallConfig) => Promise<ILatePolicyData|undefined>
+    getLatePolicy: (config?: ICanvasCallConfig) => Promise<ILatePolicyData | undefined>
 }
 
 export interface IAssignmentsHaver extends IIdHaver {
@@ -117,6 +118,7 @@ export interface IGradingSchemeEntry {
 
 export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
     name: string,
+
     getContent(config?: ICanvasCallConfig, refresh?: boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
 
 }
@@ -295,7 +297,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (!match) return null;
         let prefix = match[1] || "";
         let courseCode = match[2] || "";
-        if(prefix.length > 0) {
+        if (prefix.length > 0) {
             return `${prefix}_${courseCode}`;
         }
         return courseCode;
@@ -374,27 +376,49 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async getLatePolicy(this: { id: number }, config?: ICanvasCallConfig) {
         const latePolicyResult = await fetchJson(`/api/v1/courses/${this.id}/late_policy`, config);
-        if('late_policy' in latePolicyResult) return latePolicyResult.late_policy as ILatePolicyData;
+        if ('late_policy' in latePolicyResult) return latePolicyResult.late_policy as ILatePolicyData;
         return undefined;
 
     }
 
     async getAvailableGradingStandards(config?: ICanvasCallConfig | undefined): Promise<IGradingStandardData[]> {
-        const courseGradingStandards = await getGradingStandards(this.id, "course", config);
-        const accountGradingStandards = await getGradingStandards(this.rawData.account_id, 'account', config);
-        const rootAccountGradingStandards = await getGradingStandards(this.rawData.root_account_id, 'account', config);
-        return [...accountGradingStandards, ...rootAccountGradingStandards, ...courseGradingStandards];
+        let out: IGradingStandardData[] = [];
+        console.log(this.name)
+        const {id, account_id, root_account_id} = this.canvasData;
+        console.log(this.id, this.rawData.account_id, this.rawData.root_account_id)
+        if (id) {
+            const courseGradingStandards = await getGradingStandards(id, "course", config);
+            out = [...out, ...courseGradingStandards];
+
+        }
+        if (account_id) {
+            const accountGradingStandards = await getGradingStandards(account_id, 'account', config);
+            out = [...out, ...accountGradingStandards];
+
+        }
+
+        if (root_account_id) {
+            const rootAccountGradingStandards = await getGradingStandards(root_account_id, 'account', config);
+            out = [...out, ...rootAccountGradingStandards];
+
+        }
+        return out.filter(filterUniqueFunc);
     }
 
     async getCurrentGradingStandard(config?: ICanvasCallConfig | undefined): Promise<IGradingStandardData | null> {
-        const urls = [
-            `/api/v1/accounts/${this.rawData.root_account_id}/grading_standards/${this.rawData.grading_standard_id}`,
-            `/api/v1/accounts/${this.rawData.account_id}/grading_standards/${this.rawData.grading_standard_id}`,
-            `/api/v1/courses/${this.id}/grading_standards/${this.rawData.grading_standard_id}`
-        ]
+        const {grading_standard_id, account_id, root_account_id} = this.canvasData;
+
+        const urls = [];
+
+        if (grading_standard_id) {
+            urls.push(`/api/v1/courses/${this.id}/grading_standards/${grading_standard_id}`)
+            if (root_account_id) urls.push(`/api/v1/accounts/${root_account_id}/grading_standards/${grading_standard_id}`);
+            if (account_id) urls.push(`/api/v1/accounts/${account_id}/grading_standards/${grading_standard_id}`);
+        }
 
         for (let url of urls) {
             let gradingStandard = await fetchJson<IGradingStandardData | { errors: string[] }>(url);
+            console.log(gradingStandard);
             if (!('errors' in gradingStandard)) return gradingStandard;
         }
         return null;
@@ -843,8 +867,8 @@ async function getGradingStandards(contextId: number, contextType: 'account' | '
 
 
 async function* generatorMap<T, MapOutput>(
-    generator:AsyncGenerator<T>,
-    nextMapFunc:(value:T, index:number, generator:AsyncGenerator<T>)=>MapOutput,
+    generator: AsyncGenerator<T>,
+    nextMapFunc: (value: T, index: number, generator: AsyncGenerator<T>) => MapOutput,
 ) {
 
     let i = 0;
@@ -866,7 +890,7 @@ export function getCourseGenerator(queryString: string, accountIds: number[] | n
             search_term: queryString,
         }
     }
-    if(term && defaultConfig.queryParams) defaultConfig.queryParams.enrollment_term_id = term.id;
+    if (term && defaultConfig.queryParams) defaultConfig.queryParams.enrollment_term_id = term.id;
     config = overrideConfig(defaultConfig, config);
     const generators = accountIds.map(accountId => {
         let url = `/api/v1/accounts/${accountId}/courses`;
@@ -875,4 +899,5 @@ export function getCourseGenerator(queryString: string, accountIds: number[] | n
     return generatorMap(mergePagedDataGenerators(generators), courseData => new Course(courseData));
 }
 
-export class CourseNotFoundException extends Error {}
+export class CourseNotFoundException extends Error {
+}

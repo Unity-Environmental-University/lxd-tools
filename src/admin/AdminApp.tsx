@@ -56,8 +56,10 @@ export function AdminApp({course}: IAdminAppProps) {
     const [validationsToRun, setValidationsToRun] = useState<(CourseValidationTest & IMultiSelectOption)[]>([])
     const [validationResults, setValidationResults] = useState<IIncludesTestAndCourseId[]>([])
 
-    const [validationResultsLut, dispatchValidationResultsLut] =
-        useReducer(collectionLutDispatcher<IIncludesTestAndCourseId>, {});
+    const [
+        validationResultsLut,
+        dispatchValidationResultsLut
+    ] = useReducer(collectionLutDispatcher<IIncludesTestAndCourseId>, {});
 
     const [onlySearchBlueprints, setOnlySearchBlueprints] = useState(true);
     const [includeDev, setIncludeDev] = useState(false);
@@ -66,7 +68,10 @@ export function AdminApp({course}: IAdminAppProps) {
     const [isValidating, setIsValidating] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
-    const [parentCourseLut, dispatchParentCourseLut] = useReducer(lutDispatcher<number, Course|null>, {});
+    const [
+        parentCourseLut
+        , dispatchParentCourseLut
+    ] = useReducer(lutDispatcher<number, Course|null>, {});
     const [sectionLut, dispatchSectionLut] = useReducer(collectionLutDispatcher<Course>, {})
 
     const courseCache: Record<string, Course[]> = {};
@@ -127,10 +132,6 @@ export function AdminApp({course}: IAdminAppProps) {
 
         setCourseSearchString(replaceString.replace(/,$/, ''))
 
-    }
-
-    function getResultsForCourse(courseId: number) {
-        return validationResults.filter(result => result.courseId === courseId)
     }
 
     const search: FormEventHandler = async (e) => {

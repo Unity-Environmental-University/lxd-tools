@@ -80,9 +80,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
         assert(typeof this.contentUrlTemplate === 'string');
         let url = this.contentUrlTemplate
             .replace('{content_id}', contentId.toString());
-
         if (courseId) url = url.replace('{course_id}', courseId.toString());
-
         return url;
     }
 

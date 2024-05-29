@@ -3,7 +3,7 @@
 
 import {range} from "../../../src/canvas/canvasUtils";
 import {
-    getAssociatedCourses,
+    getSections,
     getTermNameFromSections,
     IBlueprintCourse,
     isBlueprint,
@@ -16,6 +16,7 @@ import {IAccountData, ICourseData, ITermData} from "../../../src/canvas/canvasDa
 import {dummyTermData} from "../../dummyData/dummyTermData";
 import {dummyAccountData} from "../../dummyData/dummyAccountData";
 import assert from "assert";
+import mock = jest.mock;
 
 fetchMock.enableMocks();
 
@@ -24,7 +25,7 @@ function getDummyBlueprintCourse(blueprint: boolean, id: number = 0) {
     out = {
         id,
         isBlueprint: () => isBlueprint({blueprint}),
-        getAssociatedCourses: () => getAssociatedCourses(out)
+        getAssociatedCourses: () => getSections(out)
     }
     return out;
 }
@@ -34,8 +35,10 @@ test("Testing get associated courses logic", async () => {
         return {...dummyCourseData, id: i}
     })
     fetchMock.mockResponseOnce(JSON.stringify(mockData));
-
-    const courses = await getAssociatedCourses(getDummyBlueprintCourse(true, 0))
+    for(let data of mockData) {
+        fetchMock.mockResponseOnce(JSON.stringify(data));
+    }
+    const courses = await getSections(getDummyBlueprintCourse(true, 0))
     const courseIds = courses.map(course => course.id).toSorted();
     expect(courseIds).toStrictEqual([...range(0, 9)]);
 
@@ -68,11 +71,15 @@ test("Testing blueprint retirement", async () => {
         course_code: `${termName}_TEST000-01`,
         enrollment_term_id: [10]
     }]
-    fetchMock
-        .once(JSON.stringify(mockAssociatedCourseData))
-        .once(JSON.stringify(<IAccountData[]>[{...dummyAccountData, id: 2, root_account_id: null}]))
-        .once(JSON.stringify(<ITermData>{...dummyTermData, id: 10, name: termName}))
-    let derivedTermName = await getTermNameFromSections(mockBlueprint);
+    fetchMock.once(JSON.stringify(mockAssociatedCourseData));
+    for(let data of mockAssociatedCourseData) {
+        fetchMock.once(JSON.stringify(data));
+    }
+    const sections = await mockBlueprint.getAssociatedCourses();
+
+    fetchMock.once(JSON.stringify(<IAccountData[]>[{...dummyAccountData, id: 2, root_account_id: null}]))
+    fetchMock.once(JSON.stringify(<ITermData>{...dummyTermData, id: 10, name: termName}))
+    let derivedTermName = await getTermNameFromSections(sections);
     expect(derivedTermName).toBe(termName);
 
     await fetchMock.withImplementation(async (requestUrl, requestInit) => {

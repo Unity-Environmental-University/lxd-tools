@@ -2,7 +2,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import "./publish.scss"
 import React, {useEffect, useState} from 'react';
 import {useEffectAsync} from "../ui/utils";
-import {PublishInterface} from "./publishInterface/publishInterface";
+import {PublishInterface} from "./publishInterface/PublishInterface";
 import {ContentUpdateInterface} from "./fixesAndUpdates/ContentUpdateInterface";
 import {Course} from "../canvas/course/index";
 import {IUserData} from "../canvas/canvasDataDefs";

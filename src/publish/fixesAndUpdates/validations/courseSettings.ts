@@ -68,22 +68,29 @@ export const badGradingPolicyTest: CourseValidationTest<IModulesHaver & IGrading
     name: "Correct grading policy selected",
     description: "5 week courses have REVISED DE Undergraduate Programs grading scheme selected. 8 week courses have  DE Graduate Programs grading scheme selected",
     run: async (course, config) => {
-        const gradingStandards = await course.getAvailableGradingStandards(config);
-        const currentGradingStandard = await course.getCurrentGradingStandard(config);
+        try {
+            const gradingStandards = await course.getAvailableGradingStandards(config);
+            const currentGradingStandard = await course.getCurrentGradingStandard(config);
 
-        const modulesByWeekNumber = await course.getModulesByWeekNumber(config);
-        const isGrad = modulesByWeekNumber.hasOwnProperty(8);
-        if(!gradingStandards) return testResult(false, [`Grading standards not accessible from ${course.id}`])
+            const modulesByWeekNumber = await course.getModulesByWeekNumber(config);
+            const isGrad = modulesByWeekNumber.hasOwnProperty(8);
+            if (!gradingStandards) return testResult(false, [`Grading standards not accessible from ${course.id}`])
 
-        const [undergradStandard] = gradingStandards.filter(standard => /REVISED DE Undergraduate Programs/.test(standard.title))
-        const [gradStandard] = gradingStandards.filter(standard => /DE Graduate Programs/.test(standard.title))
-        const expectedStandard = isGrad ? gradStandard : undergradStandard;
+            const [undergradStandard] = gradingStandards.filter(standard => /REVISED DE Undergraduate Programs/.test(standard.title))
+            const [gradStandard] = gradingStandards.filter(standard => /DE Graduate Programs/.test(standard.title))
+            const expectedStandard = isGrad ? gradStandard : undergradStandard;
 
-        let success = currentGradingStandard?.id == expectedStandard.id;
-        const result = testResult(success, [`Grading standard set to ${currentGradingStandard?.title} expected to be ${expectedStandard.title}`]);
+            let success = currentGradingStandard?.title == expectedStandard.title;
+            const result = testResult(success, [`Grading standard set to ${currentGradingStandard?.title} expected to be ${expectedStandard.title}`]);
 
-        if(!success) result.links = [`/course/${course.id}/settings`];
-        return result;
+            if (!success) result.links = [`/courses/${course.id}/settings`];
+            return result;
+        } catch (e) {
+            return {
+                success: false,
+                message: e instanceof Error? [e.message, e.stack ?? ''] : ['ERROR']
+            }
+        }
     }
 }
 

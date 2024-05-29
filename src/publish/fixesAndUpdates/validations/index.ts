@@ -17,6 +17,8 @@ export type ValidationFixResult = {
     links?: string[],
 }
 
+
+
 export type CourseValidationTest<T = Course, UserDataType = undefined> = {
     courseCodes?: string[],
     name: string,

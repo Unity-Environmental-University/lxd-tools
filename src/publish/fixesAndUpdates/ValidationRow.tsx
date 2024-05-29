@@ -90,7 +90,7 @@ export function ValidationRow({
     }, [course, test])
 
     function truncateMessage(messageString: string) {
-        if (slim) return messageString.replace(/^(.{20}).*$/, '$1...')
+       if (slim) return messageString.replace(/^(.{200}).*$/, '$1...')
         return messageString;
     }
 
@@ -101,8 +101,8 @@ export function ValidationRow({
 
 
         return typeof result.message === 'string' ?
-            <p>{truncateMessage(result.message)}</p>
-            : result.message.map(message => (<div>
+            <p className={'message'}>{truncateMessage(result.message)}</p>
+            : result.message.map(message => (<div className='message'>
                 {truncateMessage(message)}
             </div>))
     }
@@ -110,8 +110,8 @@ export function ValidationRow({
     if (!showOnlyFailures || loading || (!result?.success)) {
         return <Row className={slim ? 'test-row-slim' : 'test-row'}>
             <div className={'col-sm-2'}>{test.name}</div>
-            <div className={'col-sm-3'}>
-                {slim ? truncateMessage(test.description) : test.description}
+            <div className={'col-sm-3 message'}>
+                {test.description}
 
             </div>
             <div className={'col-sm-4'}>

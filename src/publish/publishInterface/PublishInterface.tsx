@@ -5,7 +5,7 @@ import assert from "assert";
 import {Button} from "react-bootstrap";
 import {PublishCourseRow} from "./PublishCourseRow";
 import Modal from "../../ui/widgets/Modal/index";
-import {SectionDetails} from "./SectionDetails";
+import {SectionDetails} from "./sectionDetails/SectionDetails";
 import {Course} from "../../canvas/course/index";
 import {IUserData} from "../../canvas/canvasDataDefs";
 import {Term} from "../../canvas/index";

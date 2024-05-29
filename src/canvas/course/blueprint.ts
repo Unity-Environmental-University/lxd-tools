@@ -1,4 +1,4 @@
-import {ICanvasCallConfig, getApiPagedData} from "../canvasUtils";
+import {ICanvasCallConfig, getApiPagedData, getPagedDataGenerator} from "../canvasUtils";
 import {ICourseData} from "../canvasDataDefs";
 import {Course, ICourseCodeHaver, IIdHaver} from "./index";
 import {ICanvasObject} from "../baseCanvasObject";
@@ -14,25 +14,29 @@ export function isBlueprint({blueprint}: { blueprint?: boolean | undefined }) {
 }
 
 
-export async function getAssociatedCourses(course: IBlueprintCourse) {
+export async function getSections(course: IBlueprintCourse) {
     const id = course.id;
     if (!course.isBlueprint()) return [];
-    const url = `courses/${id}/blueprint_templates/default/associated_courses`;
-    const courses = await getApiPagedData<ICourseData>(url, {queryParams: {per_page: 50}});
-    return courses.map(courseData => new Course(courseData));
+    const url = `/api/v1/courses/${id}/blueprint_templates/default/associated_courses`;
+    const courseDataGenerator = getPagedDataGenerator<ICourseData>(url, {queryParams: {per_page: 50}});
+    const sections:Course[] = [];
+    for await (let sectionData of courseDataGenerator) {
+        sections.push(await Course.getCourseById(sectionData.id))
+    }
+    return sections;
 }
 
 export function cachedGetAssociatedCoursesFunc(course:IBlueprintCourse) {
     let cache:Course[] | null= null;
     return async (redownload=false) => {
         if (!redownload && cache) return cache;
-        cache = await getAssociatedCourses(course);
+        cache = await getSections(course);
         return cache;
     }
 }
 
-export async function getTermNameFromSections(course: IBlueprintCourse) {
-    const [section] = await course.getAssociatedCourses();
+export async function getTermNameFromSections(sections:Course[]) {
+    const [section] = sections;
     if(!section) throw new Error("Cannot determine term name by sections; there are no sections.")
     const sectionTerm = await section.getTerm();
     if (!sectionTerm) throw new Error("Section does not have associated term: " + section.name);

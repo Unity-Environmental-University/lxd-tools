@@ -23,7 +23,7 @@ async function getFacultyCourse() {
     return facultyCourse;
 }
 
-async function getFacultyPages(searchTerm: string) {
+export async function getFacultyPages(searchTerm: string) {
     const facultyCourse = await getFacultyCourse();
     return await facultyCourse.getPages({
         queryParams: {
@@ -56,13 +56,13 @@ async function getPotentialFacultyProfiles(user:IUserData) {
     return profiles;
 }
 
-function getProfileFromPage(page:Page, user:IUserData) {
+export function getProfileFromPage(page:Page, user?:IUserData) {
     const profile = getProfileFromPageHtml(page.body, user);
     profile.sourcePage = page;
     return profile;
 }
 
-function getProfileFromPageHtml(html:string, user: IUserData): IProfile {
+function getProfileFromPageHtml(html:string, user?: IUserData): IProfile {
     const el = document.createElement('div')
     el.innerHTML = html;
 
