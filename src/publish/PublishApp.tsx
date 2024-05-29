@@ -2,7 +2,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import "./publish.scss"
 import React, {useEffect, useState} from 'react';
 import {useEffectAsync} from "../ui/utils";
-import {PublishInterface} from "./publishInterface/PublishInterface";
+    import {Index} from "./publishInterface";
 import {ContentUpdateInterface} from "./fixesAndUpdates/ContentUpdateInterface";
 import {Course} from "../canvas/course/index";
 import {IUserData} from "../canvas/canvasDataDefs";
@@ -33,7 +33,7 @@ function PublishApp() {
     }, []);
 
     return(user && <div>
-        <PublishInterface course={course} user={user}/>
+        <Index course={course} user={user}/>
         <ContentUpdateInterface course={course} parentCourse={parentCourse} refreshCourse={() => getCourse(true)}/>
         <AdminApp course={course}/>
     </div>)

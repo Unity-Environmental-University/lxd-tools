@@ -17,7 +17,7 @@ type PublishInterfaceProps = {
     user: IUserData,
 }
 
-export function PublishInterface({course, user}: PublishInterfaceProps) {
+export function Index({course, user}: PublishInterfaceProps) {
     //-----
     // DATA
     //-----
@@ -37,7 +37,6 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
     const [publishErrors, setPublishErrors] = useState<Record<number, string[]>>({})
     const [loading, setLoading] = useState<boolean>(false);
     const [infoClass, setInfoClass] = useState<string>('alert-secondary')
-
 
     useEffectAsync(updateCourse, [course]);
 
