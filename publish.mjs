@@ -14,13 +14,21 @@ async function  main() {
     let distManifest = JSON.parse(fs.readFileSync('../dist/manifest.json').toString())
 
     if (distManifest.version !== packageTag) {
+
         fs.writeFileSync('../dist/manifest.json', JSON.stringify({...manifest, version: packageTag}));
     }
-    const commitMessages = getCommitMessages(distManifest.version, packageTag);
+
+
     const distOptions = {cwd: '../dist'};
+
+    console.log(execSync('git add -v .', distOptions).toString());
+
+
+    const commitMessages = getCommitMessages(distManifest.version, packageTag).filter(m => m.length > 0)
     console.log(commitMessages)
-    console.log(execSync('git add .', distOptions).toString());
-    console.log(execSync(`git commit -m '${packageTag}' ${commitMessages.map(text => ` -m '${text}`)}'`, distOptions).toString())
+    const command = `git commit -m "${packageTag} ${commitMessages.join(',')}"`;
+    console.log(command)
+    console.log(execSync(command, distOptions).toString())
     updateTag(packageTag, '../dist');
 
     const process = exec('git push', distOptions)
