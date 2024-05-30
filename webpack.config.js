@@ -83,7 +83,7 @@ module.exports = {
             patterns: [
                 {from: "./README.dist.md", to: "README.md"},
                 {
-                    from: "./manifest.json",
+                    from: path.resolve(__dirname, 'manifest.json'),
                     to: "manifest.json",
                     transform: (content, path) => {
                         let packageJson = require('./package.json');

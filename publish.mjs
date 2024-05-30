@@ -8,37 +8,59 @@ import {workerData} from "node:worker_threads";
 async function  main() {
     const packageTag = getPackageTag();
     const tags = getGitTags('./')
-
+    console.log(packageTag);
     updateTag(packageTag, './');
 
     let distManifest = JSON.parse(fs.readFileSync('../dist/manifest.json').toString())
 
     if (distManifest.version !== packageTag) {
-
         fs.writeFileSync('../dist/manifest.json', JSON.stringify({...manifest, version: packageTag}));
     }
 
 
-    const distOptions = {cwd: '../dist'};
+    const distOptions = {
+        cwd: '../dist'
+    };
 
     console.log(execSync('git add -v .', distOptions).toString());
 
 
-    const commitMessages = getCommitMessages(distManifest.version, packageTag).filter(m => m.length > 0)
+    const commitMessages = [
+        packageTag,
+        ...getCommitMessages(distManifest.version, packageTag).filter(m => m.length > 0)
+    ];
     console.log(commitMessages)
-    const command = `git commit -m "${packageTag} ${commitMessages.join(',')}"`;
+    fs.writeFileSync('../dist/commit.tmp', commitMessages.join('\n'));
+    console.log(fs.readFileSync('../dist/commit.tmp').toString());
+    const command = `git commit -F ./commit.tmp`;
     console.log(command)
-    console.log(execSync(command, distOptions).toString())
+    try {
+        const process = exec(command, distOptions);
+        process.on('message', message => console.log(process.stdout.toString()))
+        process.on('error', message => console.log(process.stderr.toString()))
+        process.on('close', message => {
+            console.log(message);
+            finish(packageTag);
+        });
+    } catch(e) {
+        console.error(e);
+    }
+
+}
+
+
+async function finish(packageTag) {
     updateTag(packageTag, '../dist');
 
-    const process = exec('git push', distOptions)
+    const process = exec('git push', {cwd: '../dist'})
     process.on('message', (message) => {
-
         console.log(process.stdout.toString())
+    });
+    process.on('error', (message) => {
+        console.log(process.stderr.toString())
     });
     process.on('close', () => console.log('Finished'))
 }
-
 
 /**
  * the working directory of the repository to tag
