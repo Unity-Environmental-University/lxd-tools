@@ -2,8 +2,8 @@ import {Course, IContentHaver, ISyllabusHaver} from "../../../canvas/course/inde
 import {ICanvasCallConfig} from "../../../canvas/canvasUtils";
 
 //number of characters to show around a match
-const SHOW_WINDOW = 100;
-const MAX_SEARCH_RETURN_SIZE = 300;
+const SHOW_WINDOW = 30;
+const MAX_SEARCH_RETURN_SIZE = 100;
 export type ValidationTestResult<UserDataType = undefined> = {
     userData?: UserDataType,
     success: boolean | 'unknown',

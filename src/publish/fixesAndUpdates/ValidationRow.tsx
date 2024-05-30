@@ -101,9 +101,10 @@ export function ValidationRow({
 
 
         return typeof result.message === 'string' ?
-            <p className={'message'}>{truncateMessage(result.message)}</p>
+            <div className={'message'}>{truncateMessage(result.message)}</div>
             : result.message.map(message => (<div className='message'>
                 {truncateMessage(message)}
+                <hr/>
             </div>))
     }
 
