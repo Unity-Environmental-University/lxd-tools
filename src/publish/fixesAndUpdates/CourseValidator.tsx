@@ -2,13 +2,13 @@ import React from "react";
 import './CourseValidTest.scss'
 import {ValidationRow} from "./ValidationRow";
 import {Course} from "../../canvas/course";
-import {CourseValidationTest} from "./validations";
+import {CourseValidation} from "./validations";
 
 type CourseValidatorProps<T = Course> = {
     course: T,
     showOnlyFailures: boolean,
     refreshCourse: () => Promise<any>,
-    tests: CourseValidationTest<T>[]
+    tests: CourseValidation<T>[]
 }
 
 export function CourseValidator({course, tests, refreshCourse, showOnlyFailures=false}: CourseValidatorProps) {

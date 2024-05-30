@@ -10,7 +10,7 @@ import {
 } from "../../../src/canvas/course/index";
 import fs from "fs";
 import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../dummyData/dummyContentData";
-import {CourseValidationTest, TextReplaceValidationText} from "../../../src/publish/fixesAndUpdates/validations/index";
+import {CourseValidation, TextReplaceValidation} from "../../../src/publish/fixesAndUpdates/validations/index";
 import {ILatePolicyUpdate} from "../../../src/canvas/canvasDataDefs";
 import dummyLatePolicy from "../../dummyData/dummyLatePolicy";
 import assert from "assert";
@@ -18,7 +18,7 @@ import assert from "assert";
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
 
-export function badContentTextValidationTest(test: CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
+export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {
     return async () => {
         const goofuses: IContentHaver[] = contentGoofuses(badHtml, goodHtml);
 
@@ -35,7 +35,7 @@ export function badContentTextValidationTest(test: CourseValidationTest<IContent
     };
 }
 
-export function badContentTextValidationFixTest(test: CourseValidationTest<IContentHaver>, badHtml: string, goodHtml: string) {
+export function badContentTextValidationFixTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {
     return async () => {
         assert(test.fix);
         const goofuses: IContentHaver[] = contentGoofuses(badHtml, goodHtml);
@@ -130,7 +130,7 @@ export function dummyContentHaver(syllabus: string, content: BaseContentItem[], 
     }
 }
 
-export function syllabusTestTest(test: CourseValidationTest<ISyllabusHaver> | TextReplaceValidationText<ISyllabusHaver>) {
+export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
     return async () => {
         const gallantCourse: ISyllabusHaver = dummySyllabusHaver(gallantSyllabusHtml);
         const gallantResult = await test.run(gallantCourse)

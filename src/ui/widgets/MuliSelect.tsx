@@ -7,12 +7,16 @@ export interface IMultiSelectOption {
     label: string;
 }
 
-export function optionize<BaseType extends Object>(
+export function optionize<
+    BaseType extends Object,
+>(
     objects: BaseType[],
     idFunc?: (object: BaseType) => number | string,
     labelFunc?: (object: BaseType) => string
 ) {
 
+
+    const objectsArray = Array.isArray(objects) ? objects : [objects];
     let idGenerator = function* (i: number) {
         while (true) {
             yield i;
@@ -20,20 +24,28 @@ export function optionize<BaseType extends Object>(
         }
     }(0);
 
-    type ObjectType = typeof objects[number];
-    const options: (ObjectType & IMultiSelectOption)[] = objects.map(object => {
+
+    const results = objectsArray.map(object => {
         let key = idFunc ? idFunc(object) : idGenerator.next().value;
         let label = labelFunc ? labelFunc(object) : key.toString();
-        const modObject:Record<string, any> = object;
-        modObject.key = key;
-        modObject.label = label;
-        const returnObject: ObjectType & Partial<IMultiSelectOption> = object;
-        returnObject.key = key;
-        returnObject.label = label;
-        return returnObject as ObjectType & IMultiSelectOption;
+        return optionizeOne(object, key, label)
 
     });
-    return options;
+    return results;
+}
+
+export function optionizeOne<BaseType extends Object>(
+    object: BaseType,
+    key?: number | string,
+    label?: string
+) {
+    const modObject: Record<string, any> = object;
+    modObject.key = key;
+    modObject.label = label;
+    const returnObject: BaseType & Partial<IMultiSelectOption> = object;
+    returnObject.key = key;
+    returnObject.label = label;
+    return returnObject as BaseType & IMultiSelectOption;
 }
 
 
@@ -75,7 +87,7 @@ function MultiSelect<SelectedType extends IMultiSelectOption>({
                 <span className="arrow">{isOpen ? '▲' : '▼'}</span>
             </div>
             {(isOpen || alwaysOpen) && (
-                <div className={alwaysOpen? "multi-select-options-dont-close" : "multi-select-options"}>
+                <div className={alwaysOpen ? "multi-select-options-dont-close" : "multi-select-options"}>
                     {options.map((option) => (
                         <div
                             key={option.key}

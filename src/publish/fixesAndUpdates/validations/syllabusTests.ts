@@ -3,13 +3,13 @@ import {ISyllabusHaver} from "../../../canvas/course/index";
 import {
     badContentFixFunc,
     badSyllabusFixFunc,
-    CourseValidationTest,
+    CourseValidation,
     testResult,
-    TextReplaceValidationText
+    TextReplaceValidation
 } from "./index";
 
 //Syllabus Tests
-export const finalNotInGradingPolicyParaTest: TextReplaceValidationText<ISyllabusHaver> = {
+export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
     name: "Remove Final",
     negativeExemplars:[['off the final grade', 'off the grade'], ['final exam', 'final exam']],
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
@@ -22,7 +22,7 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidationText<ISyllabu
     fix: badSyllabusFixFunc(/off the final grade/gi, 'off the grade')
 }
 
-export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
+export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
     name: "Syllabus - Within 24 Hours",
     description: "Revise the top sentence of the \"Communication\" section of the syllabus to read: \"The instructor will " +
         "conduct all correspondence with students related to the class in Canvas, and you should " +
@@ -41,7 +41,7 @@ export const communication24HoursTest: CourseValidationTest<ISyllabusHaver> = {
     }
 }
 
-export const courseCreditsInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
+export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "Syllabus Credits",
     description: 'Credits displayed in summary box of syllabus',
 
@@ -60,7 +60,7 @@ export const courseCreditsInSyllabusTest: CourseValidationTest<ISyllabusHaver> =
     }
 }
 
-export const aiPolicyInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
+export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "AI Policy in Syllabus Test",
     description: "The AI policy is present in the syllabus",
     run: async (course: ISyllabusHaver, config) => {
@@ -72,7 +72,7 @@ export const aiPolicyInSyllabusTest: CourseValidationTest<ISyllabusHaver> = {
 }
 
 
-export const bottomOfSyllabusLanguageTest: CourseValidationTest<ISyllabusHaver> = {
+export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
     name: "Bottom-of-Syllabus Test",
     description: "Replace language at the bottom of the syllabus with: \"Learning materials for Weeks 2 forward are organized with the rest of the class in your weekly modules. The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
     run: async (course, config) => {

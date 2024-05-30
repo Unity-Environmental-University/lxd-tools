@@ -1,18 +1,18 @@
 import React, {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {Course} from "../../canvas/course";
-import {CourseValidationTest, ValidationTestResult} from "./validations";
+import {CourseValidation, ValidationTestResult} from "./validations";
 import assert from "assert";
 import {Row} from "react-bootstrap";
 
 type ValidationRowProps = {
     course: Course,
     potemkinVillage?: boolean,
-    test: CourseValidationTest,
+    test: CourseValidation,
     slim?: boolean,
     initialResult?: ValidationTestResult,
     refreshCourse: () => Promise<any>
-    onResult?: (result: ValidationTestResult, test: CourseValidationTest) => any,
+    onResult?: (result: ValidationTestResult, test: CourseValidation) => any,
     showOnlyFailures?: boolean,
 }
 

@@ -1,7 +1,7 @@
 import {IPagesHaver} from "../../../canvas/course/index";
-import {CourseValidationTest, testResult, ValidationTestResult} from "./index";
+import {CourseValidation, testResult, ValidationTestResult} from "./index";
 
-export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
+export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
     name: "Learning Objectives -> Weekly Objectives",
     description: 'Make sure weekly objectives are called "Weekly Objectives" and not "Learning Objectives" throughout',
     run: async (course, config) => {
@@ -28,7 +28,7 @@ export const weeklyObjectivesTest: CourseValidationTest<IPagesHaver> = {
     }
 }
 
-export const courseProjectOutlineTest: CourseValidationTest<IPagesHaver> = {
+export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {
     name: "Project outline -> Course Project Outline",
     description: "On the Course Project Overview page, make sure the heading reads \"Course Project Outline\" and not \"Project outline\"",
     run: async (course, config) => {

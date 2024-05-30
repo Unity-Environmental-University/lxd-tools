@@ -1,15 +1,14 @@
 import {Course, getCourseGenerator,} from "../canvas/course/index";
-import React, {FormEventHandler, useEffect, useReducer, useState} from "react";
+import React, {FormEvent, FormEventHandler, useEffect, useReducer, useState} from "react";
 import {
     badContentRunFunc,
-    CourseValidationTest,
+    CourseValidation,
     ValidationTestResult
 } from "../publish/fixesAndUpdates/validations/index";
 import courseContent from "../publish/fixesAndUpdates/validations/courseContent";
 import courseSettings from "../publish/fixesAndUpdates/validations/courseSettings";
 import syllabusTests from "../publish/fixesAndUpdates/validations/syllabusTests";
-import MultiSelect, {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
-import {useEffectAsync} from "../ui/utils";
+import MultiSelect, {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
 import Modal from "../ui/widgets/Modal/index";
 import {Col, Container, Form, Row} from "react-bootstrap";
 import {batchify, filterUniqueFunc} from "../canvas/canvasUtils";
@@ -22,24 +21,18 @@ interface IAdminAppProps {
     course?: Course,
 }
 
-const tests: CourseValidationTest[] = [
+const tests: CourseValidation[] = [
     ...courseContent,
     ...courseSettings,
     ...syllabusTests,
-    {
-        //courseCodes: ['PROF590', 'PROF690'],
-        name: "Pseudo-ruminant",
-        description: ``,
-        run: badContentRunFunc(/pseudo[- ]?ruminant/ig),
-    }
 ]
 
-function getTestName(test: CourseValidationTest) {
+function getTestName(test: CourseValidation) {
     return test.name;
 }
 
 interface IIncludesTestAndCourseId extends ValidationTestResult {
-    test: CourseValidationTest,
+    test: CourseValidation,
     courseId: number,
 }
 
@@ -47,63 +40,39 @@ interface IIncludesTestAndCourseId extends ValidationTestResult {
 export function AdminApp({course}: IAdminAppProps) {
     const [isOpen, setIsOpen] = useState(false);
 
-    const [courseSearchString, setCourseSearchString] = useState('');
-    const [seekCourseCodes, setSeekCourseCodes] = useState<string[]>([]);
     const [foundCourses, setFoundCourses] = useState<(Course & IMultiSelectOption)[]>([]);
     const [coursesToRunOn, setCoursesToRunOn] = useState<(Course & IMultiSelectOption)[]>([])
 
-    const [allValidations, _] = useState(optionize(tests, getTestName, getTestName))
-    const [validationsToRun, setValidationsToRun] = useState<(CourseValidationTest & IMultiSelectOption)[]>([])
+    const [validationsToRun, setValidationsToRun] = useState<(CourseValidation & IMultiSelectOption)[]>([])
     const [validationResults, setValidationResults] = useState<IIncludesTestAndCourseId[]>([])
+
+    const [onlySearchBlueprints, setOnlySearchBlueprints] = useState(true);
 
     const [
         validationResultsLut,
         dispatchValidationResultsLut
     ] = useReducer(collectionLutDispatcher<IIncludesTestAndCourseId>, {});
 
-    const [onlySearchBlueprints, setOnlySearchBlueprints] = useState(true);
     const [includeDev, setIncludeDev] = useState(false);
     const [includeSections, setIncludeSections] = useState(false);
 
     const [isValidating, setIsValidating] = useState(false);
-    const [isSearching, setIsSearching] = useState(false);
 
     const [
         parentCourseLut
         , dispatchParentCourseLut
-    ] = useReducer(lutDispatcher<number, Course|null>, {});
+    ] = useReducer(lutDispatcher<number, Course | null>, {});
     const [sectionLut, dispatchSectionLut] = useReducer(collectionLutDispatcher<Course>, {})
-
-    const courseCache: Record<string, Course[]> = {};
-
-
-    function bpify(code: string) {
-        let [, prefix] = code.match(/^([^_]*)_/) || [null, ''];
-        let [, body] = code.match(`${prefix || ''}_?(.*)`) || [null, code];
-        return `BP_${body}`;
-    }
-
-    useEffect(() => {
-
-        const strings = courseSearchString.split(',').map(string => string.trimEnd());
-        //Filter out dupes
-        let courseCodes = strings.filter((value, index, array) => array.indexOf(value) === index);
-        if (onlySearchBlueprints) courseCodes = courseCodes.map(bpify)
-        setSeekCourseCodes(courseCodes)
-    }, [courseSearchString]);
-
-    useEffectAsync(async () => {
-    }, [seekCourseCodes])
 
 
     function cacheAssociatedCourses(bpId: number, toAdd: Course[] | Course) {
         const sections = Array.isArray(toAdd) ? toAdd : [toAdd];
         console.log(bpId, sections.map(a => a.courseCode))
-        dispatchSectionLut({add: {key:bpId, items:sections}});
+        dispatchSectionLut({add: {key: bpId, items: sections}});
     }
 
     function cacheParentCourse(bpId: number, toAdd: Course | null) {
-        dispatchParentCourseLut({set:{ key:bpId, item: toAdd}})
+        dispatchParentCourseLut({set: {key: bpId, item: toAdd}})
     }
 
     async function getAssociatedCourses(course: Course) {
@@ -126,43 +95,7 @@ export function AdminApp({course}: IAdminAppProps) {
     }
 
 //Handlers
-    function updateCourseSearchString() {
-        let replaceString = courseSearchString.replaceAll(/(\w+)\t(\d+)\s*/gs, '$1$2,')
-        replaceString = replaceString.replaceAll(/(\w+\d+,)\1+/gs, '$1')
 
-        setCourseSearchString(replaceString.replace(/,$/, ''))
-
-    }
-
-    const search: FormEventHandler = async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        if (isSearching) return;
-        updateCourseSearchString();
-
-        const accountIds = [(await Account.getRootAccount()).id];
-        setIsSearching(true)
-        let courses: typeof foundCourses = [];
-        for (let code of seekCourseCodes) {
-            if (courseCache[code]) {
-                courses = [...courses, ...optionize(courseCache[code])];
-            } else {
-                const generator = getCourseGenerator(code, accountIds);
-
-                for await (let course of generator) {
-                    const [optionCourse] = optionize(
-                        [course],
-                        course => course.id,
-                        course => course.courseCode ?? course.name ?? course.id.toString()
-                    );
-                    courses = [...courses, optionCourse].toSorted((a, b) => a.baseCode?.localeCompare(b.baseCode));
-                    if (onlySearchBlueprints) courses = courses.filter(course => course.isBlueprint())
-                    setFoundCourses(courses);
-                }
-            }
-        }
-        setIsSearching(false);
-    }
 
     async function runTests(e: React.FormEvent) {
         e.stopPropagation();
@@ -179,7 +112,7 @@ export function AdminApp({course}: IAdminAppProps) {
                 const dev = await getParentCourse(course);
                 if (dev) {
                     cacheParentCourse(course.id, dev);
-                    coursesToValidate = [...coursesToValidate, ...optionize([dev])];
+                    coursesToValidate = [...coursesToValidate, optionizeOne(dev)];
                 }
 
             }
@@ -208,7 +141,7 @@ export function AdminApp({course}: IAdminAppProps) {
                 console.log('running', test.name);
                 let testResults = await Promise.all(batch.map((course) => getTestResultOption(course, test)));
 
-                for(let result of testResults) {
+                for (let result of testResults) {
                     dispatchValidationResultsLut({
                         add: {key: result.courseId, items: [result]}
                     })
@@ -286,44 +219,43 @@ export function AdminApp({course}: IAdminAppProps) {
     }
 
     return <>
-        <button disabled={seekCourseCodes.length === 0} onClick={() => setIsOpen(true)}>Admin</button>
+        <button onClick={() => setIsOpen(true)}>Admin</button>
         <Modal isOpen={isOpen} requestClose={() => setIsOpen(false)}>
             <Container>
                 <Row>
                     <Col sm={9}>
                         <Row>
-                            <Col>
+                            <Col sm={4}>
+                                <Form.Label>Only Search Blueprints</Form.Label>
                                 <Form.Check
-                                    label={'Only Search Blueprints'}
                                     checked={onlySearchBlueprints}
                                     onChange={(e) => setOnlySearchBlueprints(e.target.checked)}
-                                ></Form.Check>
-                                {onlySearchBlueprints && <>
-                                    <Form.Check
-                                        disabled={!onlySearchBlueprints}
-                                        checked={includeDev}
-                                        label='Include Dev'
-                                        onChange={(e) => setIncludeDev(e.target.checked)}
-                                    ></Form.Check>
-                                    <Form.Check
-                                        disabled={!onlySearchBlueprints}
-                                        checked={includeSections}
-                                        label='Include Sections'
-                                        onChange={(e) => setIncludeSections(e.target.checked)}
-                                    ></Form.Check>
-                                </>}
-                                <SearchCourses
-                                    search={search}
-                                    courseSearchString={courseSearchString}
-                                    setCourseSearchString={setCourseSearchString}
                                 />
                             </Col>
-                            <Col><SelectValidations
+                            {onlySearchBlueprints && <Col sm={4}>
+                                <Form.Label>Include Dev</Form.Label>
+                                <Form.Check checked={includeDev} onChange={(e) => setIncludeDev(e.target.checked)}/>
+                            </Col>}
+                            {onlySearchBlueprints && <Col sm={4}>
+                                <Form.Label>Include Sections</Form.Label>
+                                <Form.Check checked={includeSections} onChange={(e) => setIncludeSections(e.target.checked)}/>
+                            </Col>}
+                        </Row>
+                        <Row>
+                            <Col>
+                                <SearchCourses
+                                    setFoundCourses={setFoundCourses}
+                                    onlySearchBlueprints={onlySearchBlueprints}
+                                    setIsSearching={() => null}
+                                />
+                            </Col><Col>
+                            <SelectValidations
                                 runTests={runTests}
-                                options={allValidations}
                                 testsToRun={validationsToRun}
-                                setCoursesToRunOn={setCoursesToRunOn}
-                                setTestsToRun={setValidationsToRun}/></Col>
+                                setCoursesToRunOn={(courses) => optionize(courses)}
+                                onChangeCustomValidation={()=>null}
+                                setTestsToRun={setValidationsToRun}/>
+                        </Col>
                         </Row>
 
                         <ResultsDisplay/>
@@ -341,22 +273,71 @@ export function AdminApp({course}: IAdminAppProps) {
 interface IValidationResultsForCourseProps {
     results?: IIncludesTestAndCourseId[],
     slim?: boolean,
-    course: Course,
+    course
+        :
+        Course,
 }
 
 
-interface SearchCoursesProps {
-    search: FormEventHandler,
-    setCourseSearchString: (value: string) => void,
-    courseSearchString: string,
+interface ISearchCoursesProps {
+    onlySearchBlueprints: boolean,
+    setIsSearching: (value: boolean) => void,
+    setFoundCourses: (value: (Course & IMultiSelectOption)[]) => void,
 }
 
-//render
 function SearchCourses({
-                           search,
-                           courseSearchString,
-                           setCourseSearchString
-                       }: SearchCoursesProps) {
+    setFoundCourses,
+    onlySearchBlueprints,
+}: ISearchCoursesProps) {
+
+    const [courseSearchString, setCourseSearchString] = useState('');
+    const [seekCourseCodes, setSeekCourseCodes] = useState<string[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    function updateCourseSearchString() {
+        let replaceString = courseSearchString.replaceAll(/(\w+)\t(\d+)\s*/gs, '$1$2,')
+        replaceString = replaceString.replaceAll(/(\w+\d+,)\1+/gs, '$1')
+        setCourseSearchString(replaceString.replace(/,$/, ''))
+    }
+
+    const search: FormEventHandler = async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (isSearching) return;
+        updateCourseSearchString();
+
+        const accountIds = [(await Account.getRootAccount()).id];
+        setIsSearching(true)
+        let courses: (Course & IMultiSelectOption)[] = [];
+        for (let code of seekCourseCodes) {
+
+            const generator = getCourseGenerator(code, accountIds);
+
+            for await (let course of generator) {
+                const [optionCourse] = optionize(
+                    [course],
+                    course => course.id,
+                    course => course.courseCode ?? course.name ?? course.id.toString()
+                );
+                courses = [...courses, optionCourse].toSorted((a, b) => a.baseCode?.localeCompare(b.baseCode));
+                if (onlySearchBlueprints) courses = courses.filter(course => course.isBlueprint())
+                setFoundCourses(courses);
+
+            }
+        }
+        setIsSearching(false);
+    }
+
+    useEffect(() => {
+
+        const strings = courseSearchString.split(',').map(string => string.trimEnd());
+        //Filter out dupes
+        let courseCodes = strings.filter((value, index, array) => array.indexOf(value) === index);
+        if (onlySearchBlueprints) courseCodes = courseCodes.map(bpify)
+        setSeekCourseCodes(courseCodes)
+    }, [courseSearchString]);
+
+
     return <Form onSubmit={search}>
         <input type={'text'} value={courseSearchString}
                onChange={(e) => setCourseSearchString(e.target.value)}></input>
@@ -365,46 +346,150 @@ function SearchCourses({
 }
 
 
+type ValidationOption = CourseValidation & IMultiSelectOption
+
 interface SelectValidationsProps {
-    runTests: FormEventHandler,
-    options: (CourseValidationTest & IMultiSelectOption)[],
-    setCoursesToRunOn: (courses: (Course & IMultiSelectOption)[]) => void,
-    testsToRun: (CourseValidationTest & IMultiSelectOption)[],
-    setTestsToRun: (tests: (CourseValidationTest & IMultiSelectOption)[]) => void,
+    runTests: FormEventHandler
+    setCoursesToRunOn: (courses: ValidationOption[]) => void
+    testsToRun: ValidationOption[]
+    setTestsToRun: (validations: ValidationOption[]) => void
+    onChangeCustomValidation: (validation: ValidationOption) => void
 }
 
-function SelectValidations({runTests, options, testsToRun, setTestsToRun, setCoursesToRunOn}: SelectValidationsProps) {
+function SelectValidations({
+
+    runTests, testsToRun, setTestsToRun, setCoursesToRunOn, onChangeCustomValidation
+}: SelectValidationsProps) {
+
+    const [allValidations, _] = useState(optionize(tests, getTestName, getTestName))
+
     return <>
-        <Form onSubmit={runTests}>
-            <MultiSelect
-                options={options}
-                selectedOptions={testsToRun}
-                onSelectionChange={setTestsToRun}></MultiSelect>
-            <button onClick={runTests}>Run Tests</button>
-        </Form>
-        <button
-            onClick={() => setCoursesToRunOn([])}
-        >Clear
-        </button>
+        <Row>
+            <Col sm={12}>
+                <Form onSubmit={runTests}>
+                    <MultiSelect
+                        options={allValidations}
+                        selectedOptions={testsToRun}
+                        onSelectionChange={setTestsToRun}></MultiSelect>
+                    <button onClick={runTests}>Run Tests</button>
+                </Form>
+            </Col>
+            <Col sm={12}>
+                <CustomSearchValidation onGenerateSearchValidation={validation => {
+                    setTestsToRun(optionize([validation]))
+                    onChangeCustomValidation(optionizeOne(validation))
+                }}/>
+            </Col>
+            <Col>
+                <button
+                    onClick={() => setCoursesToRunOn([])}
+                >Clear
+                </button>
+            </Col>
+        </Row>
     </>
-
 }
 
-function ValidationResultsForCourse({course, results, slim}: IValidationResultsForCourseProps) {
+function ValidationResultsForCourse({
+    course, results, slim
+}: IValidationResultsForCourseProps) {
     return <Container>
 
         <Row><Col>
             <h3 style={{fontSize: slim ? '0.5em' : '1em'}}>
                 <a href={course.htmlContentUrl} target={'_blank'}>{course.courseCode ?? course.name}</a>
-            </h3></Col></Row>
-        {results && results.map(result => <ValidationRow
-            key={result.test.name + course.id}
-            course={course}
-            slim={slim}
-            initialResult={result}
-            test={result.test}
-            potemkinVillage={true}
-            refreshCourse={async () => undefined}
-        />)}
+            </h3>
+        </Col></Row>
+        {
+            results && results.map(result => <ValidationRow
+                key={result.test.name + course.id}
+                course={course}
+                slim={slim}
+                initialResult={result}
+                test={result.test}
+                potemkinVillage={true}
+                refreshCourse={async () => undefined}
+            />)
+        }
     </Container>
+}
+
+interface ICustomSearchValidationParams {
+    onGenerateSearchValidation(generatedValidation
+        :
+        CourseValidation
+    ):
+        void,
+}
+
+
+function CustomSearchValidation({
+    onGenerateSearchValidation
+}: ICustomSearchValidationParams) {
+    const [queryString, setQueryString] = useState('');
+    const [parseRegex, setParseRegex] = useState(true);
+    const [caseSensitive, setCaseSensitive] = useState(false);
+    const [isValidRegex, setIsValidRegex] = useState(false);
+
+
+    function validateRegex(pattern: string, flags?: string) {
+        try {
+            return new RegExp(pattern, flags);
+        } catch {
+            return false;
+        }
+    }
+
+    useEffect(() => {
+        setIsValidRegex(!!validateRegex(queryString))
+    }, [queryString])
+
+    //Events
+    function onSubmit(e: FormEvent) {
+        e.preventDefault();
+        const stringRepresentation = parseRegex ? `/${queryString}/` : queryString;
+        const patternToUse = parseRegex ? queryString : escapedQueryStringRegex(queryString);
+        const regex = validateRegex(patternToUse, caseSensitive ? 'g' : 'ig');
+
+        if (!regex) {
+            console.warn(`${patternToUse} is not a valid regular expression`)
+            return;
+        }
+
+        onGenerateSearchValidation({
+            name: `custom search: ${stringRepresentation}`,
+            description: `Course content ${parseRegex ? 'matches pattern' : 'contains text'} ${stringRepresentation}`,
+            run: badContentRunFunc(regex),
+        })
+    }
+
+    return <Form onSubmit={onSubmit}>
+        <Row>
+            <Col>
+                <Form.Label>Search For:</Form.Label>
+                <Form.Control type={'text'} value={queryString} onChange={(e) => setQueryString(e.target.value)}/>
+            </Col>
+        </Row>
+        <Row>
+
+        </Row>
+        {parseRegex && !isValidRegex && <Row>
+            <Col className={'alert alert-danger'}>
+                ${queryString} is not a valid regular expression.
+            </Col>
+        </Row>}
+        {parseRegex && <Row><Col>
+            <a href={'https://regexone.com/'}>This site</a> has a tutorial on how to use regular expressions.
+        </Col></Row>}
+    </Form>
+}
+
+function escapedQueryStringRegex(query: string) {
+    return query.replaceAll(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
+function bpify(code: string) {
+    let [, prefix] = code.match(/^([^_]*)_/) || [null, ''];
+    let [, body] = code.match(`${prefix || ''}_?(.*)`) || [null, code];
+    return `BP_${body}`;
 }

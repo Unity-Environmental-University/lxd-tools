@@ -6,11 +6,11 @@ import {
     IModulesHaver,
     IPagesHaver
 } from "../../../canvas/course/index";
-import {CourseValidationTest, testResult} from "./index";
+import {CourseValidation, testResult} from "./index";
 import {config} from "dotenv";
 
 export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
-export const extensionsInstalledTest: CourseValidationTest = {
+export const extensionsInstalledTest: CourseValidation = {
     name: "Extensions Installed",
     description: 'Big Blue Button and Dropout Detective in nav bar',
     run: async (course, config) => {
@@ -25,7 +25,7 @@ export const extensionsInstalledTest: CourseValidationTest = {
         }
     }
 }
-export const announcementsOnHomePageTest: CourseValidationTest = {
+export const announcementsOnHomePageTest: CourseValidation = {
     name: "Show Announcements",
     description: 'Confirm under "Settings" --> "more options" that the "Show announcements" box is checked',
     run: async (course) => {
@@ -37,7 +37,7 @@ export const announcementsOnHomePageTest: CourseValidationTest = {
         }
     }
 }
-export const latePolicyTest: CourseValidationTest<ILatePolicyHaver> = {
+export const latePolicyTest: CourseValidation<ILatePolicyHaver> = {
     name: "Late Policy Correct",
     description: "Go to the gradebook and  click the cog in the upper right-hand corner, then check the box to automatically apply a 0 for missing submissions; or confirm that this setting has already been made.",
     run: async (course: ILatePolicyHaver, config) => {
@@ -48,7 +48,7 @@ export const latePolicyTest: CourseValidationTest<ILatePolicyHaver> = {
         );
     }
 }
-export const noEvaluationTest: CourseValidationTest<IPagesHaver> = {
+export const noEvaluationTest: CourseValidation<IPagesHaver> = {
     name: "Remove Course Evaluation",
     description: 'Course Eval page (in final module) entirely deleted from the course.',
     run: async (course, config) => {
@@ -64,7 +64,7 @@ export const noEvaluationTest: CourseValidationTest<IPagesHaver> = {
 }
 
 
-export const badGradingPolicyTest: CourseValidationTest<IModulesHaver & IGradingStandardsHaver> = {
+export const badGradingPolicyTest: CourseValidation<IModulesHaver & IGradingStandardsHaver> = {
     name: "Correct grading policy selected",
     description: "5 week courses have REVISED DE Undergraduate Programs grading scheme selected. 8 week courses have  DE Graduate Programs grading scheme selected",
     run: async (course, config) => {

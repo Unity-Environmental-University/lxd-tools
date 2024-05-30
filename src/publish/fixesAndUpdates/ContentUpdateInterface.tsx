@@ -6,7 +6,7 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {badContentFixFunc, badContentRunFunc, CourseValidationTest, preserveCapsReplace} from "./validations/index";
+import {badContentFixFunc, badContentRunFunc, CourseValidation, preserveCapsReplace} from "./validations/index";
 import {Page} from "../../canvas/content";
 import {Course} from "../../canvas/course";
 import syllabusTests from "./validations/syllabusTests";
@@ -36,7 +36,7 @@ type InterfaceMode = 'fix' | 'unitTest'
 //     }
 
 
-const allValidations: CourseValidationTest[] = [
+const allValidations: CourseValidation[] = [
     ...capstoneProjectValidations,
     ...syllabusTests,
     ...courseSettingsTests,
@@ -46,7 +46,7 @@ const allValidations: CourseValidationTest[] = [
 
 export function ContentUpdateInterface({course, parentCourse, refreshCourse}: ContentUpdateInterfaceProps) {
 
-    const [validations, setValidations] = useState<CourseValidationTest[]>(allValidations);
+    const [validations, setValidations] = useState<CourseValidation[]>(allValidations);
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
     const [isDisabled, setIsDisabled] = useState(false);

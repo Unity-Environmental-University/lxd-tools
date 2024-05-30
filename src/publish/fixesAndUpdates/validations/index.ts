@@ -19,7 +19,7 @@ export type ValidationFixResult = {
 
 
 
-export type CourseValidationTest<T = Course, UserDataType = undefined> = {
+export type CourseValidation<T = Course, UserDataType = undefined> = {
     courseCodes?: string[],
     name: string,
     description: string,
@@ -28,7 +28,7 @@ export type CourseValidationTest<T = Course, UserDataType = undefined> = {
     fix?: (course: T) => Promise<ValidationFixResult>
 }
 
-export interface TextReplaceValidationText<T = Course> extends CourseValidationTest<T> {
+export interface TextReplaceValidation<T = Course> extends CourseValidation<T> {
     negativeExemplars: string[][],
     positiveExemplars?: string[],
     fix: (course: T) => Promise<ValidationFixResult>
