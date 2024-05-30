@@ -1,39 +1,19 @@
-import {Course, getCourseGenerator,} from "../canvas/course/index";
-import React, {FormEvent, FormEventHandler, useEffect, useReducer, useState} from "react";
-import {
-    badContentRunFunc,
-    CourseValidation,
-    ValidationTestResult
-} from "../publish/fixesAndUpdates/validations/index";
-import courseContent from "../publish/fixesAndUpdates/validations/courseContent";
-import courseSettings from "../publish/fixesAndUpdates/validations/courseSettings";
-import syllabusTests from "../publish/fixesAndUpdates/validations/syllabusTests";
-import MultiSelect, {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
+import {Course,} from "../canvas/course/index";
+import React, {useReducer, useState} from "react";
+import {CourseValidation} from "../publish/fixesAndUpdates/validations/index";
+import {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
 import Modal from "../ui/widgets/Modal/index";
 import {Col, Container, Form, Row} from "react-bootstrap";
 import {batchify, filterUniqueFunc} from "../canvas/canvasUtils";
 import {ValidationRow} from "../publish/fixesAndUpdates/ValidationRow";
-import {Account} from "../canvas/index";
 import {collectionLutDispatcher, lutDispatcher} from "../reducerDispatchers";
+import {IIncludesTestAndCourseId} from "./index";
+import {SearchCourses} from "./SearchCourses";
+import {SelectValidations} from "./SelectValidations";
 
 
 interface IAdminAppProps {
     course?: Course,
-}
-
-const tests: CourseValidation[] = [
-    ...courseContent,
-    ...courseSettings,
-    ...syllabusTests,
-]
-
-function getTestName(test: CourseValidation) {
-    return test.name;
-}
-
-interface IIncludesTestAndCourseId extends ValidationTestResult {
-    test: CourseValidation,
-    courseId: number,
 }
 
 
@@ -95,11 +75,7 @@ export function AdminApp({course}: IAdminAppProps) {
     }
 
 //Handlers
-
-
-    async function runTests(e: React.FormEvent) {
-        e.stopPropagation();
-        e.preventDefault();
+    async function runTests() {
         if (isValidating) return false;
         setIsValidating(true);
         let allTestResults: typeof validationResults = [];
@@ -248,14 +224,14 @@ export function AdminApp({course}: IAdminAppProps) {
                                     onlySearchBlueprints={onlySearchBlueprints}
                                     setIsSearching={() => null}
                                 />
-                            </Col><Col>
+                            </Col>{coursesToRunOn.length > 0 && <Col>
                             <SelectValidations
                                 runTests={runTests}
                                 testsToRun={validationsToRun}
                                 setCoursesToRunOn={(courses) => optionize(courses)}
-                                onChangeCustomValidation={()=>null}
+                                onChangeCustomValidation={() => null}
                                 setTestsToRun={setValidationsToRun}/>
-                        </Col>
+                        </Col>}
                         </Row>
 
                         <ResultsDisplay/>
@@ -278,117 +254,6 @@ interface IValidationResultsForCourseProps {
         Course,
 }
 
-
-interface ISearchCoursesProps {
-    onlySearchBlueprints: boolean,
-    setIsSearching: (value: boolean) => void,
-    setFoundCourses: (value: (Course & IMultiSelectOption)[]) => void,
-}
-
-function SearchCourses({
-    setFoundCourses,
-    onlySearchBlueprints,
-}: ISearchCoursesProps) {
-
-    const [courseSearchString, setCourseSearchString] = useState('');
-    const [seekCourseCodes, setSeekCourseCodes] = useState<string[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
-
-    function updateCourseSearchString() {
-        let replaceString = courseSearchString.replaceAll(/(\w+)\t(\d+)\s*/gs, '$1$2,')
-        replaceString = replaceString.replaceAll(/(\w+\d+,)\1+/gs, '$1')
-        setCourseSearchString(replaceString.replace(/,$/, ''))
-    }
-
-    const search: FormEventHandler = async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        if (isSearching) return;
-        updateCourseSearchString();
-
-        const accountIds = [(await Account.getRootAccount()).id];
-        setIsSearching(true)
-        let courses: (Course & IMultiSelectOption)[] = [];
-        for (let code of seekCourseCodes) {
-
-            const generator = getCourseGenerator(code, accountIds);
-
-            for await (let course of generator) {
-                const [optionCourse] = optionize(
-                    [course],
-                    course => course.id,
-                    course => course.courseCode ?? course.name ?? course.id.toString()
-                );
-                courses = [...courses, optionCourse].toSorted((a, b) => a.baseCode?.localeCompare(b.baseCode));
-                if (onlySearchBlueprints) courses = courses.filter(course => course.isBlueprint())
-                setFoundCourses(courses);
-
-            }
-        }
-        setIsSearching(false);
-    }
-
-    useEffect(() => {
-
-        const strings = courseSearchString.split(',').map(string => string.trimEnd());
-        //Filter out dupes
-        let courseCodes = strings.filter((value, index, array) => array.indexOf(value) === index);
-        if (onlySearchBlueprints) courseCodes = courseCodes.map(bpify)
-        setSeekCourseCodes(courseCodes)
-    }, [courseSearchString]);
-
-
-    return <Form onSubmit={search}>
-        <input type={'text'} value={courseSearchString}
-               onChange={(e) => setCourseSearchString(e.target.value)}></input>
-        <button>Get Courses</button>
-    </Form>
-}
-
-
-type ValidationOption = CourseValidation & IMultiSelectOption
-
-interface SelectValidationsProps {
-    runTests: FormEventHandler
-    setCoursesToRunOn: (courses: ValidationOption[]) => void
-    testsToRun: ValidationOption[]
-    setTestsToRun: (validations: ValidationOption[]) => void
-    onChangeCustomValidation: (validation: ValidationOption) => void
-}
-
-function SelectValidations({
-
-    runTests, testsToRun, setTestsToRun, setCoursesToRunOn, onChangeCustomValidation
-}: SelectValidationsProps) {
-
-    const [allValidations, _] = useState(optionize(tests, getTestName, getTestName))
-
-    return <>
-        <Row>
-            <Col sm={12}>
-                <Form onSubmit={runTests}>
-                    <MultiSelect
-                        options={allValidations}
-                        selectedOptions={testsToRun}
-                        onSelectionChange={setTestsToRun}></MultiSelect>
-                    <button onClick={runTests}>Run Tests</button>
-                </Form>
-            </Col>
-            <Col sm={12}>
-                <CustomSearchValidation onGenerateSearchValidation={validation => {
-                    setTestsToRun(optionize([validation]))
-                    onChangeCustomValidation(optionizeOne(validation))
-                }}/>
-            </Col>
-            <Col>
-                <button
-                    onClick={() => setCoursesToRunOn([])}
-                >Clear
-                </button>
-            </Col>
-        </Row>
-    </>
-}
 
 function ValidationResultsForCourse({
     course, results, slim
@@ -414,82 +279,4 @@ function ValidationResultsForCourse({
     </Container>
 }
 
-interface ICustomSearchValidationParams {
-    onGenerateSearchValidation(generatedValidation
-        :
-        CourseValidation
-    ):
-        void,
-}
 
-
-function CustomSearchValidation({
-    onGenerateSearchValidation
-}: ICustomSearchValidationParams) {
-    const [queryString, setQueryString] = useState('');
-    const [parseRegex, setParseRegex] = useState(true);
-    const [caseSensitive, setCaseSensitive] = useState(false);
-    const [isValidRegex, setIsValidRegex] = useState(false);
-
-
-    function validateRegex(pattern: string, flags?: string) {
-        try {
-            return new RegExp(pattern, flags);
-        } catch {
-            return false;
-        }
-    }
-
-    useEffect(() => {
-        setIsValidRegex(!!validateRegex(queryString))
-    }, [queryString])
-
-    //Events
-    function onSubmit(e: FormEvent) {
-        e.preventDefault();
-        const stringRepresentation = parseRegex ? `/${queryString}/` : queryString;
-        const patternToUse = parseRegex ? queryString : escapedQueryStringRegex(queryString);
-        const regex = validateRegex(patternToUse, caseSensitive ? 'g' : 'ig');
-
-        if (!regex) {
-            console.warn(`${patternToUse} is not a valid regular expression`)
-            return;
-        }
-
-        onGenerateSearchValidation({
-            name: `custom search: ${stringRepresentation}`,
-            description: `Course content ${parseRegex ? 'matches pattern' : 'contains text'} ${stringRepresentation}`,
-            run: badContentRunFunc(regex),
-        })
-    }
-
-    return <Form onSubmit={onSubmit}>
-        <Row>
-            <Col>
-                <Form.Label>Search For:</Form.Label>
-                <Form.Control type={'text'} value={queryString} onChange={(e) => setQueryString(e.target.value)}/>
-            </Col>
-        </Row>
-        <Row>
-
-        </Row>
-        {parseRegex && !isValidRegex && <Row>
-            <Col className={'alert alert-danger'}>
-                ${queryString} is not a valid regular expression.
-            </Col>
-        </Row>}
-        {parseRegex && <Row><Col>
-            <a href={'https://regexone.com/'}>This site</a> has a tutorial on how to use regular expressions.
-        </Col></Row>}
-    </Form>
-}
-
-function escapedQueryStringRegex(query: string) {
-    return query.replaceAll(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-}
-
-function bpify(code: string) {
-    let [, prefix] = code.match(/^([^_]*)_/) || [null, ''];
-    let [, body] = code.match(`${prefix || ''}_?(.*)`) || [null, code];
-    return `BP_${body}`;
-}

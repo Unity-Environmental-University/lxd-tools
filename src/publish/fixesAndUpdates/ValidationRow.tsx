@@ -17,15 +17,15 @@ type ValidationRowProps = {
 }
 
 export function ValidationRow({
-                                  test,
-                                  slim,
-                                  potemkinVillage,
-                                  initialResult,
-                                  course,
-                                  refreshCourse,
-                                  onResult,
-                                  showOnlyFailures = false
-                              }: ValidationRowProps) {
+    test,
+    slim,
+    potemkinVillage,
+    initialResult,
+    course,
+    refreshCourse,
+    onResult,
+    showOnlyFailures = false
+}: ValidationRowProps) {
     const [loading, setLoading] = useState(false);
     const [result, _setResult] = useState(initialResult);
     const [fixText, setFixText] = useState("Fix?")
@@ -90,7 +90,7 @@ export function ValidationRow({
     }, [course, test])
 
     function truncateMessage(messageString: string) {
-       if (slim) return messageString.replace(/^(.{200}).*$/, '$1...')
+        if (slim) return messageString.replace(/^(.{200}).*$/, '$1...')
         return messageString;
     }
 
