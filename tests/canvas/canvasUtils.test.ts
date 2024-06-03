@@ -10,6 +10,7 @@ import {
 import {describe, expect} from "@jest/globals";
 import assert from "assert";
 import exp from "node:constants";
+import {AssertionError} from "node:assert";
 
 const TEST_STRING = String.fromCharCode(...Array.from(range(32, 126)))
 
@@ -127,23 +128,142 @@ describe("Recursive object merge", () => {
 
     });
 
-    test('Complex arrays', () => {
-        let object = {key: "X", value: 7};
-        let file = new File([JSON.stringify(object)],'file.txt')
+    test('Files and Complex arrays', () => {
+        let object = {key: "X", value: 7, list: [1, 2, 3, 4, 5]};
+        let file = new File([JSON.stringify(object)], 'file.txt')
+        expect(recursiveMerge(file, file)?.name).toBe(file.name);
+        let counterFile = new File([JSON.stringify(object)], 'file2.txt');
+        expect(() => recursiveMerge(file, counterFile)?.name).toThrow(AssertionError)
+        counterFile = new File(['aaaaaa'], 'file.txt');
+        expect(() => recursiveMerge(file, counterFile)?.name).toThrow(AssertionError)
 
-        let complexMerged = recursiveMerge([null, 'a', file], [undefined, [1, 2, 3, 4], 5, object, file]);
-        expect(complexMerged).toHaveLength(8);
+        let complexMerged = recursiveMerge([null, 'a', file], [undefined, [1, 2, 3, 4], 5, object, object, file]);
+        expect(complexMerged).toHaveLength(9);
         for (let value of [5, 'a', null, undefined]) {
             expect(complexMerged).toContain(value);
         }
 
         const objectsInMerge = complexMerged?.filter(item => item && typeof item === 'object') ?? [];
-        expect(objectsInMerge).toHaveLength(4);
-        const [extractedObject] = objectsInMerge.filter(item => item && !(item instanceof  File || Array.isArray(item)));
+        expect(objectsInMerge).toHaveLength(5);
+        const [extractedObject, extractedObjectTwo] = objectsInMerge.filter(item => item && !(item instanceof File || Array.isArray(item)));
         expect(extractedObject).toStrictEqual(object);
-        expect(extractedObject === objectsInMerge).toBe(false);
+        expect(extractedObject === extractedObjectTwo).toBe(false);
+        expect(extractedObject === object).toBe(false);
         let [fileOne, fileTwo] = objectsInMerge.filter(item => item instanceof File);
         expect(fileOne).toBe(fileTwo);
+    })
+
+    test('Objects', () => {
+        expect(() => recursiveMerge({a: 1}, {a: "Dog"})).toThrow('Type clash on merge')
+        expect(recursiveMerge({a: 1}, {b: 2})).toStrictEqual({a: 1, b: 2});
+        expect(recursiveMerge({
+            list: [1, 2, 3]
+        }, {
+            list: [4, 5, 6]
+        })).toStrictEqual({list: [1, 2, 3, 4, 5, 6]})
+
+        expect(recursiveMerge({
+            item: {
+                name: "NAME",
+                age: 35
+            }
+        }, {
+            item: {
+                height: 165,
+                children: ['bobby', 'andrew']
+            }
+        })).toStrictEqual({
+            item: {
+                name: "NAME",
+                age: 35,
+                height: 165,
+                children: ['bobby', 'andrew']
+            }
+        })
+    })
+
+    test('Self-containment error', () => {
+
+        let smith: { [key: string]: any } = {};
+        let smithsHouse: { [key: string]: any } = {};
+
+        smith = {
+            name: 'Smith',
+        }
+
+        smithsHouse = {
+            address: '224 West 9th',
+            owner: smith,
+            inhabitants: [smith]
+        }
+
+        smith['house'] = smithsHouse;
+        expect(() => {
+            recursiveMerge(smith, {
+                dog: "Steven"
+            })
+
+        }).toThrow('Infinite Loop')
+    })
+
+    test('Complex Merge', () => {
+
+        let a: Record<string, any> = {
+            list: [1, 2],
+            human: {
+                name: "Stan",
+                age: 45,
+                children: ['rod', 'lucy'],
+                dog: {
+                    name: "Walter"
+                },
+
+
+            },
+            cat: {
+                name: "Stephanie"
+            }
+        }
+
+        let b: Record<string, any> = {
+            list: [2, 3, 4, undefined],
+            human: {
+                name: "Stan",
+                children: ['stacy'],
+                dog: {
+                    age: 7,
+                },
+                fish: {
+                    name: "Capn Guppy",
+                    previousNames: ['Admiral Blub', "Mr. Bubbles"]
+                }
+            },
+
+        }
+
+        let expectedMerge = {
+            list: [1, 2, 2, 3, 4, undefined],
+            human: {
+                name: "Stan",
+                age: 45,
+                children: ['rod', 'lucy', 'stacy'],
+                dog: {
+                    name: "Walter",
+                    age: 7
+                },
+                fish: {
+                    name: 'Capn Guppy',
+                    previousNames: ['Admiral Blub', "Mr. Bubbles"]
+                }
+            },
+            cat: {
+                name: "Stephanie"
+            },
+
+
+        }
+
+        expect(recursiveMerge(a, b)).toEqual(expectedMerge);
 
     })
 

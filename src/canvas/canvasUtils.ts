@@ -127,7 +127,7 @@ export function recursiveMerge<ReturnType extends string | number | File | Recor
 ): ReturnType | undefined | null {
     for (let value of [a, b]) {
         if (typeof value == "object" &&
-            complexObjectsTracker.includes(value)) throw new Error(`Element ${value} contains itself`);
+            complexObjectsTracker.includes(value)) throw new Error(`Infinite Loop: Element ${value} contains itself`);
     }
 
     //if the types don't match
