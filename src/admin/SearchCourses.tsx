@@ -43,7 +43,7 @@ export function SearchCourses({
                 const [optionCourse] = optionize(
                     [course],
                     course => course.id,
-                    course => course.courseCode ?? course.name ?? course.id.toString()
+                    course => course.parsedCourseCode ?? course.name ?? course.id.toString()
                 );
                 courses = [...courses, optionCourse].toSorted((a, b) => a.baseCode?.localeCompare(b.baseCode));
                 if (onlySearchBlueprints) courses = courses.filter(course => course.isBlueprint())

@@ -33,7 +33,7 @@ describe('Course Generators', () => {
                 assert(course instanceof Course);
                 expect(done).toBe(false);
                 expect(course.termId).toBe(enrollment_term_id);
-                expect(course.courseCode).toBe(code);
+                expect(course.parsedCourseCode).toBe(code);
             }
 
         }

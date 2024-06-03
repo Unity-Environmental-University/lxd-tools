@@ -10,10 +10,9 @@ And starting to convert to ts
 import assert from 'assert';
 
 import {CanvasData, ITermData} from "./canvasDataDefs";
-import {fetchApiJson, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
+import {fetchApiJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseCanvasObject} from "./baseCanvasObject";
-import {BaseContentItem} from "./content";
-import {config} from "dotenv";
+import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
 
 
 /**
@@ -167,3 +166,11 @@ export class Term extends BaseCanvasObject<ITermData> {
 export class NotImplementedException extends Error {
 }
 
+export function apiWriteConfig(method: 'POST' | 'PUT', data: Record<string, any>, baseConfig?: ICanvasCallConfig) {
+    return overrideConfig({
+        fetchInit: {
+            method,
+            body: formDataify(data)
+        }
+    }, baseConfig);
+}

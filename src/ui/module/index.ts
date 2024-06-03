@@ -2,6 +2,7 @@ import assert from "assert";
 
 
 import {Course} from "../../canvas/course";
+import {lockBlueprint} from "../../canvas/course/blueprint";
 
 (async () => {
     const course = await Course.getFromUrl(document.documentURI);
@@ -16,7 +17,7 @@ import {Course} from "../../canvas/course";
             btn.classList.add('btn');
             btn.addEventListener('click', async () => {
                 btn.innerHTML = "Locking...";
-                await course.lockBlueprint();
+                await lockBlueprint(course.id, await course.getModules());
                 btn.innerHTML = "Locked!";
                 location.reload();
 

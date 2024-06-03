@@ -49,7 +49,6 @@ function callAll<T,
         }
         if (isWithParamsFunc(func) && typeof params !== 'undefined') {
             output.push(func(params));
-            continue;
         }
     }
     return output;
@@ -118,6 +117,88 @@ export function formDataify(data: Record<string, any>) {
         }
     }
     return formData;
+}
+
+
+export function recursiveMerge<ReturnType extends string | number | File | Record<string, any> | []>(
+    a: ReturnType | null | undefined,
+    b: ReturnType | null | undefined,
+    complexObjectsTracker: Array<unknown> = [],
+): ReturnType | undefined | null {
+    for (let value of [a, b]) {
+        if (typeof value == "object" &&
+            complexObjectsTracker.includes(value)) throw new Error(`Element ${value} contains itself`);
+    }
+
+    //if the types don't match
+    if (a && b && typeof a !== typeof b) {
+        if (a === b) return a;
+        throw new Error(`Type clash on merge ${typeof a} ${a}, ${typeof b} ${b}`);
+    }
+
+    //If either or both are arrays, merge if able to
+    if (Array.isArray(a)) {
+        if (!b) return recursiveMerge(a, [] as ReturnType, complexObjectsTracker);
+        assert(Array.isArray(b), "We should not get here if b is not an array")
+        let mergedArray = [...a, ...b];
+        const outputArray = mergedArray.map(value => {
+            if (typeof value === 'object') value = recursiveMerge(value, null, [...complexObjectsTracker, a, b]);
+            return value;
+        }) as ReturnType
+        return outputArray;
+    }
+
+    if (Array.isArray(b)) return recursiveMerge(b, [] as ReturnType); //we already know a is not an array at this point, return a deep copy of b
+
+    if ((a && typeof a === 'object') || (b && typeof b === 'object')) {
+        if (a instanceof File && b instanceof File) {
+            assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
+            return a;
+        }
+        if (a instanceof File) return a;
+        if (b instanceof File) return b;
+
+        if (!b) return recursiveMerge(a, {} as ReturnType, complexObjectsTracker);
+        if (!a) return recursiveMerge(b, {} as ReturnType, complexObjectsTracker);
+        assert(a && typeof a === 'object', "a should always be defined here.")
+        assert(b && typeof b === 'object', "b should always be defined here.")
+
+        const allKeys = [...Object.keys(a), ...Object.keys(b)].filter(filterUniqueFunc);
+        const entries = allKeys.map((key: string) => [
+            key,
+            recursiveMerge(a[key], b[key], [...complexObjectsTracker, a, b])
+        ]);
+        return Object.fromEntries(entries)
+    }
+    if (a && b && a !== b) throw new Error(`Values unmergeable, ${a}>:${typeof a}, ${b} ${typeof b}`)
+    if (a) return a;
+    if (b) return b;
+    if (a === null) return a;
+    if (b === null) return b;
+}
+
+export interface FormMergeOutput {
+    [key: string]: FormMergeOutput | FormDataEntryValue | FormDataEntryValue[]
+}
+
+export function deFormDataify(formData: FormData) {
+
+
+    return [...formData.entries()].reduce((aggregator, [key, value]) => {
+        const isArray = key.includes('[]');
+        const keys = key.split('[').map(key => key.replaceAll(/[\[\]]/g, ''));
+        let currentValue: FormDataEntryValue | FormMergeOutput = value;
+        assert(keys.length > 0);
+        while (keys.length > 0) {
+            let newValue: Record<string, any>;
+            newValue = {
+                [keys.pop() as string]: isArray ? [currentValue] : currentValue
+            };
+            currentValue = newValue;
+
+        }
+        return recursiveMerge(aggregator, currentValue as FormMergeOutput) || {...aggregator};
+    }, {} as FormMergeOutput);
 }
 
 
@@ -239,8 +320,8 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
  * returns a single pagedDataGenerator that returns generator results from each, looping through results for each
  * @param generators
  */
-export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData>(generators:AsyncGenerator<T, T[], void>[]) {
-    for(let generator of generators) {
+export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData>(generators: AsyncGenerator<T, T[], void>[]) {
+    for (let generator of generators) {
         for await(let result of generator) yield result;
     }
 }
@@ -300,8 +381,6 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
         }
     }
 }
-
-
 
 
 export async function fetchJson<T extends Record<string, any>>(
@@ -387,6 +466,6 @@ export function batchify<T>(toBatch: T[], batchsize: number) {
     return out;
 }
 
-export function filterUniqueFunc<T>(item:T, index:number, array:T[]) {
+export function filterUniqueFunc<T>(item: T, index: number, array: T[]) {
     return array.indexOf(item) === index;
 }

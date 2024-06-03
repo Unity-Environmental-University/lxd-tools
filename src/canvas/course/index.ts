@@ -47,14 +47,23 @@ export interface IIdHaver<IdType = number> {
     id: IdType,
 }
 
+export interface ICourseDataHaver {
+    rawData: ICourseData,
+}
+
+export interface ICourseCodeHaver {
+    name: string,
+    parsedCourseCode: string | null,
+    courseCode: string | null,
+    codeMatch: RegExpExecArray | null,
+    baseCode: string,
+}
+
 export interface ISyllabusHaver extends IIdHaver {
     getSyllabus: (config?: ICanvasCallConfig) => Promise<string>,
     changeSyllabus: (newHtml: string, config?: ICanvasCallConfig) => any
 }
 
-export interface ICourseDataHaver {
-    rawData: ICourseData,
-}
 
 export interface ICourseSettingsHaver extends IIdHaver {
     id: number,
@@ -121,15 +130,6 @@ export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussi
 
     getContent(config?: ICanvasCallConfig, refresh?: boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
 
-}
-
-
-export interface ICourseCodeHaver {
-    name: string,
-    courseCode: string | null,
-    fullCourseCode: string | null,
-    codeMatch: RegExpExecArray | null,
-    baseCode: string,
 }
 
 
@@ -292,7 +292,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return this.htmlContentUrl;
     }
 
-    get courseCode(): null | string {
+    get parsedCourseCode(): null | string {
         let match = this.codeMatch;
         if (!match) return null;
         let prefix = match[1] || "";
@@ -303,7 +303,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return courseCode;
     }
 
-    get fullCourseCode(): null | string {
+    get courseCode(): null | string {
         return this.canvasData.course_code
     }
 
@@ -321,6 +321,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (typeof id === 'number') return id;
         else return id[0];
     }
+
     //comment for no reason for publish
     async getTerm(): Promise<Term | null> {
         assert(typeof this.termId === 'number')
@@ -350,6 +351,11 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     get isDev() {
         if (this.name.match(/^DEV/)) return true;
+    }
+
+
+    get rootAccountId() {
+        return this.canvasData.root_account_id;
     }
 
     async getModules(config?: ICanvasCallConfig): Promise<IModuleData[]> {
@@ -608,70 +614,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         });
     }
 
-    async getPotentialSections(term: Term) {
-        return await Course.getAllByCode(this.baseCode, term);
-    }
-
-    async lockBlueprint() {
-        const modules = await this.getModules();
-        let items: IModuleItemData[] = [];
-        items = items.concat(...modules.map((a) => (<IModuleItemData[]>[]).concat(...a.items)));
-        const promises = items.map(async (item) => {
-            const url = `${this.contentUrlPath}/blueprint_templates/default/restrict_item`;
-            let {type, id} = await getItemTypeAndId(item);
-            if (!id) return;
-            let body = {
-                "content_type": type,
-                "content_id": id,
-                "restricted": true,
-                "_method": 'PUT'
-            }
-            console.log(body);
-            await fetchApiJson(url, {
-                fetchInit: {
-                    method: 'PUT',
-                    body: formDataify(body)
-                }
-            });
-
-        });
-        await Promise.all(promises);
-
-    }
-
-    async setAsBlueprint() {
-        const url = `courses/${this.id}`;
-        const payload = {
-            'course[blueprint]': true,
-            'course[use_blueprint_restrictions_by_object_type]': 0,
-            'course[blueprint_restrictions][content]': 1,
-            'course[blueprint_restrictions][points]': 1,
-            'course[blueprint_restrictions][due_dates]': 1,
-            'course[blueprint_restrictions][availability_dates]': 1,
-        };
-
-        this.canvasData = await fetchOneKnownApiJson<ICourseData>(url, {
-            fetchInit: {
-                method: 'PUT',
-                body: JSON.stringify(payload)
-            }
-        });
-        this.resetCache();
-    }
-
-    async unsetAsBlueprint() {
-        const url = `courses/${this.id}`;
-        const payload = {
-            'course[blueprint]': false,
-        };
-        this.canvasData = await fetchOneKnownApiJson(url, {
-            fetchInit: {
-                method: 'PUT',
-                body: JSON.stringify(payload)
-            }
-        });
-        this.resetCache();
-    }
 
     resetCache() {
         //delete this.subsections;
@@ -730,7 +672,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         });
         console.log(courseData);
         this.canvasData = courseData;
-        this.resetCache();
     }
 
     async unpublish() {
@@ -745,7 +686,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async reset(prompt = true) {
-        if (prompt && !confirm(`Are you sure you want to reset ${this.courseCode}?`)) {
+        if (prompt && !confirm(`Are you sure you want to reset ${this.parsedCourseCode}?`)) {
             return false;
         }
 

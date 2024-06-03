@@ -70,7 +70,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
         setValidations(allValidations.filter(validation => {
             if(!validation.courseCodes) return true;
             for(let code of validation.courseCodes) {
-                if ( course.courseCode?.toUpperCase().includes(code.toLocaleUpperCase('en-US'))) {
+                if ( course.parsedCourseCode?.toUpperCase().includes(code.toLocaleUpperCase('en-US'))) {
                     return true;
                 }
             }

@@ -57,7 +57,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
         <p>My name is {user.name} and I’m the Learning Experience Designer who is preparing your course to run
             this
             term.
-            Your course section(s) of {course.courseCode?.replace('BP_', '')} has/have been created for you to teach
+            Your course section(s) of {course.parsedCourseCode?.replace('BP_', '')} has/have been created for you to teach
             for {termData ? termData.name : '[[TERM NAME]]'}. Your students will
             have access to the syllabus and homepage on <strong>Monday, {getPublishDate()}</strong>.
             Actual course assignments will become available to the students

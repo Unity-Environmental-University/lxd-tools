@@ -47,7 +47,7 @@ export function AdminApp({course}: IAdminAppProps) {
 
     function cacheAssociatedCourses(bpId: number, toAdd: Course[] | Course) {
         const sections = Array.isArray(toAdd) ? toAdd : [toAdd];
-        console.log(bpId, sections.map(a => a.courseCode))
+        console.log(bpId, sections.map(a => a.parsedCourseCode))
         dispatchSectionLut({add: {key: bpId, items: sections}});
     }
 
@@ -184,7 +184,7 @@ export function AdminApp({course}: IAdminAppProps) {
             <button onClick={() => setFoundCourses([])}>Clear</button>
 
             {foundCourses.map(course =>
-                <Row key={course.id}><Col>{course.label ?? course.courseCode ?? course.name}</Col><Col>
+                <Row key={course.id}><Col>{course.label ?? course.parsedCourseCode ?? course.name}</Col><Col>
                     <button
                         onClick={() => setCoursesToRunOn([...coursesToRunOn, course])}>{'ADD'}</button>
                 </Col></Row>
@@ -262,7 +262,7 @@ function ValidationResultsForCourse({
 
         <Row><Col>
             <h3 style={{fontSize: slim ? '0.5em' : '1em'}}>
-                <a href={course.htmlContentUrl} target={'_blank'}>{course.courseCode ?? course.name}</a>
+                <a href={course.htmlContentUrl} target={'_blank'}>{course.parsedCourseCode ?? course.name}</a>
             </h3>
         </Col></Row>
         {
