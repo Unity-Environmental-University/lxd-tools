@@ -5,7 +5,7 @@ import {
     formDataify,
     queryStringify,
     batchify,
-    deFormDataify, recursiveMerge
+    deFormDataify, deepObjectMerge
 } from './canvasUtils'
 import {describe, expect} from "@jest/globals";
 import assert from "assert";
@@ -130,22 +130,22 @@ test('Batchify', () => {
 
 describe("Recursive object merge", () => {
     test('Non-indexing merges', () => {
-        expect(recursiveMerge(1, null)).toBe(1)
-        expect(recursiveMerge(undefined, 2)).toBe(2)
-        expect(() => recursiveMerge<string | number>(1, 'apple')).toThrow('Type clash on merge number 1, string apple')
-        expect(() => recursiveMerge<string | number>(1, '2')).toThrow('Type clash on merge number 1, string 2')
-        expect(() => recursiveMerge(1, 2)).toThrow('Values unmergeable')
+        expect(deepObjectMerge(1, null)).toBe(1)
+        expect(deepObjectMerge(undefined, 2)).toBe(2)
+        expect(() => deepObjectMerge<string | number>(1, 'apple')).toThrow('Type clash on merge number 1, string apple')
+        expect(() => deepObjectMerge<string | number>(1, '2')).toThrow('Type clash on merge number 1, string 2')
+        expect(() => deepObjectMerge(1, 2)).toThrow('Values unmergeable')
     })
 
     test('Arrays', () => {
-        expect(recursiveMerge([1, 2], [3, 4])).toHaveLength(4);
-        expect(recursiveMerge([1, 2], null)).toHaveLength(2);
-        expect(recursiveMerge(null, [3, 4])).toHaveLength(2);
+        expect(deepObjectMerge([1, 2], [3, 4])).toHaveLength(4);
+        expect(deepObjectMerge([1, 2], null)).toHaveLength(2);
+        expect(deepObjectMerge(null, [3, 4])).toHaveLength(2);
         [1, 2, 3, 4].forEach(i => {
-            expect(recursiveMerge([1, 2], [3, 4])).toContain(i);
+            expect(deepObjectMerge([1, 2], [3, 4])).toContain(i);
         });
 
-        let simpleMerged = recursiveMerge([1, 2], ['a', 'b']);
+        let simpleMerged = deepObjectMerge([1, 2], ['a', 'b']);
         [1, 2, 'a', 'b'].forEach(a => {
             assert(simpleMerged);
             expect(simpleMerged).toContain(a);
@@ -156,13 +156,13 @@ describe("Recursive object merge", () => {
     test('Files and Complex arrays', () => {
         let object = {key: "X", value: 7, list: [1, 2, 3, 4, 5]};
         let file = new File([JSON.stringify(object)], 'file.txt')
-        expect(recursiveMerge(file, file)?.name).toBe(file.name);
+        expect(deepObjectMerge(file, file)?.name).toBe(file.name);
         let counterFile = new File([JSON.stringify(object)], 'file2.txt');
-        expect(() => recursiveMerge(file, counterFile)?.name).toThrow(AssertionError)
+        expect(() => deepObjectMerge(file, counterFile)?.name).toThrow(AssertionError)
         counterFile = new File(['aaaaaa'], 'file.txt');
-        expect(() => recursiveMerge(file, counterFile)?.name).toThrow(AssertionError)
+        expect(() => deepObjectMerge(file, counterFile)?.name).toThrow(AssertionError)
 
-        let complexMerged = recursiveMerge([null, 'a', file], [undefined, [1, 2, 3, 4], 5, object, object, file]);
+        let complexMerged = deepObjectMerge([null, 'a', file], [undefined, [1, 2, 3, 4], 5, object, object, file]);
         expect(complexMerged).toHaveLength(9);
         for (let value of [5, 'a', null, undefined]) {
             expect(complexMerged).toContain(value);
@@ -179,15 +179,15 @@ describe("Recursive object merge", () => {
     })
 
     test('Objects', () => {
-        expect(() => recursiveMerge({a: 1}, {a: "Dog"})).toThrow('Type clash on merge')
-        expect(recursiveMerge({a: 1}, {b: 2})).toStrictEqual({a: 1, b: 2});
-        expect(recursiveMerge({
+        expect(() => deepObjectMerge({a: 1}, {a: "Dog"})).toThrow('Type clash on merge')
+        expect(deepObjectMerge({a: 1}, {b: 2})).toStrictEqual({a: 1, b: 2});
+        expect(deepObjectMerge({
             list: [1, 2, 3]
         }, {
             list: [4, 5, 6]
         })).toStrictEqual({list: [1, 2, 3, 4, 5, 6]})
 
-        expect(recursiveMerge({
+        expect(deepObjectMerge({
             item: {
                 name: "NAME",
                 age: 35
@@ -224,7 +224,7 @@ describe("Recursive object merge", () => {
 
         smith['house'] = smithsHouse;
         expect(() => {
-            recursiveMerge(smith, {
+            deepObjectMerge(smith, {
                 dog: "Steven"
             })
 
@@ -288,7 +288,7 @@ describe("Recursive object merge", () => {
 
         }
 
-        expect(recursiveMerge(a, b)).toEqual(expectedMerge);
+        expect(deepObjectMerge(a, b)).toEqual(expectedMerge);
 
     })
 

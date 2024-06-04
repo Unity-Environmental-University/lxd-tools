@@ -120,7 +120,7 @@ export function formDataify(data: Record<string, any>) {
 }
 
 
-export function recursiveMerge<ReturnType extends string | number | File | Record<string, any> | []>(
+export function deepObjectMerge<ReturnType extends string | number | File | Record<string, any> | []>(
     a: ReturnType | null | undefined,
     b: ReturnType | null | undefined,
     complexObjectsTracker: Array<unknown> = [],
@@ -141,17 +141,17 @@ export function recursiveMerge<ReturnType extends string | number | File | Recor
 
     //If either or both are arrays, merge if able to
     if (Array.isArray(a)) {
-        if (!b) return recursiveMerge(a, [] as ReturnType, complexObjectsTracker);
+        if (!b) return deepObjectMerge(a, [] as ReturnType, complexObjectsTracker);
         assert(Array.isArray(b), "We should not get here if b is not an array")
         let mergedArray = [...a, ...b];
         const outputArray = mergedArray.map(value => {
-            if (typeof value === 'object') value = recursiveMerge(value, null, [...complexObjectsTracker, a, b]);
+            if (typeof value === 'object') value = deepObjectMerge(value, null, [...complexObjectsTracker, a, b]);
             return value;
         }) as ReturnType
         return outputArray;
     }
 
-    if (Array.isArray(b)) return recursiveMerge(b, [] as ReturnType); //we already know a is not an array at this point, return a deep copy of b
+    if (Array.isArray(b)) return deepObjectMerge(b, [] as ReturnType); //we already know a is not an array at this point, return a deep copy of b
 
     if ((a && typeof a === 'object') || (b && typeof b === 'object')) {
         if (a instanceof File && b instanceof File) {
@@ -161,15 +161,15 @@ export function recursiveMerge<ReturnType extends string | number | File | Recor
         if (a instanceof File) return a;
         if (b instanceof File) return b;
 
-        if (!b) return recursiveMerge(a, {} as ReturnType, complexObjectsTracker);
-        if (!a) return recursiveMerge(b, {} as ReturnType, complexObjectsTracker);
+        if (!b) return deepObjectMerge(a, {} as ReturnType, complexObjectsTracker);
+        if (!a) return deepObjectMerge(b, {} as ReturnType, complexObjectsTracker);
         assert(a && typeof a === 'object', "a should always be defined here.")
         assert(b && typeof b === 'object', "b should always be defined here.")
 
         const allKeys = [...Object.keys(a), ...Object.keys(b)].filter(filterUniqueFunc);
         const entries = allKeys.map((key: string) => [
             key,
-            recursiveMerge(a[key], b[key], [...complexObjectsTracker, a, b])
+            deepObjectMerge(a[key], b[key], [...complexObjectsTracker, a, b])
         ]);
         return Object.fromEntries(entries)
     }
@@ -199,7 +199,7 @@ export function deFormDataify(formData: FormData) {
 
         }
         console.log(JSON.stringify(aggregator));
-        return recursiveMerge(aggregator, currentValue as FormMergeOutput) || {...aggregator};
+        return deepObjectMerge(aggregator, currentValue as FormMergeOutput) || {...aggregator};
     }, {} as FormMergeOutput);
 }
 
