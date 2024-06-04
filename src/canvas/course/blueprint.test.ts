@@ -7,7 +7,7 @@ import {
     getTermNameFromSections,
     IBlueprintCourse,
     retireBlueprint,
-    getBlueprintsFromCode, setAsBlueprint
+    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint
 } from "./blueprint";
 import {dummyCourseData} from "../../../tests/dummyData/dummyCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
@@ -16,8 +16,7 @@ import {IAccountData, ICourseData, ITermData} from "../canvasDataDefs";
 import {dummyTermData} from "../../../tests/dummyData/dummyTermData";
 import {dummyAccountData} from "../../../tests/dummyData/dummyAccountData";
 import assert from "assert";
-import mock = jest.mock;
-import exp from "node:constants";
+
 
 fetchMock.enableMocks();
 
@@ -103,13 +102,13 @@ test("Testing blueprint retirement", async () => {
 })
 
 describe('getBlueprintFromCode', () => {
-    let dummyDev:Course;
+    let dummyDev: Course;
 
-    beforeEach(()=>{
-     dummyDev = new Course({...dummyCourseData, name: 'DEV_TEST000', course_code: 'DEV_TEST000'})
+    beforeEach(() => {
+        dummyDev = new Course({...dummyCourseData, name: 'DEV_TEST000', course_code: 'DEV_TEST000'})
     })
 
-    test("Returns null when there's no BP", async() => {
+    test("Returns null when there's no BP", async () => {
         fetchMock.once('[]');
         const bp = dummyDev.parsedCourseCode && await getBlueprintsFromCode(dummyDev.parsedCourseCode, [0]);
         expect(bp).toStrictEqual([]);
@@ -118,7 +117,8 @@ describe('getBlueprintFromCode', () => {
     test("Searches for BP from a dev course", async () => {
         fetchMock.once(mockBpResponse)
         const [bp] = dummyDev.parsedCourseCode && await getBlueprintsFromCode(dummyDev.parsedCourseCode, [0]) || [];
-        expect(bp).toBeInstanceOf(Course); assert(typeof bp === 'object');
+        expect(bp).toBeInstanceOf(Course);
+        assert(typeof bp === 'object');
         expect(bp?.isBlueprint()).toBe(true);
         expect(bp?.courseCode).toBe('BP_TEST000');
 
@@ -126,9 +126,14 @@ describe('getBlueprintFromCode', () => {
 
     test("Searches for BP from a section", async () => {
         fetchMock.once(mockBpResponse)
-        const dummyCourse = new Course({...dummyCourseData, name: 'DE8W12.4.26_TEST000', course_code: 'DE8W12.4.26_DEV_TEST000'})
+        const dummyCourse = new Course({
+            ...dummyCourseData,
+            name: 'DE8W12.4.26_TEST000',
+            course_code: 'DE8W12.4.26_DEV_TEST000'
+        })
         const [bp] = dummyCourse.parsedCourseCode && await getBlueprintsFromCode(dummyCourse.parsedCourseCode, [0]) || [];
-        expect(bp).toBeInstanceOf(Course); assert(typeof bp === 'object');
+        expect(bp).toBeInstanceOf(Course);
+        assert(typeof bp === 'object');
         expect(bp?.isBlueprint()).toBe(true);
         expect(bp?.courseCode).toBe('BP_TEST000');
 
@@ -136,7 +141,7 @@ describe('getBlueprintFromCode', () => {
 
 })
 
-test("setAsBlueprint", async() => {
+test("setAsBlueprint", async () => {
     let responseData: ICourseData;
     await fetchMock.withImplementation(async (requestUrl, requestInit) => {
         assert(requestInit)
@@ -152,20 +157,33 @@ test("setAsBlueprint", async() => {
 })
 
 
-test("unSetAsBlueprint", async() => {
-    fetchMock.mockResponseOnce(JSON.stringify(<ICourseData>{...dummyCourseData, blueprint: false}))
-    const responseData = await setAsBlueprint(0);
-    expect(responseData.blueprint).toBe(false);
+test("unSetAsBlueprint", async () => {
+    let responseData: ICourseData;
+    await fetchMock.withImplementation(async (requestUrl, requestInit) => {
+        assert(requestInit)
+        assert('body' in requestInit);
+        const formData = requestInit.body;
+        assert(formData instanceof FormData)
+        return new Response(JSON.stringify(deFormDataify(formData)))
+
+    }, async () => {
+        responseData = await setAsBlueprint(0);
+        expect(responseData.course.blueprint).toBe('true');
+        responseData = await unSetAsBlueprint(0);
+        expect(responseData.course.blueprint).toBe('false');
+    })
+
+
 })
 
 
 async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
     const dummyBpData: ICourseData = {...dummyCourseData, blueprint: true};
     const [_, requestCode] = mockRequest.url.match(/=[^=]*(\w{4}\d{3})/i) || [];
-     const outCourseData:ICourseData[] = [...range(1, numberToMock)].map((number) => ({
-         ...dummyBpData,
-         name: `BP_${requestCode}${number > 1? number : ''}`,
-         course_code: `BP_${requestCode}${number > 1? number : ''}`
-     }))
+    const outCourseData: ICourseData[] = [...range(1, numberToMock)].map((number) => ({
+        ...dummyBpData,
+        name: `BP_${requestCode}${number > 1 ? number : ''}`,
+        course_code: `BP_${requestCode}${number > 1 ? number : ''}`
+    }))
     return JSON.stringify(outCourseData);
 }

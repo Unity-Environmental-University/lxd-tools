@@ -1,5 +1,6 @@
 import {
     fetchApiJson,
+    fetchJson,
     fetchOneKnownApiJson,
     formDataify,
     getItemTypeAndId,
@@ -110,7 +111,7 @@ export async function lockBlueprint(courseId:number, modules: IModuleData[]) {
 }
 
 export async function setAsBlueprint(courseId: number, config?: ICanvasCallConfig) {
-    const url = `courses/${courseId}`;
+    const url = `/api/v1/courses/${courseId}`;
     const payload = {
         course: {
             blueprint: true,
@@ -123,17 +124,17 @@ export async function setAsBlueprint(courseId: number, config?: ICanvasCallConfi
             }
         }
     }
-    return await fetchApiJson(url, apiWriteConfig('PUT', payload, config)) as ICourseData;
+    return await fetchJson(url, apiWriteConfig('PUT', payload, config)) as ICourseData;
 }
 
-async function unsetAsBlueprint(courseId: number, config?: ICanvasCallConfig) {
-    const url = `courses/${courseId}`;
+export async function unSetAsBlueprint(courseId: number, config?: ICanvasCallConfig) {
+    const url = `/api/v1/courses/${courseId}`;
     const payload = {
         course: {
             blueprint: false
         }
     };
-    return await fetchOneKnownApiJson(url, apiWriteConfig("PUT", payload, config));
+    return await fetchJson(url, apiWriteConfig("PUT", payload, config)) as ICourseData;
 }
 
 
