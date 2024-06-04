@@ -131,7 +131,10 @@ export function recursiveMerge<ReturnType extends string | number | File | Recor
     }
 
     //if the types don't match
-    if (a && b && typeof a !== typeof b) {
+    if (a && b && (
+        typeof a !== typeof b ||
+        Array.isArray(a) != Array.isArray(b)
+    )) {
         if (a === b) return a;
         throw new Error(`Type clash on merge ${typeof a} ${a}, ${typeof b} ${b}`);
     }
@@ -197,6 +200,7 @@ export function deFormDataify(formData: FormData) {
             currentValue = newValue;
 
         }
+        console.log(JSON.stringify(aggregator));
         return recursiveMerge(aggregator, currentValue as FormMergeOutput) || {...aggregator};
     }, {} as FormMergeOutput);
 }

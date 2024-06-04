@@ -6,6 +6,9 @@ import {Term} from "../../canvas/index";
 import React, {useEffect, useState} from "react";
 import DatePicker from "react-datepicker"
 
+
+import MyModal from "../widgets/Modal/index";
+
 import assert from "assert";
 import {
     IAssignmentData,
@@ -18,6 +21,7 @@ import {
 import {text} from "node:stream/consumers";
 import {Assignment} from "../../canvas/content";
 import {Course} from "../../canvas/course";
+import BootstrapModalManager from "react-bootstrap/BootstrapModalManager";
 
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.
@@ -227,12 +231,12 @@ function ModalDialog(props: {
     const {show, canClose, message, header} = props;
 
     return (<>
-        <Modal show={show}>
-            <Modal.Header closeButton={canClose}>
-                <Modal.Title>{header}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>{message}</Modal.Body>
-        </Modal>
+        <MyModal isOpen={show}>
+            <h2>
+                {header}
+            </h2>
+            <p>{message}</p>
+        </MyModal>
     </>)
 }
 
