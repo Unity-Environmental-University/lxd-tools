@@ -11,6 +11,23 @@ import {
 import {Course} from "./course";
 
 
+type FuncType<T> = FuncObject<T> | WithoutParamsFuncType<T> | WithParamsFuncType<T>
+type WithoutParamsFuncType<T> = () => T;
+type FunctionParamsType<T> = (FuncType<T> extends WithoutParamsFuncType<T> ? undefined : any);
+type FuncObject<T> = { func: WithParamsFuncType<T>, params: FunctionParamsType<T> }
+type WithParamsFuncType<T> = (params: FunctionParamsType<T>) => T;
+type PassedInParamsType<T> = FunctionParamsType<T>;
+
+function isWithParamsFunc<T>(func: FuncObject<T> | WithParamsFuncType<T> | WithoutParamsFuncType<T>): func is WithParamsFuncType<T> {
+    return typeof func === 'function' && func.length > 0;
+}
+
+function isWithoutParamsFunc<T>(
+    func: FuncObject<T> | WithParamsFuncType<T> | WithoutParamsFuncType<T>): func is WithoutParamsFuncType<T> {
+    return typeof func === 'function' && func.length === 0;
+}
+
+
 /**
  * Takes in a list of functions and calls all of them, returning the result.
  * This is an abomination.
@@ -20,23 +37,8 @@ import {Course} from "./course";
 function callAll<T>(funcs: (() => T)[]): T[]
 function callAll<T, ParamType>(funcs: { func: (params: ParamType) => T, params: ParamType }[]): T[]
 function callAll<T, ParamType>(funcs: ((params: ParamType) => T)[], params: ParamType): T[]
-function callAll<T,
-    WithParamsFuncType extends (params: FunctionParamsType) => T,
-    WithoutParamsFuncType extends () => T,
-    FuncObject extends { func: WithParamsFuncType, params: FunctionParamsType },
-    FuncType extends FuncObject | WithoutParamsFuncType | WithParamsFuncType,
-    PassedInParamsType extends FunctionParamsType,
-    FunctionParamsType extends (FuncType extends WithoutParamsFuncType ? undefined : any) = undefined,
->(funcs: FuncType[] | WithParamsFuncType[], params?: PassedInParamsType) {
+function callAll<T>(funcs: FuncType<T>[] | WithParamsFuncType<T>[], params?: PassedInParamsType<T>) {
     const output: T[] = [];
-
-    function isWithParamsFunc(func: FuncObject | WithParamsFuncType | WithoutParamsFuncType): func is WithParamsFuncType {
-        return typeof func === 'function' && func.length > 0;
-    }
-
-    function isWithoutParamsFunc(func: FuncObject | WithParamsFuncType | WithoutParamsFuncType): func is WithoutParamsFuncType {
-        return typeof func === 'function' && func.length === 0;
-    }
 
     for (let func of funcs) {
         if ((typeof func === 'object')) {
@@ -188,8 +190,8 @@ export function deFormDataify(formData: FormData) {
     return [...formData.entries()].reduce((aggregator, [key, value]) => {
         const isArray = key.includes('[]');
         const keys = key.split('[').map(key => key.replaceAll(/[\[\]]/g, ''));
-        if(isArray) keys.pop(); //remove the last, empty, key if it's an array
-        let currentValue: FormDataEntryValue | FormDataEntryValue[] | FormMergeOutput = isArray? [value] : value;
+        if (isArray) keys.pop(); //remove the last, empty, key if it's an array
+        let currentValue: FormDataEntryValue | FormDataEntryValue[] | FormMergeOutput = isArray ? [value] : value;
         while (keys.length > 0) {
             let newValue: Record<string, any>;
             newValue = {
@@ -407,11 +409,13 @@ export async function fetchJson<T extends Record<string, any>>(
  * @param config query and fetch params
  */
 export async function fetchApiJson<T extends Record<string, any>>(url: string, config: ICanvasCallConfig | null = null) {
+    console.warn('Deprecated. Just use fetchJson')
     url = `/api/v1/${url}`;
     return await fetchJson<T>(url, config);
 }
 
 export async function fetchOneKnownApiJson<T extends Record<string, any>>(url: string, config: ICanvasCallConfig | null = null) {
+    console.warn('Deprecated. Just use fetchJson')
     let result = await fetchApiJson<T>(url, config);
     assert(result);
     if (Array.isArray(result)) return result[0];
@@ -419,6 +423,7 @@ export async function fetchOneKnownApiJson<T extends Record<string, any>>(url: s
 }
 
 export async function fetchOneUnknownApiJson(url: string, config: ICanvasCallConfig | null = null) {
+    console.warn('Deprecated. Just use fetchJson')
     let result = await fetchApiJson(url, config);
     if (!result) return null;
     if (Array.isArray(result) && result.length > 0) return result[0];
@@ -434,7 +439,6 @@ export function courseNameSort(a: Course | ICourseData, b: Course | ICourseData)
     if (a.name < b.name) return -1;
     if (b.name < a.name) return 1;
     return 0;
-
 }
 
 export function* range(start: number, end: number) {

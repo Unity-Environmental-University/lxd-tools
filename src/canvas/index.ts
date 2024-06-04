@@ -167,10 +167,11 @@ export class NotImplementedException extends Error {
 }
 
 export function apiWriteConfig(method: 'POST' | 'PUT', data: Record<string, any>, baseConfig?: ICanvasCallConfig) {
+    const body = formDataify(data);
     return overrideConfig({
         fetchInit: {
             method,
-            body: formDataify(data)
+            body,
         }
     }, baseConfig);
 }

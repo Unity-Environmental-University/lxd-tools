@@ -6,7 +6,6 @@ import {
     getSections,
     getTermNameFromSections,
     IBlueprintCourse,
-    isBlueprint,
     retireBlueprint,
     getBlueprintsFromCode, setAsBlueprint
 } from "./blueprint";

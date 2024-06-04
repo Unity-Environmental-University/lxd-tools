@@ -123,7 +123,7 @@ export async function setAsBlueprint(courseId: number, config?: ICanvasCallConfi
             }
         }
     }
-    return await fetchOneKnownApiJson(url, apiWriteConfig('PUT', payload, config)) as ICourseData;
+    return await fetchOneKnownApiJson(url, apiWriteConfig('PUT', formDataify(payload), config)) as ICourseData;
 }
 
 async function unsetAsBlueprint(courseId: number, config?: ICanvasCallConfig) {

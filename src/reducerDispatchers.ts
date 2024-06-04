@@ -26,20 +26,21 @@ interface ICollectionLutAction<TKey extends string | number, TItems> {
  * @param action
  */
 export function collectionLutDispatcher<TKey extends string | number, TItems>(
-    state: Record<TKey, TItems[]>,
+    state: Record<TKey, TItems[]> | null | undefined,
     action: ICollectionLutAction<TKey, TItems>
 ) {
+    let outputState = state || {} as Record<TKey, TItems[]>;
     //Handle clear first as there are more cases where one would want to
     // clear while setting a new state than there are cases where one
     // would want to add and then immediately remove the added items
-    if(action.clear) state = {} as Record<TKey, TItems[]>
+    if(action.clear) outputState = {} as Record<TKey, TItems[]>
     if(action.set) {
-        state = handleCollectionLutAdd(null, action.set)
+        outputState = handleCollectionLutAdd(null, action.set)
     }
     if(action.add) {
-        state = handleCollectionLutAdd(state, action.add);
+        outputState = handleCollectionLutAdd(outputState, action.add);
     }
-    return state;
+    return outputState;
 }
 
 

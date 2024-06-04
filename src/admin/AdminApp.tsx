@@ -31,7 +31,7 @@ export function AdminApp({course}: IAdminAppProps) {
     const [
         validationResultsLut,
         dispatchValidationResultsLut
-    ] = useReducer(collectionLutDispatcher<IIncludesTestAndCourseId>, {});
+    ] = useReducer(collectionLutDispatcher<number, IIncludesTestAndCourseId>, {});
 
     const [includeDev, setIncludeDev] = useState(false);
     const [includeSections, setIncludeSections] = useState(false);
@@ -42,7 +42,7 @@ export function AdminApp({course}: IAdminAppProps) {
         parentCourseLut
         , dispatchParentCourseLut
     ] = useReducer(lutDispatcher<number, Course | null>, {});
-    const [sectionLut, dispatchSectionLut] = useReducer(collectionLutDispatcher<Course>, {})
+    const [sectionLut, dispatchSectionLut] = useReducer(collectionLutDispatcher<number, Course>, {})
 
 
     function cacheAssociatedCourses(bpId: number, toAdd: Course[] | Course) {

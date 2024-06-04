@@ -1,5 +1,5 @@
 import {Course, IContentHaver, ISyllabusHaver} from "../../../canvas/course/index";
-import {ICanvasCallConfig} from "../../../canvas/canvasUtils";
+import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -187,18 +187,10 @@ async function fixSyllabus(course: ISyllabusHaver, validateRegEx: RegExp, replac
 
 }
 
-export function overrideConfig(source: ICanvasCallConfig | undefined, override: ICanvasCallConfig | undefined): ICanvasCallConfig {
-    const out = {
-        queryParams: {
-            ...source?.queryParams,
-            ...override?.queryParams,
-        },
-        fetchInit: {...source?.fetchInit, ...override?.fetchInit}
-    }
+export function overrideConfig(
+    source: ICanvasCallConfig | undefined,
+    override: ICanvasCallConfig | undefined
+) {
 
-    if (source?.queryParams?.include && override?.queryParams?.include) {
-        out.queryParams.include = [...source?.queryParams.include, ...override?.queryParams.include]
-    }
-
-    return out;
+    return deepObjectMerge(source, override) ?? {} as ICanvasCallConfig ;
 }
