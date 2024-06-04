@@ -79,7 +79,7 @@ function ExportApp() {
         try {
             window.addEventListener("error", showError);
             let csvRows = await csvRowsForCourse(course, assignment)
-            let filename = assignment ? assignment?.name : course.fullCourseCode;
+            let filename = assignment ? assignment?.name : course.courseCode;
             filename ??= "COURSE CODE NOT FOUND"
             saveDataGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
             window.removeEventListener("error", showError);
@@ -283,7 +283,7 @@ async function getRowsForSections(sections: Course[], sectionsAtATime = MAX_SECT
         sectionsLeftToProcess = sectionsLeftToProcess.slice(sectionsAtATime);
         const rowsOfRows = await Promise.all(sliceToProcessNow.map(async (section) => {
             const sectionRows = await csvRowsForCourse(section);
-            saveDataGenFunc()(sectionRows, `Rubric Scores ${section.fullCourseCode}.csv`);
+            saveDataGenFunc()(sectionRows, `Rubric Scores ${section.courseCode}.csv`);
             return sectionRows;
         }))
         for (let rowSet of rowsOfRows) {
