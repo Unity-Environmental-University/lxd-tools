@@ -1,7 +1,7 @@
 //We should really write integration tests for these eventually rather than just unit tests
 
 
-import {range} from "../canvasUtils";
+import {deFormDataify, range} from "../canvasUtils";
 import {
     getSections,
     getTermNameFromSections,
@@ -143,12 +143,11 @@ test("setAsBlueprint", async() => {
         assert('body' in requestInit);
         const formData = requestInit.body;
         assert(formData instanceof FormData)
-        const entries = Object.fromEntries(formData.entries());
-        return new Response(JSON.stringify(entries))
+        return new Response(JSON.stringify(deFormDataify(formData)))
 
     }, async () => {
         responseData = await setAsBlueprint(0)
-        expect(responseData.blueprint).toBe(true);
+        expect(responseData.course.blueprint).toBe("true");
     })
 })
 
