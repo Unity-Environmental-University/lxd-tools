@@ -1,15 +1,13 @@
 import {filterUniqueFunc} from "./canvas/canvasUtils";
 
 
-type CollectionLut<T> = Record<number | string, T[]>;
-
-interface ICollectionLutAddAction<T> {
-    key: number,
-    items: T[]
+interface ICollectionLutAddAction<TKey extends string | number, TItems> {
+    key: TKey,
+    items: TItems[]
 }
 
 
-interface ICollectionLutAction<T> {
+interface ICollectionLutAction<TKey extends string | number, TItems> {
     /**
      * clears the lookup table
      */
@@ -17,30 +15,44 @@ interface ICollectionLutAction<T> {
     /**
      * adds elements to a collection at a given key in the lookup table
      */
-    add?: ICollectionLutAddAction<T>,
+    add?: ICollectionLutAddAction<TKey, TItems>,
+    set?: ICollectionLutAddAction<TKey, TItems>
 }
 
-export function collectionLutDispatcher<T>(
-    state: CollectionLut<T>,
-    action: ICollectionLutAction<T>
+
+/**
+ * Actions are resolved in the order clear, set, add
+ * @param state
+ * @param action
+ */
+export function collectionLutDispatcher<TKey extends string | number, TItems>(
+    state: Record<TKey, TItems[]>,
+    action: ICollectionLutAction<TKey, TItems>
 ) {
-    const {add} = action;
-    state = handleCollectionLutAdd(state, action);
-    return state;
-}
-
-
-function handleCollectionLutAdd<T>(state: CollectionLut<T>, action: ICollectionLutAction<T>) {
-    if(action.clear) return {}
-    if (action.add) {
-        const {key, items} = action.add;
-        const stateItems = state[key] ?? [];
-        return {
-            ...state,
-            [key]: [...stateItems, ...items].filter(filterUniqueFunc)
-        };
+    //Handle clear first as there are more cases where one would want to
+    // clear while setting a new state than there are cases where one
+    // would want to add and then immediately remove the added items
+    if(action.clear) state = {} as Record<TKey, TItems[]>
+    if(action.set) {
+        state = handleCollectionLutAdd(null, action.set)
+    }
+    if(action.add) {
+        state = handleCollectionLutAdd(state, action.add);
     }
     return state;
+}
+
+
+function handleCollectionLutAdd<TKey extends string | number, TItems>(
+    state: Record<TKey, TItems[]> | null,
+    action: ICollectionLutAddAction<TKey, TItems>) {
+    if(!state) state = {} as Record<TKey, TItems[]>
+    const {key, items} = action;
+    const stateItems = state[key] ?? [];
+    return {
+        ...state,
+        [key]: [...stateItems, ...items].filter(filterUniqueFunc)
+    };
 }
 
 

@@ -90,7 +90,14 @@ test('deFormDatify properly deserializes objects', () => {
     console.log(entries);
     const newData = deFormDataify(formD);
     console.log(newData);
-    expect(testData).toBe(newData);
+    expect(newData).toEqual({
+        a: ['1'],
+        b: 'hello!',
+        c: {
+            c1: ['1'],
+            c2: '2'
+        }
+    });
 })
 
 

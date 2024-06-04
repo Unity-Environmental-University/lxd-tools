@@ -185,17 +185,15 @@ export interface FormMergeOutput {
 }
 
 export function deFormDataify(formData: FormData) {
-
-
     return [...formData.entries()].reduce((aggregator, [key, value]) => {
         const isArray = key.includes('[]');
         const keys = key.split('[').map(key => key.replaceAll(/[\[\]]/g, ''));
-        let currentValue: FormDataEntryValue | FormMergeOutput = value;
-        assert(keys.length > 0);
+        if(isArray) keys.pop(); //remove the last, empty, key if it's an array
+        let currentValue: FormDataEntryValue | FormDataEntryValue[] | FormMergeOutput = isArray? [value] : value;
         while (keys.length > 0) {
             let newValue: Record<string, any>;
             newValue = {
-                [keys.pop() as string]: isArray ? [currentValue] : currentValue
+                [keys.pop() as string]: currentValue
             };
             currentValue = newValue;
 

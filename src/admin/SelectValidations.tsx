@@ -1,7 +1,7 @@
 import {CourseValidation} from "../publish/fixesAndUpdates/validations/index";
 import MultiSelect, {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
 import React, {FormEvent, useState} from "react";
-import {getTestName, tests} from "./index";
+import {tests} from "./index";
 import {Col, Form, Row} from "react-bootstrap";
 import {CustomSearchValidation} from "./CustomSearchValidation";
 
@@ -20,6 +20,9 @@ export function SelectValidations({
     runTests, testsToRun, setTestsToRun, setCoursesToRunOn, onChangeCustomValidation
 }: SelectValidationsProps) {
 
+    function getTestName(test:CourseValidation) {
+        return test.name;
+    }
     const [allValidations, _] = useState(optionize(tests, getTestName, getTestName))
 
     function onSubmit(e: FormEvent) {
