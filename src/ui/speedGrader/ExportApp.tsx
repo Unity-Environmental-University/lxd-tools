@@ -308,7 +308,12 @@ async function csvRowsForCourse(course: Course, assignment: Assignment | null = 
     const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IUserData[];
     const assignments = await course.getAssignments();
     const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
-    const modules = await getAllPagesAsync(`/api/v1/courses/${courseId}/modules?include[]=items&include[]=content_details`) as IModuleData[];
+    //const modules = await getAllPagesAsync(`/api/v1/courses/${courseId}/modules?include[]=items&include[]=content_details`) as IModuleData[];
+    const modules = await  course.getModules({
+        queryParams: {
+            include: ['items', 'content_details']
+        }
+    })
     const enrollments = await getAllPagesAsync(`/api/v1/courses/${courseId}/enrollments?per_page=5`) as IEnrollmentData[];
 
     const termsResponse = await fetch(`/api/v1/accounts/${rootAccountId}/terms/${courseData.enrollment_term_id}`);
@@ -425,7 +430,7 @@ async function getRows({
 
         course_code.replace(/^(.*)_?(\[A-Za-z]{4}\d{3}).*$/, '$1$2')
         let moduleInfo = getModuleInfo(assignment, modules, assignmentsCollection);
-        assert(moduleInfo);
+
         let {weekNumber, moduleName, numberInModule, type} = moduleInfo;
         let {rubric_assessment: rubricAssessment} = submission;
         let rubricId = typeof (rubricSettings) !== 'undefined' && rubricSettings.hasOwnProperty('id') ?
@@ -537,9 +542,8 @@ interface IModuleInfo {
     type: string
 }
 
-function getModuleInfo(contentItem: CanvasData, modules: IModuleData[], assignmentsCollection: AssignmentsCollection): IModuleInfo | null {
+function getModuleInfo(contentItem: CanvasData, modules: IModuleData[], assignmentsCollection: AssignmentsCollection): IModuleInfo  {
     const regex = /(week|module) (\d+)/i;
-
     for (let module of modules) {
         let match = module.name.match(regex);
         let weekNumber = !match ? null : parseInt(match[1]);
@@ -566,7 +570,12 @@ function getModuleInfo(contentItem: CanvasData, modules: IModuleData[], assignme
             numberInModule: moduleItem.numberInModule
         }
     }
-    return null
+    return {
+        weekNumber: '-',
+        moduleName: '-',
+        type: assignmentsCollection.getAssignmentContentType(contentItem),
+        numberInModule: -1
+    }
 }
 
 
