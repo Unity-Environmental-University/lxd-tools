@@ -178,6 +178,12 @@ describe("Recursive object merge", () => {
         expect(fileOne).toBe(fileTwo);
     })
 
+    test('FormData', () => {
+        const formMerge = deepObjectMerge({ data: new FormData()}, { body: new FormData()});
+        expect(formMerge?.body).toBeInstanceOf(FormData);
+        expect(formMerge?.data).toBeInstanceOf(FormData);
+    })
+
     test('Objects', () => {
         expect(() => deepObjectMerge({a: 1}, {a: "Dog"})).toThrow('Type clash on merge')
         expect(deepObjectMerge({a: 1}, {b: 2})).toStrictEqual({a: 1, b: 2});
@@ -186,7 +192,6 @@ describe("Recursive object merge", () => {
         }, {
             list: [4, 5, 6]
         })).toStrictEqual({list: [1, 2, 3, 4, 5, 6]})
-
         expect(deepObjectMerge({
             item: {
                 name: "NAME",

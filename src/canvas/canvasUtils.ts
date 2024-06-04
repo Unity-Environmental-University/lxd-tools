@@ -122,7 +122,7 @@ export function formDataify(data: Record<string, any>) {
 }
 
 
-export function deepObjectMerge<ReturnType extends string | number | File | Record<string, any> | []>(
+export function deepObjectMerge<ReturnType extends string | number  | Object | Record<string, any> | []>(
     a: ReturnType | null | undefined,
     b: ReturnType | null | undefined,
     complexObjectsTracker: Array<unknown> = [],
@@ -147,7 +147,10 @@ export function deepObjectMerge<ReturnType extends string | number | File | Reco
         assert(Array.isArray(b), "We should not get here if b is not an array")
         let mergedArray = [...a, ...b];
         const outputArray = mergedArray.map(value => {
-            if (typeof value === 'object') value = deepObjectMerge(value, null, [...complexObjectsTracker, a, b]);
+            if (Object.getPrototypeOf(value) === Object.prototype) {
+                //Make a deep of any object literal
+                value = deepObjectMerge(value, null, [...complexObjectsTracker, a, b]);
+            }
             return value;
         }) as ReturnType
         return outputArray;
@@ -160,8 +163,13 @@ export function deepObjectMerge<ReturnType extends string | number | File | Reco
             assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
             return a;
         }
-        if (a instanceof File) return a;
-        if (b instanceof File) return b;
+        if(a && Object.getPrototypeOf(a) != Object.prototype
+            || b && Object.getPrototypeOf(b) != Object.prototype) {
+            assert(!a || !b || a === b, `Non-mergeable object clash ${a} ${b}`);
+            if(a) return a;
+            return b;
+
+        }
 
         if (!b) return deepObjectMerge(a, {} as ReturnType, complexObjectsTracker);
         if (!a) return deepObjectMerge(b, {} as ReturnType, complexObjectsTracker);
@@ -169,9 +177,12 @@ export function deepObjectMerge<ReturnType extends string | number | File | Reco
         assert(b && typeof b === 'object', "b should always be defined here.")
 
         const allKeys = [...Object.keys(a), ...Object.keys(b)].filter(filterUniqueFunc);
+        const aRecord:Record<string, any> = a;
+        const bRecord:Record<string, any> = b;
+
         const entries = allKeys.map((key: string) => [
             key,
-            deepObjectMerge(a[key], b[key], [...complexObjectsTracker, a, b])
+            deepObjectMerge(aRecord[key], bRecord[key], [...complexObjectsTracker, a, b])
         ]);
         return Object.fromEntries(entries)
     }
