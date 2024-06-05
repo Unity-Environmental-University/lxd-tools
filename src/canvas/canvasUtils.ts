@@ -122,11 +122,21 @@ export function formDataify(data: Record<string, any>) {
 }
 
 
-export function deepObjectMerge<ReturnType extends string | number  | Object | Record<string, any> | []>(
-    a: ReturnType | null | undefined,
-    b: ReturnType | null | undefined,
+
+export function deepObjectCopy<T extends ReturnType<typeof deepObjectMerge> & ({} | [])>(
+    toCopy: T,
     complexObjectsTracker: Array<unknown> = [],
-): ReturnType | undefined | null {
+){
+    return deepObjectMerge(toCopy, {} as T, true, complexObjectsTracker) as T;
+}
+
+
+export function deepObjectMerge<Return extends string | number | Object | Record<string, any> | []>(
+    a: Return | null | undefined,
+    b: Return | null | undefined,
+    overrideWithA: boolean = false,
+    complexObjectsTracker: Array<unknown> = [],
+): Return | undefined | null {
     for (let value of [a, b]) {
         if (typeof value == "object" &&
             complexObjectsTracker.includes(value)) throw new Error(`Infinite Loop: Element ${value} contains itself`);
@@ -138,43 +148,45 @@ export function deepObjectMerge<ReturnType extends string | number  | Object | R
         Array.isArray(a) != Array.isArray(b)
     )) {
         if (a === b) return a;
+        if(overrideWithA) return a;
         throw new Error(`Type clash on merge ${typeof a} ${a}, ${typeof b} ${b}`);
     }
 
     //If either or both are arrays, merge if able to
     if (Array.isArray(a)) {
-        if (!b) return deepObjectMerge(a, [] as ReturnType, complexObjectsTracker);
+        if (!b) return deepObjectCopy<Return>(a, complexObjectsTracker);
         assert(Array.isArray(b), "We should not get here if b is not an array")
         let mergedArray = [...a, ...b];
         const outputArray = mergedArray.map(value => {
-            if (Object.getPrototypeOf(value) === Object.prototype) {
+            if(!value) return value;
+            if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
                 //Make a deep of any object literal
-                value = deepObjectMerge(value, null, [...complexObjectsTracker, a, b]);
+                if(!value) return value;
+                value = deepObjectCopy(value,   [...complexObjectsTracker, a, b]);
             }
             return value;
-        }) as ReturnType
+        }) as Return
         return outputArray;
     }
 
-    if (Array.isArray(b)) return deepObjectMerge(b, [] as ReturnType); //we already know a is not an array at this point, return a deep copy of b
-
+    if (Array.isArray(b)) return deepObjectCopy(b, complexObjectsTracker); //we already know a is not an array at this point, return a deep copy of b
     if ((a && typeof a === 'object') || (b && typeof b === 'object')) {
         if (a instanceof File && b instanceof File) {
-            assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
+            if(!overrideWithA) assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
             return a;
         }
         if(a && Object.getPrototypeOf(a) != Object.prototype
             || b && Object.getPrototypeOf(b) != Object.prototype) {
-            assert(!a || !b || a === b, `Non-mergeable object clash ${a} ${b}`);
+            if(!overrideWithA) assert(!a || !b || a === b, `Non-mergeable object clash ${a} ${b}`);
             if(a) return a;
-            return b;
-
+            if(b) return b;
         }
+        if (a && !b) return deepObjectCopy(a, complexObjectsTracker);
+        if (b && !a) return deepObjectCopy(b, complexObjectsTracker);
 
-        if (!b) return deepObjectMerge(a, {} as ReturnType, complexObjectsTracker);
-        if (!a) return deepObjectMerge(b, {} as ReturnType, complexObjectsTracker);
-        assert(a && typeof a === 'object', "a should always be defined here.")
-        assert(b && typeof b === 'object', "b should always be defined here.")
+
+        assert(a && typeof a === 'object' && Object.getPrototypeOf(a) === Object.prototype, "a should always be defined here.")
+        assert(b && typeof b === 'object' && Object.getPrototypeOf(b) === Object.prototype, "b should always be defined here.")
 
         const allKeys = [...Object.keys(a), ...Object.keys(b)].filter(filterUniqueFunc);
         const aRecord:Record<string, any> = a;
@@ -182,11 +194,14 @@ export function deepObjectMerge<ReturnType extends string | number  | Object | R
 
         const entries = allKeys.map((key: string) => [
             key,
-            deepObjectMerge(aRecord[key], bRecord[key], [...complexObjectsTracker, a, b])
+            deepObjectMerge(aRecord[key], bRecord[key], overrideWithA, [...complexObjectsTracker, a, b])
         ]);
         return Object.fromEntries(entries)
     }
-    if (a && b && a !== b) throw new Error(`Values unmergeable, ${a}>:${typeof a}, ${b} ${typeof b}`)
+    if (a && b) {
+        if(overrideWithA || a === b) return a;
+        throw new Error(`Values unmergeable, ${a}>:${typeof a}, ${b} ${typeof b}`)
+    }
     if (a) return a;
     if (b) return b;
     if (a === null) return a;
@@ -474,10 +489,10 @@ export function getCourseIdFromUrl(url: string) {
     return null;
 }
 
-export function batchify<T>(toBatch: T[], batchsize: number) {
+export function batchify<T>(toBatch: T[], batchSize: number) {
     const out: T[][] = [];
-    for (let i = 0; i < toBatch.length; i += batchsize) {
-        out.push(toBatch.slice(i, i + batchsize));
+    for (let i = 0; i < toBatch.length; i += batchSize) {
+        out.push(toBatch.slice(i, i + batchSize));
 
     }
     return out;

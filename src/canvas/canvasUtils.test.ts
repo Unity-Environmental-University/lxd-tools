@@ -132,9 +132,21 @@ describe("Recursive object merge", () => {
     test('Non-indexing merges', () => {
         expect(deepObjectMerge(1, null)).toBe(1)
         expect(deepObjectMerge(undefined, 2)).toBe(2)
+        expect(deepObjectMerge(undefined, null)).toBe(null)
+        expect(deepObjectMerge(null, undefined)).toBe(null)
+
         expect(() => deepObjectMerge<string | number>(1, 'apple')).toThrow('Type clash on merge number 1, string apple')
         expect(() => deepObjectMerge<string | number>(1, '2')).toThrow('Type clash on merge number 1, string 2')
         expect(() => deepObjectMerge(1, 2)).toThrow('Values unmergeable')
+
+        expect(deepObjectMerge<string | number>('apple', 1, true)).toBe('apple');
+        expect(deepObjectMerge<string | number>(1, '2', true)).toBe(1);
+        expect(deepObjectMerge(1, 2, true)).toBe(1)
+        expect(deepObjectMerge({
+            name: "todd"
+        }, {
+            name: 'steve'
+        }, true)?.name).toBe('todd');
     })
 
     test('Arrays', () => {
@@ -150,7 +162,9 @@ describe("Recursive object merge", () => {
             assert(simpleMerged);
             expect(simpleMerged).toContain(a);
         })
-
+        const dougsAndHenries = deepObjectMerge([{name: 'henry'}, {name: 'doug'}], [{name: 'henry'}, {name: 'doug'}]);
+        expect(dougsAndHenries).toHaveLength(4)
+        expect(dougsAndHenries?.map(entry => entry.name)).toEqual(['henry', 'doug', 'henry', 'doug'])
     });
 
     test('Files and Complex arrays', () => {
@@ -161,7 +175,7 @@ describe("Recursive object merge", () => {
         expect(() => deepObjectMerge(file, counterFile)?.name).toThrow(AssertionError)
         counterFile = new File(['aaaaaa'], 'file.txt');
         expect(() => deepObjectMerge(file, counterFile)?.name).toThrow(AssertionError)
-
+        expect(deepObjectMerge(file, counterFile, true)?.name).toBe(file.name)
         let complexMerged = deepObjectMerge([null, 'a', file], [undefined, [1, 2, 3, 4], 5, object, object, file]);
         expect(complexMerged).toHaveLength(9);
         for (let value of [5, 'a', null, undefined]) {
