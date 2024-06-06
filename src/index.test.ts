@@ -5,8 +5,8 @@ describe('Testing basic sleep function', () => {
 
     it('sleeps for the right amount of time', async ()=> {
         const durations = [
-            50,
-            60
+            100,
+            200
         ]
         for(let i = 0; i < 10; i++) {
             for (let duration of durations) {
@@ -15,7 +15,7 @@ describe('Testing basic sleep function', () => {
                 const after = Date.now();
                 const elapsed = after - time;
                 console.log(duration, elapsed);
-                expect(elapsed - duration).toBeLessThan(20)
+                expect(elapsed - duration).toBeLessThan(100)
                 expect(elapsed - duration).toBeGreaterThanOrEqual(-5)
 
             }

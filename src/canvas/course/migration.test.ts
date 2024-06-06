@@ -1,6 +1,6 @@
 import fetchMock from "jest-fetch-mock";
 import {ICourseData} from "../canvasDataDefs";
-import {dummyCourseData} from "../../../tests/dummyData/dummyCourseData";
+import {dummyCourseData} from "./__mocks__/dummyCourseData";
 import {
     copyToNewCourseGenerator,
     courseMigrationGenerator,
@@ -64,8 +64,6 @@ test('Copy course wholesale', async () => {
     const newCode = 'BP_TEST000';
     const newName = `BP_TEST000: ${courseName}`;
 
-
-
     fetchMock.mockResponseOnce(JSON.stringify({...sourceCourse, name:newName, course_code:newCode}))
     fetchMock.mockResponseOnce(JSON.stringify(<IMigrationData>{
         ...dummyMigrationData, workflow_state: 'queued'
@@ -88,7 +86,6 @@ test('Copy course wholesale', async () => {
         i++
     }
     fetchMock.mockResponseOnce(JSON.stringify({...sourceCourse, name:newName, course_code:newCode}))
-
 
     async function testCourseMigration() {
         let result;

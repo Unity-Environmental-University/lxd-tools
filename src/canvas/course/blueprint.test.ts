@@ -9,12 +9,12 @@ import {
     retireBlueprint,
     getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint
 } from "./blueprint";
-import {dummyCourseData} from "../../../tests/dummyData/dummyCourseData";
+import {dummyCourseData} from "./__mocks__/dummyCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
 import {Course} from "./index";
 import {IAccountData, ICourseData, ITermData} from "../canvasDataDefs";
-import {dummyTermData} from "../../../tests/dummyData/dummyTermData";
-import {dummyAccountData} from "../../../tests/dummyData/dummyAccountData";
+import {dummyTermData} from "../__mocks__/dummyTermData";
+import {dummyAccountData} from "../__mocks__/dummyAccountData";
 import assert from "assert";
 
 

@@ -1,9 +1,9 @@
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../canvas/content/index";
 import fs from "fs";
-import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../../tests/dummyData/dummyContentData";
+import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../canvas/content/dummyContentData";
 import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace, TextReplaceValidation} from "./index";
 import {ILatePolicyUpdate, IModuleData} from "../../../canvas/canvasDataDefs";
-import dummyLatePolicy from "../../../../tests/dummyData/dummyLatePolicy";
+import dummyLatePolicy from "../../../canvas/course/__mocks__/dummyLatePolicy";
 import assert from "assert";
 import {
     aiPolicyInSyllabusTest,
@@ -17,7 +17,7 @@ import {courseProjectOutlineTest, weeklyObjectivesTest} from "./courseContent";
 import proxyServerLinkValidation from "./proxyServerLinkValidation";
 import capstoneProjectValidations from "./courseSpecific/capstoneProjectValidations";
 import {getModulesByWeekNumber} from "../../../canvas/course/modules";
-import {dummyGradModules, dummyUgModules} from "../../../../tests/dummyData/dummyModuleData";
+import {dummyGradModules, dummyUgModules} from "../../../canvas/course/__mocks__/dummyModuleData";
 import {
     IAssignmentsHaver,
     IContentHaver, IDiscussionsHaver,

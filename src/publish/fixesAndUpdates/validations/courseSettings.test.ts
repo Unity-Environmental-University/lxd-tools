@@ -2,8 +2,8 @@ import {badGradingPolicyTest, latePolicyTest, noEvaluationTest} from "./courseSe
 import {getDummyLatePolicyHaver} from "./index.test";
 import {ICanvasCallConfig, range} from "../../../canvas/canvasUtils";
 import {Page} from "../../../canvas/content/index";
-import {dummyPageData} from "../../../../tests/dummyData/dummyContentData";
-import {dummyGradModules, dummyUgModules} from "../../../../tests/dummyData/dummyModuleData";
+import {dummyPageData} from "../../../canvas/content/dummyContentData";
+import {dummyGradModules, dummyUgModules} from "../../../canvas/course/__mocks__/dummyModuleData";
 import {IModuleData} from "../../../canvas/canvasDataDefs";
 import {getModulesByWeekNumber} from "../../../canvas/course/modules";
 import {

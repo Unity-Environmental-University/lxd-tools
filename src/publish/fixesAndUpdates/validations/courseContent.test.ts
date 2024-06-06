@@ -1,6 +1,6 @@
 import {range} from "../../../canvas/canvasUtils";
 import {Page} from "../../../canvas/content/index";
-import {dummyPageData} from "../../../../tests/dummyData/dummyContentData";
+import {dummyPageData} from "../../../canvas/content/dummyContentData";
 import {courseProjectOutlineTest, weeklyObjectivesTest} from "./courseContent";
 import {dummyPagesHaver} from "./index.test";
 import {IPagesHaver} from "../../../canvas/course/courseTypes";

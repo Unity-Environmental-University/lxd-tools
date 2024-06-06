@@ -9,8 +9,8 @@ import fs from "fs";
 import {dummySyllabusHaver} from "./index.test";
 import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
 
-const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
-const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()
+const goofusSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.goofus.html').toString()
+const gallantSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.gallant.html').toString()
 
 describe('Syllabus validation', () => {
     test('AI policy present test correct', syllabusTestTest(aiPolicyInSyllabusTest))

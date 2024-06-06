@@ -1,6 +1,6 @@
 import {range} from "../canvasUtils";
 import {Course, getCourseGenerator} from "./index";
-import {dummyCourseData} from "../../../tests/dummyData/dummyCourseData";
+import {dummyCourseData} from "./__mocks__/dummyCourseData";
 import {ICourseData} from "../canvasDataDefs";
 import assert from "assert";
 import fetchMock from "jest-fetch-mock";
