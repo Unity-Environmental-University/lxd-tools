@@ -1,5 +1,6 @@
-import {Course, IContentHaver, ISyllabusHaver} from "../../../canvas/course/index";
+import {Course} from "../../../canvas/course/index";
 import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
+import {IContentHaver, ISyllabusHaver} from "../../../canvas/course/courseTypes";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;

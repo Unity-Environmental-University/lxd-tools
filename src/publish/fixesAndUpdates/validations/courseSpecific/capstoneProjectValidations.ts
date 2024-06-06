@@ -4,7 +4,8 @@ import {
     preserveCapsReplace,
     TextReplaceValidation
 } from "../index";
-import {IContentHaver} from "../../../../canvas/course/index";
+
+import {IContentHaver} from "../../../../canvas/course/courseTypes";
 
 
 export const projectRegex = /(research proposal|course project)/ig;

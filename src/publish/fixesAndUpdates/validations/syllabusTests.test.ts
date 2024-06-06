@@ -1,5 +1,4 @@
 import {CourseValidation, TextReplaceValidation} from "./index";
-import {ISyllabusHaver} from "../../../canvas/course/index";
 import {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
@@ -8,6 +7,7 @@ import {
 } from "./syllabusTests";
 import fs from "fs";
 import {dummySyllabusHaver} from "./index.test";
+import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
 
 const goofusSyllabusHtml = fs.readFileSync('./tests/files/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./tests/files/syllabus.gallant.html').toString()

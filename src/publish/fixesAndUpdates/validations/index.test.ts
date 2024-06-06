@@ -1,13 +1,4 @@
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../canvas/content/index";
-import {
-    IAssignmentsHaver,
-    IContentHaver,
-    IDiscussionsHaver, IGradingStandardData, IGradingStandardsHaver,
-    ILatePolicyHaver, IModulesHaver,
-    IPagesHaver,
-    IQuizzesHaver,
-    ISyllabusHaver
-} from "../../../canvas/course/index";
 import fs from "fs";
 import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../../tests/dummyData/dummyContentData";
 import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace, TextReplaceValidation} from "./index";
@@ -27,6 +18,13 @@ import proxyServerLinkValidation from "./proxyServerLinkValidation";
 import capstoneProjectValidations from "./courseSpecific/capstoneProjectValidations";
 import {getModulesByWeekNumber} from "../../../canvas/course/modules";
 import {dummyGradModules, dummyUgModules} from "../../../../tests/dummyData/dummyModuleData";
+import {
+    IAssignmentsHaver,
+    IContentHaver, IDiscussionsHaver,
+    IGradingStandardData,
+    IGradingStandardsHaver, ILatePolicyHaver,
+    IModulesHaver, IPagesHaver, IQuizzesHaver, ISyllabusHaver
+} from "../../../canvas/course/courseTypes";
 
 
 export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {

@@ -3,10 +3,15 @@ import {getDummyLatePolicyHaver} from "./index.test";
 import {ICanvasCallConfig, range} from "../../../canvas/canvasUtils";
 import {Page} from "../../../canvas/content/index";
 import {dummyPageData} from "../../../../tests/dummyData/dummyContentData";
-import {IGradingStandardData, IGradingStandardsHaver, IModulesHaver, IPagesHaver} from "../../../canvas/course/index";
 import {dummyGradModules, dummyUgModules} from "../../../../tests/dummyData/dummyModuleData";
 import {IModuleData} from "../../../canvas/canvasDataDefs";
 import {getModulesByWeekNumber} from "../../../canvas/course/modules";
+import {
+    IGradingStandardData,
+    IGradingStandardsHaver,
+    IModulesHaver,
+    IPagesHaver
+} from "../../../canvas/course/courseTypes";
 
 test('Late policy test works', async () => {
     const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});

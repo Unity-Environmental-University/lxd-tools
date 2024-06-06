@@ -1,5 +1,4 @@
 import {getPlainTextFromHtml} from "../../../canvas/canvasUtils";
-import {ISyllabusHaver} from "../../../canvas/course/index";
 import {
     badContentFixFunc,
     badSyllabusFixFunc,
@@ -7,6 +6,7 @@ import {
     testResult,
     TextReplaceValidation
 } from "./index";
+import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {

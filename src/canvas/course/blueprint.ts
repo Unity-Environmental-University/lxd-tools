@@ -8,8 +8,9 @@ import {
     ICanvasCallConfig
 } from "../canvasUtils";
 import {ICourseData, IModuleData, IModuleItemData} from "../canvasDataDefs";
-import {Course, getCourseGenerator, ICourseCodeHaver, IIdHaver} from "./index";
+import {Course, getCourseGenerator} from "./index";
 import {apiWriteConfig} from "../index";
+import {ICourseCodeHaver, IIdHaver} from "./courseTypes";
 
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
     isBlueprint(): boolean,
@@ -50,7 +51,7 @@ export async function getTermNameFromSections(sections: Course[]) {
     return sectionTerm.name;
 }
 
-export async function retireBlueprint(course: Course, termName: string, config?: ICanvasCallConfig) {
+export async function retireBlueprint(course: Course, termName: string | null, config?: ICanvasCallConfig) {
     if (!course.isBlueprint()) throw new Error("Trying to retire a blueprint that's not a blueprint")
 
     const isCurrentBlueprint = course.parsedCourseCode?.match('BP_');
@@ -67,6 +68,12 @@ export async function retireBlueprint(course: Course, termName: string, config?:
     saveData['course_code'] = newCode
     await course.saveData(saveData, config);
 }
+
+export async function makeNewBpFromDev(devCourse:Course, termName?: string) {
+
+
+}
+
 
 export async function getBlueprintsFromCode(code: string, accountIds: number[], config?: ICanvasCallConfig) {
     const [_, baseCode] = code.match(/_(\w{4}\d{3})$/) || [];

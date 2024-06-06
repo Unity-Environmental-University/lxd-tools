@@ -1,5 +1,5 @@
-import {IPagesHaver} from "../../../canvas/course/index";
 import {CourseValidation, testResult, ValidationTestResult} from "./index";
+import {IPagesHaver} from "../../../canvas/course/courseTypes";
 
 export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
     name: "Learning Objectives -> Weekly Objectives",

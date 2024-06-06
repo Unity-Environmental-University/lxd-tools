@@ -3,7 +3,7 @@ import {IModuleData, IPageData} from "../canvasDataDefs";
 import {fetchApiJson, fetchJson, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {Page} from "../content/index";
 
-interface IModuleHaver {
+export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],
 }
 
@@ -35,8 +35,7 @@ export async function getModuleOverview(module: IModuleData, courseId: number) {
 
     const url = overview.url.replace(/.*\/api\/v1/, '/api/v1')
     const pageData = await fetchJson(url) as IPageData;
-    const overviewPage = new Page(pageData, courseId);
-    return overviewPage;
+    return new Page(pageData, courseId);
 }
 
 export function getModuleWeekNumber(module: Record<string, any>) {

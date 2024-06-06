@@ -1,5 +1,6 @@
 import {badContentFixFunc, badContentRunFunc, CourseValidation} from "./";
-import {IContentHaver} from "../../../canvas/course/index"
+
+import {IContentHaver} from "../../../canvas/course/courseTypes";
 
 
 const oldProxyRegex =/https:\/\/login\.proxy1\.unity\.edu\/login\?auth=shibboleth&(?:amp;)?url=([^"]*)/g;

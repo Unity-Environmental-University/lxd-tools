@@ -15,6 +15,7 @@ import {
 } from "../canvasDataDefs";
 import {Assignment, BaseContentItem, Discussion, getBannerImage, Page, Quiz} from "../content";
 import {
+    deepObjectMerge,
     fetchApiJson,
     fetchJson,
     fetchOneKnownApiJson,
@@ -22,7 +23,6 @@ import {
     filterUniqueFunc,
     formDataify,
     getApiPagedData,
-    getItemTypeAndId,
     getPagedData,
     getPagedDataGenerator,
     ICanvasCallConfig,
@@ -38,99 +38,20 @@ import {NotImplementedException, Term} from "../index";
 
 import {overrideConfig} from "../../publish/fixesAndUpdates/validations/index";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber} from "./modules";
-import {cachedGetAssociatedCoursesFunc, getSections, IBlueprintCourse, isBlueprint} from "./blueprint";
+import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
+import {
+    IContentHaver,
+    ICourseCodeHaver,
+    ICourseDataHaver,
+    ICourseSettingsHaver,
+    IGradingStandardData,
+    IGradingStandardsHaver,
+    ILatePolicyHaver, IMigrationData,
+    IModulesHaver
+} from "./courseTypes";
 
 const HOMETILE_WIDTH = 500;
 
-//const HOMETILE_WIDTH = 500;
-export interface IIdHaver<IdType = number> {
-    id: IdType,
-}
-
-export interface ICourseDataHaver {
-    rawData: ICourseData,
-}
-
-export interface ICourseCodeHaver {
-    name: string,
-    parsedCourseCode: string | null,
-    courseCode: string | null,
-    codeMatch: RegExpExecArray | null,
-    baseCode: string,
-}
-
-export interface ISyllabusHaver extends IIdHaver {
-    getSyllabus: (config?: ICanvasCallConfig) => Promise<string>,
-    changeSyllabus: (newHtml: string, config?: ICanvasCallConfig) => any
-}
-
-
-export interface ICourseSettingsHaver extends IIdHaver {
-    id: number,
-    getSettings: (config?: ICanvasCallConfig) => Promise<ICourseSettings>
-}
-
-
-export interface ILatePolicyHaver extends IIdHaver {
-    id: number,
-    getLatePolicy: (config?: ICanvasCallConfig) => Promise<ILatePolicyData | undefined>
-}
-
-export interface IAssignmentsHaver extends IIdHaver {
-    getAssignments: (config?: ICanvasCallConfig) => Promise<Assignment[]>;
-
-}
-
-export interface IPagesHaver extends IIdHaver {
-    id: number,
-
-    getPages(config?: ICanvasCallConfig): Promise<Page[]>
-}
-
-export interface IDiscussionsHaver extends IIdHaver {
-    id: number,
-
-    getDiscussions(config?: ICanvasCallConfig): Promise<Discussion[]>
-}
-
-export interface IQuizzesHaver extends IIdHaver {
-    getQuizzes(config?: ICanvasCallConfig): Promise<Quiz[]>
-}
-
-
-export interface IModulesHaver extends IIdHaver {
-    getModules(config?: ICanvasCallConfig): Promise<IModuleData[]>,
-
-    getModulesByWeekNumber(config?: ICanvasCallConfig): Promise<Record<number | string, IModuleData>>
-}
-
-
-export interface IGradingStandardsHaver extends IIdHaver {
-    getAvailableGradingStandards(config?: ICanvasCallConfig): Promise<IGradingStandardData[]>,
-
-    getCurrentGradingStandard(config?: ICanvasCallConfig): Promise<IGradingStandardData | null>
-}
-
-
-export interface IGradingStandardData {
-    id: number,
-    title: string,
-    context_type: 'Course' | 'Account',
-    grading_scheme: IGradingSchemeEntry[]
-}
-
-
-export interface IGradingSchemeEntry {
-    name: string,
-    value: number
-}
-
-export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
-    name: string,
-
-    getContent(config?: ICanvasCallConfig, refresh?: boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
-
-}
 
 
 export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,
@@ -356,6 +277,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     get rootAccountId() {
         return this.canvasData.root_account_id;
+    }
+
+    get accountId() {
+        return this.canvasData.account_id;
     }
 
     async getModules(config?: ICanvasCallConfig): Promise<IModuleData[]> {
@@ -840,5 +765,64 @@ export function getCourseGenerator(queryString: string, accountIds: number[] | n
     return generatorMap(mergePagedDataGenerators(generators), courseData => new Course(courseData));
 }
 
+export async function createNewCourse(courseCode:string, name?:string, config?:ICanvasCallConfig) {
+    name ??= courseCode;
+    const createUrl = `/api/v1/courses/`
+    let createConfig:ICanvasCallConfig = {
+        fetchInit: {
+            method: 'PUT',
+            body: formDataify({
+                course: {
+                    name,
+                    course_code: courseCode
+                }
+            })
+        }
+    }
+    return await fetchJson(createUrl, deepObjectMerge(createConfig, config, true)) as ICourseData;
+}
+
+
+
+export async function copyToNewCourse(sourceCourse: Course, newCode: string, newName?: string, config?: ICanvasCallConfig) {
+    if (!newName && sourceCourse.parsedCourseCode) {
+        newName = sourceCourse.name.replace(sourceCourse.parsedCourseCode, newCode);
+    }
+    newName ??= sourceCourse.name + "_COPY";
+    const destCourseData = await createNewCourse(newCode, newName);
+
+    const copyUrl = `/api/v1/courses/${destCourseData.id}/content_migrations`;
+
+    let migrationConfig: ICanvasCallConfig = {
+        fetchInit: {
+            body: formDataify({
+                migration_type: 'course_copy_importer',
+                settings: {
+                    source_course_id: sourceCourse.id,
+                }
+            })
+        }
+    };
+    let migrationData = await fetchJson<IMigrationData>(copyUrl, deepObjectMerge(migrationConfig, config, true))
+    let migrationId = migrationData.id;
+    let pollUrl = '/api/v1/'
+
+    while(true){
+        await sleep(2000);
+        break;
+    }
+
+
+}
+
+function sleep(milliseconds:number):Promise<void> {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, milliseconds)
+    })
+}
+
+
+
 export class CourseNotFoundException extends Error {
 }
+

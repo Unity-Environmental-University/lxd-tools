@@ -1,13 +1,13 @@
 /// Course Settings
+import {CourseValidation, testResult} from "./index";
+import {config} from "dotenv";
 import {
     ICourseSettingsHaver,
     IGradingStandardsHaver,
     ILatePolicyHaver,
     IModulesHaver,
     IPagesHaver
-} from "../../../canvas/course/index";
-import {CourseValidation, testResult} from "./index";
-import {config} from "dotenv";
+} from "../../../canvas/course/courseTypes";
 
 export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
 export const extensionsInstalledTest: CourseValidation = {

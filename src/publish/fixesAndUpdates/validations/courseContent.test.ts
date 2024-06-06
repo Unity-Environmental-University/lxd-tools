@@ -1,9 +1,9 @@
 import {range} from "../../../canvas/canvasUtils";
 import {Page} from "../../../canvas/content/index";
 import {dummyPageData} from "../../../../tests/dummyData/dummyContentData";
-import {IPagesHaver} from "../../../canvas/course/index";
 import {courseProjectOutlineTest, weeklyObjectivesTest} from "./courseContent";
 import {dummyPagesHaver} from "./index.test";
+import {IPagesHaver} from "../../../canvas/course/courseTypes";
 
 test('Weekly Objectives headers not present test works', async () => {
     const goofusPages = Array.from(range(1, 5)).map(weekNum => new Page({
