@@ -131,12 +131,14 @@ export function deepObjectCopy<T extends ReturnType<typeof deepObjectMerge> & ({
 }
 
 
-export function deepObjectMerge<Return extends string | number | Object | Record<string, any> | []>(
-    a: Return | null | undefined,
-    b: Return | null | undefined,
+export function deepObjectMerge<
+    Return extends string | number | Object | Record<string, any> | null | undefined | []
+>(
+    a: Return,
+    b: Return,
     overrideWithA: boolean = false,
     complexObjectsTracker: Array<unknown> = [],
-): Return | undefined | null {
+): Return {
     for (let value of [a, b]) {
         if (typeof value == "object" &&
             complexObjectsTracker.includes(value)) throw new Error(`Infinite Loop: Element ${value} contains itself`);
@@ -154,7 +156,7 @@ export function deepObjectMerge<Return extends string | number | Object | Record
 
     //If either or both are arrays, merge if able to
     if (Array.isArray(a)) {
-        if (!b) return deepObjectCopy<Return>(a, complexObjectsTracker);
+        if (!b) return deepObjectCopy(a, complexObjectsTracker);
         assert(Array.isArray(b), "We should not get here if b is not an array")
         let mergedArray = [...a, ...b];
         const outputArray = mergedArray.map(value => {
@@ -206,6 +208,8 @@ export function deepObjectMerge<Return extends string | number | Object | Record
     if (b) return b;
     if (a === null) return a;
     if (b === null) return b;
+    assert(typeof a === 'undefined')
+    return a;
 }
 
 export interface FormMergeOutput {

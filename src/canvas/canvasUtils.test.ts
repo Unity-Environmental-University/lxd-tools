@@ -135,9 +135,9 @@ describe("Recursive object merge", () => {
         expect(deepObjectMerge(undefined, null)).toBe(null)
         expect(deepObjectMerge(null, undefined)).toBe(null)
 
-        expect(() => deepObjectMerge<string | number>(1, 'apple')).toThrow('Type clash on merge number 1, string apple')
-        expect(() => deepObjectMerge<string | number>(1, '2')).toThrow('Type clash on merge number 1, string 2')
-        expect(() => deepObjectMerge(1, 2)).toThrow('Values unmergeable')
+        expect(() => deepObjectMerge<string | number>(1, 'apple', false)).toThrow('Type clash on merge number 1, string apple')
+        expect(() => deepObjectMerge<string | number>(1, '2', false)).toThrow('Type clash on merge number 1, string 2')
+        expect(() => deepObjectMerge(1, 2, false)).toThrow('Values unmergeable')
 
         expect(deepObjectMerge<string | number>('apple', 1, true)).toBe('apple');
         expect(deepObjectMerge<string | number>(1, '2', true)).toBe(1);

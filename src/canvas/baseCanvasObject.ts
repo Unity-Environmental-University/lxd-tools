@@ -19,8 +19,10 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
     static contentUrlTemplate: string | null = null; // A templated url to get a single item
     static allContentUrlTemplate: string | null = null; // A templated url to get all items
     protected canvasData: CanvasDataType;
-    protected accountId: null | number = null;
-
+    private _accountId: null | number = null;
+    protected get accountId(): null | number {
+        return this._accountId;
+    }
     constructor(data: CanvasDataType) {
         this.canvasData = data || {}; // A dict holding the decoded json representation of the object in Canvas
     }

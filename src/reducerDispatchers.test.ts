@@ -70,31 +70,6 @@ describe('collection lookuptable dispatcher', () => {
 
 })
 
-
-// export function collectionLutDispatcher<T>(
-//     state: CollectionLut<T>,
-//     action: ICollectionLutAction<T>
-// ) {
-//     const {add} = action;
-//     state = handleCollectionLutAdd(state, action);
-//     return state;
-// }
-//
-//
-// function handleCollectionLutAdd<T>(state: CollectionLut<T>, action: ICollectionLutAction<T>) {
-//     if(action.clear) return {}
-//     if (action.add) {
-//         const {key, items} = action.add;
-//         const stateItems = state[key] ?? [];
-//         return {
-//             ...state,
-//             [key]: [...stateItems, ...items].filter(filterUniqueFunc)
-//         };
-//     }
-//     return state;
-// }
-//
-//
 // type RecordKeyType = string | number | symbol
 //
 // export interface ILutAction<KeyType extends RecordKeyType, DataType> {
