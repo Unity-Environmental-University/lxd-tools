@@ -46,12 +46,14 @@ import {
     ICourseSettingsHaver,
     IGradingStandardData,
     IGradingStandardsHaver,
-    ILatePolicyHaver, IMigrationData,
-    IModulesHaver
+    ILatePolicyHaver,
+    IMigrationData,
+    IModulesHaver,
+    IProgressData
 } from "./courseTypes";
+import {sleep} from "../../index";
 
 const HOMETILE_WIDTH = 500;
-
 
 
 export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,
@@ -744,6 +746,11 @@ async function* generatorMap<T, MapOutput>(
     }
 }
 
+export function getCourseData(id:number, config?: ICanvasCallConfig) {
+    const url = `/api/v1/courses/${id}`;
+    return fetchJson(url, config);
+}
+
 export function getCourseGenerator(queryString: string, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig) {
     if (!Array.isArray(accountIds)) accountIds = [accountIds];
 
@@ -765,10 +772,10 @@ export function getCourseGenerator(queryString: string, accountIds: number[] | n
     return generatorMap(mergePagedDataGenerators(generators), courseData => new Course(courseData));
 }
 
-export async function createNewCourse(courseCode:string, name?:string, config?:ICanvasCallConfig) {
+export async function createNewCourse(courseCode: string, name?: string, config?: ICanvasCallConfig) {
     name ??= courseCode;
     const createUrl = `/api/v1/courses/`
-    let createConfig:ICanvasCallConfig = {
+    let createConfig: ICanvasCallConfig = {
         fetchInit: {
             method: 'PUT',
             body: formDataify({
@@ -783,44 +790,54 @@ export async function createNewCourse(courseCode:string, name?:string, config?:I
 }
 
 
+export async function* migrateCourse(
+    sourceCourseId: number,
+    destCourseId: number,
+    migrationConfig?: ICanvasCallConfig,
+    pollConfig?: ICanvasCallConfig
+) {
+    const copyUrl = `/api/v1/courses/${destCourseId}/content_migrations`;
 
-export async function copyToNewCourse(sourceCourse: Course, newCode: string, newName?: string, config?: ICanvasCallConfig) {
+    const migrationInit: RequestInit = {
+        body: formDataify({
+            migration_type: 'course_copy_importer',
+            settings: {
+                source_course_id: sourceCourseId,
+            }
+        })
+    }
+
+    migrationConfig = deepObjectMerge(migrationConfig, {fetchInit:migrationInit}, true);
+    let migrationData = await fetchJson<IMigrationData>(copyUrl, migrationConfig);
+
+    let {
+        id: migrationId,
+        progress_url:progressUrl
+    } = migrationData;
+
+    while (true) {
+        await sleep(2000);
+        const progress = await fetchJson<IProgressData>(progressUrl, pollConfig);
+        yield progress;
+        if(progress.workflow_state === 'completed') return
+
+    }
+}
+
+
+export async function* copyToNewCourse(
+    sourceCourse: Course,
+    newCode: string,
+    newName?: string,
+    config?: ICanvasCallConfig) {
     if (!newName && sourceCourse.parsedCourseCode) {
         newName = sourceCourse.name.replace(sourceCourse.parsedCourseCode, newCode);
     }
     newName ??= sourceCourse.name + "_COPY";
     const destCourseData = await createNewCourse(newCode, newName);
 
-    const copyUrl = `/api/v1/courses/${destCourseData.id}/content_migrations`;
-
-    let migrationConfig: ICanvasCallConfig = {
-        fetchInit: {
-            body: formDataify({
-                migration_type: 'course_copy_importer',
-                settings: {
-                    source_course_id: sourceCourse.id,
-                }
-            })
-        }
-    };
-    let migrationData = await fetchJson<IMigrationData>(copyUrl, deepObjectMerge(migrationConfig, config, true))
-    let migrationId = migrationData.id;
-    let pollUrl = '/api/v1/'
-
-    while(true){
-        await sleep(2000);
-        break;
-    }
-
 
 }
-
-function sleep(milliseconds:number):Promise<void> {
-    return new Promise((resolve, reject) => {
-        setTimeout(resolve, milliseconds)
-    })
-}
-
 
 
 export class CourseNotFoundException extends Error {

@@ -1,10 +1,10 @@
-import {formDataify, range} from "../canvasUtils";
+import {range} from "../canvasUtils";
 import {copyToNewCourse, Course, createNewCourse, getCourseGenerator} from "./index";
 import {dummyCourseData} from "../../../tests/dummyData/dummyCourseData";
 import {ICourseData} from "../canvasDataDefs";
 import assert from "assert";
 import fetchMock from "jest-fetch-mock";
-import {IMigrationData} from "./courseTypes";
+import {IMigrationData, IProgressData} from "./courseTypes";
 
 
 /**
@@ -43,6 +43,33 @@ export const dummyMigration: IMigrationData = {
         "message": "file exceeded quota",
         "upload_params": {}
     }
+}
+
+
+export const dummyProgressData: IProgressData = {
+    // the ID of the Progress object
+    "id": 1,
+    // the context owning the job.
+    "context_id": 1,
+    "context_type": "Account",
+    // the id of the user who started the job
+    "user_id": 123,
+    // the type of operation
+    "tag": "course_batch_update",
+    // percent completed
+    "completion": 100,
+    // the state of the job one of 'queued', 'running', 'completed', 'failed'
+    "workflow_state": "completed",
+    // the time the job was created
+    "created_at": "2013-01-15T15:00:00Z",
+    // the time the job was last updated
+    "updated_at": "2013-01-15T15:04:00Z",
+    // optional details about the job
+    "message": "17 courses processed",
+    // optional results of the job. omitted when job is still pending
+    "results": {"id": "123"},
+    // url where a progress update can be retrieved with an LTI access token
+    "url": "https://canvas.example.edu/api/lti/courses/1/progress/1"
 }
 
 describe('Course Generators', () => {
@@ -101,7 +128,6 @@ describe("Copying and migration", () => {
         expect(createdCourse).toStrictEqual(courseData);
     });
 
-    
 
     test('Copy course wholesale', async () => {
         const courseName = 'Test course the testing course';
