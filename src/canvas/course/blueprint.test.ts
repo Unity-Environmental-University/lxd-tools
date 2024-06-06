@@ -7,15 +7,16 @@ import {
     getTermNameFromSections,
     IBlueprintCourse,
     retireBlueprint,
-    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint
+    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint
 } from "./blueprint";
 import {dummyCourseData} from "./__mocks__/dummyCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
 import {Course} from "./index";
-import {IAccountData, ICourseData, ITermData} from "../canvasDataDefs";
+import {IAccountData, ICourseData, IModuleData, ITermData} from "../canvasDataDefs";
 import {dummyTermData} from "../__mocks__/dummyTermData";
 import {dummyAccountData} from "../__mocks__/dummyAccountData";
 import assert from "assert";
+import dummyModuleData, { dummyModuleItemData } from "./__mocks__/dummyModuleData";
 
 
 fetchMock.enableMocks();
@@ -157,6 +158,7 @@ test("setAsBlueprint", async () => {
 })
 
 
+
 test("unSetAsBlueprint", async () => {
     let responseData: ICourseData;
     await fetchMock.withImplementation(async (requestUrl, requestInit) => {
@@ -177,6 +179,39 @@ test("unSetAsBlueprint", async () => {
 })
 
 
+test('lock blueprint', async () => {
+    fetchMock.mockClear();
+    const modules:IModuleData[] = [];
+    const moduleCount = 10;
+    const itemCount = 6;
+    for(let i = 0; i < moduleCount; i++) {
+        modules.push({
+            ...dummyModuleData,
+            name: `Week ${i}`,
+            items: [...range(0, itemCount - 1)].map(j => ({
+                ...dummyModuleItemData,
+                content_id: i * 100 + j,
+                name: `Week ${i} Assignment ${j}`
+            }))
+        })
+    }
+    fetchMock.mockResponse('{}')
+    await lockBlueprint(0, modules);
+    const contentIds:number[] = [];
+    modules.forEach(module => module.items.forEach(item => contentIds.push(item.content_id)))
+
+    for(let call of fetchMock.mock.calls) {
+        expect(call[0]).toBe('/api/v1/0/blueprint_templates/default/restrict_item')
+        const fetchInit = call[1];
+        assert(fetchInit);
+        assert(fetchInit.body instanceof FormData)
+        const body = deFormDataify(fetchInit.body);
+    }
+
+    expect(fetchMock).toHaveBeenCalledTimes(itemCount * moduleCount);
+    fetchMock.mockClear();
+})
+
 async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
     const dummyBpData: ICourseData = {...dummyCourseData, blueprint: true};
     const [_, requestCode] = mockRequest.url.match(/=[^=]*(\w{4}\d{3})/i) || [];
@@ -187,3 +222,4 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
     }))
     return JSON.stringify(outCourseData);
 }
+

@@ -15,6 +15,7 @@ import {
 } from "../canvasDataDefs";
 import {Assignment, BaseContentItem, Discussion, getBannerImage, Page, Quiz} from "../content";
 import {
+    deepObjectMerge,
     fetchApiJson,
     fetchJson,
     fetchOneKnownApiJson,
@@ -123,10 +124,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
 
     static async getCourseById(courseId: number, config: ICanvasCallConfig | undefined = undefined) {
-        const data = await fetchOneKnownApiJson(`courses/${courseId}`, config) as ICourseData;
+        const data = await getCourseData(courseId, config);
         return new Course(data);
     }
-
 
     /**
      * TODO: Replace this whole pipeline with something that returns a getApiPagesData generator instead.
@@ -772,3 +772,19 @@ export function getCourseGenerator(queryString: string, accountIds: number[] | n
 export class CourseNotFoundException extends Error {
 }
 
+export async function createNewCourse(courseCode: string, name?: string, config?: ICanvasCallConfig) {
+    name ??= courseCode;
+    const createUrl = `/api/v1/courses/`
+    let createConfig: ICanvasCallConfig = {
+        fetchInit: {
+            method: 'PUT',
+            body: formDataify({
+                course: {
+                    name,
+                    course_code: courseCode
+                }
+            })
+        }
+    }
+    return await fetchJson(createUrl, deepObjectMerge(createConfig, config, true)) as ICourseData;
+}

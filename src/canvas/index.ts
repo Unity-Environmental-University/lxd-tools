@@ -10,7 +10,7 @@ And starting to convert to ts
 import assert from 'assert';
 
 import {CanvasData, ITermData} from "./canvasDataDefs";
-import {fetchApiJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
+import {fetchApiJson, fetchJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseCanvasObject} from "./baseCanvasObject";
 import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
 
@@ -118,8 +118,8 @@ export class Term extends BaseCanvasObject<ITermData> {
 
     static async getTermById(termId: number, config: ICanvasCallConfig | null = null) {
         let account = await Account.getRootAccount();
-        let url = `accounts/${account.id}/terms/${termId}`;
-        let termData = await fetchApiJson(url, config) as ITermData | null;
+        let url = `/api/v1/accounts/${account.id}/terms/${termId}`;
+        let termData = await fetchJson(url, config) as ITermData | null;
         if (termData) return new Term(termData);
         return null;
     }

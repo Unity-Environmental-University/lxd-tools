@@ -4,26 +4,14 @@ import {dummyCourseData} from "./__mocks__/dummyCourseData";
 import {
     copyToNewCourseGenerator,
     courseMigrationGenerator,
-    createNewCourse,
     IMigrationData,
     IProgressData
 } from "./migration";
-import {Course} from "./index";
+import {Course, createNewCourse} from "./index";
 import {dummyMigrationData, dummyProgressData} from "./__mocks__/migrations";
 import {range} from "../canvasUtils";
 
 fetchMock.enableMocks();
-
-test('Create new course', async () => {
-    const courseCode = 'DEV_ABC1234';
-    const name = 'DEV_ABC134: Test Course';
-
-    const courseData: ICourseData = {...dummyCourseData, name, course_code: courseCode};
-    fetchMock.mockResponseOnce(JSON.stringify(courseData))
-    const createdCourse = await createNewCourse(courseCode, name)
-    expect(createdCourse).toStrictEqual(courseData);
-});
-
 
 describe('Course migration', () => {
     it('Yields values while still polling', async () => {

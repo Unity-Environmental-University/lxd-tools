@@ -1,7 +1,6 @@
 import {deepObjectMerge, fetchJson, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {sleep} from "../../index";
-import {ICourseData} from "../canvasDataDefs";
-import {Course, getCourseData} from "./index";
+import {Course, createNewCourse, getCourseData} from "./index";
 
 
 export interface IMigrationData {
@@ -33,23 +32,6 @@ export interface IProgressData {
     url: string
 }
 
-export async function createNewCourse(courseCode: string, name?: string, config?: ICanvasCallConfig) {
-    name ??= courseCode;
-    const createUrl = `/api/v1/courses/`
-    let createConfig: ICanvasCallConfig = {
-        fetchInit: {
-            method: 'PUT',
-            body: formDataify({
-                course: {
-                    name,
-                    course_code: courseCode
-                }
-            })
-        }
-    }
-    return await fetchJson(createUrl, deepObjectMerge(createConfig, config, true)) as ICourseData;
-}
-
 export async function* courseMigrationGenerator(
     sourceCourseId: number,
     destCourseId: number,
@@ -57,8 +39,15 @@ export async function* courseMigrationGenerator(
     migrationConfig?: ICanvasCallConfig,
     pollConfig?: ICanvasCallConfig
 ) {
-    const copyUrl = `/api/v1/courses/${destCourseId}/content_migrations`;
 
+    const migrationData = await startMigration(sourceCourseId, destCourseId, migrationConfig);
+    for await (let result of getMigrationProgressGen(migrationData, pollDelay, pollConfig)) {
+        yield result;
+    }
+}
+
+export async function startMigration(sourceCourseId:number, destCourseId: number, config?:ICanvasCallConfig) {
+    const copyUrl = `/api/v1/courses/${destCourseId}/content_migrations`;
     const migrationInit: RequestInit = {
         method: 'POST',
         body: formDataify({
@@ -69,18 +58,20 @@ export async function* courseMigrationGenerator(
         })
     }
 
-    migrationConfig = deepObjectMerge(migrationConfig, {fetchInit: migrationInit}, true);
-    let migrationData = await fetchJson<IMigrationData>(copyUrl, migrationConfig);
+    config = deepObjectMerge(config, {fetchInit: migrationInit}, true);
+    return await fetchJson<IMigrationData>(copyUrl, config);
+}
 
-
-    let {progress_url: progressUrl} = migrationData;
-
+export async function* getMigrationProgressGen(migration:IMigrationData, pollDelay: number, pollConfig?: ICanvasCallConfig) {
+    let {progress_url: progressUrl} = migration;
     while (true) {
         await sleep(pollDelay);
         const progress = await fetchJson<IProgressData>(progressUrl, pollConfig);
         yield progress;
         if (progress.workflow_state === 'completed') return
-        if (progress.workflow_state === 'failed') throw new Error(`Migration of ${sourceCourseId} to ${destCourseId} failed`);
+        if (progress.workflow_state === 'failed') {
+            throw new Error(`Migration Error: ${progress.message}`);
+        }
     }
 }
 

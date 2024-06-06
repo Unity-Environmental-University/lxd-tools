@@ -97,15 +97,14 @@ export async function lockBlueprint(courseId:number, modules: IModuleData[]) {
     const promises = items.map(async (item) => {
         const url = `/api/v1/${courseId}/blueprint_templates/default/restrict_item`;
         let {type, id} = await getItemTypeAndId(item);
-        if (!id) return;
+        if ( typeof id === 'undefined') return;
         let body = {
             "content_type": type,
             "content_id": id,
             "restricted": true,
             "_method": 'PUT'
         }
-        console.log(body);
-        await fetchApiJson(url, {
+        await fetchJson(url, {
             fetchInit: {
                 method: 'PUT',
                 body: formDataify(body)

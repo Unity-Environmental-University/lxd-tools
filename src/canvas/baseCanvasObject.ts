@@ -1,6 +1,6 @@
 import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
-import {fetchApiJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
+import {fetchApiJson, fetchJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseContentItem} from "./content";
 import {Course} from "./course";
 import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
@@ -55,7 +55,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
 
         assert(typeof this.accountId === 'number');
         assert(typeof constructor.contentUrlTemplate === 'string');
-        return constructor.contentUrlTemplate
+        return '/api/v1/' + constructor.contentUrlTemplate
             .replace('{content_id}', this.id.toString())
             .replace('{account_id}', this.accountId.toString());
     }
@@ -125,7 +125,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
             }
         }, config);
 
-        let results = await fetchApiJson(this.contentUrlPath, config) as Partial<CanvasDataType> | Partial<CanvasDataType>[];
+        let results = await fetchJson(this.contentUrlPath, config) as Partial<CanvasDataType> | Partial<CanvasDataType>[];
         if(Array.isArray(results)) results = results[0];
         this.canvasData = {...this.canvasData, ...results};
         return this.canvasData;
