@@ -744,7 +744,7 @@ async function* generatorMap<T, MapOutput>(
 
 export function getCourseData(id:number, config?: ICanvasCallConfig) {
     const url = `/api/v1/courses/${id}`;
-    return fetchJson(url, config);
+    return fetchJson(url, config) as Promise<ICourseData>;
 }
 
 export function getCourseGenerator(queryString: string, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig) {

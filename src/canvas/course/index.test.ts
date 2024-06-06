@@ -4,7 +4,6 @@ import {dummyCourseData} from "../../../tests/dummyData/dummyCourseData";
 import {ICourseData} from "../canvasDataDefs";
 import assert from "assert";
 import fetchMock from "jest-fetch-mock";
-import {copyToNewCourse, createNewCourse} from "./migration";
 
 
 describe('Course Generators', () => {

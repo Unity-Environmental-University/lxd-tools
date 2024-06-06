@@ -86,31 +86,3 @@ export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussi
 
 }
 
-export interface IMigrationData {
-    migration_type: string;
-    migration_type_title: string;
-    pre_attachment: { upload_params: {}; upload_url: string; message: string };
-    attachment: { url: string };
-    finished_at: string;
-    user_id: number;
-    progress_url: string;
-    started_at: string;
-    workflow_state: string;
-    id: number;
-    migration_issues_url: string
-}
-
-export interface IProgressData {
-    completion: number;
-    updated_at: string;
-    user_id: number;
-    context_type: string;
-    created_at: string;
-    context_id: number;
-    workflow_state: string;
-    id: number;
-    tag: string;
-    message: string;
-    results: { id: string };
-    url: string
-}

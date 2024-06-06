@@ -1,102 +1,106 @@
-import {IMigrationData, IProgressData} from "./courseTypes";
 import fetchMock from "jest-fetch-mock";
 import {ICourseData} from "../canvasDataDefs";
 import {dummyCourseData} from "../../../tests/dummyData/dummyCourseData";
-import {copyToNewCourse, createNewCourse} from "./migration";
+import {
+    copyToNewCourseGenerator,
+    courseMigrationGenerator,
+    createNewCourse,
+    IMigrationData,
+    IProgressData
+} from "./migration";
 import {Course} from "./index";
+import {dummyMigrationData, dummyProgressData} from "./__mocks__/migrations";
+import {range} from "../canvasUtils";
 
-/**
- * From canvas api docs
- */
-export const dummyMigration: IMigrationData = {
-    // the unique identifier for the migration
-    "id": 370663,
-    // the type of content migration
-    "migration_type": "course_copy_importer",
-    // the name of the content migration type
-    "migration_type_title": "Canvas Cartridge Importer",
-    // API url to the content migration's issues
-    "migration_issues_url": "https://example.com/api/v1/courses/1/content_migrations/1/migration_issues",
-    // attachment api object for the uploaded file may not be present for all
-    // migrations
-    "attachment": {"url": "https://example.com/api/v1/courses/1/content_migrations/1/download_archive"},
-    // The api endpoint for polling the current progress
-    "progress_url": "https://example.com/api/v1/progress/4",
-    // The user who started the migration
-    "user_id": 4,
-    // Current state of the content migration: pre_processing, pre_processed,
-    // running, waiting_for_select, completed, failed
-    "workflow_state": "running",
-    // timestamp
-    "started_at": "2012-06-01T00:00:00-06:00",
-    // timestamp
-    "finished_at": "2012-06-01T00:00:00-06:00",
-    // file uploading data, see {file:file_uploads.html File Upload Documentation}
-    // for file upload workflow This works a little differently in that all the file
-    // data is in the pre_attachment hash if there is no upload_url then there was
-    // an attachment pre-processing error, the error message will be in the message
-    // key This data will only be here after a create or update call
-    "pre_attachment": {
-        upload_url: '',
-        "message": "file exceeded quota",
-        "upload_params": {}
-    }
-}
-export const dummyProgressData: IProgressData = {
-    // the ID of the Progress object
-    "id": 1,
-    // the context owning the job.
-    "context_id": 1,
-    "context_type": "Account",
-    // the id of the user who started the job
-    "user_id": 123,
-    // the type of operation
-    "tag": "course_batch_update",
-    // percent completed
-    "completion": 100,
-    // the state of the job one of 'queued', 'running', 'completed', 'failed'
-    "workflow_state": "completed",
-    // the time the job was created
-    "created_at": "2013-01-15T15:00:00Z",
-    // the time the job was last updated
-    "updated_at": "2013-01-15T15:04:00Z",
-    // optional details about the job
-    "message": "17 courses processed",
-    // optional results of the job. omitted when job is still pending
-    "results": {"id": "123"},
-    // url where a progress update can be retrieved with an LTI access token
-    "url": "https://canvas.example.edu/api/lti/courses/1/progress/1"
-}
+fetchMock.enableMocks();
+
+test('Create new course', async () => {
+    const courseCode = 'DEV_ABC1234';
+    const name = 'DEV_ABC134: Test Course';
+
+    const courseData: ICourseData = {...dummyCourseData, name, course_code: courseCode};
+    fetchMock.mockResponseOnce(JSON.stringify(courseData))
+    const createdCourse = await createNewCourse(courseCode, name)
+    expect(createdCourse).toStrictEqual(courseData);
+});
 
 
-describe("Copying and migration", () => {
+describe('Course migration', () => {
+    it('Yields values while still polling', async () => {
 
-    fetchMock.enableMocks();
+        const workflowStates = [
+            ...[...range(0, 5)].map(_ => 'queued'),
+            ...[...range(0, 5)].map(_ => 'running'),
+            'completed'
+        ]
 
-    test('Create new course', async () => {
-        const courseCode = 'DEV_ABC1234';
-        const name = 'DEV_ABC134: Test Course';
+        fetchMock.mockResponseOnce(JSON.stringify(<IMigrationData>{
+            ...dummyMigrationData, workflow_state: 'queued'
+        }))
+        const migrationGenerator = courseMigrationGenerator(0, 1, 20);
 
-        const courseData: ICourseData = {...dummyCourseData, name, course_code: courseCode};
-        fetchMock.mockResponseOnce(JSON.stringify(courseData))
-
-        const createdCourse = await createNewCourse(courseCode, name)
-
-        expect(createdCourse).toStrictEqual(courseData);
-    });
-
-
-    test('Copy course wholesale', async () => {
-        const courseName = 'Test course the testing course';
-        const courseCode = "TEST000";
-        const sourceCourse = new Course({
-            ...dummyCourseData,
-            name: `DEV_${courseCode}: ${courseName}`,
-            course_code: `DEV_${courseCode}`
-        });
-        const newCode = 'BP_TEST000';
-        const newCourse = await copyToNewCourse(sourceCourse, newCode);
-        //expect(newCourse.name).toBe(`${newCode}: ${courseName}`)
+        for (let state of workflowStates) {
+            fetchMock.mockResponseOnce(JSON.stringify(<IProgressData>{
+                ...dummyProgressData, workflow_state: state
+            }))
+        }
+        const workflowIterator = workflowStates.values();
+        for await (let progress of migrationGenerator) {
+            expect(progress.workflow_state).toBe(workflowIterator.next().value)
+        }
     })
 })
 
+
+test('Copy course wholesale', async () => {
+    fetchMock.mockClear();
+    const courseName = 'Test course the testing course';
+    const courseCode = "TEST000";
+    const sourceCourse = new Course({
+        ...dummyCourseData,
+        name: `DEV_${courseCode}: ${courseName}`,
+        course_code: `DEV_${courseCode}`
+    });
+    const newCode = 'BP_TEST000';
+    const newName = `BP_TEST000: ${courseName}`;
+
+
+
+    fetchMock.mockResponseOnce(JSON.stringify({...sourceCourse, name:newName, course_code:newCode}))
+    fetchMock.mockResponseOnce(JSON.stringify(<IMigrationData>{
+        ...dummyMigrationData, workflow_state: 'queued'
+    }))
+    const migrationGenerator = copyToNewCourseGenerator(sourceCourse, newCode, 20);
+
+
+    const workflowStates = [
+        ...[...range(0, 5)].map(_ => 'queued'),
+        ...[...range(0, 5)].map(_ => 'running'),
+        'completed'
+    ]
+    const workflowIterator = workflowStates.values();
+
+    let i = 0;
+    for (let state of workflowStates) {
+        fetchMock.mockResponseOnce(JSON.stringify(<IProgressData>{
+            ...dummyProgressData, workflow_state: state, message: i.toString(),
+        }))
+        i++
+    }
+    fetchMock.mockResponseOnce(JSON.stringify({...sourceCourse, name:newName, course_code:newCode}))
+
+
+    async function testCourseMigration() {
+        let result;
+        for (result = await migrationGenerator.next(); !result?.done; result = await migrationGenerator.next()) {
+            const {value} = workflowIterator.next();
+            expect(result.value.workflow_state).toBe(value)
+        }
+        return result.value;
+    }
+
+
+    const course: ICourseData = await testCourseMigration();
+    expect(course.name).toBe(newName);
+    expect(course.course_code).toBe(newCode);
+})
