@@ -1,22 +1,22 @@
 //We should really write integration tests for these eventually rather than just unit tests
 
 
-import {deFormDataify, range} from "../canvasUtils";
+import {deFormDataify, range} from "../../canvasUtils";
 import {
     getSections,
     getTermNameFromSections,
     IBlueprintCourse,
     retireBlueprint,
     getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint
-} from "./blueprint";
-import {dummyCourseData} from "./__mocks__/dummyCourseData";
+} from "../blueprint";
+import {dummyCourseData} from "../__mocks__/dummyCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
-import {Course} from "./index";
-import {IAccountData, ICourseData, IModuleData, ITermData} from "../canvasDataDefs";
-import {dummyTermData} from "../__mocks__/dummyTermData";
-import {dummyAccountData} from "../__mocks__/dummyAccountData";
+import {Course} from "../index";
+import {IAccountData, ICourseData, IModuleData, ITermData} from "../../canvasDataDefs";
+import {dummyTermData} from "../../__mocks__/dummyTermData";
+import {dummyAccountData} from "../../__mocks__/dummyAccountData";
 import assert from "assert";
-import dummyModuleData, { dummyModuleItemData } from "./__mocks__/dummyModuleData";
+import dummyModuleData, { dummyModuleItemData } from "../__mocks__/dummyModuleData";
 
 
 fetchMock.enableMocks();

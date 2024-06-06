@@ -1,4 +1,4 @@
-import {updatedDateSyllabusHtml} from './changeStartDate'
+import {updatedDateSyllabusHtml} from '../changeStartDate'
 import fs from "fs";
 import {Temporal} from "temporal-polyfill";
 
