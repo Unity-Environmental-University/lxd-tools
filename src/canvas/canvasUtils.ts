@@ -356,7 +356,9 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
  */
 export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData>(generators: AsyncGenerator<T, T[], void>[]) {
     for (let generator of generators) {
-        for await(let result of generator) yield result;
+        for await(let result of generator) {
+          yield result;
+        }
     }
 }
 
@@ -381,7 +383,10 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
             data = values.find((a) => Array.isArray(a));
         }
     }
-    assert(Array.isArray(data));
+    if(!Array.isArray(data)) {
+        console.warn(`no data for ${url}`)
+        return [];
+    }
     for (let value of data) {
         yield value;
     }

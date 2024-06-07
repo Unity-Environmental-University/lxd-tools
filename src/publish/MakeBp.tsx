@@ -14,58 +14,79 @@ import assert from "assert";
 
 export interface IMakeBpProps {
     devCourse: Course,
+    onBpSet?: (bp: Course | null | undefined) => void,
+    onTermNameSet?: (termName: string | undefined) => void,
+    onSectionsSet?: (sections: Course[]) => void,
 }
 
-export function MakeBp({devCourse}:IMakeBpProps) {
+export function MakeBp({
+    devCourse,
+    onBpSet,
+    onTermNameSet,
+    onSectionsSet
+}: IMakeBpProps) {
     const [isDev, setIsDev] = useState(devCourse.isDev);
-    const [currentBp, setCurrentBp] = useState<Course | null>()
+    const [currentBp, _setCurrentBp] = useState<Course | null>()
     const [isLoading, setIsLoading] = useState(false);
-    const [sections, setSections] = useState<Course[]>([])
-    const [termName, setTermName] = useState<string|undefined>()
+    const [sections, _setSections] = useState<Course[]>([])
+    const [termName, _setTermName] = useState<string | undefined>()
+
+    function setTermName(name: typeof termName) {
+        _setTermName(name);
+        onTermNameSet && onTermNameSet(name);
+    }
+
+    function setCurrentBp(bp: typeof currentBp) {
+       _setCurrentBp(bp);
+       onBpSet && onBpSet(bp);
+    }
+
+    function setSections(newSections: typeof sections) {
+        _setSections(sections);
+        onSectionsSet && onSectionsSet(sections);
+    }
 
     useEffectAsync(async () => {
         setIsDev(devCourse.isDev);
-        if(devCourse.parsedCourseCode) {
+        if (devCourse.parsedCourseCode) {
             await updateBpInfo(devCourse, devCourse.parsedCourseCode);
         }
     }, [devCourse])
 
-    async function updateBpInfo(course:Course, code:string) {
-            const [bp] = await getBlueprintsFromCode(code, [
-            devCourse.rawData.account_id,
-            devCourse.rawData.root_account_id
+    async function updateBpInfo(course: Course, code: string) {
+        const [bp] = await getBlueprintsFromCode(code, [
+            course.rawData.account_id,
+            course.rawData.root_account_id
         ]) ?? [];
         setCurrentBp(bp)
-
     }
 
     useEffectAsync(async () => {
-        if(currentBp && currentBp.isBlueprint()) {
+        if (currentBp && currentBp.isBlueprint()) {
             const sections = await getSections(currentBp);
             setSections(sections);
             try {
                 setTermName(await getTermNameFromSections(sections))
-            } catch(e) {
+            } catch (e) {
                 console.warn(e);
                 setTermName(undefined)
             }
         }
     }, [currentBp])
 
-    async function onArchive(e:FormEvent) {
+
+    async function onArchive(e: FormEvent) {
         e.preventDefault();
-        assert(devCourse.parsedCourseCode, "We should never be able to call this function if devcourse doesn't have a valid code")
-        if(!currentBp) return false;
-        if(!termName) return false;
+        if (!devCourse.parsedCourseCode) throw Error("Trying to archive without a valid course code");
+        if (!currentBp) return false;
+        if (!termName) return false;
         setIsLoading(true);
         await retireBlueprint(currentBp, termName);
-
-        await updateBpInfo(devCourse, devCourse.parsedCourseCode); //this should set bp as empty
-        await onCloneIntoBp(e);
+        await updateBpInfo(devCourse, devCourse.parsedCourseCode);
         setIsLoading(false);
     }
 
-    async function onCloneIntoBp(e:FormEvent) {
+    async function onCloneIntoBp(e: FormEvent) {
         e.preventDefault();
     }
 
@@ -88,7 +109,10 @@ export function MakeBp({devCourse}:IMakeBpProps) {
                     id={'archiveButton'}
                     onClick={onArchive}
                     disabled={isLoading || !currentBp || !termName || termName.length === 0}
-                >Archive and Replace {currentBp.parsedCourseCode}</Button>
+                >Archive {currentBp.parsedCourseCode}</Button>
+                <Button
+                    id={'newBpButton'}
+                ></Button>
             </Col>
         </Row>}
     </div>

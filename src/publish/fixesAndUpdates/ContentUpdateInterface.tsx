@@ -14,6 +14,7 @@ import courseSettingsTests from "./validations/courseSettings";
 import courseContentTests from "./validations/courseContent";
 import proxyServerLinkValidation from "./validations/proxyServerLinkValidation";
 import capstoneProjectValidations from "./validations/courseSpecific/capstoneProjectValidations";
+import {MakeBp} from "../MakeBp";
 
 type ContentUpdateInterfaceProps = {
     course?: Course,
@@ -164,7 +165,7 @@ export function ContentUpdateInterface({course, parentCourse, refreshCourse}: Co
                 {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
             </div>
             {mode === 'fix' && <FixesMode course={course}></FixesMode>}
-            {<CourseValidator
+            {mode in ['fix', 'unitTest'] && <CourseValidator
                 showOnlyFailures={mode !== 'unitTest'}
                 course={course}
                 refreshCourse={refreshCourse}

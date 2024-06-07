@@ -9,6 +9,7 @@ import {IUserData} from "../canvas/canvasDataDefs";
 import { fetchJson } from "../canvas/canvasUtils";
 import {AdminApp} from "../admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
+import {Button} from "react-bootstrap";
 
 
 function PublishApp() {
@@ -29,7 +30,6 @@ function PublishApp() {
     useEffectAsync(getCourse, [])
     useEffectAsync(async() => {
         const user = await fetchJson('/api/v1/users/self') as IUserData;
-        console.log(user)
         setUser(user);
     }, []);
 
