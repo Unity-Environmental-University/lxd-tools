@@ -1,6 +1,6 @@
 import fetchMock from "jest-fetch-mock";
 import {ICourseData} from "../../canvasDataDefs";
-import {dummyCourseData} from "../__mocks__/dummyCourseData";
+import {mockCourseData} from "../__mocks__/mockCourseData";
 import {
     copyToNewCourseGenerator,
     courseMigrationGenerator,
@@ -45,7 +45,7 @@ test('Copy course wholesale', async () => {
     const courseName = 'Test course the testing course';
     const courseCode = "TEST000";
     const sourceCourse = new Course({
-        ...dummyCourseData,
+        ...mockCourseData,
         name: `DEV_${courseCode}: ${courseName}`,
         course_code: `DEV_${courseCode}`
     });

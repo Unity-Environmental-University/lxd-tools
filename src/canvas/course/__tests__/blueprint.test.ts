@@ -9,7 +9,7 @@ import {
     retireBlueprint,
     getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint
 } from "../blueprint";
-import {dummyCourseData} from "../__mocks__/dummyCourseData";
+import {mockCourseData} from "../__mocks__/mockCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
 import {Course} from "../index";
 import {IAccountData, ICourseData, IModuleData, ITermData} from "../../canvasDataDefs";
@@ -24,7 +24,7 @@ fetchMock.enableMocks();
 function getDummyBlueprintCourse(blueprint: boolean, id: number = 0) {
     let out: IBlueprintCourse;
     out = new Course({
-        ...dummyCourseData,
+        ...mockCourseData,
         id,
         name: 'BP_TEST000',
         courseCode: 'BP_TEST000',
@@ -36,7 +36,7 @@ function getDummyBlueprintCourse(blueprint: boolean, id: number = 0) {
 
 test("Testing get associated courses logic", async () => {
     const mockData = [...range(0, 9)].map(i => {
-        return {...dummyCourseData, id: i}
+        return {...mockCourseData, id: i}
     })
     fetchMock.mockResponseOnce(JSON.stringify(mockData));
     for (let data of mockData) {
@@ -52,7 +52,7 @@ test("Testing get associated courses logic", async () => {
 test("Testing blueprint retirement", async () => {
     const termName = 'DE8W03.11.24';
     const mockBpData = {
-        ...dummyCourseData,
+        ...mockCourseData,
         id: 0,
         blueprint: true,
         course_code: 'BP_TEST000',
@@ -70,7 +70,7 @@ test("Testing blueprint retirement", async () => {
     await expect(retireBlueprint(badNameMockBlueprint, termName)).rejects.toThrow("This blueprint is not named BP_")
 
     const mockAssociatedCourseData: ICourseData[] = [{
-        ...dummyCourseData,
+        ...mockCourseData,
         id: 1,
         course_code: `${termName}_TEST000-01`,
         enrollment_term_id: [10]
@@ -106,7 +106,7 @@ describe('getBlueprintFromCode', () => {
     let dummyDev: Course;
 
     beforeEach(() => {
-        dummyDev = new Course({...dummyCourseData, name: 'DEV_TEST000', course_code: 'DEV_TEST000'})
+        dummyDev = new Course({...mockCourseData, name: 'DEV_TEST000', course_code: 'DEV_TEST000'})
     })
 
     test("Returns null when there's no BP", async () => {
@@ -128,7 +128,7 @@ describe('getBlueprintFromCode', () => {
     test("Searches for BP from a section", async () => {
         fetchMock.once(mockBpResponse)
         const dummyCourse = new Course({
-            ...dummyCourseData,
+            ...mockCourseData,
             name: 'DE8W12.4.26_TEST000',
             course_code: 'DE8W12.4.26_DEV_TEST000'
         })
@@ -213,7 +213,7 @@ test('lock blueprint', async () => {
 })
 
 async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
-    const dummyBpData: ICourseData = {...dummyCourseData, blueprint: true};
+    const dummyBpData: ICourseData = {...mockCourseData, blueprint: true};
     const [_, requestCode] = mockRequest.url.match(/=[^=]*(\w{4}\d{3})/i) || [];
     const outCourseData: ICourseData[] = [...range(1, numberToMock)].map((number) => ({
         ...dummyBpData,

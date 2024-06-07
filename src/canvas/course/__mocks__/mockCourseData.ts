@@ -1,6 +1,6 @@
 import {ICourseData} from "../../canvasDataDefs";
 
-export const dummyCourseData: ICourseData = {
+export const mockCourseData: ICourseData = {
     account_id: 0,
     allow_student_assignment_edits: false,
     allow_student_forum_attachments: false,

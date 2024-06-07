@@ -17,7 +17,7 @@ export function CourseRow({course, frontPageProfile, instructors, onSelectSectio
     return (<div className={'row course-row'}>
         <div className={'col-xs-6'}>
             <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}
-               target={"blank_"}>{course.getItem<string>('course_code')}</a>
+               target={"blank_"}>{course.parsedCourseCode}</a>
         </div>
         <div className={'col-xs-2'}>
             {frontPageProfile && frontPageProfile.displayName}
