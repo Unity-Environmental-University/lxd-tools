@@ -44,7 +44,7 @@ module.exports = {
                             compilerOptions: {noEmit: false},
                         }
                     }],
-                exclude: /node_modules|dist/,
+                exclude: /node_modules|dist|__test__/,
             },
             {
                 test: /\.(css|scss)$/i,

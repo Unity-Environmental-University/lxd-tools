@@ -5,19 +5,20 @@ import assert from "assert";
 import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
 import {SectionDetails} from "./sectionDetails/SectionDetails";
-import {Course} from "../../canvas/course/index";
+import {Course} from "../../canvas/course";
 import {IUserData} from "../../canvas/canvasDataDefs";
 import {Term} from "../../canvas/index";
 import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
 
-type PublishInterfaceProps = {
+
+export interface IPublishInterfaceProps {
     course?: Course,
     user: IUserData,
 }
 
-export function PublishInterface({course, user}: PublishInterfaceProps) {
+export function PublishInterface({course, user}: IPublishInterfaceProps) {
     //-----
     // DATA
     //-----
@@ -38,14 +39,22 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
     const [loading, setLoading] = useState<boolean>(false);
     const [infoClass, setInfoClass] = useState<string>('alert-secondary')
 
-    useEffectAsync(updateCourse, [course]);
+    useEffectAsync(async () => {
+        if (!course) return;
+        setIsBlueprint(course.isBlueprint)
+        await getFullCourses(
+            {
+                course,
+                setEmails,
+                setInstructorsForCourse,
+                setSections,
+                setSectionStart,
+                setTerm,
+                setFrontPageProfilesByCourseId,
+            }
+        );
+    }, [course]);
 
-    async function updateCourse() {
-        if (course) {
-            setIsBlueprint(course.isBlueprint)
-            await getFullCourses(course);
-        }
-    }
 
     useEffectAsync(async () => {
         const profileSet: Record<number, IProfile[]> = [];
@@ -56,68 +65,15 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
         setPotentialProfilesByCourseId(profileSet)
     }, [sections])
 
-    async function getFullCourses(course: Course) {
-        console.log("Getting Full Courses");
-        const sections: Course[] = [];
-        const fetchedCourses = await course.getAssociatedCourses() ?? [];
-        const frontPageProfiles: typeof frontPageProfilesByCourseId = {};
-        const allInstructors: typeof instructorsForCourse = {};
-        const allEmails = new Set<string>();
-        const batchLoadSize = 5;
-        let sectionStartSet = false;
-        for (let i = 0; i < fetchedCourses.length; i += batchLoadSize) {
-            const batch = fetchedCourses.slice(i, i + batchLoadSize);
-            const results = await Promise.all(batch.map(course => loadSection(course)));
-            let tempTerm: Term | null = null;
-
-            for (let {section, instructors, frontPageProfile} of results) {
-                if (!sectionStartSet) {
-                    let actualStart = await section.getStartDateFromModules();
-                    sectionStartSet = true;
-                    setSectionStart(Temporal.PlainDateTime.from(actualStart));
-                }
-
-                if (!tempTerm) {
-                    tempTerm = await section.getTerm();
-                    setTerm(tempTerm);
-                }
-
-                sections.push(section);
-                setSections([...sections]);
-
-                frontPageProfiles[section.id] = frontPageProfile;
-                setFrontPageProfilesByCourseId({...frontPageProfiles});
-
-                if (instructors) {
-                    allInstructors[section.id] = instructors;
-                    setInstructorsForCourse({...allInstructors})
-                }
-
-                const emails = instructors?.map(a => a.email);
-                emails?.forEach(email => allEmails.add(email));
-                if (emails) setEmails([...allEmails]);
-
-            }
-
-        }
-    }
-
-    async function loadSection(course: Course) {
-        const section = await Course.getCourseById(course.id);
-        const frontPageProfile = await section.getFrontPageProfile();
-        const instructors = await section.getInstructors();
-        return {section, instructors, frontPageProfile, emails}
-    }
-
     //-----
     // EVENTS
     //-----
     async function publishCourses(event: React.MouseEvent) {
         const accountId = course?.getItem<number>('account_id');
-        assert(accountId);
-        await Course.publishAll(sections, accountId)
-        inform('publishing')
+        if(typeof accountId === 'undefined') throw new Error('Course has no account Id');
+        inform('Publishing')
         setLoading(true);
+        await Course.publishAll(sections, accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
             let newAssocCourses = await course?.getAssociatedCourses();
@@ -185,7 +141,6 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
     function success(message: string) {
         inform(message, 'alert-success');
     }
-
 
     //-----
     // RENDER
@@ -260,6 +215,77 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
 
         </Modal>
     </>)
+}
+
+async function loadSection(course: Course) {
+    const section = await Course.getCourseById(course.id);
+    const frontPageProfile = await section.getFrontPageProfile();
+    const instructors = await section.getInstructors();
+    return {section, instructors, frontPageProfile}
+}
+
+
+export interface IGetFullCoursesProps {
+    course: Course,
+    setEmails: (emails: string[]) => void,
+    setInstructorsForCourse: (instructorsByCourseId: Record<number, IUserData[]>) => void,
+    setSections: (course: Course[]) => void,
+    setSectionStart: (start: Temporal.PlainDateTime) => void,
+    setTerm: (term: Term | null) => void,
+    setFrontPageProfilesByCourseId: (profiles: Record<number, IProfile>) => void,
+
+}
+
+export async function getFullCourses({
+    course,
+    setEmails,
+    setInstructorsForCourse,
+    setSections,
+    setSectionStart,
+    setTerm,
+    setFrontPageProfilesByCourseId,
+}: IGetFullCoursesProps) {
+    console.log("Getting Full Courses");
+    const sections: Course[] = [];
+    const fetchedCourses = await course.getAssociatedCourses() ?? [];
+    const frontPageProfiles: Record<number, IProfile> = {};
+    const allInstructors: Record<number, IUserData[]> = {};
+    const allEmails = new Set<string>();
+    const batchLoadSize = 5;
+    let sectionStartSet = false;
+    for (let i = 0; i < fetchedCourses.length; i += batchLoadSize) {
+        const batch = fetchedCourses.slice(i, i + batchLoadSize);
+        const results = await Promise.all(batch.map(loadSection));
+        let tempTerm: Term | null = null;
+
+        for (let {section, instructors, frontPageProfile} of results) {
+            if (!sectionStartSet) {
+                let actualStart = await section.getStartDateFromModules();
+                sectionStartSet = true;
+                setSectionStart(Temporal.PlainDateTime.from(actualStart));
+            }
+
+            if (!tempTerm) {
+                tempTerm = await section.getTerm();
+                setTerm(tempTerm);
+            }
+
+            sections.push(section);
+            setSections([...sections]);
+
+            frontPageProfiles[section.id] = frontPageProfile;
+            setFrontPageProfilesByCourseId({...frontPageProfiles});
+
+            if (instructors) {
+                allInstructors[section.id] = instructors;
+                setInstructorsForCourse({...allInstructors})
+            }
+
+            const emails = instructors?.map(a => a.email);
+            emails?.forEach(email => allEmails.add(email));
+            if (emails) setEmails([...allEmails]);
+        }
+    }
 }
 
 

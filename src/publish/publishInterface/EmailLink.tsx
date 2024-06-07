@@ -25,7 +25,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
 
 
     const bcc = emails.join(',');
-    const subject = encodeURIComponent(course.name.replace('BP_', '') + ' Section(s) Ready Notification');
+    const subject = encodeURIComponent(course.name?.replace('BP_', '') + ' Section(s) Ready Notification');
 
     async function copyToClipboard() {
         await navigator.clipboard.write([
