@@ -1,4 +1,3 @@
-import "react-datepicker/dist/react-datepicker.css"
 import "./publish.scss"
 import React, {useEffect, useState} from 'react';
 import {useEffectAsync} from "../ui/utils";
