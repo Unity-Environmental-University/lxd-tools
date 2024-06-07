@@ -3,7 +3,6 @@ import {IProfile, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
 import {useEffectAsync} from "../../ui/utils";
 import assert from "assert";
 import {Button} from "react-bootstrap";
-import {PublishCourseRow} from "./PublishCourseRow";
 import Modal from "../../ui/widgets/Modal/index";
 import {SectionDetails} from "./sectionDetails/SectionDetails";
 import {Course} from "../../canvas/course/index";
@@ -11,6 +10,7 @@ import {IUserData} from "../../canvas/canvasDataDefs";
 import {Term} from "../../canvas/index";
 import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
+import {SectionRows} from "./SectionRows";
 
 type PublishInterfaceProps = {
     course?: Course,
@@ -23,18 +23,18 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
     //-----
     const [show, setShow] = useState<boolean>(false)
     const [info, setInfo] = useState<string | null | boolean>(null);
-    const [associatedCourses, setAssociatedCourses] = useState<Course[]>([])
+    const [sections, setSections] = useState<Course[]>([])
     const [term, setTerm] = useState<Term | null>();
-    const[sectionStart, setSectionStart] = useState<Temporal.PlainDateTime>();
+    const [sectionStart, setSectionStart] = useState<Temporal.PlainDateTime>();
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
-    const [workingSection, setWorkingSection] = useState<Course|null>();
+    const [workingSection, setWorkingSection] = useState<Course | null>();
 
-    const [potentialSectionProfiles, setPotentialSectionProfiles] = useState<Record<number, IProfile[]>>({})
-    const [sectionFrontPageProfiles, setSectionFrontPageProfiles] = useState<Record<number, IProfile>>({});
+    const [potentialProfilesByCourseId, setPotentialProfilesByCourseId] = useState<Record<number, IProfile[]>>({})
+    const [frontPageProfilesByCourseId, setFrontPageProfilesByCourseId] = useState<Record<number, IProfile>>({});
     const [instructorsForCourse, setInstructorsForCourse] = useState<Record<number, IUserData[]>>({});
     const [emails, setEmails] = useState<string[]>([])
 
-    const [publishErrors, setPublishErrors] = useState<Record<number, string[]>>({})
+    const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({})
     const [loading, setLoading] = useState<boolean>(false);
     const [infoClass, setInfoClass] = useState<string>('alert-secondary')
 
@@ -49,18 +49,18 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
 
     useEffectAsync(async () => {
         const profileSet: Record<number, IProfile[]> = [];
-        for (let course of associatedCourses) {
+        for (let course of sections) {
 
             profileSet[course.id] ??= await course.getPotentialInstructorProfiles();
         }
-        setPotentialSectionProfiles(profileSet)
-    }, [associatedCourses])
+        setPotentialProfilesByCourseId(profileSet)
+    }, [sections])
 
     async function getFullCourses(course: Course) {
         console.log("Getting Full Courses");
         const sections: Course[] = [];
         const fetchedCourses = await course.getAssociatedCourses() ?? [];
-        const frontPageProfiles: typeof sectionFrontPageProfiles = {};
+        const frontPageProfiles: typeof frontPageProfilesByCourseId = {};
         const allInstructors: typeof instructorsForCourse = {};
         const allEmails = new Set<string>();
         const batchLoadSize = 5;
@@ -77,16 +77,16 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
                     setSectionStart(Temporal.PlainDateTime.from(actualStart));
                 }
 
-                if(!tempTerm) {
+                if (!tempTerm) {
                     tempTerm = await section.getTerm();
                     setTerm(tempTerm);
                 }
 
                 sections.push(section);
-                setAssociatedCourses([...sections]);
+                setSections([...sections]);
 
                 frontPageProfiles[section.id] = frontPageProfile;
-                setSectionFrontPageProfiles({...frontPageProfiles});
+                setFrontPageProfilesByCourseId({...frontPageProfiles});
 
                 if (instructors) {
                     allInstructors[section.id] = instructors;
@@ -115,7 +115,7 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
     async function publishCourses(event: React.MouseEvent) {
         const accountId = course?.getItem<number>('account_id');
         assert(accountId);
-        await Course.publishAll(associatedCourses, accountId)
+        await Course.publishAll(sections, accountId)
         inform('publishing')
         setLoading(true);
         //Waits half a second to allow changes to propagate on the server
@@ -126,34 +126,33 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
             } else {
                 newAssocCourses = [];
             }
-            setAssociatedCourses(newAssocCourses);
+            setSections(newAssocCourses);
             setLoading(false);
             success('Published');
         }, 500);
     }
 
-    function openAll(e: React.MouseEvent) {
-        e.stopPropagation();
-        for (let course of associatedCourses) {
+    function openAll() {
+        for (let course of sections) {
             window.open(course.courseUrl, "_blank");
         }
     }
 
     function sectionError(section: Course, error: string) {
-        let tempErrors = {...publishErrors}
+        let tempErrors = {...errorsByCourseId}
         let errorSet = tempErrors[section.id] ?? [];
         errorSet.push(error);
         tempErrors[section.id] = errorSet
-        setPublishErrors({...tempErrors})
+        setErrorsByCourseId({...tempErrors})
     }
 
     async function applySectionProfiles(event: React.MouseEvent) {
         setLoading(true);
         inform("Updating section profiles...");
-        const currentProfiles = {...sectionFrontPageProfiles};
-        setPublishErrors({});
-        for (let section of associatedCourses) {
-            const profiles = potentialSectionProfiles[section.id];
+        const currentProfiles = {...frontPageProfilesByCourseId};
+        setErrorsByCourseId({});
+        for (let section of sections) {
+            const profiles = potentialProfilesByCourseId[section.id];
             const errors = [];
             if (profiles.length < 1) {
                 sectionError(section, "No Profiles")
@@ -171,7 +170,7 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
             const html = renderProfileIntoCurioFrontPage(frontPage.body, profile);
             await frontPage.updateContent(html);
             currentProfiles[section.id] = profile;
-            setSectionFrontPageProfiles({...currentProfiles});
+            setFrontPageProfilesByCourseId({...currentProfiles});
             setInfo(`Updated ${profile.displayName}...`)
         }
         setLoading(false);
@@ -197,29 +196,6 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
                                   className={isBlueprint ? 'ui-button' : ''}
                                   onClick={(e) => setShow(true)}
         >{isBlueprint ? "Manage Sections" : "Not A Blueprint"}</Button>)
-    }
-
-    function associatedCourseRows() {
-        return (<div className={'course-table'}>
-            <div className={'row'}>
-                <div className={'col-sm-6'}>
-
-                    <div><strong>Code</strong></div>
-                    <a href={'#'} onClick={openAll}>Open All</a>
-                </div>
-                <div className={'col-sm-3'}><strong>Name on Front Page</strong></div>
-                <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
-            </div>
-            {associatedCourses && associatedCourses.map((course) => (
-                <PublishCourseRow
-                    instructors={instructorsForCourse[course.id]}
-                    frontPageProfile={sectionFrontPageProfiles[course.id]}
-                    facultyProfileMatches={potentialSectionProfiles[course.id]}
-                    key={course.id}
-                    errors={publishErrors[course.id]}
-                    onClickDx={(section) => setWorkingSection(section)}
-                    course={course}/>))}
-        </div>)
     }
 
 
@@ -253,21 +229,30 @@ export function PublishInterface({course, user}: PublishInterfaceProps) {
                     </div>
                     <div className={'col-xs-12'}>
                         {user && course &&
-                            <EmailLink user={user} emails={emails} course={course} sectionStart={sectionStart} termData={term?.rawData}/>}
+                            <EmailLink user={user} emails={emails} course={course} sectionStart={sectionStart}
+                                       termData={term?.rawData}/>}
                     </div>
                     <div className='col-xs-12'>
-                        {associatedCourseRows()}
+                        <SectionRows
+                            sections={sections}
+                            onOpenAll={openAll}
+                            instructorsByCourseId={instructorsForCourse}
+                            errorsByCourseId={errorsByCourseId}
+                            frontPageProfilesByCourseId={frontPageProfilesByCourseId}
+                            potentialProfilesByCourseId={potentialProfilesByCourseId}
+                            setWorkingSection={setWorkingSection}/>
                     </div>
+
                 </div>
             </div>)}
             {info && <div className={`alert ${infoClass}`} role={'alert'}>{info}</div>}
             <div>
                 <SectionDetails
-                    onUpdateFrontPageProfile={newProfile => workingSection && setSectionFrontPageProfiles({
-                        ...sectionFrontPageProfiles,
+                    onUpdateFrontPageProfile={newProfile => workingSection && setFrontPageProfilesByCourseId({
+                        ...frontPageProfilesByCourseId,
                         [workingSection.id]: newProfile
                     })}
-                    facultyProfileMatches={workingSection && potentialSectionProfiles[workingSection.id]}
+                    facultyProfileMatches={workingSection && potentialProfilesByCourseId[workingSection.id]}
                     onClose={() => setWorkingSection(null)}
                     section={workingSection}
                 ></SectionDetails>

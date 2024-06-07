@@ -3,11 +3,11 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { MakeBp, IMakeBpProps } from './MakeBp';
-import { Course } from '../canvas/course';
-import * as blueprintApi from '../canvas/course/blueprint';
+import { MakeBp, IMakeBpProps } from '../MakeBp';
+import { Course } from '../../canvas/course';
+import * as blueprintApi from '../../canvas/course/blueprint';
 
-jest.mock('../canvas/course/blueprint');
+jest.mock('../../canvas/course/blueprint');
 
 const mockCourse: Course = {
     isDev: true,

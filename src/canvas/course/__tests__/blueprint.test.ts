@@ -13,8 +13,8 @@ import {dummyCourseData} from "../__mocks__/dummyCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
 import {Course} from "../index";
 import {IAccountData, ICourseData, IModuleData, ITermData} from "../../canvasDataDefs";
-import {dummyTermData} from "../../__mocks__/dummyTermData";
-import {dummyAccountData} from "../../__mocks__/dummyAccountData";
+import {mockTermData} from "../../__mocks__/mockTermData";
+import {mockAccountData} from "../../__mocks__/mockAccountData";
 import assert from "assert";
 import dummyModuleData, { dummyModuleItemData } from "../__mocks__/dummyModuleData";
 
@@ -81,8 +81,8 @@ test("Testing blueprint retirement", async () => {
     }
     const sections = await mockBlueprint.getAssociatedCourses();
 
-    fetchMock.once(JSON.stringify(<IAccountData[]>[{...dummyAccountData, id: 2, root_account_id: null}]))
-    fetchMock.once(JSON.stringify(<ITermData>{...dummyTermData, id: 10, name: termName}))
+    fetchMock.once(JSON.stringify(<IAccountData[]>[{...mockAccountData, id: 2, root_account_id: null}]))
+    fetchMock.once(JSON.stringify(<ITermData>{...mockTermData, id: 10, name: termName}))
     let derivedTermName = await getTermNameFromSections(sections);
     expect(derivedTermName).toBe(termName);
 

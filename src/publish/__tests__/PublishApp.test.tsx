@@ -4,20 +4,20 @@ global.TextEncoder = require('util').TextEncoder;
 import React, {act} from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import PublishApp from './PublishApp';
-import {Course} from '../canvas/course';
-import {IUserData} from '../canvas/canvasDataDefs';
-import * as canvasUtils from '../canvas/canvasUtils';
-import * as CourseModule from '../canvas/course';
-import {PublishInterface} from './publishInterface/PublishInterface';
-import {ContentUpdateInterface} from './fixesAndUpdates/ContentUpdateInterface';
-import {AdminApp} from '../admin/AdminApp';
+import PublishApp from '../PublishApp';
+import {Course} from '../../canvas/course';
+import {IUserData} from '../../canvas/canvasDataDefs';
+import * as canvasUtils from '../../canvas/canvasUtils';
+import * as CourseModule from '../../canvas/course';
+import {PublishInterface} from '../publishInterface/PublishInterface';
+import {ContentUpdateInterface} from '../fixesAndUpdates/ContentUpdateInterface';
+import {AdminApp} from '../../admin/AdminApp';
 
-jest.mock('../canvas/course');
-jest.mock('../canvas/canvasUtils');
-jest.mock('./publishInterface/PublishInterface');
-jest.mock('./fixesAndUpdates/ContentUpdateInterface');
-jest.mock('../admin/AdminApp');
+jest.mock('../../canvas/course');
+jest.mock('../../canvas/canvasUtils');
+jest.mock('../publishInterface/PublishInterface');
+jest.mock('../fixesAndUpdates/ContentUpdateInterface');
+jest.mock('../../admin/AdminApp');
 
 
 const mockCourse: Course = {

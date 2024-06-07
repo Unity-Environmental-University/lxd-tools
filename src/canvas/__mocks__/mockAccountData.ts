@@ -3,7 +3,7 @@ import {IAccountData} from "../canvasDataDefs";
 /**
  * From Canvas Api Docs - https://canvas.instructure.com/doc/api/accounts.html
  */
-export const dummyAccountData: IAccountData = {
+export const mockAccountData: IAccountData = {
     // the ID of the Account object
     "id": 2,
     // The display name of the account
