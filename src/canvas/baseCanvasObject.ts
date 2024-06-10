@@ -1,6 +1,6 @@
 import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
-import {fetchApiJson, fetchJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
+import {fetchJson, formDataify, getPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseContentItem} from "./content";
 import {Course} from "./course";
 import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
@@ -70,7 +70,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
 
     static async getDataById<T extends CanvasData = CanvasData>(contentId: number, courseId: number | null = null, config: ICanvasCallConfig | null = null): Promise<T> {
         let url = this.getUrlPathFromIds(contentId, courseId);
-        const response = await fetchApiJson<T>(url, config);
+        const response = await fetchJson<T>(url, config);
         assert(!Array.isArray(response));
 
         return response;
@@ -101,7 +101,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
 
     static async getAll(config: ICanvasCallConfig | null = null) {
         let url = this.getAllUrl();
-        let data = await getApiPagedData(url, config);
+        let data = await getPagedData(url, config);
         return data.map(item => new this(item));
     }
 

@@ -10,7 +10,7 @@ And starting to convert to ts
 import assert from 'assert';
 
 import {CanvasData, ITermData} from "./canvasDataDefs";
-import {fetchApiJson, fetchJson, formDataify, getApiPagedData, ICanvasCallConfig} from "./canvasUtils";
+import {fetchJson, formDataify, getPagedData, ICanvasCallConfig} from "./canvasUtils";
 import {BaseCanvasObject} from "./baseCanvasObject";
 import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
 
@@ -142,7 +142,7 @@ export class Term extends BaseCanvasObject<ITermData> {
         let rootAccount = await Account.getRootAccount();
         assert(rootAccount);
         let url = `accounts/${rootAccount.id}/terms`;
-        const data = await getApiPagedData<ITermData>(url, config);
+        const data = await getPagedData<ITermData>(url, config);
         let terms: ITermData[] = [];
         for (let datum of data) {
             if (datum.hasOwnProperty('enrollment_terms')) {

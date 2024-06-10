@@ -16,13 +16,9 @@ import {
 import {Assignment, BaseContentItem, Discussion, getBannerImage, Page, Quiz} from "../content";
 import {
     deepObjectMerge,
-    fetchApiJson,
     fetchJson,
-    fetchOneKnownApiJson,
-    fetchOneUnknownApiJson,
     filterUniqueFunc,
     formDataify,
-    getApiPagedData,
     getPagedData,
     getPagedDataGenerator,
     ICanvasCallConfig,
@@ -142,7 +138,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             if (term !== null) {
                 config.queryParams['enrollment_term_id'] = term.id;
             }
-            courseDataList = await getApiPagedData<ICourseData>(url, config);
+            courseDataList = await getPagedData<ICourseData>(url, config);
             if (courseDataList && courseDataList.length > 0) {
                 break;
             }
@@ -182,12 +178,12 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
 
     static async courseEvent(courses: Course[], event: string, accountId: number) {
-        const url = `accounts/${accountId}/courses`;
+        const url = `/api/v1/accounts/${accountId}/courses`;
         const data = {
             'event': event,
             'course_ids[]': courses.map(course => course.id)
         };
-        return await fetchApiJson<CanvasData>(url, {
+        return await fetchJson<CanvasData>(url, {
             fetchInit: {
                 method: 'PUT',
                 body: JSON.stringify(data)
@@ -285,7 +281,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
                 include: ['items', 'content_details']
             }
         })
-        let modules = <IModuleData[]>await getApiPagedData(`${this.contentUrlPath}/modules`, config);
+        let modules = <IModuleData[]>await getPagedData(`${this.contentUrlPath}/modules`, config);
         this._modules = modules;
         return modules;
     }
@@ -295,7 +291,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async getInstructors(): Promise<IUserData[] | null> {
-        return await fetchApiJson(`courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
+        return await fetchJson(`/api/v1/courses/${this.id}/users?enrollment_type=teacher`) as IUserData[];
     }
 
     async getLatePolicy(this: { id: number }, config?: ICanvasCallConfig) {
@@ -472,7 +468,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async getAssignmentGroups(config?: ICanvasCallConfig) {
-        return await getApiPagedData<IAssignmentGroup>(`courses/${this.id}/assignment_groups`, config)
+        return await getPagedData<IAssignmentGroup>(`/api/v1/courses/${this.id}/assignment_groups`, config)
     }
 
     async getQuizzes(config?: ICanvasCallConfig) {
@@ -481,17 +477,17 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async getSubsections() {
         const url = `/api/v1/courses/${this.id}/sections`;
-        return await fetchApiJson(url);
+        return await fetchJson(url);
 
     }
 
     async getTabs(config?: ICanvasCallConfig) {
-        return await fetchApiJson(`courses/${this.id}/tabs`, config) as ITabData[];
+        return await fetchJson(`courses/${this.id}/tabs`, config) as ITabData[];
     }
 
     async getFrontPage() {
         try {
-            const data = await fetchOneKnownApiJson(`${this.contentUrlPath}/front_page`) as IPageData;
+            const data = await fetchJson(`${this.contentUrlPath}/front_page`) as IPageData;
             return new Page(data, this.id);
         } catch (error) {
             return null;
@@ -513,14 +509,14 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         const tab = this.getTab(label);
         if (!tab) return null;
 
-        return await fetchApiJson(`courses/${this.id}/tabs/${tab.id}`, {
+        return await fetchJson(`/api/v1/courses/${this.id}/tabs/${tab.id}`, {
             queryParams: {'hidden': value}
         });
     }
 
     async changeSyllabus(newHtml: string) {
         this.canvasData['syllabus_body'] = newHtml;
-        return await fetchApiJson(`courses/${this.id}`, {
+        return await fetchJson(`/api/v1/courses/${this.id}`, {
             fetchInit: {
                 method: 'PUT',
                 body: formDataify({
@@ -548,12 +544,12 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             return course;
         })
 
-        const url = `accounts/${accountId}/courses`;
+        const url = `/api/v1/accounts/${accountId}/courses`;
         const data = {
             'event': 'offer',
             'course_ids': courseIds,
         }
-        return await fetchOneUnknownApiJson(url, {
+        return await fetchJson(url, {
             fetchInit: {
                 method: 'PUT',
                 body: formDataify(data),
@@ -582,7 +578,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async publish() {
         const url = `courses/${this.id}`;
-        const courseData = await fetchOneKnownApiJson<ICourseData>(url, {
+        const courseData = await fetchJson<ICourseData>(url, {
             fetchInit: {
                 method: 'PUT',
                 body: formDataify({'offer': true})
@@ -593,8 +589,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async unpublish() {
-        const url = `courses/${this.id}`;
-        await fetchApiJson(url, {
+        const url = `/api/v1/courses/${this.id}`;
+        await fetchJson(url, {
             fetchInit: {
                 method: 'PUT',
                 body: JSON.stringify({'course[event]': 'claim'})
@@ -608,8 +604,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             return false;
         }
 
-        const url = `/courses/${this.id}/reset_content`;
-        const data = await fetchOneKnownApiJson(url, {fetchInit: {method: 'POST'}});
+        const url = `/api/v1/courses/${this.id}/reset_content`;
+        const data = await fetchJson(url, {fetchInit: {method: 'POST'}});
         this.canvasData['id'] = data.id;
 
         return false;
@@ -643,7 +639,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async getParentCourse(return_dev_search = false) {
-        let migrations = await getApiPagedData(`courses/${this.id}/content_migrations`);
+        let migrations = await getPagedData(`/api/v1/courses/${this.id}/content_migrations`);
 
         if (migrations.length < 1) {
             console.log('no migrations found');

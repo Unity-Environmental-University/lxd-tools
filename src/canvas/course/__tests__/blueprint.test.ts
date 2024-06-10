@@ -91,8 +91,8 @@ test("Testing blueprint retirement", async () => {
         assert('body' in requestInit);
         const formData = requestInit.body;
         assert(formData instanceof FormData)
-        const entries = Object.fromEntries(formData.entries());
-        return new Response(JSON.stringify(entries))
+        const data = deFormDataify(formData);
+        return new Response(JSON.stringify(data.course))
 
     }, async () => {
         await retireBlueprint(mockBlueprint, derivedTermName);

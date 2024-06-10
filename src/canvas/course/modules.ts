@@ -1,7 +1,7 @@
 import {Temporal} from "temporal-polyfill";
 import {IModuleData, IPageData} from "../canvasDataDefs";
-import {fetchApiJson, fetchJson, formDataify, ICanvasCallConfig} from "../canvasUtils";
-import {Page} from "../content/index";
+import {fetchJson, formDataify, ICanvasCallConfig} from "../canvasUtils";
+import {Page} from "../content";
 
 export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],
@@ -16,8 +16,8 @@ export async function changeModuleLockDate(courseId: number, module: IModuleData
             unlock_at: targetDate.toString()
         }
     }
-    const url = `courses/${courseId}/modules/${module.id}`;
-    const result = fetchApiJson(url, {
+    const url = `/api/v1/courses/${courseId}/modules/${module.id}`;
+    const result = fetchJson(url, {
         fetchInit: {
             method: 'PUT',
             body: formDataify(payload)

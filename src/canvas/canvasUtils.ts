@@ -230,7 +230,6 @@ export function deFormDataify(formData: FormData) {
             currentValue = newValue;
 
         }
-        console.log(JSON.stringify(aggregator));
         return deepObjectMerge(aggregator, currentValue as FormMergeOutput) || {...aggregator};
     }, {} as FormMergeOutput);
 }
@@ -325,10 +324,6 @@ export function searchParamsFromObject(queryParams: string[][] | Record<string, 
     return queryStringify(queryParams);
 
 
-}
-
-export async function getApiPagedData<T extends CanvasData>(url: string, config: ICanvasCallConfig | null = null): Promise<T[]> {
-    return await getPagedData<T>(`/api/v1/${url}`, config)
 }
 
 /**
@@ -436,33 +431,6 @@ export async function fetchJson<T extends Record<string, any>>(
 
     const response = await fetch(url, config.fetchInit);
     return await response.json() as T;
-}
-
-/**
- * Fetches a json object from /api/v1/${url}
- * @param url
- * @param config query and fetch params
- */
-export async function fetchApiJson<T extends Record<string, any>>(url: string, config: ICanvasCallConfig | null = null) {
-    console.warn('Deprecated. Just use fetchJson')
-    url = `/api/v1/${url}`;
-    return await fetchJson<T>(url, config);
-}
-
-export async function fetchOneKnownApiJson<T extends Record<string, any>>(url: string, config: ICanvasCallConfig | null = null) {
-    console.warn('Deprecated. Just use fetchJson')
-    let result = await fetchApiJson<T>(url, config);
-    assert(result);
-    if (Array.isArray(result)) return result[0];
-    return result as T;
-}
-
-export async function fetchOneUnknownApiJson(url: string, config: ICanvasCallConfig | null = null) {
-    console.warn('Deprecated. Just use fetchJson')
-    let result = await fetchApiJson(url, config);
-    if (!result) return null;
-    if (Array.isArray(result) && result.length > 0) return result[0];
-    return <CanvasData>result;
 }
 
 /**

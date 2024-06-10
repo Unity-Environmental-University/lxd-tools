@@ -86,24 +86,10 @@ export function MakeBp({
         setIsLoading(false);
     }
 
-    async function onCloneIntoBp(e: FormEvent) {
-        e.preventDefault();
-        if(!currentBp) {
-            console.warn("Tried to clone without a bp")
-            return;
-        }
 
-        if(typeof devCourse.parsedCourseCode !== 'string') {
-            console.warn('Dev course does not have a recognised course code');
-            return;
-        }
-
-        const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode));
-        const migration = await startMigration(devCourse.id, newBpShell.id);
-        const migrationStatus = getMigrationProgressGen(migration);
-        for await(let progress of migrationStatus) {
-            setProgressData(progress);
-        }
+    function onCloneIntoBp(e:FormEvent) {
+            e.preventDefault();
+            cloneIntoBp(currentBp, devCourse, setProgressData);
     }
 
     return <div>
@@ -126,13 +112,33 @@ export function MakeBp({
                     onClick={onArchive}
                     disabled={isLoading || !currentBp || !termName || termName.length === 0}
                 >Archive {currentBp.parsedCourseCode}</Button>
+            </Col>
+        </Row>}
+        {!currentBp && <Row><Col>
                 <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
                     disabled={isLoading || !!currentBp || !termName || termName.length === 0}
-                ></Button>
-            </Col>
-        </Row>}
+                >Create New BP For Dev</Button>
+        </Col></Row>}
     </div>
 }
 
+export async function cloneIntoBp(currentBp: Course|null|undefined, devCourse:Course, setProgressData:(data:IProgressData)=>any) {
+    if(currentBp) {
+        console.warn("Tried to clone while current BP exists")
+        return;
+    }
+
+    if(typeof devCourse.parsedCourseCode !== 'string') {
+        console.warn('Dev course does not have a recognised course code');
+        return;
+    }
+
+    const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode));
+    const migration = await startMigration(devCourse.id, newBpShell.id);
+    const migrationStatus = getMigrationProgressGen(migration);
+    for await(let progress of migrationStatus) {
+        setProgressData(progress);
+    }
+}

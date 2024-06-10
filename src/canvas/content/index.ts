@@ -2,8 +2,6 @@ import {Temporal} from "temporal-polyfill";
 import {CanvasData, IAssignmentData, IDiscussionData, IFile, IPageData} from "../canvasDataDefs";
 import {
     fetchJson,
-    fetchOneKnownApiJson,
-    getApiPagedData,
     getCourseIdFromUrl,
     getPagedData,
     ICanvasCallConfig
@@ -39,7 +37,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
 
     static async getAllInCourse<T extends BaseContentItem>(courseId: number, config: ICanvasCallConfig | null = null) {
         let url = this.getAllUrl(courseId);
-        let data = await getApiPagedData(url, config);
+        let data = await getPagedData(url, config);
         return data.map(item => new this(item, courseId)) as T[];
     }
 
@@ -195,8 +193,8 @@ async function getFileData(fileId:number, courseId:number) {
 export class Discussion extends BaseContentItem {
     static nameProperty = 'title';
     static bodyProperty = 'message';
-    static contentUrlTemplate = "courses/{course_id}/discussion_topics/{content_id}";
-    static allContentUrlTemplate = "courses/{course_id}/discussion_topics"
+    static contentUrlTemplate = "/api/v1/courses/{course_id}/discussion_topics/{content_id}";
+    static allContentUrlTemplate = "/api/v1/courses/{course_id}/discussion_topics"
 
 
     async offsetPublishDelay(days: number, config?:ICanvasCallConfig) {
@@ -221,8 +219,8 @@ export class Discussion extends BaseContentItem {
 export class Assignment extends BaseContentItem {
     static nameProperty = 'name';
     static bodyProperty = 'description';
-    static contentUrlTemplate = "courses/{course_id}/assignments/{content_id}";
-    static allContentUrlTemplate = "courses/{course_id}/assignments";
+    static contentUrlTemplate = "/api/v1/courses/{course_id}/assignments/{content_id}";
+    static allContentUrlTemplate = "/api/v1/courses/{course_id}/assignments";
 
     async setDueAt(dueAt: Date, config?:ICanvasCallConfig) {
         const sourceDueAt = this.dueAt ? Temporal.Instant.from(this.rawData.due_at) : null;
@@ -277,8 +275,8 @@ export class Assignment extends BaseContentItem {
 export class Quiz extends BaseContentItem {
     static nameProperty = 'title';
     static bodyProperty = 'description';
-    static contentUrlTemplate = "courses/{course_id}/quizzes/{content_id}";
-    static allContentUrlTemplate = "courses/{course_id}/quizzes";
+    static contentUrlTemplate = "/api/v1/courses/{course_id}/quizzes/{content_id}";
+    static allContentUrlTemplate = "/api/v1/courses/{course_id}/quizzes";
 
 }
 
@@ -286,8 +284,8 @@ export class Page extends BaseContentItem {
     static idProperty = 'page_id';
     static nameProperty = 'title';
     static bodyProperty = 'body';
-    static contentUrlTemplate = "courses/{course_id}/pages/{content_id}";
-    static allContentUrlTemplate = "courses/{course_id}/pages";
+    static contentUrlTemplate = "/api/v1/courses/{course_id}/pages/{content_id}";
+    static allContentUrlTemplate = "/api/v1/courses/{course_id}/pages";
 
     constructor(canvasData: IPageData, courseId: number) {
         super(canvasData, courseId);
@@ -299,7 +297,7 @@ export class Page extends BaseContentItem {
 
     async applyRevision(revision: Record<string, any>) {
         const revisionId = revision['revision_id'];
-        let result = await fetchOneKnownApiJson(`${this.contentUrlPath}/revisions/${revisionId}?revision_id=${revisionId}`);
+        let result = await fetchJson(`${this.contentUrlPath}/revisions/${revisionId}?revision_id=${revisionId}`);
         this.canvasData[this.bodyKey] = result['body'];
         this.canvasData[this.nameKey] = result['title'];
     }

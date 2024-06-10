@@ -1,7 +1,5 @@
 import {
-    fetchApiJson,
     fetchJson,
-    fetchOneKnownApiJson,
     formDataify,
     getItemTypeAndId,
     getPagedDataGenerator,
