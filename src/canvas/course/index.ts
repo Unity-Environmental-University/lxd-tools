@@ -36,7 +36,7 @@ import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
 import {NotImplementedException, Term} from "../index";
 
-import {overrideConfig} from "../../publish/fixesAndUpdates/validations/index";
+import {overrideConfig} from "../../publish/fixesAndUpdates/validations";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber} from "./modules";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
 import {
@@ -261,7 +261,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     get isDev() {
-        if (this.name.match(/^DEV/)) return true;
+        return !!this.name.match(/^DEV/);
+
     }
 
 
@@ -760,10 +761,6 @@ export function getCourseGenerator(queryString: string, accountIds: number[] | n
     return generatorMap(mergePagedDataGenerators(generators), courseData => new Course(courseData));
 }
 
-
-export class CourseNotFoundException extends Error {
-}
-
 export async function createNewCourse(courseCode: string, name?: string, config?: ICanvasCallConfig) {
     name ??= courseCode;
     const createUrl = `/api/v1/courses/`
@@ -788,3 +785,5 @@ export function getCourseIdFromUrl(url: string) {
     }
     return null;
 }
+
+export class CourseNotFoundException extends Error {}

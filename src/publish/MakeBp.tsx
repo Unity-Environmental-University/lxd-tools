@@ -1,4 +1,4 @@
-import {Course, createNewCourse} from "../canvas/course/index";
+import {Course, createNewCourse} from "../canvas/course";
 import {Button, Col, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useState} from "react";
 import {useEffectAsync} from "../ui/utils";
@@ -10,9 +10,8 @@ import {
     retireBlueprint
 } from "../canvas/course/blueprint";
 import assert from "assert";
-import {bpify} from "../admin/index";
-import {getMigrationProgressGen, IMigrationData, IProgressData, startMigration} from "../canvas/course/migration";
-
+import {bpify} from "../admin";
+import {getMigrationProgressGen, IProgressData, startMigration} from "../canvas/course/migration";
 
 export interface IMakeBpProps {
     devCourse: Course,
@@ -21,8 +20,6 @@ export interface IMakeBpProps {
     onSectionsSet?: (sections: Course[]) => void,
     onProgressUpdate?: (progress:IProgressData|undefined) => void,
 }
-
-
 
 function callOnChangeFunc<T, R>(value:T, onChange:((value:T)=>R )| undefined) {
     const returnValue :[() => any, [T]] = [() => {
@@ -95,6 +92,7 @@ export function MakeBp({
             console.warn("Tried to clone without a bp")
             return;
         }
+
         if(typeof devCourse.parsedCourseCode !== 'string') {
             console.warn('Dev course does not have a recognised course code');
             return;

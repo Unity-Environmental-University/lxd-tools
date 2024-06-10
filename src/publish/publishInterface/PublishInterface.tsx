@@ -11,6 +11,7 @@ import {Term} from "../../canvas/index";
 import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
+import {MakeBp} from "../MakeBp";
 
 
 export interface IPublishInterfaceProps {
@@ -28,11 +29,12 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     const [term, setTerm] = useState<Term | null>();
     const [sectionStart, setSectionStart] = useState<Temporal.PlainDateTime>();
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
+    const [isDev, setIsDev] = useState<boolean>(false);
     const [workingSection, setWorkingSection] = useState<Course | null>();
 
     const [potentialProfilesByCourseId, setPotentialProfilesByCourseId] = useState<Record<number, IProfile[]>>({})
     const [frontPageProfilesByCourseId, setFrontPageProfilesByCourseId] = useState<Record<number, IProfile>>({});
-    const [instructorsForCourse, setInstructorsForCourse] = useState<Record<number, IUserData[]>>({});
+    const [instructorsByCourseId, setInstructorsByCourseId] = useState<Record<number, IUserData[]>>({});
     const [emails, setEmails] = useState<string[]>([])
 
     const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({})
@@ -42,11 +44,12 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     useEffectAsync(async () => {
         if (!course) return;
         setIsBlueprint(course.isBlueprint)
+        setIsDev(course.isDev)
         await getFullCourses(
             {
                 course,
                 setEmails,
-                setInstructorsForCourse,
+                setInstructorsByCourseId,
                 setSections,
                 setSectionStart,
                 setTerm,
@@ -58,10 +61,10 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
     useEffectAsync(async () => {
         const profileSet: Record<number, IProfile[]> = [];
-        for (let course of sections) {
 
+        for (let course of sections)
             profileSet[course.id] ??= await course.getPotentialInstructorProfiles();
-        }
+
         setPotentialProfilesByCourseId(profileSet)
     }, [sections])
 
@@ -70,7 +73,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     //-----
     async function publishCourses(event: React.MouseEvent) {
         const accountId = course?.getItem<number>('account_id');
-        if(typeof accountId === 'undefined') throw new Error('Course has no account Id');
+        if (typeof accountId === 'undefined') throw new Error('Course has no account Id');
         inform('Publishing')
         setLoading(true);
         await Course.publishAll(sections, accountId)
@@ -146,12 +149,6 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     // RENDER
     //-----
 
-    function openButton() {
-        return (course && <Button disabled={!isBlueprint}
-                                  className={isBlueprint ? 'ui-button' : ''}
-                                  onClick={(e) => setShow(true)}
-        >{isBlueprint ? "Manage Sections" : "Not A Blueprint"}</Button>)
-    }
 
 
     /**
@@ -159,7 +156,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
      * @param profileSets
      */
     return (<>
-        {openButton()}
+        <OpenButton isDev={isDev} isBlueprint={isBlueprint} setShow={setShow}/>
         <Modal id={'lxd-publish-interface'} isOpen={show} canClose={!loading} requestClose={() => {
             if (!loading) setShow(false);
         }}>
@@ -188,20 +185,21 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                                        termData={term?.rawData}/>}
                     </div>
                     <div className='col-xs-12'>
-                        <SectionRows
-                            sections={sections}
-                            onOpenAll={openAll}
-                            instructorsByCourseId={instructorsForCourse}
-                            errorsByCourseId={errorsByCourseId}
-                            frontPageProfilesByCourseId={frontPageProfilesByCourseId}
-                            potentialProfilesByCourseId={potentialProfilesByCourseId}
-                            setWorkingSection={setWorkingSection}/>
+                        {SectionRows({
+                            sections,
+                            onOpenAll:openAll,
+                            instructorsByCourseId,
+                            errorsByCourseId,
+                            frontPageProfilesByCourseId,
+                            potentialProfilesByCourseId,
+                            setWorkingSection
+                        })}
                     </div>
 
                 </div>
             </div>)}
             {info && <div className={`alert ${infoClass}`} role={'alert'}>{info}</div>}
-            <div>
+            {workingSection && <div>
                 <SectionDetails
                     onUpdateFrontPageProfile={newProfile => workingSection && setFrontPageProfilesByCourseId({
                         ...frontPageProfilesByCourseId,
@@ -211,7 +209,8 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                     onClose={() => setWorkingSection(null)}
                     section={workingSection}
                 ></SectionDetails>
-            </div>
+            </div>}
+
 
         </Modal>
     </>)
@@ -228,7 +227,7 @@ async function loadSection(course: Course) {
 export interface IGetFullCoursesProps {
     course: Course,
     setEmails: (emails: string[]) => void,
-    setInstructorsForCourse: (instructorsByCourseId: Record<number, IUserData[]>) => void,
+    setInstructorsByCourseId: (instructorsByCourseId: Record<number, IUserData[]>) => void,
     setSections: (course: Course[]) => void,
     setSectionStart: (start: Temporal.PlainDateTime) => void,
     setTerm: (term: Term | null) => void,
@@ -239,7 +238,7 @@ export interface IGetFullCoursesProps {
 export async function getFullCourses({
     course,
     setEmails,
-    setInstructorsForCourse,
+    setInstructorsByCourseId,
     setSections,
     setSectionStart,
     setTerm,
@@ -278,7 +277,7 @@ export async function getFullCourses({
 
             if (instructors) {
                 allInstructors[section.id] = instructors;
-                setInstructorsForCourse({...allInstructors})
+                setInstructorsByCourseId({...allInstructors})
             }
 
             const emails = instructors?.map(a => a.email);
@@ -288,4 +287,20 @@ export async function getFullCourses({
     }
 }
 
+type OpenButtonProps = {
+    isDev: boolean,
+    isBlueprint: boolean,
+    setShow: (value:boolean) => any
+}
+export function OpenButton({isDev, isBlueprint, setShow}: OpenButtonProps) {
+    const disabled = !(isBlueprint || isDev);
+    let label = 'Not BP or DEV';
+    if (isBlueprint) label = "Manage Sections";
+    if (isDev) label = "Manage DEV->BP"
 
+    return <Button
+        disabled={disabled}
+        className={disabled? '' : 'ui-button'}
+        onClick={(e) => setShow(true)}
+    >{label}</Button>
+}

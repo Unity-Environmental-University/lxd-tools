@@ -8,7 +8,7 @@ global.TextEncoder = require('util').TextEncoder;
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { PublishInterface, IPublishInterfaceProps } from '../PublishInterface';
+import {PublishInterface, IPublishInterfaceProps, OpenButton} from '../PublishInterface';
 import { Course } from '../../../canvas/course';
 import {ICourseData, IUserData} from '../../../canvas/canvasDataDefs';
 
@@ -56,12 +56,6 @@ describe('PublishInterface Component', () => {
         expect(screen.getByText('Manage Sections')).toBeInTheDocument();
     });
 
-    it('displays "Not A Blueprint" when course is not a blueprint', () => {
-        let course =  getMockCourse({...mockCourseData, blueprint: false });
-        renderComponent({course});
-        expect(screen.getByText('Not A Blueprint')).toBeInTheDocument();
-    });
-
     it('opens modal when "Manage Sections" button is clicked', () => {
         renderComponent();
         fireEvent.click(screen.getByText('Manage Sections'));
@@ -87,5 +81,49 @@ describe('PublishInterface Component', () => {
         // Simulate delay for applying section profiles
         await new Promise(resolve => setTimeout(resolve, 100));
         expect(screen.getByText('Profiles Updated')).toBeInTheDocument();
+    });
+});
+
+describe('OpenButton Component', () => {
+    test('should render with "Not BP or DEV" label when isBlueprint and isDev are false', () => {
+        render(<OpenButton isDev={false} isBlueprint={false} setShow={jest.fn()} />);
+        expect(screen.getByText('Not BP or DEV')).toBeInTheDocument();
+    });
+
+    test('should render with "Manage Sections" label when isBlueprint is true', () => {
+        render(<OpenButton isDev={false} isBlueprint={true} setShow={jest.fn()} />);
+        expect(screen.getByText('Manage Sections')).toBeInTheDocument();
+    });
+
+    test('should render with "Manage DEV->BP" label when isDev is true', () => {
+        render(<OpenButton isDev={true} isBlueprint={false} setShow={jest.fn()} />);
+        expect(screen.getByText('Manage DEV->BP')).toBeInTheDocument();
+    });
+
+    test('should enable button when isBlueprint or isDev is true', () => {
+        const { rerender } = render(<OpenButton isDev={false} isBlueprint={false} setShow={jest.fn()} />);
+        expect(screen.getByRole('button')).toBeDisabled();
+
+        rerender(<OpenButton isDev={true} isBlueprint={false} setShow={jest.fn()} />);
+        expect(screen.getByRole('button')).not.toBeDisabled();
+
+        rerender(<OpenButton isDev={false} isBlueprint={true} setShow={jest.fn()} />);
+        expect(screen.getByRole('button')).not.toBeDisabled();
+    });
+
+    test('should call setShow with true when button is clicked and not disabled', () => {
+        const setShowMock = jest.fn();
+        render(<OpenButton isDev={true} isBlueprint={false} setShow={setShowMock} />);
+
+        fireEvent.click(screen.getByRole('button'));
+        expect(setShowMock).toHaveBeenCalledWith(true);
+    });
+
+    test('should not call setShow when button is disabled and clicked', () => {
+        const setShowMock = jest.fn();
+        render(<OpenButton isDev={false} isBlueprint={false} setShow={setShowMock} />);
+
+        fireEvent.click(screen.getByRole('button'));
+        expect(setShowMock).not.toHaveBeenCalled();
     });
 });
