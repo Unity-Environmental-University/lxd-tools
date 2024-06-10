@@ -16,7 +16,7 @@ import {IAccountData, ICourseData, IModuleData, ITermData} from "../../canvasDat
 import {mockTermData} from "../../__mocks__/mockTermData";
 import {mockAccountData} from "../../__mocks__/mockAccountData";
 import assert from "assert";
-import dummyModuleData, { dummyModuleItemData } from "../__mocks__/dummyModuleData";
+import mockModuleData, { mockModuleItemData } from "../__mocks__/mockModuleData";
 
 
 fetchMock.enableMocks();
@@ -186,10 +186,10 @@ test('lock blueprint', async () => {
     const itemCount = 6;
     for(let i = 0; i < moduleCount; i++) {
         modules.push({
-            ...dummyModuleData,
+            ...mockModuleData,
             name: `Week ${i}`,
             items: [...range(0, itemCount - 1)].map(j => ({
-                ...dummyModuleItemData,
+                ...mockModuleItemData,
                 content_id: i * 100 + j,
                 name: `Week ${i} Assignment ${j}`
             }))

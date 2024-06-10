@@ -66,4 +66,5 @@ describe('PublishApp Component', () => {
         await waitFor(() => expect(screen.getByText(/ContentUpdateInterface: Loaded/)).toBeInTheDocument());
         await waitFor(() => expect(screen.getByText(/AdminApp: Loaded/)).toBeInTheDocument());
     });
+
 });

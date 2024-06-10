@@ -1,23 +1,10 @@
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../canvas/content/index";
-import fs from "fs";
 import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../canvas/content/dummyContentData";
-import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace, TextReplaceValidation} from "./index";
-import {ILatePolicyUpdate, IModuleData} from "../../../canvas/canvasDataDefs";
-import dummyLatePolicy from "../../../canvas/course/__mocks__/dummyLatePolicy";
+import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace} from "./index";
+import {ILatePolicyUpdate} from "../../../canvas/canvasDataDefs";
+import mockLatePolicy from "../../../canvas/course/__mocks__/mockLatePolicy";
 import assert from "assert";
-import {
-    aiPolicyInSyllabusTest,
-    bottomOfSyllabusLanguageTest,
-    communication24HoursTest,
-    courseCreditsInSyllabusTest, finalNotInGradingPolicyParaTest
-} from "./syllabusTests";
-import {badGradingPolicyTest, latePolicyTest, noEvaluationTest} from "./courseSettings";
-import {ICanvasCallConfig, range} from "../../../canvas/canvasUtils";
-import {courseProjectOutlineTest, weeklyObjectivesTest} from "./courseContent";
-import proxyServerLinkValidation from "./proxyServerLinkValidation";
-import capstoneProjectValidations from "./courseSpecific/capstoneProjectValidations";
-import {getModulesByWeekNumber} from "../../../canvas/course/modules";
-import {dummyGradModules, dummyUgModules} from "../../../canvas/course/__mocks__/dummyModuleData";
+
 import {
     IAssignmentsHaver,
     IContentHaver, IDiscussionsHaver,
@@ -68,17 +55,17 @@ function contentGoofuses(badHtml: string, goodHtml: string) {
 
 
     return [
-        dummyContentHaver(badHtml, [], "Syllabus"),
-        dummyContentHaver(goodHtml, [new Quiz({...dummyQuizData, description: badHtml}, 0)], "Quiz"),
-        dummyContentHaver(goodHtml, [new Assignment({...dummyAssignmentData, description: badHtml}, 0)], "Assignment"),
-        dummyContentHaver(goodHtml, [new Discussion({...dummyDiscussionData, message: badHtml}, 0)], "Discussion"),
-        dummyContentHaver(goodHtml, [new Page({...dummyPageData, body: badHtml}, 0)], "Page"),
+        mockContentHaver(badHtml, [], "Syllabus"),
+        mockContentHaver(goodHtml, [new Quiz({...dummyQuizData, description: badHtml}, 0)], "Quiz"),
+        mockContentHaver(goodHtml, [new Assignment({...dummyAssignmentData, description: badHtml}, 0)], "Assignment"),
+        mockContentHaver(goodHtml, [new Discussion({...dummyDiscussionData, message: badHtml}, 0)], "Discussion"),
+        mockContentHaver(goodHtml, [new Page({...dummyPageData, body: badHtml}, 0)], "Page"),
     ]
 
 }
 
 function contentGallant(badHtml: string, goodHtml: string) {
-    return dummyContentHaver(goodHtml,
+    return mockContentHaver(goodHtml,
         [
             new Page({...dummyPageData, body: goodHtml}, 0),
             new Assignment({...dummyAssignmentData, description: goodHtml}, 0),
@@ -131,7 +118,7 @@ export function dummySyllabusHaver(syllabus: string): ISyllabusHaver {
     }
 }
 
-export function dummyContentHaver(syllabus: string, content: BaseContentItem[], name: string): IContentHaver {
+export function mockContentHaver(syllabus: string, content: BaseContentItem[], name: string): IContentHaver {
     const discussions = content.filter(item => item instanceof Discussion) as Discussion[];
     const quizzes = content.filter(item => item instanceof Quiz) as Discussion[];
     const assignments = content.filter(item => item instanceof Assignment) as Assignment[];
@@ -154,7 +141,7 @@ export function dummyContentHaver(syllabus: string, content: BaseContentItem[], 
 
 
 export function getDummyLatePolicyHaver(policyDetails: ILatePolicyUpdate): ILatePolicyHaver {
-    const policy = dummyLatePolicy;
+    const policy = mockLatePolicy;
     return {
         id: 1,
         getLatePolicy: async function (_config) {

@@ -3,7 +3,7 @@ import {getDummyLatePolicyHaver} from "./index.test";
 import {ICanvasCallConfig, range} from "../../../canvas/canvasUtils";
 import {Page} from "../../../canvas/content/index";
 import {dummyPageData} from "../../../canvas/content/dummyContentData";
-import {dummyGradModules, dummyUgModules} from "../../../canvas/course/__mocks__/dummyModuleData";
+import {mockGradModules, mockUgModules} from "../../../canvas/course/__mocks__/mockModuleData";
 import {IModuleData} from "../../../canvas/canvasDataDefs";
 import {getModulesByWeekNumber} from "../../../canvas/course/modules";
 import {
@@ -80,23 +80,23 @@ describe('Grading policy validation correct test', () => {
     };
 
     test("Works for correctly set standards", async () => {
-        const newUgSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[2], [...dummyUgModules]);
+        const newUgSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[2], [...mockUgModules]);
         let result = await badGradingPolicyTest.run(newUgSchemeCourse);
         expect(result.success).toBe(true);
 
-        const goodGradSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[1], [...dummyGradModules]);
+        const goodGradSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[1], [...mockGradModules]);
         result = await badGradingPolicyTest.run(goodGradSchemeCourse);
         expect(result.success).toBe(true);
     })
 
     test("Flags old UG standard", async () => {
-        const oldUgSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[0], [...dummyUgModules]);
+        const oldUgSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[0], [...mockUgModules]);
         let result = await badGradingPolicyTest.run(oldUgSchemeCourse);
         expect(result.success).toBe(false);
     })
 
     test("Flags ug scheme in new course old UG standard", async () => {
-        const badGradSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[0], [...dummyGradModules]);
+        const badGradSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[0], [...mockGradModules]);
         let result = await badGradingPolicyTest.run(badGradSchemeCourse);
         expect(result.success).toBe(false);
     })

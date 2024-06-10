@@ -3,7 +3,7 @@ import {IModuleData, IModuleItemData, ModuleItemType} from "../../canvasDataDefs
 
 
 
-const dummyModuleData: IModuleData = {
+const mockModuleData: IModuleData = {
     id: 0,
     items: [],
     items_count: 0,
@@ -19,7 +19,7 @@ const dummyModuleData: IModuleData = {
 }
 
 
-export const dummyModuleItemData: IModuleItemData = {
+export const mockModuleItemData: IModuleItemData = {
     module_id: 0,
     position: 0,
     title: "string",
@@ -37,29 +37,28 @@ export const dummyModuleItemData: IModuleItemData = {
 }
 
 
-export const dummyUgModules:IModuleData[] = [];
-export const dummyGradModules:IModuleData[] = [];
+export const mockUgModules:IModuleData[] = [];
+export const mockGradModules:IModuleData[] = [];
 for (let i = 1; i <= 8; i++) {
     const module = {
-        ...dummyModuleData,
+        ...mockModuleData,
         name: `Week ${i}`,
     }
-    const moduleItem = {...dummyModuleItemData,
+    const moduleItem = {...mockModuleItemData,
                 position: i - 1,
                 title: `Week ${i} Overview`
             }
 
     const gradModule = {...module};
     gradModule.items = [{...moduleItem}];
-    dummyGradModules.push(gradModule)
+    mockGradModules.push(gradModule)
 
     if(i <= 5) {
         const ugModule = {...module}
         ugModule.items = [{...moduleItem}]
-        dummyUgModules.push(ugModule);
+        mockUgModules.push(ugModule);
     }
-
 }
 
 
-export default dummyModuleData;
+export default mockModuleData;

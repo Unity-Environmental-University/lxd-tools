@@ -62,7 +62,7 @@ export async function startMigration(sourceCourseId:number, destCourseId: number
     return await fetchJson<IMigrationData>(copyUrl, config);
 }
 
-export async function* getMigrationProgressGen(migration:IMigrationData, pollDelay: number, pollConfig?: ICanvasCallConfig) {
+export async function* getMigrationProgressGen(migration:IMigrationData, pollDelay: number = 500, pollConfig?: ICanvasCallConfig) {
     let {progress_url: progressUrl} = migration;
     while (true) {
         await sleep(pollDelay);

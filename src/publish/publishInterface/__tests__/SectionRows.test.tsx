@@ -6,13 +6,13 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { SectionRows, ISectionRows } from './SectionRows';
-import { Course } from '../../canvas/course';
-import { IProfile } from '../../canvas/profile';
-import {IUserData} from "../../canvas/canvasDataDefs";
-import {mockUserData} from "../../canvas/__mocks__/mockUserData";
+import { SectionRows, ISectionRows } from '../SectionRows';
+import { Course } from '../../../canvas/course';
+import { IProfile } from '../../../canvas/profile';
+import {IUserData} from "../../../canvas/canvasDataDefs";
+import {mockUserData} from "../../../canvas/__mocks__/mockUserData";
 
-jest.mock('./CourseRow', () => ({
+jest.mock('../CourseRow', () => ({
     CourseRow: jest.fn(({ course, onSelectSection }) => <div onClick={() => onSelectSection(course)}>PublishCourseRow: {course.id}</div>),
 }));
 

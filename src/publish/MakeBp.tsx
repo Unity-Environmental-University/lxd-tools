@@ -1,6 +1,6 @@
-import {Course} from "../canvas/course/index";
+import {Course, createNewCourse} from "../canvas/course/index";
 import {Button, Col, Row} from "react-bootstrap";
-import {FormEvent, useState} from "react";
+import {FormEvent, useEffect, useState} from "react";
 import {useEffectAsync} from "../ui/utils";
 import {
     getBlueprintsFromCode,
@@ -10,6 +10,8 @@ import {
     retireBlueprint
 } from "../canvas/course/blueprint";
 import assert from "assert";
+import {bpify} from "../admin/index";
+import {getMigrationProgressGen, IMigrationData, IProgressData, startMigration} from "../canvas/course/migration";
 
 
 export interface IMakeBpProps {
@@ -17,34 +19,36 @@ export interface IMakeBpProps {
     onBpSet?: (bp: Course | null | undefined) => void,
     onTermNameSet?: (termName: string | undefined) => void,
     onSectionsSet?: (sections: Course[]) => void,
+    onProgressUpdate?: (progress:IProgressData|undefined) => void,
+}
+
+
+
+function callOnChangeFunc<T, R>(value:T, onChange:((value:T)=>R )| undefined) {
+    const returnValue :[() => any, [T]] = [() => {
+        onChange && onChange(value);
+    }, [value]];
+    return returnValue;
 }
 
 export function MakeBp({
     devCourse,
     onBpSet,
     onTermNameSet,
-    onSectionsSet
+    onSectionsSet,
+    onProgressUpdate,
 }: IMakeBpProps) {
     const [isDev, setIsDev] = useState(devCourse.isDev);
-    const [currentBp, _setCurrentBp] = useState<Course | null>()
+    const [currentBp, setCurrentBp] = useState<Course | null>()
     const [isLoading, setIsLoading] = useState(false);
-    const [sections, _setSections] = useState<Course[]>([])
-    const [termName, _setTermName] = useState<string | undefined>()
+    const [sections, setSections] = useState<Course[]>([])
+    const [termName, setTermName] = useState<string | undefined>()
+    const [progressData, setProgressData] = useState<IProgressData|undefined>();
 
-    function setTermName(name: typeof termName) {
-        _setTermName(name);
-        onTermNameSet && onTermNameSet(name);
-    }
-
-    function setCurrentBp(bp: typeof currentBp) {
-       _setCurrentBp(bp);
-       onBpSet && onBpSet(bp);
-    }
-
-    function setSections(newSections: typeof sections) {
-        _setSections(sections);
-        onSectionsSet && onSectionsSet(sections);
-    }
+    useEffect(...callOnChangeFunc(currentBp, onBpSet));
+    useEffect(...callOnChangeFunc(termName, onTermNameSet));
+    useEffect(...callOnChangeFunc(sections, onSectionsSet));
+    useEffect(...callOnChangeFunc(progressData, onProgressUpdate));
 
     useEffectAsync(async () => {
         setIsDev(devCourse.isDev);
@@ -74,7 +78,6 @@ export function MakeBp({
         }
     }, [currentBp])
 
-
     async function onArchive(e: FormEvent) {
         e.preventDefault();
         if (!devCourse.parsedCourseCode) throw Error("Trying to archive without a valid course code");
@@ -88,6 +91,21 @@ export function MakeBp({
 
     async function onCloneIntoBp(e: FormEvent) {
         e.preventDefault();
+        if(!currentBp) {
+            console.warn("Tried to clone without a bp")
+            return;
+        }
+        if(typeof devCourse.parsedCourseCode !== 'string') {
+            console.warn('Dev course does not have a recognised course code');
+            return;
+        }
+
+        const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode));
+        const migration = await startMigration(devCourse.id, newBpShell.id);
+        const migrationStatus = getMigrationProgressGen(migration);
+        for await(let progress of migrationStatus) {
+            setProgressData(progress);
+        }
     }
 
     return <div>
@@ -112,6 +130,8 @@ export function MakeBp({
                 >Archive {currentBp.parsedCourseCode}</Button>
                 <Button
                     id={'newBpButton'}
+                    onClick={onCloneIntoBp}
+                    disabled={isLoading || !!currentBp || !termName || termName.length === 0}
                 ></Button>
             </Col>
         </Row>}
