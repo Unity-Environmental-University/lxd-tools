@@ -157,8 +157,6 @@ test("setAsBlueprint", async () => {
     })
 })
 
-
-
 test("unSetAsBlueprint", async () => {
     let responseData: ICourseData;
     await fetchMock.withImplementation(async (requestUrl, requestInit) => {
@@ -174,8 +172,6 @@ test("unSetAsBlueprint", async () => {
         responseData = await unSetAsBlueprint(0);
         expect(responseData.course.blueprint).toBe('false');
     })
-
-
 })
 
 
@@ -207,7 +203,6 @@ test('lock blueprint', async () => {
         assert(fetchInit.body instanceof FormData)
         const body = deFormDataify(fetchInit.body);
     }
-
     expect(fetchMock).toHaveBeenCalledTimes(itemCount * moduleCount);
     fetchMock.mockClear();
 })

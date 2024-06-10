@@ -84,17 +84,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         let match = /courses\/(\d+)/.exec(url);
         if (match) {
 
-            const id = this.getIdFromUrl(url);
+            const id =  getCourseIdFromUrl(url);
             if (!id) return null;
             return await this.getCourseById(id);
-        }
-        return null;
-    }
-
-    static getIdFromUrl(url: string) {
-        let match = /courses\/(\d+)/.exec(url);
-        if (match) {
-            return parseInt(match[1]);
         }
         return null;
     }
@@ -787,4 +779,12 @@ export async function createNewCourse(courseCode: string, name?: string, config?
         }
     }
     return await fetchJson(createUrl, deepObjectMerge(createConfig, config, true)) as ICourseData;
+}
+
+export function getCourseIdFromUrl(url: string) {
+    let match = /courses\/(\d+)/.exec(url);
+    if (match) {
+        return parseInt(match[1]);
+    }
+    return null;
 }
