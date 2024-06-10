@@ -132,7 +132,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         for (let accountKey in accountIdsByName) {
             if (!accountKey) continue;
             let accountId = accountIdsByName[accountKey];
-            let url = `accounts/${accountId}/courses`;
+            let url = `/api/v1/accounts/${accountId}/courses`;
             config.queryParams = config.queryParams || {};
             config.queryParams['search_term'] = code;
             if (term !== null) {
@@ -577,7 +577,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async publish() {
-        const url = `courses/${this.id}`;
+        const url = `/api/v1/courses/${this.id}`;
         const courseData = await fetchJson<ICourseData>(url, {
             fetchInit: {
                 method: 'PUT',

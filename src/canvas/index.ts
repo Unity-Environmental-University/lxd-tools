@@ -20,8 +20,8 @@ import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
  */
 export class Account extends BaseCanvasObject<CanvasData> {
     static nameProperty = 'name'; // The field name of the primary name of the canvas object type
-    static contentUrlTemplate = 'accounts/{content_id}'; // A templated url to get a single item
-    static allContentUrlTemplate = 'accounts'; // A templated url to get all items
+    static contentUrlTemplate = '/api/v1/accounts/{content_id}'; // A templated url to get a single item
+    static allContentUrlTemplate = '/api/v1/accounts'; // A templated url to get all items
     private static account: Account;
 
     static async getFromUrl(url: string | null = null) {
@@ -63,8 +63,8 @@ export class Account extends BaseCanvasObject<CanvasData> {
 
 export class Rubric extends BaseCanvasObject<CanvasData>{
     static nameProperty = 'title';
-    static contentUrlTemplate = "courses/{course_id}/rubrics/{content_id}";
-    static allContentUrlTemplate = "courses/{course_id}/rubrics";
+    static contentUrlTemplate = "/api/v1/courses/{course_id}/rubrics/{content_id}";
+    static allContentUrlTemplate = "/api/v1/courses/{course_id}/rubrics";
 
     courseId:number;
 
@@ -86,8 +86,8 @@ export class Rubric extends BaseCanvasObject<CanvasData>{
 
 
 export class RubricAssociation extends BaseCanvasObject<CanvasData> {
-    static contentUrlTemplate = "courses/{course_id}/rubric_associations/{content_id}";
-    static allContentUrlTemplate = "courses/{course_id}/rubric_associations";
+    static contentUrlTemplate = "/api/v1/courses/{course_id}/rubric_associations/{content_id}";
+    static allContentUrlTemplate = "/api/v1/courses/{course_id}/rubric_associations";
     courseId:number;
 
     constructor(data:CanvasData, courseId:number) {
@@ -141,7 +141,7 @@ export class Term extends BaseCanvasObject<ITermData> {
         if (code) queryParams['term_name'] = code;
         let rootAccount = await Account.getRootAccount();
         assert(rootAccount);
-        let url = `accounts/${rootAccount.id}/terms`;
+        let url = `/api/v1/accounts/${rootAccount.id}/terms`;
         const data = await getPagedData<ITermData>(url, config);
         let terms: ITermData[] = [];
         for (let datum of data) {
