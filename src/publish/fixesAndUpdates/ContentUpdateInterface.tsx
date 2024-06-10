@@ -14,7 +14,7 @@ import courseSettingsTests from "./validations/courseSettings";
 import courseContentTests from "./validations/courseContent";
 import proxyServerLinkValidation from "./validations/proxyServerLinkValidation";
 import capstoneProjectValidations from "./validations/courseSpecific/capstoneProjectValidations";
-import {MakeBp} from "../MakeBp";
+import {MakeBp} from "../publishInterface/MakeBp";
 
 type ContentUpdateInterfaceProps = {
     course?: Course,

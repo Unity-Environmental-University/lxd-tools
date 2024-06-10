@@ -1,17 +1,18 @@
 import React, {useState} from "react";
 import {IProfile, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
 import {useEffectAsync} from "../../ui/utils";
-import assert from "assert";
 import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
 import {SectionDetails} from "./sectionDetails/SectionDetails";
 import {Course} from "../../canvas/course";
 import {IUserData} from "../../canvas/canvasDataDefs";
-import {Term} from "../../canvas/index";
+import {Term} from "../../canvas";
 import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
-import {MakeBp} from "../MakeBp";
+import {MakeBp} from "./MakeBp";
+
+
 
 
 export interface IPublishInterfaceProps {
@@ -19,6 +20,7 @@ export interface IPublishInterfaceProps {
     user: IUserData,
 }
 
+//TODO: Break this into multiple components
 export function PublishInterface({course, user}: IPublishInterfaceProps) {
     //-----
     // DATA
@@ -149,55 +151,50 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     // RENDER
     //-----
 
+    type BpSectionInterface = {
+        course: Course,
+        user: IUserData|undefined,
+    }
 
+    function RenderBpInterface({course, user}:BpSectionInterface) {
 
-    /**
-     * Parses the profile sets in to a list of emails, omitting when the profile does not have a user property.
-     * @param profileSets
-     */
-    return (<>
-        <OpenButton isDev={isDev} isBlueprint={isBlueprint} setShow={setShow}/>
-        <Modal id={'lxd-publish-interface'} isOpen={show} canClose={!loading} requestClose={() => {
-            if (!loading) setShow(false);
-        }}>
-            {!workingSection && (<div>
-                <div className='row'>
-
-                    <div className={'col-xs-12'}>
-                        <h3>Sections</h3>
-                    </div>
-                    <div className={'col-xs-12 col-sm-12'}>
-                        Publish sections associated with this blueprint
-                    </div>
-                    <div className={'col-xs-2'}>
-                        <Button className="btn" disabled={loading || !(course?.isBlueprint)}
-                                onClick={applySectionProfiles}>
-                            Set Bios
-                        </Button>
-                        <Button className="btn" disabled={loading || !(course?.isBlueprint)} onClick={publishCourses}>
-                            Publish
-                        </Button>
-
-                    </div>
-                    <div className={'col-xs-12'}>
-                        {user && course &&
-                            <EmailLink user={user} emails={emails} course={course} sectionStart={sectionStart}
-                                       termData={term?.rawData}/>}
-                    </div>
-                    <div className='col-xs-12'>
-                        {SectionRows({
-                            sections,
-                            onOpenAll:openAll,
-                            instructorsByCourseId,
-                            errorsByCourseId,
-                            frontPageProfilesByCourseId,
-                            potentialProfilesByCourseId,
-                            setWorkingSection
-                        })}
-                    </div>
+        return <>{!workingSection && (<div>
+            <div className='row'>
+                <div className={'col-xs-12'}>
+                    <h3>Sections</h3>
+                </div>
+                <div className={'col-xs-12 col-sm-12'}>
+                    Publish sections associated with this blueprint
+                </div>
+                <div className={'col-xs-2'}>
+                    <Button className="btn" disabled={loading || !(course?.isBlueprint)}
+                            onClick={applySectionProfiles}>
+                        Set Bios
+                    </Button>
+                    <Button className="btn" disabled={loading || !(course?.isBlueprint)} onClick={publishCourses}>
+                        Publish
+                    </Button>
 
                 </div>
-            </div>)}
+                <div className={'col-xs-12'}>
+                    {user && course &&
+                        <EmailLink user={user} emails={emails} course={course} sectionStart={sectionStart}
+                                   termData={term?.rawData}/>}
+                </div>
+                <div className='col-xs-12'>
+                    {SectionRows({
+                        sections,
+                        onOpenAll: openAll,
+                        instructorsByCourseId,
+                        errorsByCourseId,
+                        frontPageProfilesByCourseId,
+                        potentialProfilesByCourseId,
+                        setWorkingSection
+                    })}
+                </div>
+
+            </div>
+        </div>)}
             {info && <div className={`alert ${infoClass}`} role={'alert'}>{info}</div>}
             {workingSection && <div>
                 <SectionDetails
@@ -210,8 +207,17 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                     section={workingSection}
                 ></SectionDetails>
             </div>}
+        </>
+    }
 
 
+    return (<>
+        <OpenButton isDev={isDev} isBlueprint={isBlueprint} setShow={setShow}/>
+        <Modal id={'lxd-publish-interface'} isOpen={show} canClose={!loading} requestClose={() => {
+            if (!loading) setShow(false);
+        }}>
+            {course  && isBlueprint && <RenderBpInterface course={course} user={user}/>}
+            {course && isDev && <MakeBp devCourse={course} />}
         </Modal>
     </>)
 }
@@ -287,11 +293,13 @@ export async function getFullCourses({
     }
 }
 
+
 type OpenButtonProps = {
     isDev: boolean,
     isBlueprint: boolean,
-    setShow: (value:boolean) => any
+    setShow: (value: boolean) => any
 }
+
 export function OpenButton({isDev, isBlueprint, setShow}: OpenButtonProps) {
     const disabled = !(isBlueprint || isDev);
     let label = 'Not BP or DEV';
@@ -300,7 +308,7 @@ export function OpenButton({isDev, isBlueprint, setShow}: OpenButtonProps) {
 
     return <Button
         disabled={disabled}
-        className={disabled? '' : 'ui-button'}
+        className={disabled ? '' : 'ui-button'}
         onClick={(e) => setShow(true)}
     >{label}</Button>
 }

@@ -66,7 +66,9 @@ export async function retireBlueprint(course: Course, termName: string | null, c
 
     saveData[Course.nameProperty] = course.name.replace(course.parsedCourseCode, newCode);
     saveData['course_code'] = newCode
-    await course.saveData(saveData, config);
+    await course.saveData({
+        course: saveData
+    }, config);
 }
 
 export async function makeNewBpFromDev(devCourse:Course, termName?: string) {
@@ -78,7 +80,7 @@ export async function makeNewBpFromDev(devCourse:Course, termName?: string) {
 export async function getBlueprintsFromCode(code: string, accountIds: number[], config?: ICanvasCallConfig) {
     const [_, baseCode] = code.match(/_(\w{4}\d{3})$/) || [];
     if (!baseCode) return null;
-    const bps = getCourseGenerator(code, accountIds, undefined, config);
+    const bps = getCourseGenerator(`BP_${baseCode}`, accountIds, undefined, config);
     return (await renderAsyncGen(bps)).toSorted((a, b) => b.name.length - a.name.length);
 }
 

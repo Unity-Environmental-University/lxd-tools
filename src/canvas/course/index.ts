@@ -120,6 +120,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return new Course(data);
     }
 
+
+
     /**
      * TODO: Replace this whole pipeline with something that returns a getApiPagesData generator instead.
      * @param code
@@ -196,7 +198,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     get contentUrlPath() {
-        return `courses/${this.id}`;
+        return `/api/v1/courses/${this.id}`;
     }
 
     get courseUrl() {
