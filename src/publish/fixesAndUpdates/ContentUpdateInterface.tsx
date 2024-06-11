@@ -8,13 +8,13 @@ import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
 import {badContentFixFunc, badContentRunFunc, CourseValidation, preserveCapsReplace} from "./validations/index";
 import {Page} from "../../canvas/content";
-import {Course} from "../../canvas/course";
 import syllabusTests from "./validations/syllabusTests";
 import courseSettingsTests from "./validations/courseSettings";
 import courseContentTests from "./validations/courseContent";
 import proxyServerLinkValidation from "./validations/proxyServerLinkValidation";
 import capstoneProjectValidations from "./validations/courseSpecific/capstoneProjectValidations";
 import {MakeBp} from "../publishInterface/MakeBp";
+import {Course} from "../../canvas/course/Course";
 
 type ContentUpdateInterfaceProps = {
     course?: Course,

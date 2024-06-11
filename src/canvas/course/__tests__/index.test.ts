@@ -1,17 +1,19 @@
 import {range} from "../../canvasUtils";
-import {Course, createNewCourse, getCourseGenerator} from "../index";
+import {createNewCourse, getCourseGenerator} from "../index";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import {ICourseData} from "../../canvasDataDefs";
 import assert from "assert";
 import fetchMock from "jest-fetch-mock";
+import {Course} from "../Course";
 
 test('Create new course', async () => {
     const courseCode = 'DEV_ABC1234';
     const name = 'DEV_ABC134: Test Course';
+    const accountId = 0;
 
     const courseData: ICourseData = {...mockCourseData, name, course_code: courseCode};
     fetchMock.mockResponseOnce(JSON.stringify(courseData))
-    const createdCourse = await createNewCourse(courseCode, name)
+    const createdCourse = await createNewCourse(courseCode, accountId, name)
     expect(createdCourse).toStrictEqual(courseData);
 });
 

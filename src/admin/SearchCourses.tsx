@@ -1,9 +1,10 @@
-import {Course, getCourseGenerator} from "../canvas/course/index";
+import {getCourseGenerator} from "../canvas/course/index";
 import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
 import React, {FormEventHandler, useEffect, useState} from "react";
 import {Account} from "../canvas/index";
 import {bpify} from "./index";
 import {Form} from "react-bootstrap";
+import {Course} from "../canvas/course/Course";
 
 interface ISearchCoursesProps {
     onlySearchBlueprints: boolean,

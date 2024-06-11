@@ -4,13 +4,13 @@ import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
 import {SectionDetails} from "./sectionDetails/SectionDetails";
-import {Course} from "../../canvas/course";
 import {IUserData} from "../../canvas/canvasDataDefs";
 import {Term} from "../../canvas";
 import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
 import {MakeBp} from "./MakeBp";
+import {Course} from "../../canvas/course/Course";
 
 
 

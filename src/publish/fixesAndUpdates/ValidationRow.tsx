@@ -1,9 +1,9 @@
 import React, {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
-import {Course} from "../../canvas/course";
 import {CourseValidation, ValidationTestResult} from "./validations";
 import assert from "assert";
 import {Row} from "react-bootstrap";
+import {Course} from "../../canvas/course/Course";
 
 type ValidationRowProps = {
     course: Course,

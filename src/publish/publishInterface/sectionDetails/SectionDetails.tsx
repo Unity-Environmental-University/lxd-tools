@@ -2,10 +2,10 @@ import {IProfile, renderProfileIntoCurioFrontPage} from "../../../canvas/profile
 import React, {useState} from "react";
 import {IAssignmentGroup, IModuleData, IUserData} from "../../../canvas/canvasDataDefs";
 import {useEffectAsync} from "../../../ui/utils";
-import {Course} from "../../../canvas/course/index";
 import {FacultyProfile} from "./FacultyProfile";
 import {FacultyProfileSearch} from "./FacultyProfileSearch";
 import {Col, Row} from "react-bootstrap";
+import {Course} from "../../../canvas/course/Course";
 
 type SectionDetailsProps = {
     section?: Course | null,

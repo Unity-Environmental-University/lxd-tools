@@ -6,9 +6,10 @@ import {
     ICanvasCallConfig
 } from "../canvasUtils";
 import {ICourseData, IModuleData, IModuleItemData} from "../canvasDataDefs";
-import {Course, getCourseGenerator} from "./index";
+import {getCourseGenerator} from "./index";
 import {apiWriteConfig} from "../index";
 import {ICourseCodeHaver, IIdHaver} from "./courseTypes";
+import {Course} from "./Course";
 
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
     isBlueprint(): boolean,

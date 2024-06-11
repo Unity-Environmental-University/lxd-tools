@@ -1,8 +1,8 @@
 import {ITermData, IUserData} from "../../canvas/canvasDataDefs";
-import {Course} from "../../canvas/course/index";
 import {Temporal} from "temporal-polyfill";
 import {renderToString} from "react-dom/server";
 import React from "react";
+import {Course} from "../../canvas/course/Course";
 
 type EmailLinkProps = {
     user: IUserData,

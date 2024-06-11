@@ -7,12 +7,13 @@ import {
     IMigrationData,
     IProgressData
 } from "../migration";
-import {Course, createNewCourse} from "../index";
+import {createNewCourse} from "../index";
 import {mockProgressData} from "../__mocks__/mockProgressData";
 import {fetchJson, range} from "../../canvasUtils";
 import {mockMigrationData} from "../__mocks__/mockMigrationData";
 import * as canvasUtils from "../../canvasUtils";
 import * as CourseModule from "../index";
+import {Course} from "../Course";
 
 
 beforeEach(() => {

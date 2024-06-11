@@ -1,8 +1,8 @@
 import assert from "assert";
 
 
-import {Course} from "../../canvas/course";
 import {lockBlueprint} from "../../canvas/course/blueprint";
+import {Course} from "../../canvas/course/Course";
 
 (async () => {
     const course = await Course.getFromUrl(document.documentURI);

@@ -4,10 +4,11 @@ import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import {MakeBp, IMakeBpProps} from '../MakeBp';
-import {Course, createNewCourse} from '../../../canvas/course';
+import {createNewCourse} from '../../../canvas/course';
 import * as blueprintApi from '../../../canvas/course/blueprint';
 import {getMigrationProgressGen, startMigration} from "../../../canvas/course/migration";
 import {mockCourseData} from "../../../canvas/course/__mocks__/mockCourseData";
+import {Course} from "../../../canvas/course/Course";
 
 jest.mock('../../../canvas/course/blueprint');
 jest.mock('../../../canvas/course/migration', () => ({

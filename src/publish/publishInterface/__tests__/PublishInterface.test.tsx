@@ -9,8 +9,8 @@ import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {PublishInterface, IPublishInterfaceProps, OpenButton} from '../PublishInterface';
-import { Course } from '../../../canvas/course';
 import {ICourseData, IUserData} from '../../../canvas/canvasDataDefs';
+import {Course} from "../../../canvas/course/Course";
 
 
 const mockCourse: Course = new Course({

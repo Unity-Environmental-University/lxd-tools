@@ -1,4 +1,4 @@
-import {Course, createNewCourse} from "../../canvas/course";
+import {createNewCourse} from "../../canvas/course";
 import {Button, Col, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
@@ -11,7 +11,8 @@ import {
 } from "../../canvas/course/blueprint";
 import assert from "assert";
 import {bpify} from "../../admin";
-import {getMigrationProgressGen, IProgressData, startMigration} from "../../canvas/course/migration";
+import {getMigrationProgressGen, IMigrationData, IProgressData, startMigration} from "../../canvas/course/migration";
+import {Course} from "../../canvas/course/Course";
 
 export interface IMakeBpProps {
     devCourse: Course,
@@ -36,16 +37,18 @@ export function MakeBp({
     onProgressUpdate,
 }: IMakeBpProps) {
     const [isDev, setIsDev] = useState(devCourse.isDev);
-    const [currentBp, setCurrentBp] = useState<Course | null>()
+    const [currentBp, setCurrentBp] = useState<Course | null>();
     const [isLoading, setIsLoading] = useState(false);
     const [sections, setSections] = useState<Course[]>([])
-    const [termName, setTermName] = useState<string | undefined>()
+    const [termName, setTermName] = useState<string | undefined>();
     const [progressData, setProgressData] = useState<IProgressData|undefined>();
+    const [activeMigrations, setActiveMigrations] = useState<IMigrationData[]>([]);
 
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
-    useEffect(...callOnChangeFunc(progressData, onProgressUpdate));
+    useEffect(...callOnChangeFunc(progressData, onProgressUpdate))
+
 
     useEffectAsync(async () => {
         setIsDev(devCourse.isDev);
@@ -92,8 +95,12 @@ export function MakeBp({
             cloneIntoBp(currentBp, devCourse, setProgressData);
     }
 
+    function isArchiveDisabled() {
+        return isLoading || !currentBp || !termName || termName.length === 0;
+
+    }
+
     return <div>
-        {!currentBp && <Row><Col className={'alert alert-warning'}>Cannot find Existing Blueprint</Col></Row>}
         {!isDev && <Row><Col className={'alert alert-warning'}>This is not a DEV course</Col></Row>}
         {currentBp && <Row>
             <Col>
@@ -103,6 +110,7 @@ export function MakeBp({
                 id={'archiveTermName'}
                 typeof={'text'}
                 value={termName}
+                disabled={sections.length > 0}
                 onChange={e => setTermName(e.target.value)}
                 placeholder={'This should autofill if bp exists and has sections'}
             />
@@ -110,17 +118,23 @@ export function MakeBp({
                 <Button
                     id={'archiveButton'}
                     onClick={onArchive}
-                    disabled={isLoading || !currentBp || !termName || termName.length === 0}
+                    disabled={isArchiveDisabled()}
                 >Archive {currentBp.parsedCourseCode}</Button>
             </Col>
         </Row>}
-        {!currentBp && <Row><Col>
+        {!currentBp && <>
+            <Row>
+                <h2>No Current BP</h2>
+            </Row>
+        <Row><Col>
+            <h2></h2>
                 <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
-                    disabled={isLoading || !!currentBp || !termName || termName.length === 0}
+                    disabled={isLoading || !!currentBp }
                 >Create New BP For Dev</Button>
-        </Col></Row>}
+        </Col></Row>
+        </>}
     </div>
 }
 
@@ -134,8 +148,8 @@ export async function cloneIntoBp(currentBp: Course|null|undefined, devCourse:Co
         console.warn('Dev course does not have a recognised course code');
         return;
     }
-
-    const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode));
+    const accountId = devCourse.accountId;
+    const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId);
     const migration = await startMigration(devCourse.id, newBpShell.id);
     const migrationStatus = getMigrationProgressGen(migration);
     for await(let progress of migrationStatus) {

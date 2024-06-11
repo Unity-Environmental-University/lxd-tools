@@ -1,17 +1,16 @@
 // PublishApp.test.tsx
-global.TextEncoder = require('util').TextEncoder;
-
-import React, {act} from 'react';
+import {Course as Course1, Course} from "../../canvas/course/Course";
+import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PublishApp from '../PublishApp';
-import {Course} from '../../canvas/course';
 import {IUserData} from '../../canvas/canvasDataDefs';
 import * as canvasUtils from '../../canvas/canvasUtils';
-import * as CourseModule from '../../canvas/course';
 import {PublishInterface} from '../publishInterface/PublishInterface';
 import {ContentUpdateInterface} from '../fixesAndUpdates/ContentUpdateInterface';
 import {AdminApp} from '../../admin/AdminApp';
+
+global.TextEncoder = require('util').TextEncoder;
 
 jest.mock('../../canvas/course');
 jest.mock('../../canvas/canvasUtils');
@@ -30,7 +29,7 @@ const mockUser: IUserData = {
 } as any;
 
 const mockFetchJson = canvasUtils.fetchJson as jest.Mock;
-const mockCourseGetFromUrl = CourseModule.Course.getFromUrl as jest.Mock;
+const mockCourseGetFromUrl = Course1.getFromUrl as jest.Mock;
 
 beforeEach(() => {
     jest.clearAllMocks();

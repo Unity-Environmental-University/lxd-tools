@@ -2,7 +2,8 @@ import Modal from "../widgets/Modal/index";
 import {useEffect, useState} from "react";
 import {useEffectAsync} from "../utils";
 import {createPortal} from "react-dom";
-import {Course} from "../../canvas/course";
+
+import {Course} from "../../canvas/course/Course";
 
 
 type HomeTileAppProps = {

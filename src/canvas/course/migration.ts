@@ -1,6 +1,7 @@
 import {deepObjectMerge, fetchJson, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {sleep} from "../../index";
-import {Course, createNewCourse, getCourseData} from "./index";
+import {createNewCourse, getCourseData} from "./index";
+import {Course} from "./Course";
 
 
 export interface IMigrationData {
@@ -91,7 +92,7 @@ export async function* copyToNewCourseGenerator(
 
     returnCourseConfig ??= courseConfig;
     newName ??= sourceCourse.name + "_COPY";
-    const {destId} = await createNewCourse(newCode, newName, courseConfig);
+    const {destId} = await createNewCourse(newCode, sourceCourse.accountId, newName, courseConfig);
     const migration = courseMigrationGenerator(sourceCourse.id, destId, pollDelay, migrationConfig, pollConfig);
 
     for await (let progress of migration) {

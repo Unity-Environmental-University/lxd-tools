@@ -4,10 +4,10 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { CourseRow, ICourseRowProps } from '../CourseRow';
-import { Course } from '../../../canvas/course';
 import { IProfile } from '../../../canvas/profile';
 import { IUserData } from '../../../canvas/canvasDataDefs';
 import { mockCourseData } from '../../../canvas/course/__mocks__/mockCourseData';
+import {Course} from "../../../canvas/course/Course";
 
 const mockCourse: Course = new Course({
     ...mockCourseData,

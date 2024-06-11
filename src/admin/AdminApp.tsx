@@ -1,4 +1,3 @@
-import {Course,} from "../canvas/course/index";
 import React, {useReducer, useState} from "react";
 import {CourseValidation} from "../publish/fixesAndUpdates/validations/index";
 import {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
@@ -10,12 +9,11 @@ import {collectionLutDispatcher, lutDispatcher} from "../reducerDispatchers";
 import {IIncludesTestAndCourseId} from "./index";
 import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";
-
+import {Course} from "../canvas/course/Course";
 
 interface IAdminAppProps {
     course?: Course,
 }
-
 
 export function AdminApp({course}: IAdminAppProps) {
     const [isOpen, setIsOpen] = useState(false);

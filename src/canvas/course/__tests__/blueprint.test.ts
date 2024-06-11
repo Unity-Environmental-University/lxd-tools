@@ -11,12 +11,12 @@ import {
 } from "../blueprint";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
-import {Course} from "../index";
 import {IAccountData, ICourseData, IModuleData, ITermData} from "../../canvasDataDefs";
 import {mockTermData} from "../../__mocks__/mockTermData";
 import {mockAccountData} from "../../__mocks__/mockAccountData";
 import assert from "assert";
 import mockModuleData, { mockModuleItemData } from "../__mocks__/mockModuleData";
+import {Course} from "../Course";
 
 
 fetchMock.enableMocks();

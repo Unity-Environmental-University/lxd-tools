@@ -17,7 +17,8 @@ import {
 } from "../../canvas/canvasDataDefs";
 import {text} from "node:stream/consumers";
 import {Assignment} from "../../canvas/content";
-import {Course} from "../../canvas/course";
+
+import {Course} from "../../canvas/course/Course";
 
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.

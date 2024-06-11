@@ -2,8 +2,8 @@ import ReactDOM from "react-dom/client";
 import React from "react";
 import {HomeTileApp} from "./HomeTileApp";
 import {BaseContentItem} from "../../canvas/content";
-import {Course} from "../../canvas/course";
 import {HighlightBigImages} from "./HighlightBigImages";
+import {Course} from "../../canvas/course/Course";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);

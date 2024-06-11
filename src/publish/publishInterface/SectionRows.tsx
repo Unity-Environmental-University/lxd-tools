@@ -1,7 +1,7 @@
-import {Course} from "../../canvas/course";
 import {ICourseRowProps, CourseRow} from "./CourseRow";
 import {IProfile} from "../../canvas/profile";
 import React, {FormEvent} from "react";
+import {Course} from "../../canvas/course/Course";
 
 export interface ISectionRows {
     sections: Course[],

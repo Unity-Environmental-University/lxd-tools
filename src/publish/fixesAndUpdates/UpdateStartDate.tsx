@@ -16,7 +16,8 @@ import {changeModuleLockDate} from "../../canvas/course/modules";
 import {IDiscussionData} from "../../canvas/canvasDataDefs";
 import {oldDateToPlainDate} from "../../date";
 import {BaseContentItem, Discussion} from "../../canvas/content";
-import {Course} from "../../canvas/course";
+
+import {Course} from "../../canvas/course/Course";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,

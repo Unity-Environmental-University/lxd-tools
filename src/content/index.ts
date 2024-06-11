@@ -2,8 +2,8 @@ import {CanvasData, ICourseData, ModuleItemType} from "../canvas/canvasDataDefs"
 import {extension, runtime} from "webextension-polyfill";
 
 
-import {Course} from "../canvas/course";
 import {getModuleWeekNumber} from "../canvas/course/modules";
+import {Course} from "../canvas/course/Course";
 
 runtime.onMessage.addListener(async(
     message: Record<string, any>,

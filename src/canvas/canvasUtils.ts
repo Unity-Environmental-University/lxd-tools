@@ -8,7 +8,8 @@ import {
     RestrictModuleItemType
 } from "./canvasDataDefs";
 
-import {Course} from "./course";
+
+import {Course} from "./course/Course";
 
 
 type FuncType<T> = FuncObject<T> | WithoutParamsFuncType<T> | WithParamsFuncType<T>

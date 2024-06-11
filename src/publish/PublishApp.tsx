@@ -3,12 +3,12 @@ import React, {useEffect, useState} from 'react';
 import {useEffectAsync} from "../ui/utils";
 
 import {ContentUpdateInterface} from "./fixesAndUpdates/ContentUpdateInterface";
-import {Course} from "../canvas/course/index";
 import {IUserData} from "../canvas/canvasDataDefs";
 import { fetchJson } from "../canvas/canvasUtils";
 import {AdminApp} from "../admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Button} from "react-bootstrap";
+import {Course} from "../canvas/course/Course";
 
 
 function PublishApp() {
