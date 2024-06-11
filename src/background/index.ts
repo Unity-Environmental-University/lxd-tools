@@ -3,6 +3,7 @@
 import {runtime, action, scripting, Runtime, Downloads, tabs} from 'webextension-polyfill'
 import {ResizeImageMessage, backgroundDownloadImage} from "../canvas/image";
 
+
 type MessageHandler<T, Output> = (
       params: T,
       sender: Runtime.MessageSender,
@@ -10,7 +11,7 @@ type MessageHandler<T, Output> = (
   ) => void | boolean | Promise<boolean | void>
 
 const messageHandlers: Record<string, MessageHandler<any, any>> = {
-  async searchForCourse (queryString:string) {
+  searchForCourse: async (queryString:string) => {
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
       return;
@@ -21,6 +22,8 @@ const messageHandlers: Record<string, MessageHandler<any, any>> = {
     });
     await tabs.sendMessage(activeTab.id, {'queryString': queryString});
   },
+
+
 }
 
 runtime.onMessage.addListener((
@@ -54,6 +57,9 @@ action.onClicked.addListener(async (tab) => {
   if (!id) { return }
 
 });
+
+
+
 
 async function getActiveTab() {
   const windowTabs = await tabs.query({lastFocusedWindow: true})

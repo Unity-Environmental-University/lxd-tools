@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {IProfile, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
 import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
@@ -11,8 +11,6 @@ import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
 import {MakeBp} from "./MakeBp";
 import {Course} from "../../canvas/course/Course";
-
-
 
 
 export interface IPublishInterfaceProps {
@@ -43,6 +41,10 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     const [loading, setLoading] = useState<boolean>(false);
     const [infoClass, setInfoClass] = useState<string>('alert-secondary')
 
+    const [unloadWarning, setUnloadWarning] = useState<string | null | undefined>();
+
+
+
     useEffectAsync(async () => {
         if (!course) return;
         setIsBlueprint(course.isBlueprint)
@@ -69,6 +71,21 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
         setPotentialProfilesByCourseId(profileSet)
     }, [sections])
+
+    useEffect(() => {
+        function handleBeforeUnload(e: BeforeUnloadEvent) {
+            if (unloadWarning) {
+                e.preventDefault();
+                e.returnValue = unloadWarning;
+                return unloadWarning;
+            }
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+        }
+    }, []);
 
     //-----
     // EVENTS
@@ -153,10 +170,10 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
     type BpSectionInterface = {
         course: Course,
-        user: IUserData|undefined,
+        user: IUserData | undefined,
     }
 
-    function RenderBpInterface({course, user}:BpSectionInterface) {
+    function RenderBpInterface({course, user}: BpSectionInterface) {
 
         return <>{!workingSection && (<div>
             <div className='row'>
@@ -216,8 +233,18 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         <Modal id={'lxd-publish-interface'} isOpen={show} canClose={!loading} requestClose={() => {
             if (!loading) setShow(false);
         }}>
-            {course  && isBlueprint && <RenderBpInterface course={course} user={user}/>}
-            {course && isDev && <MakeBp devCourse={course} />}
+            {course && isBlueprint && <RenderBpInterface course={course} user={user}/>}
+            {course && isDev && <MakeBp
+                devCourse={course}
+                onStartMigration={() => {
+                    setUnloadWarning("Migration in progress. BP settings may not finish if you leave this page.")
+                    setLoading(true);
+                }}
+                onEndMigration={() => {
+                    setLoading(false);
+                    setUnloadWarning(null)
+                }}
+            />}
         </Modal>
     </>)
 }

@@ -21,19 +21,42 @@ import {
 import {Course} from "../../canvas/course/Course";
 import {listDispatcher} from "../../reducerDispatchers";
 
-export interface IMakeBpProps {
-    devCourse: Course,
-    onBpSet?: (bp: Course | null | undefined) => void,
-    onTermNameSet?: (termName: string | undefined) => void,
-    onSectionsSet?: (sections: Course[]) => void,
-    onProgressUpdate?: (progress:IProgressData|undefined) => void,
-}
 
-function callOnChangeFunc<T, R>(value:T, onChange:((value:T)=>R )| undefined) {
-    const returnValue :[() => any, [T]] = [() => {
+function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
+    const returnValue: [() => any, [T]] = [() => {
         onChange && onChange(value);
     }, [value]];
     return returnValue;
+}
+
+export function getSavedMigrations() {
+    if (!localStorage.getItem('migrations')) localStorage.setItem('migrations', '[]')
+    const migrationDataString = localStorage.getItem('migrations') as string;
+    const migrationDataList: IMigrationData[][] = JSON.parse(migrationDataString);
+    return migrationDataList;
+}
+
+export function getSavedMigrationsForCourse(courseId: number) {
+    return getSavedMigrations()[courseId] ?? [];
+}
+
+export function saveMigrations(migrations: IMigrationData[][]) {
+    localStorage.setItem('migrations', JSON.stringify(migrations));
+}
+
+export function saveMigrationsForCourse(courseId: number, courseMigrations: IMigrationData[]) {
+    const migrations = getSavedMigrations();
+    migrations[courseId] = courseMigrations;
+    saveMigrations(migrations);
+}
+
+export interface IMakeBpProps {
+    devCourse: Course,
+    onStartMigration?: () => void,
+    onEndMigration?: () => void,
+    onBpSet?: (bp: Course | null | undefined) => void,
+    onTermNameSet?: (termName: string | null) => void,
+    onSectionsSet?: (sections: Course[]) => void,
 }
 
 export function MakeBp({
@@ -41,20 +64,25 @@ export function MakeBp({
     onBpSet,
     onTermNameSet,
     onSectionsSet,
-    onProgressUpdate,
 }: IMakeBpProps) {
     const [isDev, setIsDev] = useState(devCourse.isDev);
     const [currentBp, setCurrentBp] = useState<Course | null>();
     const [isLoading, setIsLoading] = useState(false);
     const [sections, setSections] = useState<Course[]>([])
-    const [termName, setTermName] = useState<string | undefined>();
-    const [progressData, setProgressData] = useState<IProgressData|undefined>();
-    const [activeMigrations, migrationDispatcher] = useReducer(listDispatcher<IMigrationData>,[]);
+    const [termName, setTermName] = useState<string>('');
+    const [activeMigrations, migrationDispatcher] = useReducer(listDispatcher<IMigrationData>, []);
 
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
-    useEffect(...callOnChangeFunc(progressData, onProgressUpdate))
+
+    useEffect(() => {
+        const migrationData = getSavedMigrationsForCourse(devCourse.id);
+        if (migrationData) {
+            migrationDispatcher({set: migrationData})
+        }
+    }, [devCourse]);
+
 
     useEffectAsync(async () => {
         setIsDev(devCourse.isDev);
@@ -63,30 +91,32 @@ export function MakeBp({
         }
     }, [devCourse])
 
-    useEffect(() => {
-        window.addEventListener('unload', handleBeforeUnload);
-        return () => {
-            window.removeEventListener('unload', handleBeforeUnload)
-        }
-    }, []);
-
     useEffectAsync(async () => {
-        if(!currentBp) return;
+        await updateMigrations();
+    }, [currentBp]);
+
+    async function updateMigrations() {
+        if (!currentBp) return;
         migrationDispatcher({
             clear: true,
         })
+        let migrations: IMigrationData[] = [];
         for await (let migration of getMigrationsForCourse(currentBp.id)) {
+            migrations.push(migration);
             migrationDispatcher({
                 add: migration
             })
         }
-    }, [currentBp]);
-
-    function handleBeforeUnload() {
-        if(activeMigrations.length > 0) {
-
-        }
+        saveMigrationsForCourse(currentBp.id, migrations);
     }
+
+    useEffect(() => {
+        if (!currentBp) return;
+        const savedMigrations = getSavedMigrationsForCourse(currentBp.id);
+        migrationDispatcher({
+            set: savedMigrations,
+        });
+    }, [currentBp]);
 
     async function updateBpInfo(course: Course, code: string) {
         const [bp] = await getBlueprintsFromCode(code, [
@@ -104,7 +134,7 @@ export function MakeBp({
                 setTermName(await getTermNameFromSections(sections))
             } catch (e) {
                 console.warn(e);
-                setTermName(undefined)
+                setTermName('')
             }
         }
     }, [currentBp])
@@ -113,18 +143,34 @@ export function MakeBp({
         e.preventDefault();
         if (!devCourse.parsedCourseCode) throw Error("Trying to archive without a valid course code");
         if (!currentBp) return false;
-        if (!termName) return false;
+        if (termName.length === 0) return false;
         setIsLoading(true);
         await retireBlueprint(currentBp, termName);
         await updateBpInfo(devCourse, devCourse.parsedCourseCode);
         setIsLoading(false);
     }
 
+    async function onCloneIntoBp(e: FormEvent) {
+        e.preventDefault();
+        if (currentBp) {
+            console.warn("Tried to clone while current BP exists")
+            return;
+        }
 
-    async function onCloneIntoBp(e:FormEvent) {
-            e.preventDefault();
-            await cloneIntoBp(currentBp, devCourse, setProgressData);
+        if (typeof devCourse.parsedCourseCode !== 'string') {
+            console.warn('Dev course does not have a recognised course code');
+            return;
+        }
+        const accountId = devCourse.accountId;
+        const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId);
+        setCurrentBp(new Course(newBpShell));
+        const migration = await startMigration(devCourse.id, newBpShell.id);
+        migrationDispatcher({
+            add: migration,
+        });
+        await updateMigrations();
     }
+
 
     function isArchiveDisabled() {
         return isLoading || !currentBp || !termName || termName.length === 0;
@@ -141,7 +187,7 @@ export function MakeBp({
                 id={'archiveTermName'}
                 typeof={'text'}
                 value={termName}
-                disabled={sections.length > 0}
+                disabled={sections?.length > 0}
                 onChange={e => setTermName(e.target.value)}
                 placeholder={'This should autofill if bp exists and has sections'}
             />
@@ -153,46 +199,56 @@ export function MakeBp({
                 >Archive {currentBp.parsedCourseCode}</Button>
             </Col>
         </Row>}
-        {!currentBp && <>
-            <Row>
-                <h2>No Current BP</h2>
-            </Row>
-
-        <Row><Col sm={6}>
+        {<>
+            <Row><Col sm={6}>
                 <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
-                    disabled={isLoading || !!currentBp }
+                    disabled={isLoading || !!currentBp || !devCourse.parsedCourseCode || devCourse.parsedCourseCode.length == 0}
                 >Create New BP For Dev</Button>
-        </Col>
-        <Col sm={6}>
-            <ProgressBar
-                min={0}
-                max={100}
-                now={progressData?.completion ?? 0}
-                />
-        </Col>
-
-        </Row>
+            </Col>
+                {currentBp && activeMigrations.map(migration => <MigrationBar
+                    key={migration.id}
+                    migration={migration}
+                    course={currentBp}/>)}
+            </Row>
         </>}
     </div>
 }
 
-export async function cloneIntoBp(currentBp: Course|null|undefined, devCourse:Course, setProgressData:(data:IProgressData)=>any) {
-    if(currentBp) {
-        console.warn("Tried to clone while current BP exists")
-        return;
-    }
 
-    if(typeof devCourse.parsedCourseCode !== 'string') {
-        console.warn('Dev course does not have a recognised course code');
-        return;
-    }
-    const accountId = devCourse.accountId;
-    const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId);
-    const migration = await startMigration(devCourse.id, newBpShell.id);
-    const migrationStatus = getMigrationProgressGen(migration);
-    for await(let progress of migrationStatus) {
-        setProgressData(progress);
-    }
+type MigrationBarProps = {
+    migration: IMigrationData,
+    course: Course,
+}
+
+function MigrationBar({migration, course}: MigrationBarProps) {
+    const [progress, setProgress] = useState<IProgressData>()
+
+    useEffectAsync(async () => {
+        let progressGen = getMigrationProgressGen(migration);
+        for await(let progress of progressGen) {
+            setProgress(progress);
+        }
+    }, [migration]);
+
+
+    return <Row>
+        <Col sm={4}>
+            <Row>
+            Status: {progress?.workflow_state}
+
+            </Row>
+            <Row>
+                Started: {migration.started_at}
+            </Row>
+        </Col>
+        <Col sm={8}>
+            <ProgressBar
+        min={0}
+        max={100}
+        now={progress?.completion}/>
+        </Col>
+    </Row>
+
 }
