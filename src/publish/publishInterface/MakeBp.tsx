@@ -1,6 +1,6 @@
 import {createNewCourse} from "../../canvas/course";
 import {Button, Col, ProgressBar, Row} from "react-bootstrap";
-import {FormEvent, useEffect, useState} from "react";
+import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {
     getBlueprintsFromCode,
@@ -11,8 +11,15 @@ import {
 } from "../../canvas/course/blueprint";
 import assert from "assert";
 import {bpify} from "../../admin";
-import {getMigrationProgressGen, IMigrationData, IProgressData, startMigration} from "../../canvas/course/migration";
+import {
+    getMigrationProgressGen,
+    getMigrationsForCourse,
+    IMigrationData,
+    IProgressData,
+    startMigration
+} from "../../canvas/course/migration";
 import {Course} from "../../canvas/course/Course";
+import {listDispatcher} from "../../reducerDispatchers";
 
 export interface IMakeBpProps {
     devCourse: Course,
@@ -42,7 +49,7 @@ export function MakeBp({
     const [sections, setSections] = useState<Course[]>([])
     const [termName, setTermName] = useState<string | undefined>();
     const [progressData, setProgressData] = useState<IProgressData|undefined>();
-    const [activeMigrations, setActiveMigrations] = useState<IMigrationData[]>([]);
+    const [activeMigrations, migrationDispatcher] = useReducer(listDispatcher<IMigrationData>,[]);
 
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
@@ -64,8 +71,16 @@ export function MakeBp({
     }, []);
 
     useEffectAsync(async () => {
-
-    }, []);
+        if(!currentBp) return;
+        migrationDispatcher({
+            clear: true,
+        })
+        for await (let migration of getMigrationsForCourse(currentBp.id)) {
+            migrationDispatcher({
+                add: migration
+            })
+        }
+    }, [currentBp]);
 
     function handleBeforeUnload() {
         if(activeMigrations.length > 0) {

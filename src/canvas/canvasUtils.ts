@@ -264,7 +264,7 @@ function addToFormData(formData: FormData, key: string, value: any | Record<stri
             addToFormData(formData, key.length > 0 ? `${key}[${itemKey}]` : itemKey, itemValue);
         }
     } else {
-        formData.append(key, value.toString());
+        formData.append(key,value);
     }
 }
 

@@ -9,6 +9,7 @@ import { IUserData } from '../../../canvas/canvasDataDefs';
 import { mockCourseData } from '../../../canvas/course/__mocks__/mockCourseData';
 import {Course} from "../../../canvas/course/Course";
 
+
 const mockCourse: Course = new Course({
     ...mockCourseData,
     id: 1,

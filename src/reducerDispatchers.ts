@@ -90,6 +90,7 @@ function handleLutSet<KeyType extends RecordKeyType, DataType>(
 
 interface IListAction<DataType> {
     add?: DataType | DataType[]
+    clear?: any,
 }
 
 
@@ -97,7 +98,12 @@ export function listDispatcher<DataType>(
     state: Array<DataType>,
     action: IListAction<DataType>
 ) {
+    const {clear} = action;
     const {add} = action;
+
+    if(clear) {
+     state = [];
+    }
     if(add) {
         if(Array.isArray(add)) state = [...state, ...add];
         else state = [...state, add];

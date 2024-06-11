@@ -3,12 +3,15 @@
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import {MakeBp, IMakeBpProps} from '../MakeBp';
+import {MakeBp, IMakeBpProps, cloneIntoBp} from '../MakeBp';
 import {createNewCourse} from '../../../canvas/course';
 import * as blueprintApi from '../../../canvas/course/blueprint';
-import {getMigrationProgressGen, startMigration} from "../../../canvas/course/migration";
+import {getMigrationProgressGen, IMigrationData, IProgressData, startMigration} from "../../../canvas/course/migration";
 import {mockCourseData} from "../../../canvas/course/__mocks__/mockCourseData";
 import {Course} from "../../../canvas/course/Course";
+import {mockProgressData} from "../../../canvas/course/__mocks__/mockProgressData";
+import {mockMigrationData} from "../../../canvas/course/__mocks__/mockMigrationData";
+import {bpify} from "../../../admin";
 
 jest.mock('../../../canvas/course/blueprint');
 jest.mock('../../../canvas/course/migration', () => ({
@@ -98,3 +101,62 @@ describe('MakeBp Component', () => {
     });
 
 });
+
+jest.mock('../../../canvas/course', () => {
+    const originalModule = jest.requireActual('../../../canvas/course');
+    return {
+        ...originalModule,
+        createNewCourse: jest.fn(async (code: string, accountId: number) => {
+            return {
+                ...mockCourseData,
+                course_code: code,
+                account_id: accountId,
+            }
+        }),
+    }
+})
+
+jest.mock('../../../canvas/course/migration', () => {
+    const originalModule = jest.requireActual('../../../canvas/course/migration');
+    return {
+        __esModule: true,
+        ...originalModule,
+        startMigration: jest.fn((id:number, accountId:number) => mockMigrationData ),
+        getMigrationProgressGen: jest.fn(function* (_: IMigrationData) {
+            for (let i = 0; i < 10; i++) {
+                yield {...mockProgressData, workflow_state: 'running'} as IProgressData;
+            }
+            yield {...mockProgressData, workflow_state: 'completed'} as IProgressData;
+        }),
+    }
+})
+
+
+describe('Clone Into Bp', () => {
+
+
+    const {createNewCourse} = require('../../../canvas/course');
+
+    it('Doesnt run if theres no current bp', async () => {
+        const result = await cloneIntoBp(mockBlueprintCourse, mockCourse, jest.fn());
+        expect(result).toBeUndefined();
+    })
+    it('Doesnt run if DEV doesnt have a course code', async () => {
+        const mockCourse = new Course({...mockCourseData, course_code: ''})
+        const result = await cloneIntoBp(null, mockCourse, jest.fn());
+        expect(result).toBeUndefined();
+    })
+
+    it('Creates a new course', async () => {
+        const result = await cloneIntoBp(null, mockCourse, jest.fn());
+        expect(createNewCourse).toHaveBeenCalledWith(bpify(mockCourse.parsedCourseCode ?? ''), mockBlueprintCourse.accountId);
+    })
+
+    it('Waits for migration to finish', async () => {
+        const progressFunction = jest.fn()
+        const result = await cloneIntoBp(null, mockCourse, progressFunction);
+        expect(progressFunction).toHaveBeenCalledTimes(11);
+    })
+
+})
+
