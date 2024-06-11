@@ -1,8 +1,8 @@
-import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../canvas/content/index";
-import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../canvas/content/dummyContentData";
-import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace} from "./index";
-import {ILatePolicyUpdate} from "../../../canvas/canvasDataDefs";
-import mockLatePolicy from "../../../canvas/course/__mocks__/mockLatePolicy";
+import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../../canvas/content";
+import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../../canvas/content/dummyContentData";
+import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace} from "../index";
+import {ILatePolicyUpdate} from "../../../../canvas/canvasDataDefs";
+import mockLatePolicy from "../../../../canvas/course/__mocks__/mockLatePolicy";
 import assert from "assert";
 
 import {
@@ -11,7 +11,7 @@ import {
     IGradingStandardData,
     IGradingStandardsHaver, ILatePolicyHaver,
     IModulesHaver, IPagesHaver, IQuizzesHaver, ISyllabusHaver
-} from "../../../canvas/course/courseTypes";
+} from "../../../../canvas/course/courseTypes";
 
 
 export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {

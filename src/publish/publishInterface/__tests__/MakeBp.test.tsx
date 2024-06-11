@@ -51,7 +51,7 @@ describe('MakeBp Component', () => {
 
     it('renders without crashing', () => {
         renderComponent();
-        expect(screen.getByText(/Cannot find Existing Blueprint/)).toBeInTheDocument();
+        expect(screen.getByText(/No Current BP/i)).toBeInTheDocument();
     });
 
     // it('displays alert if not a DEV course', () => {

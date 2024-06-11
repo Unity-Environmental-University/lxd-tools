@@ -250,7 +250,6 @@ export async function getFullCourses({
     setTerm,
     setFrontPageProfilesByCourseId,
 }: IGetFullCoursesProps) {
-    console.log("Getting Full Courses");
     const sections: Course[] = [];
     const fetchedCourses = await course.getAssociatedCourses() ?? [];
     const frontPageProfiles: Record<number, IProfile> = {};

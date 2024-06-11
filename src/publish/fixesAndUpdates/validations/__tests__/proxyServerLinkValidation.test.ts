@@ -1,4 +1,4 @@
-import proxyServerLinkValidation from "./proxyServerLinkValidation";
+import proxyServerLinkValidation from "../proxyServerLinkValidation";
 import {badContentTextValidationFixTest, badContentTextValidationTest} from "./index.test";
 
 

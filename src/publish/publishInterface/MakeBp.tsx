@@ -1,5 +1,5 @@
 import {createNewCourse} from "../../canvas/course";
-import {Button, Col, Row} from "react-bootstrap";
+import {Button, Col, ProgressBar, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {
@@ -49,13 +49,29 @@ export function MakeBp({
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
     useEffect(...callOnChangeFunc(progressData, onProgressUpdate))
 
-
     useEffectAsync(async () => {
         setIsDev(devCourse.isDev);
         if (devCourse.parsedCourseCode) {
             await updateBpInfo(devCourse, devCourse.parsedCourseCode);
         }
     }, [devCourse])
+
+    useEffect(() => {
+        window.addEventListener('unload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('unload', handleBeforeUnload)
+        }
+    }, []);
+
+    useEffectAsync(async () => {
+
+    }, []);
+
+    function handleBeforeUnload() {
+        if(activeMigrations.length > 0) {
+
+        }
+    }
 
     async function updateBpInfo(course: Course, code: string) {
         const [bp] = await getBlueprintsFromCode(code, [
@@ -90,9 +106,9 @@ export function MakeBp({
     }
 
 
-    function onCloneIntoBp(e:FormEvent) {
+    async function onCloneIntoBp(e:FormEvent) {
             e.preventDefault();
-            cloneIntoBp(currentBp, devCourse, setProgressData);
+            await cloneIntoBp(currentBp, devCourse, setProgressData);
     }
 
     function isArchiveDisabled() {
@@ -126,14 +142,23 @@ export function MakeBp({
             <Row>
                 <h2>No Current BP</h2>
             </Row>
-        <Row><Col>
-            <h2></h2>
+
+        <Row><Col sm={6}>
                 <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
                     disabled={isLoading || !!currentBp }
                 >Create New BP For Dev</Button>
-        </Col></Row>
+        </Col>
+        <Col sm={6}>
+            <ProgressBar
+                min={0}
+                max={100}
+                now={progressData?.completion ?? 0}
+                />
+        </Col>
+
+        </Row>
         </>}
     </div>
 }

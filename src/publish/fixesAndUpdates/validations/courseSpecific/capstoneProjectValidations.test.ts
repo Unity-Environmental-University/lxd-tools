@@ -1,5 +1,5 @@
 import capstoneProjectValidations from "./capstoneProjectValidations";
-import {badContentTextValidationFixTest, badContentTextValidationTest} from "../index.test";
+import {badContentTextValidationFixTest, badContentTextValidationTest} from "../__tests__/index.test";
 
 describe("Capstone content tests", () => {
     for (let validation of capstoneProjectValidations) {

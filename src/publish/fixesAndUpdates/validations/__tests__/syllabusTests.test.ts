@@ -1,13 +1,13 @@
-import {CourseValidation, TextReplaceValidation} from "./index";
+import {CourseValidation, TextReplaceValidation} from "../index";
 import {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
     communication24HoursTest,
     courseCreditsInSyllabusTest, finalNotInGradingPolicyParaTest
-} from "./syllabusTests";
+} from "../syllabusTests";
 import fs from "fs";
 import {dummySyllabusHaver} from "./index.test";
-import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
+import {ISyllabusHaver} from "../../../../canvas/course/courseTypes";
 
 const goofusSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.gallant.html').toString()

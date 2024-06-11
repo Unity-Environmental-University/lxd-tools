@@ -1,17 +1,17 @@
-import {badGradingPolicyTest, latePolicyTest, noEvaluationTest} from "./courseSettings";
+import {badGradingPolicyTest, latePolicyTest, noEvaluationTest} from "../courseSettings";
 import {getDummyLatePolicyHaver} from "./index.test";
-import {ICanvasCallConfig, range} from "../../../canvas/canvasUtils";
-import {Page} from "../../../canvas/content/index";
-import {dummyPageData} from "../../../canvas/content/dummyContentData";
-import {mockGradModules, mockUgModules} from "../../../canvas/course/__mocks__/mockModuleData";
-import {IModuleData} from "../../../canvas/canvasDataDefs";
-import {getModulesByWeekNumber} from "../../../canvas/course/modules";
+import {ICanvasCallConfig, range} from "../../../../canvas/canvasUtils";
+import {Page} from "../../../../canvas/content";
+import {dummyPageData} from "../../../../canvas/content/dummyContentData";
+import {mockGradModules, mockUgModules} from "../../../../canvas/course/__mocks__/mockModuleData";
+import {IModuleData} from "../../../../canvas/canvasDataDefs";
+import {getModulesByWeekNumber} from "../../../../canvas/course/modules";
 import {
     IGradingStandardData,
     IGradingStandardsHaver,
     IModulesHaver,
     IPagesHaver
-} from "../../../canvas/course/courseTypes";
+} from "../../../../canvas/course/courseTypes";
 
 test('Late policy test works', async () => {
     const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});

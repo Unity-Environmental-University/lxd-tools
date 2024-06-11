@@ -1,4 +1,10 @@
-import {deepObjectMerge, fetchJson, formDataify, ICanvasCallConfig} from "../canvasUtils";
+import {
+    deepObjectMerge,
+    fetchJson,
+    formDataify,
+    getPagedDataGenerator,
+    ICanvasCallConfig
+} from "../canvasUtils";
 import {sleep} from "../../index";
 import {createNewCourse, getCourseData} from "./index";
 import {Course} from "./Course";
@@ -32,6 +38,24 @@ export interface IProgressData {
     results: { id: string };
     url: string
 }
+
+
+export function getMigrationsForCourse(courseId:number, config?:ICanvasCallConfig) {
+    const url = `/api/v1/courses/${courseId}/content_migrations`
+    const generator = getPagedDataGenerator<IMigrationData>(url, config);
+
+    return generator;
+}
+
+export async function getMigration(courseId:number,migrationId:number, config?:ICanvasCallConfig) {
+    const data = await fetchJson(
+        `/api/v1/courses/${courseId}/content_migrations/${migrationId}`,
+        config,
+    );
+    if(data) return data as IMigrationData;
+    return null;
+}
+
 
 export async function* courseMigrationGenerator(
     sourceCourseId: number,

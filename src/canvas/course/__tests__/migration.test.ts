@@ -3,22 +3,57 @@ import {ICourseData, IUserData} from "../../canvasDataDefs";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import {
     copyToNewCourseGenerator,
-    courseMigrationGenerator,
+    courseMigrationGenerator, getMigration, getMigrationsForCourse,
     IMigrationData,
     IProgressData
 } from "../migration";
 import {createNewCourse} from "../index";
 import {mockProgressData} from "../__mocks__/mockProgressData";
-import {fetchJson, range} from "../../canvasUtils";
+import {fetchJson, getPagedDataGenerator, ICanvasCallConfig, range} from "../../canvasUtils";
 import {mockMigrationData} from "../__mocks__/mockMigrationData";
 import * as canvasUtils from "../../canvasUtils";
 import * as CourseModule from "../index";
 import {Course} from "../Course";
+import {config} from "dotenv";
 
 
 beforeEach(() => {
     jest.clearAllMocks();
 });
+
+
+describe('Getting migrations', ()=> {
+
+    it('gets migrations from course', async ()=> {
+        const id = 123;
+        const config = { fetchInit: {}};
+        fetchMock.once(JSON.stringify([mockMigrationData, {...mockMigrationData, id: 321}]));
+        const generator = getMigrationsForCourse(id, config);
+        let result = await generator.next();
+        let migration = result.done? null : result.value;
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledWith(`/api/v1/courses/${id}/content_migrations`, config.fetchInit);
+        expect(migration).toEqual(mockMigrationData);
+        result = await generator.next();
+        migration = result.done? null : result.value;
+        expect(migration?.id).toEqual(321);
+    })
+
+    it('gets a single mock by id', async ()=> {
+        const courseId = 123;
+        const migrationId = 321;
+        const config = { fetchInit: {} };
+        fetchMock.once(JSON.stringify(mockMigrationData));
+        const migration = await getMigration(courseId, migrationId, config);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledWith(
+            `/api/v1/courses/${courseId}/content_migrations/${migrationId}`,
+            config.fetchInit
+        );
+        expect(migration).toEqual(mockMigrationData);
+
+    })
+})
 
 
 describe('Course migration', () => {
@@ -50,7 +85,7 @@ describe('Course migration', () => {
         }
     })
 
-    it('Throws an error on a failed migration', async() => {
+    it('Throws an error on a failed migration', async () => {
         const workflowStates: IMigrationData["workflow_state"][] = [
             'queued',
             'running',
@@ -78,7 +113,7 @@ describe('Course migration', () => {
 })
 
 describe('Course Copying', () => {
-        test('Copy course wholesale', async () => {
+    test('Copy course wholesale', async () => {
         fetchMock.enableMocks();
 
         const fetch = (global.fetch as FetchMock);
@@ -101,7 +136,7 @@ describe('Course Copying', () => {
         ]
         const workflowIterator = workflowStates.values();
         fetchMock.mockClear();
-        fetchMock.mockResponses(... [
+        fetchMock.mockResponses(...[
             sourceCourseData,
             {...mockMigrationData, workflow_state: 'queued'},
 
@@ -120,7 +155,7 @@ describe('Course Copying', () => {
             while (true) {
                 result = await migrationGenerator.next();
                 const {value} = workflowIterator.next();
-                if(result.done) return result.value;
+                if (result.done) return result.value;
                 expect(result.value.workflow_state).toBe(value)
             }
         }
@@ -131,5 +166,3 @@ describe('Course Copying', () => {
     })
 
 })
-
-
