@@ -1,5 +1,5 @@
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../../canvas/content";
-import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../../canvas/content/dummyContentData";
+import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace} from "../index";
 import {ILatePolicyUpdate} from "../../../../canvas/canvasDataDefs";
 import mockLatePolicy from "../../../../canvas/course/__mocks__/mockLatePolicy";

@@ -2,10 +2,9 @@
 
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
-import {MakeBp, IMakeBpProps, getSavedMigrationsForCourse, saveMigrationsForCourse, saveMigrations} from '../MakeBp';
+import '@testing-library/jest-dom';
+import {MakeBp, IMakeBpProps} from '../MakeBp';
 import * as blueprintApi from '../../../canvas/course/blueprint';
-import * as makeBpApi from '../MakeBp';
 import {getMigrationsForCourse, IMigrationData, IProgressData, startMigration} from "../../../canvas/course/migration";
 import {mockCourseData} from "../../../canvas/course/__mocks__/mockCourseData";
 import {Course} from "../../../canvas/course/Course";
@@ -13,9 +12,13 @@ import {mockProgressData} from "../../../canvas/course/__mocks__/mockProgressDat
 import {mockMigrationData} from "../../../canvas/course/__mocks__/mockMigrationData";
 import {bpify} from "../../../admin";
 
+import {createNewCourse} from '../../../canvas/course';
+import {getBlueprintsFromCode} from "../../../canvas/course/blueprint";
+import {loadCachedCourseMigrations, cacheMigrations, cacheCourseMigrations} from "../../../canvas/course/migrationCache";
+
 jest.mock('../../../canvas/course/blueprint');
 
-const mockCourse: Course = new Course({...mockCourseData, blueprint: true})
+const mockCourse: Course = new Course({...mockCourseData, blueprint: false, course_code: "DEV_TEST000", name: 'DEV_TEST000'})
 const mockBlueprintCourse: Course = new Course({...mockCourseData, blueprint: true})
 
 const renderComponent = (props: Partial<IMakeBpProps> = {}) => {
@@ -58,11 +61,7 @@ jest.mock('../../../canvas/course/migration', () => {
     }
 })
 
-import {createNewCourse} from '../../../canvas/course';
-import {mockTermData} from "../../../canvas/__mocks__/mockTermData";
-import {sleep} from "../../../index";
-import {getBlueprintsFromCode} from "../../../canvas/course/blueprint";
-import {wait} from "@testing-library/user-event/dist/utils";
+
 
 
 describe('MakeBp Component', () => {
@@ -134,7 +133,7 @@ describe('Retirement and updates', () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
         renderComponent();
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
-        await waitFor(() => expect(screen.queryByText(/Create New BP For Dev/)).not.toBeInTheDocument());
+        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).not.toBeInTheDocument());
 
     })
 
@@ -144,7 +143,7 @@ describe('Retirement and updates', () => {
         renderComponent({
             devCourse: mockCourse
         })
-        await waitFor(() => expect(screen.getByText(/Create New BP For Dev/)).toBeDisabled())
+        await waitFor(() => expect(screen.getByLabelText(/New BP/)).toBeDisabled())
     })
 
     it('Creates a new course', async () => {
@@ -152,8 +151,8 @@ describe('Retirement and updates', () => {
         renderComponent({
             devCourse: mockCourse
         })
-        await waitFor(() => expect(screen.getByText(/Create New BP For Dev/)).toBeInTheDocument());
-        fireEvent.click(screen.getByText(/Create New BP For Dev/));
+        await waitFor(() => expect(screen.getByLabelText(/New BP/)).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText(/New BP/));
         await waitFor(() => expect(createNewCourse).toHaveBeenCalled());
         expect(createNewCourse).toHaveBeenCalledWith(bpify(mockCourse.parsedCourseCode ?? ''), mockBlueprintCourse.accountId);
     })
@@ -219,47 +218,39 @@ describe('Retirement and updates', () => {
     })
 });
 
-
-describe('Saving and loading migration states', () => {
-    beforeAll(() => {
-        localStorage.clear();
-        localStorage.g
-    })
-    afterAll(() => {
-        localStorage.clear();
-    })
-    it('has base functions that save and load migration data', () => {
-        let migrations = getSavedMigrationsForCourse(0);
-        expect(migrations).toHaveLength(0);
-        saveMigrationsForCourse(1, [mockMigrationData]);
-        saveMigrationsForCourse(2, [mockMigrationData, mockMigrationData]);
-        saveMigrationsForCourse(3, [mockMigrationData, mockMigrationData, mockMigrationData]);
-        expect(getSavedMigrationsForCourse(0)).toHaveLength(0)
-        expect(getSavedMigrationsForCourse(1)).toHaveLength(1)
-        expect(getSavedMigrationsForCourse(2)).toHaveLength(2)
-        expect(getSavedMigrationsForCourse(3)).toHaveLength(3)
-        saveMigrationsForCourse(3, [mockMigrationData])
-        expect(getSavedMigrationsForCourse(3)).toHaveLength(1);
-        expect(getSavedMigrationsForCourse(3)[0]).toEqual(mockMigrationData)
-    })
-
-
+describe('Migrations', () => {
     it('saves active migration when one is created', async () => {
-        expect(getSavedMigrationsForCourse(mockCourse.id)).toHaveLength(0);
+        expect(loadCachedCourseMigrations(mockCourse.id)).toHaveLength(0);
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([]);
         renderComponent();
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
-        await waitFor(() => expect(screen.queryByText(/Create New BP For Dev/)).toBeInTheDocument());
+        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         (createNewCourse as jest.Mock).mockResolvedValue(mockBlueprintCourse);
 
-        const saveMigrationSpy = jest.spyOn(makeBpApi, 'saveMigrations');
-        screen.getByText(/Create New BP For Dev/).click();
-        await waitFor(() => expect(screen.queryByText(/Create New BP For Dev/)).toBeInTheDocument());
+        screen.getByLabelText(/New BP/).click();
+        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         await waitFor(() => expect(screen.getByText(/Archive/)).toBeInTheDocument());
         await waitFor(() => expect(screen.getByText(/Status:/)).toBeInTheDocument());
-expect(screen.getByText(/Status:/)).toBeInTheDocument();
-        await waitFor(() => expect(getSavedMigrationsForCourse(mockCourse.id)).toHaveLength(1));
+        expect(screen.getByText(/Status:/)).toBeInTheDocument();
+        await waitFor(() => expect(loadCachedCourseMigrations(mockCourse.id)).toHaveLength(1));
     })
+
+    it('only shows active migrations', async () => {
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
+        cacheCourseMigrations(mockCourse.id, [
+            {...mockMigrationData, workflow_state: 'queued'},
+            {...mockMigrationData, workflow_state: 'completed', startedFrom: true, cleanedUp: false},
+            {...mockMigrationData, workflow_state: 'completed', startedFrom: true, cleanedUp: true},
+        ])
+        renderComponent({
+            devCourse: mockCourse,
+        });
+        await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
+        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
+
+        await waitFor( () => expect(screen.getByText('Status:')).toBeInTheDocument());
+        expect(screen.getAllByText('Status')).toHaveLength(2);
+    })
+
+
 })
-
-

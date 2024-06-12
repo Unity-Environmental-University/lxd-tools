@@ -26,6 +26,12 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         this._courseId = courseId;
     }
 
+    get htmlContentUrl() {
+        return `${this.contentUrlPath}`.replace('/api/v1/', '/');
+    }
+
+
+
     static get contentUrlPart() {
         assert(this.allContentUrlTemplate, "Not a content url template");
         const urlTermMatch = /\/([\w_]+)$/.exec(this.allContentUrlTemplate);

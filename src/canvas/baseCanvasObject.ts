@@ -61,7 +61,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
     }
 
     get htmlContentUrl() {
-        return `/${this.contentUrlPath}`;
+        return `${this.contentUrlPath}`;
     }
 
     get data() {

@@ -1,53 +1,25 @@
 import {createNewCourse} from "../../canvas/course";
-import {Button, Col, ProgressBar, Row} from "react-bootstrap";
+import {Button, Col, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {
     getBlueprintsFromCode,
     getSections,
     getTermNameFromSections,
-    IBlueprintCourse,
     retireBlueprint
 } from "../../canvas/course/blueprint";
-import assert from "assert";
 import {bpify} from "../../admin";
-import {
-    getMigrationProgressGen,
-    getMigrationsForCourse,
-    IMigrationData,
-    IProgressData,
-    startMigration
-} from "../../canvas/course/migration";
+import {getMigrationsForCourse, IMigrationData, startMigration} from "../../canvas/course/migration";
 import {Course} from "../../canvas/course/Course";
 import {listDispatcher} from "../../reducerDispatchers";
-
+import {loadCachedCourseMigrations, SavedMigration, cacheCourseMigrations} from "../../canvas/course/migrationCache";
+import {MigrationBar} from "./MigrationBar";
 
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
         onChange && onChange(value);
     }, [value]];
     return returnValue;
-}
-
-export function getSavedMigrations() {
-    if (!localStorage.getItem('migrations')) localStorage.setItem('migrations', '[]')
-    const migrationDataString = localStorage.getItem('migrations') as string;
-    const migrationDataList: IMigrationData[][] = JSON.parse(migrationDataString);
-    return migrationDataList;
-}
-
-export function getSavedMigrationsForCourse(courseId: number) {
-    return getSavedMigrations()[courseId] ?? [];
-}
-
-export function saveMigrations(migrations: IMigrationData[][]) {
-    localStorage.setItem('migrations', JSON.stringify(migrations));
-}
-
-export function saveMigrationsForCourse(courseId: number, courseMigrations: IMigrationData[]) {
-    const migrations = getSavedMigrations();
-    migrations[courseId] = courseMigrations;
-    saveMigrations(migrations);
 }
 
 export interface IMakeBpProps {
@@ -57,6 +29,7 @@ export interface IMakeBpProps {
     onBpSet?: (bp: Course | null | undefined) => void,
     onTermNameSet?: (termName: string | null) => void,
     onSectionsSet?: (sections: Course[]) => void,
+    onActiveImports?: (migrations: IMigrationData[]) => void,
 }
 
 export function MakeBp({
@@ -77,12 +50,11 @@ export function MakeBp({
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
 
     useEffect(() => {
-        const migrationData = getSavedMigrationsForCourse(devCourse.id);
+        const migrationData = loadCachedCourseMigrations(devCourse.id);
         if (migrationData) {
             migrationDispatcher({set: migrationData})
         }
     }, [devCourse]);
-
 
     useEffectAsync(async () => {
         setIsDev(devCourse.isDev);
@@ -100,19 +72,20 @@ export function MakeBp({
         migrationDispatcher({
             clear: true,
         })
-        let migrations: IMigrationData[] = [];
+        let migrations: SavedMigration[] = [];
         for await (let migration of getMigrationsForCourse(currentBp.id)) {
+
             migrations.push(migration);
             migrationDispatcher({
                 add: migration
             })
         }
-        saveMigrationsForCourse(currentBp.id, migrations);
+        cacheCourseMigrations(currentBp.id, migrations);
     }
 
     useEffect(() => {
         if (!currentBp) return;
-        const savedMigrations = getSavedMigrationsForCourse(currentBp.id);
+        const savedMigrations = loadCachedCourseMigrations(currentBp.id);
         migrationDispatcher({
             set: savedMigrations,
         });
@@ -204,51 +177,23 @@ export function MakeBp({
                 <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
-                    disabled={isLoading || !!currentBp || !devCourse.parsedCourseCode || devCourse.parsedCourseCode.length == 0}
-                >Create New BP For Dev</Button>
+                    aria-label={'New BP'}
+                    disabled={isLoading ||
+                        !!currentBp ||
+                        !devCourse.parsedCourseCode ||
+                        devCourse.parsedCourseCode.length == 0
+                    }
+                >Create New BP</Button>
             </Col>
-                {currentBp && activeMigrations.map(migration => <MigrationBar
-                    key={migration.id}
-                    migration={migration}
-                    course={currentBp}/>)}
+                <Col sm={6}>
+                    {currentBp && activeMigrations.map(migration => <MigrationBar
+                        key={migration.id}
+                        migration={migration}
+                        course={currentBp}/>)}
+                </Col>
             </Row>
         </>}
     </div>
 }
 
 
-type MigrationBarProps = {
-    migration: IMigrationData,
-    course: Course,
-}
-
-function MigrationBar({migration, course}: MigrationBarProps) {
-    const [progress, setProgress] = useState<IProgressData>()
-
-    useEffectAsync(async () => {
-        let progressGen = getMigrationProgressGen(migration);
-        for await(let progress of progressGen) {
-            setProgress(progress);
-        }
-    }, [migration]);
-
-
-    return <Row>
-        <Col sm={4}>
-            <Row>
-            Status: {progress?.workflow_state}
-
-            </Row>
-            <Row>
-                Started: {migration.started_at}
-            </Row>
-        </Col>
-        <Col sm={8}>
-            <ProgressBar
-        min={0}
-        max={100}
-        now={progress?.completion}/>
-        </Col>
-    </Row>
-
-}
