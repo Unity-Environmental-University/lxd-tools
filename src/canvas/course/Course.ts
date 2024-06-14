@@ -189,6 +189,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return this.htmlContentUrl;
     }
 
+    get htmlContentUrl() {
+        return `/courses/${this.id}`
+    }
+
     get parsedCourseCode(): null | string {
         let match = this.codeMatch;
         if (!match) return null;

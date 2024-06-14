@@ -103,7 +103,7 @@ describe('MakeBp Component', () => {
         (blueprintApi.getSections as jest.Mock).mockResolvedValue([]);
         renderComponent();
         await waitFor(() => screen.getByText(/Archive/));
-        expect(screen.getByPlaceholderText(/This should autofill if bp exists and has sections/)).toHaveValue('');
+        expect(screen.getByPlaceholderText(/ABC123/)).toHaveValue('');
         expect(screen.getByText(/Archive/)).toBeDisabled();
     });
 
@@ -118,7 +118,7 @@ describe('Retirement and updates', () => {
         renderComponent();
 
         await waitFor(() => screen.getByText(/Archive/));
-        fireEvent.change(screen.getByPlaceholderText(/This should autofill if bp exists and has sections/),
+        fireEvent.change(screen.getByPlaceholderText(/ABC123/),
             {target: {value: 'Spring 2024'}});
 
         await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())

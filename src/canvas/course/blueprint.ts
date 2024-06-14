@@ -51,13 +51,13 @@ export async function getTermNameFromSections(sections: Course[]) {
 }
 
 export async function retireBlueprint(course: Course, termName: string | null, config?: ICanvasCallConfig) {
-    if (!course.isBlueprint()) throw new Error("Trying to retire a blueprint that's not a blueprint")
+    ///if (!course.isBlueprint()) throw new Error("Trying to retire a blueprint that's not a blueprint")
 
     const isCurrentBlueprint = course.parsedCourseCode?.match('BP_');
     if (!isCurrentBlueprint) throw new Error("This blueprint is not named BP_; are you trying to retire a retired blueprint?")
 
-    const associatedCourses = await course.getAssociatedCourses();
-    if (associatedCourses.length < 1) throw new Error("Can't find associated courses")
+    // const associatedCourses = await course.getAssociatedCourses();
+    // if (associatedCourses.length < 1) throw new Error("Can't find associated courses")
 
     const newCode = `BP-${termName}_${course.baseCode}`;
     const saveData: Record<string, any> = {};
@@ -96,7 +96,7 @@ export async function lockBlueprint(courseId:number, modules: IModuleData[]) {
 
     items = items.concat(...modules.map(a => (<IModuleItemData[]>[]).concat(...a.items)));
     const promises = items.map(async (item) => {
-        const url = `/api/v1/${courseId}/blueprint_templates/default/restrict_item`;
+        const url = `/api/v1/courses/${courseId}/blueprint_templates/default/restrict_item`;
         let {type, id} = await getItemTypeAndId(item);
         if ( typeof id === 'undefined') return;
         let body = {
