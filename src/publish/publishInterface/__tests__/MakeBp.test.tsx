@@ -103,7 +103,7 @@ describe('MakeBp Component', () => {
         (blueprintApi.getSections as jest.Mock).mockResolvedValue([]);
         renderComponent();
         await waitFor(() => screen.getByText(/Archive/));
-        expect(screen.getByPlaceholderText(/This should autofill if bp exists and has sections/)).toHaveValue('');
+        expect(screen.getByPlaceholderText(/DE8W/)).toHaveValue('');
         expect(screen.getByText(/Archive/)).toBeDisabled();
     });
 
@@ -118,7 +118,7 @@ describe('Retirement and updates', () => {
         renderComponent();
 
         await waitFor(() => screen.getByText(/Archive/));
-        fireEvent.change(screen.getByPlaceholderText(/This should autofill if bp exists and has sections/),
+        fireEvent.change(screen.getByPlaceholderText(/DE8W/),
             {target: {value: 'Spring 2024'}});
 
         await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())
@@ -200,7 +200,7 @@ describe('Migrations', () => {
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled())
-        await waitFor( () => expect(screen.queryAllByRole('progressbar')).toHaveLength(2));
-        expect(screen.getAllByRole('progressbar')).toHaveLength(2);
+        await waitFor( () => expect(screen.queryAllByText(/Status/)).toHaveLength(2));
+        expect(screen.queryAllByText(/Status/)).toHaveLength(2);
     })
 })

@@ -9,8 +9,9 @@ import {sleep} from "../../index";
 import {createNewCourse, getCourseData} from "./index";
 import {Course} from "./Course";
 
-
+import { storage} from "webextension-polyfill";
 export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
+
 
 export interface IMigrationData {
     migration_type: string;

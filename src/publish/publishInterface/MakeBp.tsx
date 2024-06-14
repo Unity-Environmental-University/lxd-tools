@@ -1,19 +1,25 @@
 import {createNewCourse} from "../../canvas/course";
-import {Button, Col, Row} from "react-bootstrap";
+import {Button, Col, FormControl, FormText, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {
     getBlueprintsFromCode,
     getSections,
-    getTermNameFromSections,
-    retireBlueprint
+    getTermNameFromSections, lockBlueprint,
+    retireBlueprint, setAsBlueprint
 } from "../../canvas/course/blueprint";
 import {bpify} from "../../admin";
 import {getMigrationsForCourse, IMigrationData, startMigration} from "../../canvas/course/migration";
 import {Course} from "../../canvas/course/Course";
 import {listDispatcher} from "../../reducerDispatchers";
-import {loadCachedCourseMigrations, SavedMigration, cacheCourseMigrations} from "../../canvas/course/migrationCache";
+import {
+    loadCachedCourseMigrations,
+    SavedMigration,
+    cacheCourseMigrations,
+    loadCachedMigrations
+} from "../../canvas/course/migrationCache";
 import {MigrationBar} from "./MigrationBar";
+import assert from "assert";
 
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
@@ -45,6 +51,7 @@ export function MakeBp({
     const [termName, setTermName] = useState<string>('');
     const [allMigrations, allMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
     const [activeMigrations, activeMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
+    const [isLocking, setIsLocking] = useState(false);
 
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
@@ -154,37 +161,64 @@ export function MakeBp({
         await updateMigrations();
     }
 
+    async function finishMigration(migration:SavedMigration) {
+        assert(currentBp);
+        setIsLocking(true);
+        await setAsBlueprint(currentBp.id);
+        await lockBlueprint(currentBp.id, await currentBp.getModules())
+        migration.cleanedUp = true;
+        cacheCourseMigrations(currentBp.id, [migration])
+        const [newBp] = await getBlueprintsFromCode(
+            devCourse.parsedCourseCode ?? '',
+            [devCourse.accountId]
+            ) ?? [];
+        setIsLocking(false);
+        window.open(newBp.htmlContentUrl);
+        location.reload();
+
+
+    }
+
 
     function isArchiveDisabled() {
-        return isLoading || !currentBp || !termName || termName.length === 0;
+        return isLoading || !currentBp || !termName || termName.length === 0 || activeMigrations.length > 0;
 
     }
 
     return <div>
         {!isDev && <Row><Col className={'alert alert-warning'}>This is not a DEV course</Col></Row>}
         {currentBp && <Row>
-            <Col>
-                <label>Term Name</label>
-            </Col>
-            <input
-                id={'archiveTermName'}
-                typeof={'text'}
-                value={termName}
-                disabled={sections?.length > 0}
-                onChange={e => setTermName(e.target.value)}
-                placeholder={'This should autofill if bp exists and has sections'}
-            />
-            <Col>
+            <Col sm={3}>
                 <Button
                     id={'archiveButton'}
                     onClick={onArchive}
                     disabled={isArchiveDisabled()}
                 >Archive {currentBp.parsedCourseCode}</Button>
             </Col>
+            <Col sm={2}>
+                <label>Term Name</label>
+            </Col>
+            <Col sm={3}>
+                <FormControl
+                    required={true}
+                    aria-required={true}
+                    id={'archiveTermName'}
+                    typeof={'text'}
+                    value={termName}
+                    disabled={sections?.length > 0}
+                    onChange={e => setTermName(e.target.value)}
+                    placeholder={'DE8W.12.31.99'}
+                />
+
+            </Col>
+            <Col>
+                <FormText>Term Name autofills if there is a BP with sections</FormText>
+            </Col>
         </Row>}
+        <hr/>
         {<>
-            <Row><Col sm={6}>
-                <Button
+            <Row><Col sm={3}>
+            <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
                     aria-label={'New BP'}
@@ -199,6 +233,7 @@ export function MakeBp({
                     {currentBp && activeMigrations.map(migration => <MigrationBar
                         key={migration.id}
                         migration={migration}
+                        onFinishMigration={finishMigration}
                         course={currentBp}/>)}
                 </Col>
             </Row>
