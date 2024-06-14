@@ -43,7 +43,8 @@ export function MakeBp({
     const [isLoading, setIsLoading] = useState(false);
     const [sections, setSections] = useState<Course[]>([])
     const [termName, setTermName] = useState<string>('');
-    const [activeMigrations, migrationDispatcher] = useReducer(listDispatcher<IMigrationData>, []);
+    const [allMigrations, allMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
+    const [activeMigrations, activeMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
 
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
@@ -52,9 +53,16 @@ export function MakeBp({
     useEffect(() => {
         const migrationData = loadCachedCourseMigrations(devCourse.id);
         if (migrationData) {
-            migrationDispatcher({set: migrationData})
+            allMigrationDispatcher({set: migrationData})
         }
     }, [devCourse]);
+
+    useEffect(() => {
+        const activeMigrations = allMigrations.filter(migration => migration.tracked && !migration.cleanedUp);
+        activeMigrationDispatcher({
+          set: activeMigrations
+        })
+    }, [allMigrations])
 
     useEffectAsync(async () => {
         setIsDev(devCourse.isDev);
@@ -69,24 +77,23 @@ export function MakeBp({
 
     async function updateMigrations() {
         if (!currentBp) return;
-        migrationDispatcher({
+        allMigrationDispatcher({
             clear: true,
         })
-        let migrations: SavedMigration[] = [];
-        for await (let migration of getMigrationsForCourse(currentBp.id)) {
-
-            migrations.push(migration);
-            migrationDispatcher({
+        const migrationsForCourse = getMigrationsForCourse(currentBp.id);
+        for await (let migration of migrationsForCourse) {
+            cacheCourseMigrations(currentBp.id, [migration]);
+            allMigrationDispatcher({
                 add: migration
             })
         }
-        cacheCourseMigrations(currentBp.id, migrations);
+
     }
 
     useEffect(() => {
         if (!currentBp) return;
         const savedMigrations = loadCachedCourseMigrations(currentBp.id);
-        migrationDispatcher({
+        allMigrationDispatcher({
             set: savedMigrations,
         });
     }, [currentBp]);
@@ -137,8 +144,11 @@ export function MakeBp({
         const accountId = devCourse.accountId;
         const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId);
         setCurrentBp(new Course(newBpShell));
-        const migration = await startMigration(devCourse.id, newBpShell.id);
-        migrationDispatcher({
+        const migration = await startMigration(devCourse.id, newBpShell.id) as SavedMigration;
+        migration.tracked = true;
+        migration.cleanedUp = false;
+        cacheCourseMigrations(newBpShell.id, [migration])
+        allMigrationDispatcher({
             add: migration,
         });
         await updateMigrations();

@@ -5,7 +5,7 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {MakeBp, IMakeBpProps} from '../MakeBp';
 import * as blueprintApi from '../../../canvas/course/blueprint';
-import {getMigrationsForCourse, IMigrationData, IProgressData, startMigration} from "../../../canvas/course/migration";
+import {IMigrationData, IProgressData} from "../../../canvas/course/migration";
 import {mockCourseData} from "../../../canvas/course/__mocks__/mockCourseData";
 import {Course} from "../../../canvas/course/Course";
 import {mockProgressData} from "../../../canvas/course/__mocks__/mockProgressData";
@@ -14,7 +14,12 @@ import {bpify} from "../../../admin";
 
 import {createNewCourse} from '../../../canvas/course';
 import {getBlueprintsFromCode} from "../../../canvas/course/blueprint";
-import {loadCachedCourseMigrations, cacheMigrations, cacheCourseMigrations} from "../../../canvas/course/migrationCache";
+import {
+    cacheCourseMigrations,
+} from "../../../canvas/course/migrationCache";
+import * as cacheMigrationApi from '../../../canvas/course/migrationCache'
+import {range} from "../../../canvas/canvasUtils";
+import {loadCachedCourseMigrations} from "../../../canvas/course/migrationCache";
 
 jest.mock('../../../canvas/course/blueprint');
 
@@ -49,9 +54,12 @@ jest.mock('../../../canvas/course/migration', () => {
         __esModule: true,
         ...originalModule,
         getMigrationsForCourse: jest.fn(function* (_: number) {
-            yield []
+            return;
         }),
-        startMigration: jest.fn((id: number, accountId: number) => mockMigrationData),
+        startMigration: jest.fn((id: number, _: number) => ({
+            ...mockMigrationData,
+                id,
+        })),
         getMigrationProgressGen: jest.fn(function* (_: IMigrationData) {
             for (let i = 0; i < 10; i++) {
                 yield {...mockProgressData, workflow_state: 'running'} as IProgressData;
@@ -151,10 +159,17 @@ describe('Retirement and updates', () => {
 
 
 describe('Migrations', () => {
+
+    const cachedCourseMigrationSpy = jest.spyOn(cacheMigrationApi, 'loadCachedCourseMigrations')
+    beforeEach(() => {
+        localStorage.clear();
+    })
     it('saves active migration when one is created', async () => {
         expect(loadCachedCourseMigrations(mockCourse.id)).toHaveLength(0);
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([]);
+        cachedCourseMigrationSpy.mockClear();
         renderComponent();
+
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         (createNewCourse as jest.Mock).mockResolvedValue(mockBlueprintCourse);
@@ -162,27 +177,30 @@ describe('Migrations', () => {
         screen.getByLabelText(/New BP/).click();
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         await waitFor(() => expect(screen.getByText(/Archive/)).toBeInTheDocument());
+        await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled());
         await waitFor(() => expect(screen.getByText(/Status:/)).toBeInTheDocument());
+
         expect(screen.getByText(/Status:/)).toBeInTheDocument();
         await waitFor(() => expect(loadCachedCourseMigrations(mockCourse.id)).toHaveLength(1));
     })
 
     it('only shows active migrations', async () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
+        const iterator = range(0);
+        const nextValue = () => iterator.next().value as number;
         cacheCourseMigrations(mockCourse.id, [
-            {...mockMigrationData, workflow_state: 'queued'},
-            {...mockMigrationData, workflow_state: 'completed', startedFrom: true, cleanedUp: false},
-            {...mockMigrationData, workflow_state: 'completed', startedFrom: true, cleanedUp: true},
+            {...mockMigrationData, id: nextValue(), workflow_state: 'queued'},
+            {...mockMigrationData, id: nextValue(), workflow_state: 'queued', tracked: true, cleanedUp: false},
+            {...mockMigrationData, id: nextValue(), workflow_state: 'completed', tracked: true, cleanedUp: false},
+            {...mockMigrationData, id: nextValue(), workflow_state: 'completed', tracked: true, cleanedUp: true},
         ])
         renderComponent({
             devCourse: mockCourse,
         });
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
-
-        await waitFor( () => expect(screen.getByText('Status:')).toBeInTheDocument());
-        expect(screen.getAllByText('Status')).toHaveLength(2);
+        await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled())
+        await waitFor( () => expect(screen.queryAllByRole('progressbar')).toHaveLength(2));
+        expect(screen.getAllByRole('progressbar')).toHaveLength(2);
     })
-
-
 })

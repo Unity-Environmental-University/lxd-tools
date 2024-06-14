@@ -1,7 +1,7 @@
 import {IMigrationData} from "./migration";
 
 export type SavedMigration = IMigrationData & {
-    startedFrom?: boolean,
+    tracked?: boolean,
     cleanedUp?: boolean,
 }
 

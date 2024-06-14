@@ -10,6 +10,8 @@ import {createNewCourse, getCourseData} from "./index";
 import {Course} from "./Course";
 
 
+export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
+
 export interface IMigrationData {
     migration_type: string;
     migration_type_title: string;
@@ -19,7 +21,7 @@ export interface IMigrationData {
     user_id: number;
     progress_url: string;
     started_at: string;
-    workflow_state: string;
+    workflow_state: WorkflowState;
     id: number;
     migration_issues_url: string
 }
@@ -31,7 +33,7 @@ export interface IProgressData {
     context_type: string;
     created_at: string;
     context_id: number;
-    workflow_state: 'queued' | 'running' | 'completed' | 'failed';
+    workflow_state: WorkflowState;
     id: number;
     tag: string;
     message: string;

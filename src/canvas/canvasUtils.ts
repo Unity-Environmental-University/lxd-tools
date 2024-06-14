@@ -445,11 +445,28 @@ export function courseNameSort(a: Course | ICourseData, b: Course | ICourseData)
     return 0;
 }
 
-export function* range(start: number, end: number) {
+export function* range(start: number, end?: number) {
+    if(typeof end === 'undefined') {
+        let i = start;
+        while(true) {
+            yield i;
+            i++;
+        }
+    }
+
     for (let i = start; i <= end; i++) {
         yield i;
     }
 }
+
+export function* numbers(start:number, step:number = 1) {
+    let i = 0;
+    while(true) {
+        yield i;
+        i += step;
+    }
+}
+
 
 
 export function getPlainTextFromHtml(html: string) {
