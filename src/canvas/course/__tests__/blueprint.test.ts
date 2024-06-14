@@ -197,7 +197,7 @@ test('lock blueprint', async () => {
     modules.forEach(module => module.items.forEach(item => contentIds.push(item.content_id)))
 
     for(let call of fetchMock.mock.calls) {
-        expect(call[0]).toBe('/api/v1/0/blueprint_templates/default/restrict_item')
+        expect(call[0]).toBe('/api/v1/courses/0/blueprint_templates/default/restrict_item')
         const fetchInit = call[1];
         assert(fetchInit);
         assert(fetchInit.body instanceof FormData)
