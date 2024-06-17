@@ -1,4 +1,4 @@
-import {collectionLutDispatcher, lutDispatcher} from "./reducerDispatchers";
+import {listLutDispatcher, listDispatcher, lutDispatcher} from "./reducerDispatchers";
 import {describe} from "@jest/globals";
 import {deepObjectCopy} from "./canvas/canvasUtils";
 
@@ -11,7 +11,7 @@ describe('collection lookuptable dispatcher', () => {
 
 
     test('add', () => {
-        let state = collectionLutDispatcher(initialState, {
+        let state = listLutDispatcher(initialState, {
             add: ['dogs', ['steve']]
         });
         expect(state).toEqual({
@@ -20,16 +20,16 @@ describe('collection lookuptable dispatcher', () => {
         })
     });
     test('clear', () => {
-        let state = collectionLutDispatcher(initialState, {
+        let state = listLutDispatcher(initialState, {
             clear: true,
         })
         expect(state).toEqual({})
     });
     test('add new keys', () => {
-        let state = collectionLutDispatcher(initialState, {
+        let state = listLutDispatcher(initialState, {
             add: ['people', ['judy']]
         });
-        state = collectionLutDispatcher(state, {
+        state = listLutDispatcher(state, {
             add: [ 'people', ['ryan']]
         });
         expect(state).toEqual({
@@ -40,7 +40,7 @@ describe('collection lookuptable dispatcher', () => {
     });
 
     test('add works with an object literal', () => {
-        const state = collectionLutDispatcher(initialState, {
+        const state = listLutDispatcher(initialState, {
             add: {
                 dogs: ['william'],
                 cats: ['henrietta'],
@@ -62,66 +62,49 @@ describe('Lookup Table Dispatcher', () => {
         odie: 'dog',
         garfield: 'cat'
     };
-    let state: Record<string, string>;
-     beforeEach(() => {
-         state = {...initialState};
-     })
 
     it('adds elements on set', () => {
-        state = lutDispatcher(state, {
+        let state = lutDispatcher(initialState, {
             set: ['jon','human']
         })
         for(let key in initialState) expect(state[key]).toEqual(initialState[key])
         expect(state.jon).toEqual('human');
     })
+    it('accepts an object literal as input', () => {
+        let state = lutDispatcher(initialState, {
+            set: {
+                jon: 'human',
+                nermal: 'cat'
+            }
+        })
+
+        expect(state).toEqual({...initialState, jon: 'human', nermal: 'cat'})
+    })
+    it('clears out properly', () => {
+        let state = lutDispatcher(initialState, {
+            clear: true,
+        })
+        expect(state).toEqual({});
+    })
 
 })
 
+describe('List Dispatcher', () => {
+    const initialSate = ['odie', 'garfield'];
 
-// type RecordKeyType = string | number | symbol
-//
-// export interface ILutAction<KeyType extends RecordKeyType, DataType> {
-//     set?: ILutSetAction<KeyType, DataType>
-// }
-//
-// interface ILutSetAction<KeyType extends RecordKeyType, DataType> {
-//     key: KeyType,
-//     item: DataType
-// }
-//
-//
-// export function lutDispatcher<KeyType extends RecordKeyType, DataType>(
-//     state: Record<KeyType, DataType>,
-//     action: ILutAction<KeyType, DataType>
-// ) {
-//     state = handleLutSet(state, action);
-//     return state;
-// }
-//
-// function handleLutSet<KeyType extends RecordKeyType, DataType>(
-//     state: Record<KeyType, DataType>,
-//     action: ILutAction<KeyType, DataType>
-// ) {
-//     const set = action.set;
-//     if (!set) return state;
-//     const {key, item} = set;
-//     return {...state, [key]: item};
-// }
-//
-//
-// interface IListAction<DataType> {
-//     add?: DataType | DataType[]
-// }
-//
-//
-// export function listDispatcher<DataType>(
-//     state: Array<DataType>,
-//     action: IListAction<DataType>
-// ) {
-//     const {add} = action;
-//     if(add) {
-//         if(Array.isArray(add)) state = [...state, ...add];
-//         else state = [...state, add];
-//     }
-//     return state;
-// }
+    it('adds elements', () => {
+        let state = listDispatcher(initialSate, {add: ['jon']});
+        expect(state).toEqual([...initialSate, 'jon'])
+    })
+
+    it('sets properly', () => {
+        let state = listDispatcher(initialSate, {set: ['jon']});
+        expect(state).toEqual(['jon'])
+    })
+
+    it('clears properly', () => {
+        let state = listDispatcher(initialSate, {clear: true});
+        expect(state).toEqual([])
+    })
+
+})

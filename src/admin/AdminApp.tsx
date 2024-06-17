@@ -5,7 +5,7 @@ import Modal from "../ui/widgets/Modal/index";
 import {Col, Container, Form, Row} from "react-bootstrap";
 import {batchify, filterUniqueFunc} from "../canvas/canvasUtils";
 import {ValidationRow} from "../publish/fixesAndUpdates/ValidationRow";
-import {collectionLutDispatcher, lutDispatcher} from "../reducerDispatchers";
+import {listLutDispatcher, lutDispatcher} from "../reducerDispatchers";
 import {IIncludesTestAndCourseId} from "./index";
 import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";
@@ -29,7 +29,7 @@ export function AdminApp({course}: IAdminAppProps) {
     const [
         validationResultsLut,
         dispatchValidationResultsLut
-    ] = useReducer(collectionLutDispatcher<number, IIncludesTestAndCourseId>, {});
+    ] = useReducer(listLutDispatcher<number, IIncludesTestAndCourseId>, {});
 
     const [includeDev, setIncludeDev] = useState(false);
     const [includeSections, setIncludeSections] = useState(false);
@@ -40,7 +40,7 @@ export function AdminApp({course}: IAdminAppProps) {
         parentCourseLut
         , dispatchParentCourseLut
     ] = useReducer(lutDispatcher<number, Course | null>, {});
-    const [sectionLut, dispatchSectionLut] = useReducer(collectionLutDispatcher<number, Course>, {})
+    const [sectionLut, dispatchSectionLut] = useReducer(listLutDispatcher<number, Course>, {})
 
 
     function cacheAssociatedCourses(bpId: number, toAdd: Course[] | Course) {
