@@ -1,5 +1,5 @@
 import {Temporal} from "temporal-polyfill";
-import {sleep} from "./index";
+import {sleep} from "../index";
 
 
 describe('Testing basic sleep function', () => {

@@ -11,7 +11,7 @@ import {
 import {bpify} from "../../admin";
 import {getMigrationsForCourse, IMigrationData, startMigration} from "../../canvas/course/migration";
 import {Course} from "../../canvas/course/Course";
-import {listDispatcher} from "../../reducerDispatchers";
+import {listDispatcher} from "../../ui/reducerDispatchers";
 import {
     loadCachedCourseMigrations,
     SavedMigration,

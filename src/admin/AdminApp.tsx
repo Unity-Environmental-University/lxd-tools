@@ -5,7 +5,7 @@ import Modal from "../ui/widgets/Modal/index";
 import {Col, Container, Form, Row} from "react-bootstrap";
 import {batchify, filterUniqueFunc} from "../canvas/canvasUtils";
 import {ValidationRow} from "../publish/fixesAndUpdates/ValidationRow";
-import {listLutDispatcher, lutDispatcher} from "../reducerDispatchers";
+import {listLutDispatcher, lutDispatcher} from "../ui/reducerDispatchers";
 import {IIncludesTestAndCourseId} from "./index";
 import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";

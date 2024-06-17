@@ -1,4 +1,4 @@
-import {findDateRange} from "./date";
+import {findDateRange} from "../date";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
 const testStart = {
