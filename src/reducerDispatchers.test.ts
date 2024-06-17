@@ -39,6 +39,15 @@ describe('collection lookuptable dispatcher', () => {
 
     });
 
+    test ('set', () => {
+        let state = listLutDispatcher({
+                cats: ['charlene'],
+                dogs: ['spike'],
+                people: ['tom', 'dick', 'harry']
+        }, {set: initialState})
+        expect(state).toEqual(initialState);
+    })
+
     test('add works with an object literal', () => {
         const state = listLutDispatcher(initialState, {
             add: {

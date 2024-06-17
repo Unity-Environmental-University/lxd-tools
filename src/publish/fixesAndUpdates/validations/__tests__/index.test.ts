@@ -41,7 +41,6 @@ export function badContentTextValidationFixTest(test: CourseValidation<IContentH
             let testResult = await test.run(goofus);
             expect(testResult.success).toBe(false);
             const fixResult = await test.fix(goofus);
-            console.log(goofus.name);
             testResult = await test.run(goofus);
             expect(testResult.success).toBe(true);
         }
@@ -52,7 +51,6 @@ export function badContentTextValidationFixTest(test: CourseValidation<IContentH
 }
 
 function contentGoofuses(badHtml: string, goodHtml: string) {
-
 
     return [
         mockContentHaver(badHtml, [], "Syllabus"),
