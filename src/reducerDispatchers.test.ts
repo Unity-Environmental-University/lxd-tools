@@ -1,74 +1,82 @@
-import {collectionLutDispatcher} from "./reducerDispatchers";
+import {collectionLutDispatcher, lutDispatcher} from "./reducerDispatchers";
 import {describe} from "@jest/globals";
+import {deepObjectCopy} from "./canvas/canvasUtils";
 
 
 describe('collection lookuptable dispatcher', () => {
-    let state: Record<string, string[]>;
-
-    beforeEach(() => {
-        state = {
-            'dogs': ['spot', 'harry'],
-            'cats': ['missy', 'todd']
+    const initialState = {
+            dogs: ['spot', 'harry'],
+            cats: ['missy', 'todd']
         };
-    })
 
-    test('add and clear', () => {
-        state = collectionLutDispatcher(state, {
-            add: {
-                key: 'dogs',
-                items: ['steve']
-            }
+
+    test('add', () => {
+        let state = collectionLutDispatcher(initialState, {
+            add: ['dogs', ['steve']]
         });
         expect(state).toEqual({
             dogs: ['spot', 'harry', 'steve'],
             cats: ['missy', 'todd']
         })
-        state = collectionLutDispatcher(state, {
-            add: {
-                key: 'cats',
-                items: ['meredith', 'buddy', 'stevie']
-            }
-        });
-        expect(state).toEqual({
-            dogs: ['spot', 'harry', 'steve'],
-            cats: ['missy', 'todd', 'meredith', 'buddy', 'stevie']
-        })
-        state = collectionLutDispatcher(state, {
+    });
+    test('clear', () => {
+        let state = collectionLutDispatcher(initialState, {
             clear: true,
         })
         expect(state).toEqual({})
-        state = collectionLutDispatcher(state, {
-            add: {
-                key: 'people',
-                items: ['judy']
-            }
+    });
+    test('add new keys', () => {
+        let state = collectionLutDispatcher(initialState, {
+            add: ['people', ['judy']]
         });
         state = collectionLutDispatcher(state, {
-            add: {
-                key: 'people',
-                items: ['ryan']
-            }
+            add: [ 'people', ['ryan']]
         });
         expect(state).toEqual({
+            ...initialState,
             people: ['judy', 'ryan']
         })
-        state = collectionLutDispatcher(state, {
-            set: {
-              key: 'people',
-              items: ['todd']
-            },
+
+    });
+
+    test('add works with an object literal', () => {
+        const state = collectionLutDispatcher(initialState, {
             add: {
-                key: 'people',
-                items: ['ryan']
+                dogs: ['william'],
+                cats: ['henrietta'],
+                people: ['ruth']
             }
         });
         expect(state).toEqual({
-            people: ['todd', 'ryan']
+            dogs: [...initialState.dogs, 'william'],
+            cats: [...initialState.cats, 'henrietta'],
+            people: ['ruth']
         })
-
     })
 
 })
+
+
+describe('Lookup Table Dispatcher', () => {
+    const initialState:Record<string, string> = {
+        odie: 'dog',
+        garfield: 'cat'
+    };
+    let state: Record<string, string>;
+     beforeEach(() => {
+         state = {...initialState};
+     })
+
+    it('adds elements on set', () => {
+        state = lutDispatcher(state, {
+            set: ['jon','human']
+        })
+        for(let key in initialState) expect(state[key]).toEqual(initialState[key])
+        expect(state.jon).toEqual('human');
+    })
+
+})
+
 
 // type RecordKeyType = string | number | symbol
 //

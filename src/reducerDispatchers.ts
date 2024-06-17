@@ -1,13 +1,10 @@
 import {filterUniqueFunc} from "./canvas/canvasUtils";
 
 
-interface ICollectionLutAddAction<TKey extends string | number, TItems> {
-    key: TKey,
-    items: TItems[]
-}
+type ListLutAddAction<TKey extends RecordKeyType, TItem>  =
+    [key:TKey, values:TItem[]] | {[key in TKey] : TItem[]}
 
-
-interface ICollectionLutAction<TKey extends string | number, TItems> {
+interface IListLutAction<TKey extends RecordKeyType, TItem> {
     /**
      * clears the lookup table
      */
@@ -15,9 +12,15 @@ interface ICollectionLutAction<TKey extends string | number, TItems> {
     /**
      * adds elements to a collection at a given key in the lookup table
      */
-    add?: ICollectionLutAddAction<TKey, TItems>,
-    set?: ICollectionLutAddAction<TKey, TItems>
+    add?: ListLutAddAction<TKey, TItem>,
+    set?: ListLutAddAction<TKey, TItem>
 }
+
+type ListLutStateType<
+    TKey extends RecordKeyType,
+    TItem,
+    TState extends Record<TKey, TItem[]> = Record<TKey, TItem[]>
+> = {[key in (TKey | keyof TState)] : TItem[]}
 
 
 /**
@@ -25,15 +28,15 @@ interface ICollectionLutAction<TKey extends string | number, TItems> {
  * @param state
  * @param action
  */
-export function collectionLutDispatcher<TKey extends string | number, TItems>(
-    state: Record<TKey, TItems[]> | null | undefined,
-    action: ICollectionLutAction<TKey, TItems>
+export function collectionLutDispatcher<TKey extends RecordKeyType,  TItem>(
+    state: ListLutStateType<RecordKeyType, TItem>,
+    action: IListLutAction<TKey, TItem>
 ) {
-    let outputState = state || {} as Record<TKey, TItems[]>;
+    let outputState = {...state} as ListLutStateType<RecordKeyType, TItem>;
     //Handle clear first as there are more cases where one would want to
     // clear while setting a new state than there are cases where one
     // would want to add and then immediately remove the added items
-    if(action.clear) outputState = {} as Record<TKey, TItems[]>
+    if(action.clear) outputState = {} as ListLutStateType<TKey, TItem>;
     if(action.set) {
         outputState = handleCollectionLutAdd(null, action.set)
     }
@@ -44,34 +47,43 @@ export function collectionLutDispatcher<TKey extends string | number, TItems>(
 }
 
 
-function handleCollectionLutAdd<TKey extends string | number, TItems>(
-    state: Record<TKey, TItems[]> | null,
-    action: ICollectionLutAddAction<TKey, TItems>) {
-    if(!state) state = {} as Record<TKey, TItems[]>
-    const {key, items} = action;
-    const stateItems = state[key] ?? [];
-    return {
-        ...state,
-        [key]: [...stateItems, ...items].filter(filterUniqueFunc)
-    };
+function handleCollectionLutAdd<TKey extends RecordKeyType, TItem>(
+    state: ListLutStateType<TKey, TItem> | null,
+    additions: ListLutAddAction<TKey, TItem>) {
+    if(!state) state = {} as Record<TKey, TItem[]>
+    let returnValue = {...state} satisfies typeof state;
+
+    function updateState(state: typeof returnValue, key:TKey, values:TItem[]) {
+        const previousValue = state[key] || [];
+        return {...state, [key]: [...previousValue, ...values].filter(filterUniqueFunc)};
+    }
+
+    if(Array.isArray(additions)) {
+        const [key, values] = additions;
+        return updateState(state, key, values)
+    }
+
+
+    for(let key in additions)  {
+        returnValue = updateState(returnValue, key, additions[key])
+    }
+
+    return returnValue;
 }
 
 
 type RecordKeyType = string | number | symbol
 
 export interface ILutAction<KeyType extends RecordKeyType, DataType> {
-    set?: ILutSetAction<KeyType, DataType>
+    set?: LutSetAction<KeyType, DataType>
 }
 
-interface ILutSetAction<KeyType extends RecordKeyType, DataType> {
-    key: KeyType,
-    item: DataType
-}
+type LutSetAction<KeyType extends RecordKeyType, ValueType> = [key:KeyType, value:ValueType]
 
 
-export function lutDispatcher<KeyType extends RecordKeyType, DataType>(
-    state: Record<KeyType, DataType>,
-    action: ILutAction<KeyType, DataType>
+export function lutDispatcher<KeyType extends RecordKeyType, ValueType>(
+    state: Record<KeyType, ValueType>,
+    action: ILutAction<KeyType, ValueType>
 ) {
     state = handleLutSet(state, action);
     return state;
@@ -82,9 +94,11 @@ function handleLutSet<KeyType extends RecordKeyType, DataType>(
     action: ILutAction<KeyType, DataType>
 ) {
     const set = action.set;
-    if (!set) return state;
-    const {key, item} = set;
-    return {...state, [key]: item};
+    if(set) {
+        const [key, value] = set;
+        state = {...state, [key]: value};
+    }
+    return state;
 }
 
 

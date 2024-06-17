@@ -46,11 +46,11 @@ export function AdminApp({course}: IAdminAppProps) {
     function cacheAssociatedCourses(bpId: number, toAdd: Course[] | Course) {
         const sections = Array.isArray(toAdd) ? toAdd : [toAdd];
         console.log(bpId, sections.map(a => a.parsedCourseCode))
-        dispatchSectionLut({add: {key: bpId, items: sections}});
+        dispatchSectionLut({add: [bpId, sections]});
     }
 
     function cacheParentCourse(bpId: number, toAdd: Course | null) {
-        dispatchParentCourseLut({set: {key: bpId, item: toAdd}})
+        dispatchParentCourseLut({set: [bpId, toAdd]})
     }
 
     async function getAssociatedCourses(course: Course) {
@@ -117,7 +117,7 @@ export function AdminApp({course}: IAdminAppProps) {
 
                 for (let result of testResults) {
                     dispatchValidationResultsLut({
-                        add: {key: result.courseId, items: [result]}
+                        add: [result.courseId, [result]]
                     })
                 }
                 allTestResults = [...allTestResults, ...testResults].toSorted((a, b) => {
