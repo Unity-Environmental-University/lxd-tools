@@ -1,11 +1,12 @@
 import {IProfile, renderProfileIntoCurioFrontPage} from "../../../canvas/profile";
 import React, {useState} from "react";
-import {IAssignmentGroup, IModuleData, IUserData} from "../../../canvas/canvasDataDefs";
+import {IModuleData, IUserData} from "../../../canvas/canvasDataDefs";
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
 import {FacultyProfileSearch} from "./FacultyProfileSearch";
 import {Col, Row} from "react-bootstrap";
 import {Course} from "../../../canvas/course/Course";
+import {IAssignmentGroup} from "../../../canvas/content";
 
 type SectionDetailsProps = {
     section?: Course | null,

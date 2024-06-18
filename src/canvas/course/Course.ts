@@ -1,13 +1,11 @@
 import {BaseCanvasObject} from "../baseCanvasObject";
 import {
     CanvasData,
-    IAssignmentGroup,
     ICourseData,
     ICourseSettings,
     ILatePolicyData,
     IModuleData,
     IModuleItemData,
-    IPageData,
     ITabData,
     IUpdateCallback,
     IUserData,
@@ -24,7 +22,16 @@ import {
     IModulesHaver
 } from "./courseTypes";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
-import {Assignment, BaseContentItem, Discussion, getBannerImage, Page, Quiz} from "../content";
+import {
+    Assignment,
+    BaseContentItem,
+    Discussion,
+    getBannerImage,
+    IAssignmentGroup,
+    IPageData,
+    Page,
+    Quiz
+} from "../content";
 import {fetchJson, filterUniqueFunc, formDataify, getPagedData, ICanvasCallConfig} from "../canvasUtils";
 import {NotImplementedException, Term} from "../index";
 import assert from "assert";

@@ -3,13 +3,16 @@ import {
     CanvasData,
     ICourseData,
     IModuleItemData,
-    IPageData,
     ModuleItemType,
     RestrictModuleItemType
 } from "./canvasDataDefs";
 
 
 import {Course} from "./course/Course";
+import {IPageData} from "./content";
+import ArgumentsOf = jest.ArgumentsOf;
+import {Argument} from "webpack-cli";
+import {config} from "dotenv";
 
 
 type FuncType<T> = FuncObject<T> | WithoutParamsFuncType<T> | WithParamsFuncType<T>
@@ -123,11 +126,10 @@ export function formDataify(data: Record<string, any>) {
 }
 
 
-
 export function deepObjectCopy<T extends ReturnType<typeof deepObjectMerge> & ({} | [])>(
     toCopy: T,
     complexObjectsTracker: Array<unknown> = [],
-){
+) {
     return deepObjectMerge(toCopy, {} as T, true, complexObjectsTracker) as T;
 }
 
@@ -151,7 +153,7 @@ export function deepObjectMerge<
         Array.isArray(a) != Array.isArray(b)
     )) {
         if (a === b) return a;
-        if(overrideWithA) return a;
+        if (overrideWithA) return a;
         throw new Error(`Type clash on merge ${typeof a} ${a}, ${typeof b} ${b}`);
     }
 
@@ -161,11 +163,11 @@ export function deepObjectMerge<
         assert(Array.isArray(b), "We should not get here if b is not an array")
         let mergedArray = [...a, ...b];
         const outputArray = mergedArray.map(value => {
-            if(!value) return value;
+            if (!value) return value;
             if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
                 //Make a deep of any object literal
-                if(!value) return value;
-                value = deepObjectCopy(value,   [...complexObjectsTracker, a, b]);
+                if (!value) return value;
+                value = deepObjectCopy(value, [...complexObjectsTracker, a, b]);
             }
             return value;
         }) as Return
@@ -175,14 +177,14 @@ export function deepObjectMerge<
     if (Array.isArray(b)) return deepObjectCopy(b, complexObjectsTracker); //we already know a is not an array at this point, return a deep copy of b
     if ((a && typeof a === 'object') || (b && typeof b === 'object')) {
         if (a instanceof File && b instanceof File) {
-            if(!overrideWithA) assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
+            if (!overrideWithA) assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
             return a;
         }
-        if(a && Object.getPrototypeOf(a) != Object.prototype
+        if (a && Object.getPrototypeOf(a) != Object.prototype
             || b && Object.getPrototypeOf(b) != Object.prototype) {
-            if(!overrideWithA) assert(!a || !b || a === b, `Non-mergeable object clash ${a} ${b}`);
-            if(a) return a;
-            if(b) return b;
+            if (!overrideWithA) assert(!a || !b || a === b, `Non-mergeable object clash ${a} ${b}`);
+            if (a) return a;
+            if (b) return b;
         }
         if (a && !b) return deepObjectCopy(a, complexObjectsTracker);
         if (b && !a) return deepObjectCopy(b, complexObjectsTracker);
@@ -192,8 +194,8 @@ export function deepObjectMerge<
         assert(b && typeof b === 'object' && Object.getPrototypeOf(b) === Object.prototype, "b should always be defined here.")
 
         const allKeys = [...Object.keys(a), ...Object.keys(b)].filter(filterUniqueFunc);
-        const aRecord:Record<string, any> = a;
-        const bRecord:Record<string, any> = b;
+        const aRecord: Record<string, any> = a;
+        const bRecord: Record<string, any> = b;
 
         const entries = allKeys.map((key: string) => [
             key,
@@ -202,7 +204,7 @@ export function deepObjectMerge<
         return Object.fromEntries(entries)
     }
     if (a && b) {
-        if(overrideWithA || a === b) return a;
+        if (overrideWithA || a === b) return a;
         throw new Error(`Values unmergeable, ${a}>:${typeof a}, ${b} ${typeof b}`)
     }
     if (a) return a;
@@ -264,7 +266,7 @@ function addToFormData(formData: FormData, key: string, value: any | Record<stri
             addToFormData(formData, key.length > 0 ? `${key}[${itemKey}]` : itemKey, itemValue);
         }
     } else {
-        formData.append(key,value);
+        formData.append(key, value);
     }
 }
 
@@ -353,9 +355,14 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
 export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData>(generators: AsyncGenerator<T, T[], void>[]) {
     for (let generator of generators) {
         for await(let result of generator) {
-          yield result;
+            yield result;
         }
     }
+}
+
+
+export async function renderPagedGenerator<T extends CanvasData>(generator: Generator<T>) {
+
 }
 
 
@@ -379,7 +386,7 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
             data = values.find((a) => Array.isArray(a));
         }
     }
-    if(!Array.isArray(data)) {
+    if (!Array.isArray(data)) {
         console.warn(`no data for ${url}`)
         return [];
     }
@@ -446,9 +453,9 @@ export function courseNameSort(a: Course | ICourseData, b: Course | ICourseData)
 }
 
 export function* range(start: number, end?: number) {
-    if(typeof end === 'undefined') {
+    if (typeof end === 'undefined') {
         let i = start;
-        while(true) {
+        while (true) {
             yield i;
             i++;
         }
@@ -459,14 +466,13 @@ export function* range(start: number, end?: number) {
     }
 }
 
-export function* numbers(start:number, step:number = 1) {
+export function* numbers(start: number, step: number = 1) {
     let i = 0;
-    while(true) {
+    while (true) {
         yield i;
         i += step;
     }
 }
-
 
 
 export function getPlainTextFromHtml(html: string) {
@@ -496,3 +502,20 @@ export function batchify<T>(toBatch: T[], batchSize: number) {
 export function filterUniqueFunc<T>(item: T, index: number, array: T[]) {
     return array.indexOf(item) === index;
 }
+
+export function canvasDataFetchGenFunc<
+    UrlFuncType extends (...args:(string|number)[]) => string
+>( urlFunc:UrlFuncType){
+    type UrlParams = Parameters<UrlFuncType>
+    type GenFuncParams = [...UrlParams, ICanvasCallConfig]
+
+    return <Content extends CanvasData>(...values:GenFuncParams) => {
+        const config = values[values.length - 1] as ICanvasCallConfig;
+        let urlParams = values.filter((param) =>  ['string' , 'number'].includes(typeof param)) as UrlParams;
+        assert(urlParams.length === urlFunc.length);
+        const url = urlFunc(...urlParams);
+        return getPagedDataGenerator<Content>(url, config);
+    }
+}
+
+

@@ -2,7 +2,7 @@ import {badGradingPolicyTest, latePolicyTest, noEvaluationTest} from "../courseS
 import {getDummyLatePolicyHaver} from "./index.test";
 import {ICanvasCallConfig, range} from "../../../../canvas/canvasUtils";
 import {Page} from "../../../../canvas/content";
-import {dummyPageData} from "../../../../canvas/content/__mocks__/mockContentData";
+import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {mockGradModules, mockUgModules} from "../../../../canvas/course/__mocks__/mockModuleData";
 import {IModuleData} from "../../../../canvas/canvasDataDefs";
 import {getModulesByWeekNumber} from "../../../../canvas/course/modules";
@@ -25,13 +25,13 @@ test('Late policy test works', async () => {
 
 test('Evaluation not present in course test works', async () => {
     const dummyPages = Array.from(range(1, 20)).map((a: number) => (new Page({
-        ...dummyPageData,
+        ...mockPageData,
         title: a.toString()
     }, 0)))
     const goofus: IPagesHaver = {
         id: 0,
         getPages: async (_config?) => {
-            return [new Page({...dummyPageData, title: 'Course Evaluation'}, 0), ...dummyPages];
+            return [new Page({...mockPageData, title: 'Course Evaluation'}, 0), ...dummyPages];
         }
     };
     const gallant: IPagesHaver = {

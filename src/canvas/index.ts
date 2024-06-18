@@ -61,50 +61,6 @@ export class Account extends BaseCanvasObject<CanvasData> {
 }
 
 
-export class Rubric extends BaseCanvasObject<CanvasData>{
-    static nameProperty = 'title';
-    static contentUrlTemplate = "/api/v1/courses/{course_id}/rubrics/{content_id}";
-    static allContentUrlTemplate = "/api/v1/courses/{course_id}/rubrics";
-
-    courseId:number;
-
-    constructor(data:CanvasData, courseId:number) {
-        super(data);
-        this.courseId = courseId;
-    }
-    async associations(reload = false) {
-        if ('associations' in this.canvasData && !reload) {
-            return this.canvasData['associations'];
-        }
-
-        let data = await this.myClass.getDataById(this.id, this.courseId, {queryParams: {'include': ['associations']}});
-        let associations = data['associations'].map((data: CanvasData) => new RubricAssociation(data, this.courseId));
-        this.canvasData['associations'] = associations;
-        return associations;
-    }
-}
-
-
-export class RubricAssociation extends BaseCanvasObject<CanvasData> {
-    static contentUrlTemplate = "/api/v1/courses/{course_id}/rubric_associations/{content_id}";
-    static allContentUrlTemplate = "/api/v1/courses/{course_id}/rubric_associations";
-    courseId:number;
-
-    constructor(data:CanvasData, courseId:number) {
-        super(data);
-        this.courseId = courseId;
-    }
-
-    get useForGrading() {
-        return this.canvasData['use_for_grading'];
-    }
-
-    async setUseForGrading(value: boolean, config?:ICanvasCallConfig) {
-        this.canvasData['use_for_grading'] = value;
-        return await this.saveData({'rubric_association[use_for_grading]': value}, config);
-    }
-}
-
 export class Term extends BaseCanvasObject<ITermData> {
     static nameProperty = "name";
 

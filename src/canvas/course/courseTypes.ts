@@ -79,6 +79,7 @@ export interface IGradingSchemeEntry {
     value: number
 }
 
+
 export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
     name: string,
 

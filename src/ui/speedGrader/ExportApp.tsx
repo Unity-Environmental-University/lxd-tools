@@ -8,17 +8,16 @@ import DatePicker from "react-datepicker"
 
 import assert from "assert";
 import {
-    IAssignmentData,
     CanvasData,
-    ICourseData, IDiscussionData,
-    IEnrollmentData,
-    IModuleData, IModuleItemData, IRubricCriterion, ITermData,
+    ICourseData, IEnrollmentData,
+    IModuleData, IModuleItemData, ITermData,
     IUserData, LookUpTable, ModuleItemType
 } from "../../canvas/canvasDataDefs";
 import {text} from "node:stream/consumers";
-import {Assignment} from "../../canvas/content";
+import {Assignment, IAssignmentData, IDiscussionData} from "../../canvas/content";
 
 import {Course} from "../../canvas/course/Course";
+import {IRubricCriterionData} from "../../canvas/rubrics";
 
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.
@@ -622,7 +621,7 @@ function getItemInModule(contentItem: CanvasData, module: IModuleData, assignmen
 interface CriteriaInfo {
     order: LookUpTable<number>,
     ratingDescriptions: Record<string, Record<string, any>>,
-    critsById: LookUpTable<IRubricCriterion>
+    critsById: LookUpTable<IRubricCriterionData>
 }
 
 /**
@@ -640,9 +639,9 @@ function getCriteriaInfo(assignment: IAssignmentData): CriteriaInfo | null {
 
     let order: LookUpTable<number> = {};
     let ratingDescriptions: Record<string, Record<string, any>> = {};
-    let critsById: LookUpTable<IRubricCriterion> = {};
+    let critsById: LookUpTable<IRubricCriterionData> = {};
     for (let critIndex in rubricCriteria) {
-        let rubricCriterion: IRubricCriterion = rubricCriteria[critIndex];
+        let rubricCriterion: IRubricCriterionData = rubricCriteria[critIndex];
         order[rubricCriterion.id] = parseInt(critIndex);
         ratingDescriptions[rubricCriterion.id] = {};
         critsById[rubricCriterion.id] = rubricCriterion;

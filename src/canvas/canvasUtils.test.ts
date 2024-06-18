@@ -5,12 +5,15 @@ import {
     formDataify,
     queryStringify,
     batchify,
-    deFormDataify, deepObjectMerge
+    deFormDataify, deepObjectMerge, getPagedDataGenerator, canvasDataFetchGenFunc, ICanvasCallConfig
 } from './canvasUtils'
 import {describe, expect} from "@jest/globals";
 import assert from "assert";
 import exp from "node:constants";
 import {AssertionError} from "node:assert";
+import fetchMock from "jest-fetch-mock";
+import {renderAsyncGen} from "./course/blueprint";
+import {CanvasData} from "./canvasDataDefs";
 
 const TEST_STRING = String.fromCharCode(...Array.from(range(32, 126)))
 
@@ -193,7 +196,7 @@ describe("Recursive object merge", () => {
     })
 
     test('FormData', () => {
-        const formMerge = deepObjectMerge({ data: new FormData()}, { body: new FormData()});
+        const formMerge = deepObjectMerge({data: new FormData()}, {body: new FormData()});
         expect(formMerge?.body).toBeInstanceOf(FormData);
         expect(formMerge?.data).toBeInstanceOf(FormData);
     })
@@ -312,4 +315,40 @@ describe("Recursive object merge", () => {
     })
 
 
+})
+
+
+test('render async generator', async () => {
+    fetchMock.enableMocks();
+    fetchMock.mockResponses(...[...range(0, 10)].map(id => JSON.stringify([{id}])));
+    const results = await renderAsyncGen(getPagedDataGenerator('/api/v1/', {}));
+    const i = range(0, 10);
+    for (let result of results) {
+        expect(result.id).toEqual(i.next().value)
+    }
+
+})
+
+describe('canvasDataFetchGenFunc', () => {
+    fetchMock.enableMocks();
+    type Goober = {
+        name: string,
+        courseId: number,
+        gooberId: number,
+    } & CanvasData
+    const config: ICanvasCallConfig = { fetchInit: {} };
+    const goobers: Goober[] = [...range(0, 10)].map(i => ({name: 'thistle', courseId: i, gooberId: i}));
+
+    it('successfully generates urls', async () => {
+        fetchMock.mockClear();
+        const fetchGoobersGen = canvasDataFetchGenFunc((courseId, gooberId) => `/api/v1/${courseId}/${gooberId}`);
+        expect(fetchMock).toBeCalledTimes(0);
+        for  (let i = 0; i < 10; i++) {
+            fetchMock.once(JSON.stringify([goobers[i]]));
+            const getGoobers = fetchGoobersGen<Goober>(i, i * 2, config);
+            const {value} = await getGoobers.next();
+            expect(fetchMock).toHaveBeenCalledWith(`/api/v1/${i}/${i * 2}`, config.fetchInit)
+            expect(value).toEqual(goobers[i]);
+        }
+    })
 })

@@ -13,9 +13,8 @@ import {
     updatedDateSyllabusHtml
 } from "../../canvas/course/changeStartDate";
 import {changeModuleLockDate} from "../../canvas/course/modules";
-import {IDiscussionData} from "../../canvas/canvasDataDefs";
 import {oldDateToPlainDate} from "../../date";
-import {BaseContentItem, Discussion} from "../../canvas/content";
+import {BaseContentItem, Discussion, IDiscussionData} from "../../canvas/content";
 
 import {Course} from "../../canvas/course/Course";
 

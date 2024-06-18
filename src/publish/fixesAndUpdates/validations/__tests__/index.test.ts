@@ -1,5 +1,5 @@
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../../canvas/content";
-import {dummyAssignmentData, dummyDiscussionData, dummyPageData, dummyQuizData} from "../../../../canvas/content/__mocks__/mockContentData";
+import {mockAssignmentData, mockDiscussionData, mockPageData, mockQuizData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace} from "../index";
 import {ILatePolicyUpdate} from "../../../../canvas/canvasDataDefs";
 import mockLatePolicy from "../../../../canvas/course/__mocks__/mockLatePolicy";
@@ -54,10 +54,10 @@ function contentGoofuses(badHtml: string, goodHtml: string) {
 
     return [
         mockContentHaver(badHtml, [], "Syllabus"),
-        mockContentHaver(goodHtml, [new Quiz({...dummyQuizData, description: badHtml}, 0)], "Quiz"),
-        mockContentHaver(goodHtml, [new Assignment({...dummyAssignmentData, description: badHtml}, 0)], "Assignment"),
-        mockContentHaver(goodHtml, [new Discussion({...dummyDiscussionData, message: badHtml}, 0)], "Discussion"),
-        mockContentHaver(goodHtml, [new Page({...dummyPageData, body: badHtml}, 0)], "Page"),
+        mockContentHaver(goodHtml, [new Quiz({...mockQuizData, description: badHtml}, 0)], "Quiz"),
+        mockContentHaver(goodHtml, [new Assignment({...mockAssignmentData, description: badHtml}, 0)], "Assignment"),
+        mockContentHaver(goodHtml, [new Discussion({...mockDiscussionData, message: badHtml}, 0)], "Discussion"),
+        mockContentHaver(goodHtml, [new Page({...mockPageData, body: badHtml}, 0)], "Page"),
     ]
 
 }
@@ -65,10 +65,10 @@ function contentGoofuses(badHtml: string, goodHtml: string) {
 function contentGallant(badHtml: string, goodHtml: string) {
     return mockContentHaver(goodHtml,
         [
-            new Page({...dummyPageData, body: goodHtml}, 0),
-            new Assignment({...dummyAssignmentData, description: goodHtml}, 0),
-            new Discussion({...dummyDiscussionData, message: goodHtml}, 0),
-            new Quiz({...dummyQuizData, body: goodHtml}, 0),
+            new Page({...mockPageData, body: goodHtml}, 0),
+            new Assignment({...mockAssignmentData, description: goodHtml}, 0),
+            new Discussion({...mockDiscussionData, message: goodHtml}, 0),
+            new Quiz({...mockQuizData, body: goodHtml}, 0),
         ], "Gallant");
 }
 

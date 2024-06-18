@@ -83,7 +83,7 @@ export async function getBlueprintsFromCode(code: string, accountIds: number[], 
     return (await renderAsyncGen(bps)).toSorted((a, b) => b.name.length - a.name.length);
 }
 
-export async function renderAsyncGen<T>(generator: AsyncGenerator<T>) {
+export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefined>) {
     const out = [];
     for await (let item of generator) {
         out.push(item);
