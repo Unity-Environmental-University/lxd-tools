@@ -339,13 +339,13 @@ describe('canvasDataFetchGenFunc', () => {
     const config: ICanvasCallConfig = { fetchInit: {} };
     const goobers: Goober[] = [...range(0, 10)].map(i => ({name: 'thistle', courseId: i, gooberId: i}));
 
-    it('successfully generates urls', async () => {
+    it('successfully generates urls and results', async () => {
         fetchMock.mockClear();
-        const fetchGoobersGen = canvasDataFetchGenFunc((courseId, gooberId) => `/api/v1/${courseId}/${gooberId}`);
+        const fetchGoobersGen = canvasDataFetchGenFunc<Goober, { courseId: number, gooberId: number}>(({courseId, gooberId}) => `/api/v1/${courseId}/${gooberId}`);
         expect(fetchMock).toBeCalledTimes(0);
         for  (let i = 0; i < 10; i++) {
             fetchMock.once(JSON.stringify([goobers[i]]));
-            const getGoobers = fetchGoobersGen<Goober>(i, i * 2, config);
+            const getGoobers = fetchGoobersGen({courseId: i, gooberId: i * 2}, config);
             const {value} = await getGoobers.next();
             expect(fetchMock).toHaveBeenCalledWith(`/api/v1/${i}/${i * 2}`, config.fetchInit)
             expect(value).toEqual(goobers[i]);

@@ -503,17 +503,14 @@ export function filterUniqueFunc<T>(item: T, index: number, array: T[]) {
     return array.indexOf(item) === index;
 }
 
+type UrlFuncType<UrlParams extends Record<string, any>> = (args:UrlParams, config?: ICanvasCallConfig) => string
 export function canvasDataFetchGenFunc<
-    UrlFuncType extends (...args:(string|number)[]) => string
->( urlFunc:UrlFuncType){
-    type UrlParams = Parameters<UrlFuncType>
-    type GenFuncParams = [...UrlParams, ICanvasCallConfig]
+    Content extends CanvasData,
+    UrlParams extends Record<string, any>
+>( urlFunc:UrlFuncType<UrlParams>){
 
-    return <Content extends CanvasData>(...values:GenFuncParams) => {
-        const config = values[values.length - 1] as ICanvasCallConfig;
-        let urlParams = values.filter((param) =>  ['string' , 'number'].includes(typeof param)) as UrlParams;
-        assert(urlParams.length === urlFunc.length);
-        const url = urlFunc(...urlParams);
+    return (args:UrlParams, config?: ICanvasCallConfig) => {
+        const url = urlFunc(args, config);
         return getPagedDataGenerator<Content>(url, config);
     }
 }
