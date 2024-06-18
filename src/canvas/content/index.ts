@@ -469,10 +469,8 @@ export function getBannerImage(overviewPage:BaseContentItem) {
 
 
 
-export function assignmentDataGen(courseId:number, config?:ICanvasCallConfig) {
-    const url = `/api/v1/courses/${courseId}/`
-    return getPagedDataGenerator<IAssignmentData>(url, config);
-}
+export const assignmentDataGen =
+    canvasDataFetchGenFunc<IAssignmentData, { courseId: number } >(({courseId}) => `/api/v1/courses/${courseId}/`)
 
 async function getFileData(fileId:number, courseId:number) {
     const url = `/api/v1/courses/${courseId}/files/${fileId}`
