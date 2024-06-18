@@ -23,7 +23,7 @@ import {
 } from "./courseTypes";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
 import {
-    Assignment,
+    Assignment, assignmentDataGen,
     BaseContentItem,
     Discussion,
     getBannerImage,
@@ -32,7 +32,7 @@ import {
     Page,
     Quiz
 } from "../content";
-import {fetchJson, filterUniqueFunc, formDataify, getPagedData, ICanvasCallConfig} from "../canvasUtils";
+import {filterUniqueFunc, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {NotImplementedException, Term} from "../index";
 import assert from "assert";
 import {overrideConfig} from "../../publish/fixesAndUpdates/validations";
@@ -42,6 +42,7 @@ import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
 import {CourseNotFoundException, getCourseData, getCourseIdFromUrl, getGradingStandards} from "./index";
+import {fetchJson, getPagedData, renderAsyncGen} from "../fetch";
 
 const HOMETILE_WIDTH = 500;
 
@@ -434,8 +435,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
      * @param config
      */
     async getAssignments(config?: ICanvasCallConfig): Promise<Assignment[]> {
+        console.warn('deprecated, use assignmentDataGen instead');
         config = overrideConfig(config, {queryParams: {include: ['due_at']}})
-        return await Assignment.getAllInCourse(this.id, config) as Assignment[];
+        const assignmentDatas = await renderAsyncGen(assignmentDataGen({courseId: this.id}, config));
+        return(assignmentDatas.map(data => new Assignment(data, this.id)));
     }
 
 

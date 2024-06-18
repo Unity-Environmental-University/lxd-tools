@@ -1,19 +1,16 @@
 import {ICourseData} from "../canvasDataDefs";
 import {
     deepObjectMerge,
-    fetchJson,
     formDataify,
-    getPagedData,
-    getPagedDataGenerator,
     ICanvasCallConfig,
-    IQueryParams,
-    mergePagedDataGenerators
+    IQueryParams
 } from "../canvasUtils";
 import {Term} from "../index";
 
 import {overrideConfig} from "../../publish/fixesAndUpdates/validations";
 import {IGradingStandardData} from "./courseTypes";
 import {Course} from "./Course";
+import {fetchJson, getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "../fetch";
 
 
 export async function getGradingStandards(contextId: number, contextType: 'account' | 'course', config?: ICanvasCallConfig) {

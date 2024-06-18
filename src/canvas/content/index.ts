@@ -1,11 +1,7 @@
 import {Temporal} from "temporal-polyfill";
 import {CanvasData, IFile, IGradingRules} from "../canvasDataDefs";
 import {
-    canvasDataFetchGenFunc,
-    fetchJson,
     getCourseIdFromUrl,
-    getPagedData,
-    getPagedDataGenerator,
     ICanvasCallConfig
 } from "../canvasUtils";
 import {BaseCanvasObject} from "../baseCanvasObject";
@@ -14,6 +10,7 @@ import {NotImplementedException} from "../index";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {IRubricCriterionData} from "../rubrics";
+import {canvasDataFetchGenFunc, fetchJson, getPagedData, getPagedDataGenerator} from "../fetch";
 
 const SAFE_MAX_BANNER_WIDTH = 1400;
 
@@ -360,6 +357,7 @@ export class Assignment extends BaseContentItem {
     static bodyProperty = 'description';
     static contentUrlTemplate = "/api/v1/courses/{course_id}/assignments/{content_id}";
     static allContentUrlTemplate = "/api/v1/courses/{course_id}/assignments";
+
 
     async setDueAt(dueAt: Date, config?:ICanvasCallConfig) {
         const sourceDueAt = this.dueAt ? Temporal.Instant.from(this.rawData.due_at) : null;

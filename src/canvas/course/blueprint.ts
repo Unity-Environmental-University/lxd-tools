@@ -1,15 +1,10 @@
-import {
-    fetchJson,
-    formDataify,
-    getItemTypeAndId,
-    getPagedDataGenerator,
-    ICanvasCallConfig
-} from "../canvasUtils";
+import {formDataify, getItemTypeAndId, ICanvasCallConfig} from "../canvasUtils";
 import {ICourseData, IModuleData, IModuleItemData} from "../canvasDataDefs";
 import {getCourseGenerator} from "./index";
 import {apiWriteConfig} from "../index";
 import {ICourseCodeHaver, IIdHaver} from "./courseTypes";
 import {Course} from "./Course";
+import {fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
 
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
     isBlueprint(): boolean,
@@ -81,14 +76,6 @@ export async function getBlueprintsFromCode(code: string, accountIds: number[], 
     if (!baseCode) return null;
     const bps = getCourseGenerator(`BP_${baseCode}`, accountIds, undefined, config);
     return (await renderAsyncGen(bps)).toSorted((a, b) => b.name.length - a.name.length);
-}
-
-export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefined>) {
-    const out = [];
-    for await (let item of generator) {
-        out.push(item);
-    }
-    return out;
 }
 
 export async function lockBlueprint(courseId:number, modules: IModuleData[]) {

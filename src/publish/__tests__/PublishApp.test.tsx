@@ -1,16 +1,17 @@
 // PublishApp.test.tsx
 global.TextEncoder = require('util').TextEncoder;
 
+import {fetchJson} from "../../canvas/fetch";
 import {Course} from "../../canvas/course/Course";
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PublishApp from '../PublishApp';
 import {IUserData} from '../../canvas/canvasDataDefs';
-import * as canvasUtils from '../../canvas/canvasUtils';
 import {PublishInterface} from '../publishInterface/PublishInterface';
 import {ContentUpdateInterface} from '../fixesAndUpdates/ContentUpdateInterface';
 import {AdminApp} from '../../admin/AdminApp';
+
 
 
 jest.mock('../../canvas/course');
@@ -29,7 +30,7 @@ const mockUser: IUserData = {
     name: 'Test User',
 } as any;
 
-const mockFetchJson = canvasUtils.fetchJson as jest.Mock;
+const mockFetchJson = fetchJson as jest.Mock;
 const mockCourseGetFromUrl = jest.spyOn(Course, 'getFromUrl')
 
 beforeEach(() => {

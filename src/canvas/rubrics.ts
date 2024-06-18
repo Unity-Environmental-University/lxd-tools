@@ -1,6 +1,7 @@
 import {BaseCanvasObject} from "./baseCanvasObject";
 import {CanvasData} from "./canvasDataDefs";
-import {deepObjectMerge, fetchJson, getPagedDataGenerator, ICanvasCallConfig} from "./canvasUtils";
+import {deepObjectMerge, ICanvasCallConfig} from "./canvasUtils";
+import {fetchJson, getPagedDataGenerator} from "./fetch";
 
 
 export interface IRubricCriterionData {

@@ -1,8 +1,6 @@
 import {
     deepObjectMerge,
-    fetchJson,
     formDataify,
-    getPagedDataGenerator,
     ICanvasCallConfig
 } from "../canvasUtils";
 import {sleep} from "../../index";
@@ -10,6 +8,7 @@ import {createNewCourse, getCourseData} from "./index";
 import {Course} from "./Course";
 
 import { storage} from "webextension-polyfill";
+import {fetchJson, getPagedDataGenerator} from "../fetch";
 export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
 
 

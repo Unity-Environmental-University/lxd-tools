@@ -9,12 +9,13 @@ import {
 } from "../migration";
 import {createNewCourse} from "../index";
 import {mockProgressData} from "../__mocks__/mockProgressData";
-import {fetchJson, getPagedDataGenerator, ICanvasCallConfig, range} from "../../canvasUtils";
+import {ICanvasCallConfig, range} from "../../canvasUtils";
 import {mockMigrationData} from "../__mocks__/mockMigrationData";
 import * as canvasUtils from "../../canvasUtils";
 import * as CourseModule from "../index";
 import {Course} from "../Course";
 import {config} from "dotenv";
+import {fetchJson, getPagedDataGenerator} from "../../fetch";
 
 
 beforeEach(() => {

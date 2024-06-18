@@ -10,9 +10,10 @@ And starting to convert to ts
 import assert from 'assert';
 
 import {CanvasData, ITermData} from "./canvasDataDefs";
-import {fetchJson, formDataify, getPagedData, ICanvasCallConfig} from "./canvasUtils";
+import {formDataify, ICanvasCallConfig} from "./canvasUtils";
 import {BaseCanvasObject} from "./baseCanvasObject";
 import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
+import {fetchJson, getPagedData} from "./fetch";
 
 
 /**

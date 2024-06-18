@@ -1,7 +1,8 @@
 import {Temporal} from "temporal-polyfill";
 import {IModuleData} from "../canvasDataDefs";
-import {fetchJson, formDataify, ICanvasCallConfig} from "../canvasUtils";
+import {formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {IPageData, Page} from "../content";
+import {fetchJson} from "../fetch";
 
 export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],
