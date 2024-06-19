@@ -4,7 +4,7 @@ import {ValidationRow} from "./ValidationRow";
 import {CourseValidation} from "./validations";
 import {Course} from "../../canvas/course/Course";
 
-type CourseValidatorProps<T = Course> = {
+export type CourseValidatorProps<T = Course> = {
     course: T,
     showOnlyFailures: boolean,
     refreshCourse: () => Promise<any>,
@@ -13,7 +13,7 @@ type CourseValidatorProps<T = Course> = {
 
 export function CourseValidator({course, tests, refreshCourse, showOnlyFailures=false}: CourseValidatorProps) {
     return <div className={'container'}>
-        {showOnlyFailures || <h2>Course Settings and Content Tests</h2>}
+        {showOnlyFailures || <h2 data-testid="header">Course Settings and Content Tests</h2>}
         {tests.map((test, i) => <ValidationRow
             key={`${course.id}${test.name}${i}`}
             course={course}

@@ -221,7 +221,6 @@ function getCurioProfileDiv(el:Element) {
 
 }
 
-
 function getCurioBio(el:Element) {
     const profileDiv = getCurioProfileDiv(el);
     let bio = profileDiv.querySelector('.cbt-instructor-bio');

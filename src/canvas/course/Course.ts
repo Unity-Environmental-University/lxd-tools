@@ -484,7 +484,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async getTabs(config?: ICanvasCallConfig) {
-        return await fetchJson(`courses/${this.id}/tabs`, config) as ITabData[];
+        return await fetchJson(`/api/v1/courses/${this.id}/tabs`, config) as ITabData[];
     }
 
     async getFrontPage() {

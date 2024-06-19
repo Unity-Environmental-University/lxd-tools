@@ -72,7 +72,7 @@ export function ValidationRow({
     }
 
     useEffectAsync(async () => {
-        if (result) return; //only run once and only if we don't have a result. MUST call r
+        if (result) return; //only run once and only if we don't have a result
         if (potemkinVillage) return;
         setLoading(true);
         try {

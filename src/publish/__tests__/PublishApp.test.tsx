@@ -16,6 +16,7 @@ import {AdminApp} from '../../admin/AdminApp';
 
 jest.mock('../../canvas/course');
 jest.mock('../../canvas/canvasUtils');
+jest.mock('../../canvas/fetch');
 jest.mock('../publishInterface/PublishInterface');
 jest.mock('../fixesAndUpdates/CourseUpdateInterface');
 jest.mock('../../admin/AdminApp');

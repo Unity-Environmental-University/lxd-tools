@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
@@ -6,19 +6,14 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {badContentFixFunc, badContentRunFunc, CourseValidation, preserveCapsReplace} from "./validations/index";
+import {badContentFixFunc, badContentRunFunc, CourseValidation, preserveCapsReplace} from "./validations";
 import {Page} from "../../canvas/content";
-import syllabusTests from "./validations/syllabusTests";
-import courseSettingsTests from "./validations/courseSettings";
-import courseContentTests from "./validations/courseContent";
-import proxyServerLinkValidation from "./validations/proxyServerLinkValidation";
-import capstoneProjectValidations from "./validations/courseSpecific/capstoneProjectValidations";
-import {MakeBp} from "../publishInterface/MakeBp";
 import {Course} from "../../canvas/course/Course";
 
 export type CourseUpdateInterfaceProps = {
     course?: Course,
     parentCourse?: Course,
+    onChangeMode?: (mode:InterfaceMode) => any,
     allValidations: CourseValidation[],
     refreshCourse: () => Promise<void>
 }
@@ -31,7 +26,13 @@ export type InterfaceMode = 'fix' | 'unitTest'
 
 
 
-export function CourseUpdateInterface({course, parentCourse, refreshCourse, allValidations}: CourseUpdateInterfaceProps) {
+export function CourseUpdateInterface({
+    course,
+    parentCourse,
+    refreshCourse,
+    allValidations,
+    onChangeMode,
+}: CourseUpdateInterfaceProps) {
 
     const [validations, setValidations] = useState<CourseValidation[]>(allValidations);
     const [show, setShow] = useState(false)
@@ -41,6 +42,10 @@ export function CourseUpdateInterface({course, parentCourse, refreshCourse, allV
     const [failedItems, setFailedItems] = useState<React.ReactElement[]>([])
     const [loadingCount, setLoadingCount] = useState(0);
     const [mode, setMode] = useState<InterfaceMode>('fix')
+
+    useEffect(() => {
+        onChangeMode && onChangeMode(mode)
+    }, [mode]);
 
     useEffectAsync(async () => {
         if (!course) return;
@@ -155,7 +160,7 @@ export function CourseUpdateInterface({course, parentCourse, refreshCourse, allV
                 {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
             </div>
             {mode === 'fix' && <FixesMode course={course}></FixesMode>}
-            {mode in ['fix', 'unitTest'] && <CourseValidator
+            {['fix', 'unitTest'].includes(mode) && <CourseValidator
                 showOnlyFailures={mode !== 'unitTest'}
                 course={course}
                 refreshCourse={refreshCourse}

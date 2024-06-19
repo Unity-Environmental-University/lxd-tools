@@ -97,6 +97,7 @@ export const badGradingPolicyTest: CourseValidation<IModulesHaver & IGradingStan
 export default [
     noEvaluationTest,
     latePolicyTest,
+    announcementsOnHomePageTest,
     extensionsInstalledTest,
     badGradingPolicyTest
 ]

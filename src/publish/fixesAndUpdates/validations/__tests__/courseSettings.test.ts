@@ -1,10 +1,16 @@
-import {badGradingPolicyTest, latePolicyTest, noEvaluationTest} from "../courseSettings";
+import {
+    badGradingPolicyTest,
+    extensionsInstalledTest,
+    extensionsToTest,
+    latePolicyTest,
+    noEvaluationTest
+} from "../courseSettings";
 import {getDummyLatePolicyHaver} from "./index.test";
 import {ICanvasCallConfig, range} from "../../../../canvas/canvasUtils";
 import {Page} from "../../../../canvas/content";
 import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {mockGradModules, mockUgModules} from "../../../../canvas/course/__mocks__/mockModuleData";
-import {IModuleData} from "../../../../canvas/canvasDataDefs";
+import {IModuleData, ITabData} from "../../../../canvas/canvasDataDefs";
 import {getModulesByWeekNumber} from "../../../../canvas/course/modules";
 import {
     IGradingStandardData,
@@ -12,6 +18,10 @@ import {
     IModulesHaver,
     IPagesHaver
 } from "../../../../canvas/course/courseTypes";
+import {CourseValidation} from "../index";
+import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
+import {Course} from "../../../../canvas/course/Course";
+import mockTabData from "../../../../canvas/__mocks__/mockTabData";
 
 test('Late policy test works', async () => {
     const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});
@@ -51,18 +61,16 @@ test('Evaluation not present in course test works', async () => {
 })
 
 
-
-const gradingPolicyDummyData:IGradingStandardData = {
+const gradingPolicyDummyData: IGradingStandardData = {
     context_type: 'Course', grading_scheme: [], id: 0, title: ""
 }
 
 
-const dummyGradingPolicies:IGradingStandardData[] = [
-    {...gradingPolicyDummyData, id:1, title: "DE Undergraduate Programs"},
-    {...gradingPolicyDummyData, id:2, title: "DE Graduate Programs"},
-    {...gradingPolicyDummyData, id:3, title: "REVISED DE Undergraduate Programs"},
+const dummyGradingPolicies: IGradingStandardData[] = [
+    {...gradingPolicyDummyData, id: 1, title: "DE Undergraduate Programs"},
+    {...gradingPolicyDummyData, id: 2, title: "DE Graduate Programs"},
+    {...gradingPolicyDummyData, id: 3, title: "REVISED DE Undergraduate Programs"},
 ]
-
 
 
 describe('Grading policy validation correct test', () => {
@@ -104,3 +112,20 @@ describe('Grading policy validation correct test', () => {
 })
 
 
+describe('Extensions installed', () => {
+    const mockGetTabs = (tabs: ITabData[]) => jest.fn(async () => tabs)
+    it('succeeds if all extensions are present', async () => {
+
+        const mockCourse = new Course(mockCourseData);
+        mockCourse.getTabs = mockGetTabs(extensionsToTest.map(label => ({...mockTabData, label})))
+        let result = await extensionsInstalledTest.run(mockCourse);
+        expect(result.success).toBe(true);
+    })
+    it('fails if not all extensions are present', async () => {
+
+        const mockCourse = new Course(mockCourseData);
+        mockCourse.getTabs = mockGetTabs([{...mockTabData, label: extensionsToTest[0]}, mockTabData, mockTabData])
+        let result = await extensionsInstalledTest.run(mockCourse);
+        expect(result.success).toBe(false);
+    })
+})
