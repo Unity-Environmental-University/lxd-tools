@@ -88,24 +88,3 @@ export async function getRubric(courseId: number, rubricId: number, options?: Ge
     }
     return await fetchJson(url, config) as IRubricData
 }
-
-
-class RubricAssociation extends BaseCanvasObject<CanvasData> {
-    static contentUrlTemplate = "/api/v1/courses/{course_id}/rubric_associations/{content_id}";
-    static allContentUrlTemplate = "/api/v1/courses/{course_id}/rubric_associations";
-    courseId: number;
-
-    constructor(data: CanvasData, courseId: number) {
-        super(data);
-        this.courseId = courseId;
-    }
-
-    get useForGrading() {
-        return this.canvasData['use_for_grading'];
-    }
-
-    async setUseForGrading(value: boolean, config?: ICanvasCallConfig) {
-        this.canvasData['use_for_grading'] = value;
-        return await this.saveData({'rubric_association[use_for_grading]': value}, config);
-    }
-}
