@@ -104,7 +104,7 @@ export function UpdateStartDate(
             setAffectedItems && setAffectedItems(affectedItems)
             setFailedItems && setFailedItems([<div className={'ui-alert'}><h2>{error.toString()}</h2>
                 <p>{error.stack}</p></div>]);
-
+            console.error(error);
         }
         endLoading();
     }
@@ -114,9 +114,6 @@ export function UpdateStartDate(
         const results = updatedDateSyllabusHtml(syllabusText, updateStartDate);
         if (syllabusText !== results.html) {
             await course.changeSyllabus(results.html);
-            for (let row of getSyllabusAffectedItemsRows(results)) {
-
-            }
             const modules = await course.getModules();
             await changeModuleLockDate(course.id, modules[0], updateStartDate);
             if (updateStartDate != startDate) {

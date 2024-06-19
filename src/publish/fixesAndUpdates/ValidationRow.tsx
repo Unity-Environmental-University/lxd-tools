@@ -85,7 +85,6 @@ export function ValidationRow({
             })
         }
 
-
         setLoading(false);
     }, [course, test])
 

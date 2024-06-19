@@ -40,25 +40,24 @@ export function getStartDateAssignments(assignments:Assignment[]) {
     return plainDateDue.add({days: dayOfWeekOffset});
 }
 
-export function getGradTermName(termStart:Temporal.PlainDate, locale=DEFAULT_LOCALE) {
+export function getUpdatedStyleTermName(termStart:Temporal.PlainDate, weekCount:string|number, locale=DEFAULT_LOCALE) {
     const month = termStart.toLocaleString(locale, { month: '2-digit'})
     const day = termStart.toLocaleString(locale, { day: '2-digit'})
     const year = termStart.toLocaleString(locale, { year: '2-digit'})
-
-    return `DE8W${month}.${day}.${year}`;
+    return `DE${weekCount}W${month}.${day}.${year}`;
 }
 
-export function getUgTermName(termStart:Temporal.PlainDate, locale=DEFAULT_LOCALE) {
+export function getOldUgTermName(termStart:Temporal.PlainDate, locale=DEFAULT_LOCALE) {
     const year = termStart.toLocaleString(DEFAULT_LOCALE, { year: '2-digit'})
     const month = termStart.toLocaleString(DEFAULT_LOCALE, { month: 'short'})
     return `DE-${year}-${month}`;
 }
 
 export function getNewTermName(oldTermName:string, newTermStart:Temporal.PlainDate, locale= DEFAULT_LOCALE) {
-    const termNameGrad = oldTermName.match(/DE8W\d\d\.\d\d\.\d\d/)
-    if (termNameGrad) return getGradTermName(newTermStart)
+    const [termName, weekCount] = oldTermName.match(/DE(\d)W\d\d\.\d\d\.\d\d/) || [];
+    if (termName) return getUpdatedStyleTermName(newTermStart, weekCount);
     const termNameUg = oldTermName.match(/(DE(?:.HL|)-\d\d)-(\w+)\w{2}?/i);
-    if (termNameUg) return getUgTermName(newTermStart);
+    if (termNameUg) return getUpdatedStyleTermName(newTermStart, 5);
     throw new MalformedSyllabusError(`Can't Recognize Term Name ${oldTermName}`)
 }
 
@@ -68,9 +67,9 @@ export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.Pla
     const syllabusCalloutBox = syllabusBody.querySelector('div.cbt-callout-box');
     if(!syllabusCalloutBox) throw new MalformedSyllabusError("Can't find syllabus callout box");
 
-    let paras = Array.from(syllabusCalloutBox.querySelectorAll('p'));
-    paras = paras.filter((para) => para.querySelector('strong'));
-    if (paras.length < 5) throw new MalformedSyllabusError(`Missing syllabus headers\n${paras}`);
+    const paras = Array.from(syllabusCalloutBox.querySelectorAll('p'));
+    const strongParas = paras.filter((para) => para.querySelector('strong'));
+    if (strongParas.length < 5) throw new MalformedSyllabusError(`Missing syllabus headers\n${strongParas}`);
 
     const [
         _courseNameEl,
@@ -79,7 +78,7 @@ export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.Pla
         _instructorNameEl,
         _instructorContactInfoEl,
         _creditsEl
-    ] = paras;
+    ] = strongParas;
 
     const changedText: string[] = [];
 
@@ -94,14 +93,14 @@ export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.Pla
     
     const dateRangeText = `${dateToSyllabusString(newStartDate)} - ${dateToSyllabusString(newEndDate)}`;
 
-    termNameEl.innerHTML = `<p><strong>${syllabusHeaderName(termNameEl)}:</strong> ${newTermName}</p>`;
-    datesEl.innerHTML = `<p><strong>${syllabusHeaderName(datesEl)}:</strong> ${dateRangeText}</p>`;
+    termNameEl.innerHTML = `<strong>${syllabusHeaderName(termNameEl)}:</strong><span> ${newTermName}</span>`;
+    datesEl.innerHTML = `<strong>${syllabusHeaderName(datesEl)}:</strong><span> ${dateRangeText}</span>`;
 
-    changedText.push(`${oldTermName} -> ${termNameEl.innerText}`)
-    changedText.push(`${oldDates} -> ${datesEl.innerText}`)
+    changedText.push(`${oldTermName} -> ${termNameEl.textContent}`)
+    changedText.push(`${oldDates} -> ${datesEl.textContent}`)
 
     const output = {
-        html : syllabusBody.innerHTML,
+        html : syllabusBody.innerHTML.replaceAll(/<p>\s*(&nbsp;)?<\/p>/ig, '\s'),
         changedText,
     }
     syllabusBody.remove();

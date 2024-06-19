@@ -71,8 +71,11 @@ type GetRubricsForCourseOptions = {
     include?: RubricCallIncludeTypes[]
 }
 
+export function getRubricsFetchUrl(courseId:number) { return `/api/v1/courses/${courseId}/rubrics`}
+export function getRubricFetchUrl(courseId:number, rubricId:number) { return `/api/v1/courses/${courseId}/rubrics/${rubricId}` }
+
 export function rubricsForCourseGen(courseId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {
-    const url = `/api/v1/courses/${courseId}/rubrics`;
+    const url = getRubricsFetchUrl(courseId);
     if (options?.include) {
         config ??= {};
         config.queryParams = deepObjectMerge(config?.queryParams, {include: options.include})
@@ -81,7 +84,7 @@ export function rubricsForCourseGen(courseId: number, options?: GetRubricsForCou
 }
 
 export async function getRubric(courseId: number, rubricId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {
-    const url = `/api/v1/courses/${courseId}/rubrics/${rubricId}`;
+    const url = getRubricFetchUrl(courseId, rubricId);
     if (options?.include) {
         config ??= {};
         config.queryParams = deepObjectMerge(config?.queryParams, {include: options.include})

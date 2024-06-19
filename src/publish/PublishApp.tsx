@@ -14,6 +14,7 @@ import capstoneProjectValidations from "./fixesAndUpdates/validations/courseSpec
 import syllabusTests from "./fixesAndUpdates/validations/syllabusTests";
 import courseSettingsTests from "./fixesAndUpdates/validations/courseSettings";
 import courseContentTests from "./fixesAndUpdates/validations/courseContent";
+import {rubricsTiedToGradesTest} from "./fixesAndUpdates/validations/rubricSettings";
 
 
 function PublishApp() {
@@ -42,19 +43,20 @@ function PublishApp() {
         ...syllabusTests,
         ...courseSettingsTests,
         ...courseContentTests,
+        //rubricsTiedToGradesTest
         //proxyServerLinkValidation,
     ]
 
 
 
     return(user && <div>
-        <PublishInterface course={course} user={user}/>
         <CourseUpdateInterface
             course={course}
             parentCourse={parentCourse}
             allValidations={allValidations}
             refreshCourse={() => getCourse(true)
         }/>
+        <PublishInterface course={course} user={user}/>
         <AdminApp course={course}/>
     </div>)
 }
