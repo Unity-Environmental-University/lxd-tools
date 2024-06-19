@@ -9,7 +9,7 @@ import '@testing-library/jest-dom';
 import PublishApp from '../PublishApp';
 import {IUserData} from '../../canvas/canvasDataDefs';
 import {PublishInterface} from '../publishInterface/PublishInterface';
-import {ContentUpdateInterface} from '../fixesAndUpdates/ContentUpdateInterface';
+import {CourseUpdateInterface} from '../fixesAndUpdates/CourseUpdateInterface';
 import {AdminApp} from '../../admin/AdminApp';
 
 
@@ -17,7 +17,7 @@ import {AdminApp} from '../../admin/AdminApp';
 jest.mock('../../canvas/course');
 jest.mock('../../canvas/canvasUtils');
 jest.mock('../publishInterface/PublishInterface');
-jest.mock('../fixesAndUpdates/ContentUpdateInterface');
+jest.mock('../fixesAndUpdates/CourseUpdateInterface');
 jest.mock('../../admin/AdminApp');
 
 
@@ -51,7 +51,7 @@ describe('PublishApp Component', () => {
         (PublishInterface as jest.Mock).mockImplementation(({course, user}) => (
             <div>PublishInterface: {course && user && 'Loaded'}</div>
         ));
-        (ContentUpdateInterface as jest.Mock).mockImplementation(({course, parentCourse, refreshCourse}) => (
+        (CourseUpdateInterface as jest.Mock).mockImplementation(({course, parentCourse, refreshCourse}) => (
             <div>ContentUpdateInterface: {course && parentCourse && 'Loaded'}</div>
         ));
         (AdminApp as jest.Mock).mockImplementation(({course}) => (
