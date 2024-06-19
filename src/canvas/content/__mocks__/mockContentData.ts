@@ -37,6 +37,28 @@ export const mockQuizData: IQuizData = {
 }
 
 export const mockAssignmentData: IAssignmentData = {
+    allowed_extensions: [],
+    assignment_group_id: 0,
+    automatic_peer_reviews: false,
+    course_id: 0,
+    created_at: "",
+    description: "",
+    due_at: null,
+    due_date_required: false,
+    grade_group_students_individually: false,
+    has_overrides: false,
+    html_url: "",
+    integration_data: undefined,
+    intra_group_peer_reviews: false,
+    lock_at: null,
+    max_name_length: 0,
+    peer_reviews: false,
+    points_possible: 0,
+    position: 0,
+    submission_types: [],
+    submissions_download_url: "",
+    unlock_at: null,
+    updated_at: null,
     id: 0, name: "", rubric: []
 }
 

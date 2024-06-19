@@ -15,9 +15,8 @@ export function getCurrentStartDate(modules: IModuleData[]) {
     return oldDateToPlainDate(oldDate);
 }
 
-export function getStartDateAssignments(assignments:Assignment[]) {
-    const sorted = assignments
-        .filter((assignment) => assignment.dueAt)
+export function sortAssignmentsByDueDate(assignments:Assignment[]) {
+    return assignments
         .toSorted((a, b) =>
         {
 
@@ -29,7 +28,11 @@ export function getStartDateAssignments(assignments:Assignment[]) {
             return 0;
         }
     );
-    console.log(sorted);
+
+}
+
+export function getStartDateAssignments(assignments:Assignment[]) {
+    const sorted = sortAssignmentsByDueDate(assignments).filter(a => a.dueAt);
     if (sorted.length == 0) throw new NoAssignmentsWithDueDatesError();
     const firstAssignmentDue = sorted[0].dueAt;
     assert(firstAssignmentDue, "It should be literally impossible for this to happen with current type checking.")

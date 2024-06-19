@@ -8,9 +8,6 @@ export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],
 }
 
-
-//TODO -- migrate some of the functionality built into course into functions here
-
 export async function changeModuleLockDate(courseId: number, module: IModuleData, targetDate: Temporal.PlainDate) {
     const payload = {
         module: {
