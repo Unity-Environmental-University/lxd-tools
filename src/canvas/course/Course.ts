@@ -562,20 +562,15 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     async updateDueDates(offset: number) {
         const promises: Promise<any>[] = [];
         let assignments = await this.getAssignments();
-        let quizzes = await this.getQuizzes();
 
         if (offset === 0 || offset) {
             for (let assignment of assignments) {
                 console.log(assignment);
                 promises.push(assignment.dueAtTimeDelta(Number(offset)));
             }
-
-            for (let quiz of quizzes) {
-                promises.push(quiz.dueAtTimeDelta(Number(offset)));
-            }
         }
         await Promise.all(promises);
-        return [...assignments, ...quizzes];
+        return [...assignments];
     }
 
     async publish() {

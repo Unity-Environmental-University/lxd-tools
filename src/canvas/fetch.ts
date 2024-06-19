@@ -41,7 +41,7 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     }
 
     if (url.includes('undefined')) {
-        console.log(url);
+        console.warn(url);
     }
     /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
     let response = await fetch(url, config?.fetchInit);
@@ -93,10 +93,14 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
 export async function fetchJson<T extends Record<string, any>>(
     url: string, config: ICanvasCallConfig | null = null
 ): Promise<T> {
+    const match = url.search(/^(\/|\w+:\/\/)/);
+    if(match < 0) throw new Error("url does not start with / or http")
     if (config?.queryParams) {
         url += '?' + new URLSearchParams(config.queryParams);
     }
     config ??= {};
+
+    //TODO: try to remember why this is here. I THINK this the beginning of thinking about integration testing support.
     if (!document) {
         config.fetchInit ??= {};
         config.fetchInit.headers = [];

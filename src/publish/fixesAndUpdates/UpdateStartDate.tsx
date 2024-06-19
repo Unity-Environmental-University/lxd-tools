@@ -63,7 +63,6 @@ export function UpdateStartDate(
 
                 const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate);
                 if (syllabusChanges) affectedItems.concat(syllabusChanges);
-
                 let startOfFirstWeek = getStartDateAssignments(await course.getAssignments());
                 console.log(startOfFirstWeek.toString());
                 let contentDateOffset = startDate.until(workingStartDate).days;

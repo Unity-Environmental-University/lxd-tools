@@ -21,7 +21,7 @@ test('gets assignments from course id', async () => {
     fetchMock.mockResponses(...[...range(0, 10)].map(id => JSON.stringify({...mockAssignmentData, id})))
     let i = range(0, 10);
     for await (let assignment of assignmentDataGen({courseId: id}, config)) {
-        expect(fetchMock).toHaveBeenCalledWith(`/api/v1/course/${id}`, config.fetchInit)
+        expect(fetchMock).toHaveBeenCalledWith(`/api/v1/course/${id}/assignments`, config.fetchInit)
         expect(assignment.id).toEqual(i.next().value);
     }
 })

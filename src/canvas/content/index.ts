@@ -1,6 +1,7 @@
 import {Temporal} from "temporal-polyfill";
 import {CanvasData, IFile, IGradingRules} from "../canvasDataDefs";
 import {
+    formDataify,
     getCourseIdFromUrl,
     ICanvasCallConfig
 } from "../canvasUtils";
@@ -415,6 +416,19 @@ export class Quiz extends BaseContentItem {
     static contentUrlTemplate = "/api/v1/courses/{course_id}/quizzes/{content_id}";
     static allContentUrlTemplate = "/api/v1/courses/{course_id}/quizzes";
 
+    async setDueAt(date: Date): Promise<Record<string, any>> {
+        const url = `/api/v1/courses/${this.courseId}/quizzes/${this.id}`;
+        return fetchJson(url, {
+            fetchInit: {
+                method: 'PUT',
+                body: formDataify({
+                    quiz: {
+                        due_at: date
+                    }
+                })
+            }
+        })
+    }
 }
 
 export class Page extends BaseContentItem {
@@ -467,8 +481,10 @@ export function getBannerImage(overviewPage:BaseContentItem) {
 
 
 
-export const assignmentDataGen =
-    canvasDataFetchGenFunc<IAssignmentData, { courseId: number } >(({courseId}) => `/api/v1/courses/${courseId}/`)
+export const assignmentDataGen = canvasDataFetchGenFunc<
+    IAssignmentData,
+    { courseId: number }
+>(({courseId}) => `/api/v1/courses/${courseId}/assignments`)
 
 async function getFileData(fileId:number, courseId:number) {
     const url = `/api/v1/courses/${courseId}/files/${fileId}`
