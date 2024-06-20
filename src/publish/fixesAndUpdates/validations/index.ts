@@ -5,19 +5,21 @@ import {Course} from "../../../canvas/course/Course";
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
 const MAX_SEARCH_RETURN_SIZE = 100;
+
+export type MessageResult = {
+    bodyLines: string[],
+    links?: string[]
+}
+
+
 export type ValidationTestResult<UserDataType = undefined> = {
     userData?: UserDataType,
     success: boolean | 'unknown',
-    message: string | string[],
+    messages: MessageResult[],
     links?: string[],
 }
 
-export type ValidationFixResult = {
-    success: boolean | 'unknown',
-    message: string,
-    links?: string[],
-}
-
+export type ValidationFixResult = ValidationTestResult
 
 
 export type CourseValidation<T = Course, UserDataType = undefined> = {
@@ -35,11 +37,35 @@ export interface TextReplaceValidation<T = Course> extends CourseValidation<T> {
     fix: (course: T) => Promise<ValidationFixResult>
 }
 
-export function testResult(success: boolean | undefined, failureMessage: string[], links?: string[], successMessage = ['success']): ValidationTestResult {
-    success = !!success;
+
+export function stringsToMessageResult(value:string[] | string, links?: string[] | string) {
+    const messageResult:MessageResult = {bodyLines: Array.isArray(value) ? value : [value]}
+    if(links) messageResult.links = Array.isArray(links)? links : [links]
+    return messageResult;
+}
+
+function ensureMessageResults(value: string | string[] | MessageResult[] | MessageResult) {
+    if(!Array.isArray(value)) return typeof value === 'string' ? [stringsToMessageResult(value)] : [value];
+    if(value.length === 0) return value as MessageResult[];
+    if(typeof value[0] === 'string') return [stringsToMessageResult(value as string[])];
+    return value as MessageResult[];
+}
+
+export function testResult(
+    success: boolean | undefined | 'unknown',
+    failureMessage: string | string[] | MessageResult[] | MessageResult = 'failure',
+    links?: string[],
+    notFailureMessage: string | string[] | MessageResult[] | MessageResult = 'success'
+): ValidationTestResult {
+
+    success = success === 'unknown' ? success : !!success;
+
+    failureMessage = ensureMessageResults(failureMessage);
+    notFailureMessage = ensureMessageResults(notFailureMessage)
+
     const response: ValidationTestResult = {
         success,
-        message: success ? successMessage : failureMessage
+        messages: success ? notFailureMessage : failureMessage
 
     }
     if (links) response.links = links;
@@ -83,7 +109,6 @@ export function matchHighlights(content: string, search: RegExp, maxHighlightLen
 }
 
 
-
 export function badContentRunFunc(badTest: RegExp) {
     return async (course: IContentHaver, config?: ICanvasCallConfig) => {
         const defaultConfig = {queryParams: {include: ['body'], per_page: 50}};
@@ -94,21 +119,26 @@ export function badContentRunFunc(badTest: RegExp) {
         let syllabusTest = syllabus.search(badTest) > -1;
         const success = badContent.length === 0 && !syllabusTest;
         let links: string[] = [];
-        let failureMessage: string[] = []
+        let failureMessage: MessageResult[] = []
+
         if (badContent.length > 0) {
-            let messageSets = [...badContent.map(a => {
-                if (!a.body?.length) return [a.name];
+            let messageSets = badContent.map(a => {
+
+                if (!a.body?.length) return {bodyLines: [a.name], links: [a.htmlContentUrl]};
+
                 const content = a.body;
-                return matchHighlights(content, badTest)
-            })]
-            for (let messages of messageSets) failureMessage.push(...messages)
-            links = [...links, ...badContent.map(a => a.htmlContentUrl)];
+                return {
+                    bodyLines: matchHighlights(content, badTest),
+                    links: [a.htmlContentUrl]
+                }
+            })
+            failureMessage.push(...messageSets)
         }
 
-        if (syllabusTest) {
-            failureMessage.push(...matchHighlights(syllabus, badTest))
-            links.push(`/courses/${course.id}/assignments/syllabus`)
-        }
+        if (syllabusTest) failureMessage.push({
+            bodyLines: matchHighlights(syllabus, badTest),
+            links: [`/courses/${course.id}/assignments/syllabus`]
+        })
 
         const result = testResult(
             success,
@@ -128,15 +158,9 @@ export function badSyllabusFixFunc(validateRegEx: RegExp, replace: string | ((st
     return async (course: ISyllabusHaver) => {
         try {
             await fixSyllabus(course, validateRegEx, replaceText);
-            return {
-                success: true,
-                message: 'success'
-            }
+            return testResult(true)
         } catch (e) {
-            return {
-                success: false,
-                message: e instanceof Error? e.toString() : "An Error has occurred"
-            }
+            return errorMessageResult(undefined)
         }
 
     }
@@ -146,7 +170,7 @@ export function badSyllabusFixFunc(validateRegEx: RegExp, replace: string | ((st
 export function badContentFixFunc(validateRegEx: RegExp, replace: string | ((str: string, ...args: any[]) => string)) {
     return async (course: IContentHaver): Promise<ValidationFixResult> => {
         let success = false;
-        let message = "";
+        let messages: MessageResult[] = [];
 
         const errors = [];
         const includeBody = {queryParams: {include: ['body']}};
@@ -161,11 +185,12 @@ export function badContentFixFunc(validateRegEx: RegExp, replace: string | ((str
             const newText = replaceText(item.body)
             if (newText.search(validateRegEx) > -1) throw new Error(`Fix broken for ${item.name})`);
             await item.updateContent(newText);
+            messages.push()
         }
 
         return {
             success,
-            message
+             messages
         }
     }
 }
@@ -193,5 +218,14 @@ export function overrideConfig(
     override: ICanvasCallConfig | undefined
 ) {
 
-    return deepObjectMerge(source, override) ?? {} as ICanvasCallConfig ;
+    return deepObjectMerge(source, override) ?? {} as ICanvasCallConfig;
+}
+
+export function errorMessageResult(e: unknown) {
+    const bodyLines = [
+        e?.toString() || 'Error',
+    ]
+    if (e && e instanceof Error && e.stack) bodyLines.push( e.stack);
+
+    return { success:false, messages: [{bodyLines}]};
 }

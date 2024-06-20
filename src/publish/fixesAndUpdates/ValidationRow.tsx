@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
-import {CourseValidation, ValidationTestResult} from "./validations";
+import {CourseValidation, errorMessageResult, ValidationTestResult} from "./validations";
 import assert from "assert";
 import {Row} from "react-bootstrap";
 import {Course} from "../../canvas/course/Course";
@@ -42,10 +42,7 @@ export function ValidationRow({
             setResult(await (test.run(course)))
 
         } catch (e) {
-            setResult({
-                success: false,
-                message: [e?.toString() || 'Error', test.name, e instanceof Error ? e.stack ?? '' : '']
-            })
+            setResult(errorMessageResult(e))
         }
 
 
@@ -63,10 +60,7 @@ export function ValidationRow({
             setResult(await test.run(course))
 
         } catch (e) {
-            setResult({
-                success: false,
-                message: [e?.toString() || 'Error', test.name, e instanceof Error ? e.stack ?? '' : '']
-            })
+            setResult(errorMessageResult(e))
         }
         setLoading(false);
     }
@@ -79,33 +73,13 @@ export function ValidationRow({
             setResult(await test.run(course));
 
         } catch (e) {
-            setResult({
-                success: false,
-                message: [e?.toString() || 'Error', test.name, e instanceof Error ? e.stack ?? '' : '']
-            })
+            setResult(errorMessageResult(e))
         }
 
         setLoading(false);
     }, [course, test])
 
-    function truncateMessage(messageString: string) {
-        if (slim) return messageString.replace(/^(.{200}).*$/, '$1...')
-        return messageString;
-    }
 
-    function statusMessage(result: ValidationTestResult | undefined) {
-        if (loading) return "running..."
-        if (!result) return loading ? "still running" : "No Result, an error may have occurred."
-        if (result.success) return "Succeeded!"
-
-
-        return typeof result.message === 'string' ?
-            <div className={'message'}>{truncateMessage(result.message)}</div>
-            : result.message.map(message => (<div className='message'>
-                {truncateMessage(message)}
-                <hr/>
-            </div>))
-    }
 
     if (!showOnlyFailures || loading || (!result?.success)) {
         return <Row className={slim ? 'test-row-slim' : 'test-row'}>
@@ -115,7 +89,7 @@ export function ValidationRow({
 
             </div>
             <div className={'col-sm-4'}>
-                <p>{statusMessage(result)}</p>
+                {validationStatusMessage(result, loading, slim)}
                 {result?.links?.map(link => <div key={link}>
                     <a href={link} target={'_blank'}>{link}</a>
                 </div>)}
@@ -137,4 +111,23 @@ export function ValidationRow({
         </Row>
     }
     return <></>
+}
+
+export function truncateMessage(messageString: string, slim?: boolean) {
+        if (slim) return messageString.replace(/^(.{200}).*$/, '$1...')
+        return messageString;
+    }
+
+
+export function validationStatusMessage(result: ValidationTestResult | undefined, loading: boolean, slim?:boolean) {
+    if (loading) return "running..."
+    if (!result) return loading ? "still running" : "No Result, an error may have occurred."
+    if (result.success) return "Succeeded!"
+
+
+    return result.messages.map(message => (<div className='message'>
+        {message.bodyLines.map(message => <Row>{truncateMessage(message, slim)}</Row>)}
+        {message.links?.map(link => <Row><a href={link}>{link}</a></Row>)}
+        <hr/>
+    </div>))
 }

@@ -3,7 +3,10 @@ import {CourseValidation, ValidationTestResult} from "../index";
 
 export const mockValidationResult: ValidationTestResult = {
     success: true,
-    message: "Mock result"
+    messages: [{
+        bodyLines: ['message', 'message'],
+        links: ['localhost:8080']
+    }]
 }
 
 export const mockValidation: CourseValidation = {

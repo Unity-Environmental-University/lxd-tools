@@ -19,16 +19,19 @@ jest.mock('../../../../canvas/content', () => {
     return {
         __esModule: true,
         assignmentDataGen: jest.fn(),
+        getAssignmentData: jest.fn(),
     }
 })
 
 import * as rubricApi  from "../../../../canvas/rubrics";
 import * as contentApi from "../../../../canvas/content";
 import {IRubricData} from "../../../../canvas/rubrics";
+import mock = jest.mock;
 
 
 const rubricsForCourseGen = jest.spyOn(rubricApi, 'rubricsForCourseGen')
 const assignmentDataGen = jest.spyOn(contentApi, 'assignmentDataGen')
+const getAssignmentData = jest.spyOn(contentApi, 'getAssignmentData')
 
 describe('rubrics are set to grade assignments', () => {
     let config:ICanvasCallConfig = {};
@@ -49,10 +52,11 @@ describe('rubrics are set to grade assignments', () => {
         assignmentDataGen.mockImplementation(mockAsyncGenerator([mockAssignmentData]))
 
         let results = await validation.run(course);
-        expect(results.success)
+        expect(results.success).toBe(true);
     })
     it('fails when at least one association is not used for grading', async () => {
         let validation:CourseValidation = rubricsTiedToGradesTest;
+        const assignmentData = {...mockAssignmentData, html_url: 'localhost:1234'}
 
         let course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
@@ -64,10 +68,13 @@ describe('rubrics are set to grade assignments', () => {
             ]
         }]));
 
-        assignmentDataGen.mockImplementation(mockAsyncGenerator([mockAssignmentData]))
+        assignmentDataGen.mockImplementation(mockAsyncGenerator([assignmentData]))
+        getAssignmentData.mockResolvedValue(assignmentData)
 
         let results = await validation.run(course);
-        expect(results.success)
+        expect(results.success).toBe(false);
+        const links = results.messages.reduce((links, message) => [...links, ...message.links ?? []], [] as string[])
+        expect(links).toContain(assignmentData.html_url);
     })
 
 })

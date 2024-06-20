@@ -1,4 +1,4 @@
-import {CourseValidation, testResult, ValidationTestResult} from "./index";
+import {CourseValidation, stringsToMessageResult, testResult, ValidationTestResult} from "./index";
 import {IPagesHaver} from "../../../canvas/course/courseTypes";
 
 export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
@@ -22,7 +22,11 @@ export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
         const success = badOverviews.length === 0;
         const result = testResult(
             badOverviews.length === 0,
-             badOverviews.map(page => page.name).sort())
+            badOverviews.map(page => ({
+                bodyLines: [page.name],
+                links: [page.htmlContentUrl]
+            }))
+        )
         if (!success) result.links = badOverviews.map(page => page.htmlContentUrl)
         return result;
     }
@@ -37,20 +41,16 @@ export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {
             queryParams: {...config?.queryParams, search_term: 'Course Project', include: ['body']}
         });
         const projectOverviewPages = pages.filter(page => /Course Project Overview/.test(page.name));
-        if (projectOverviewPages.length === 0) {
-            return <ValidationTestResult>{
-                success: 'unknown',
-                message: "No 'Course Project Overview' page found for this course. This might be fine."
-            }
-        }
-
-        if (projectOverviewPages.length > 1) {
-            return <ValidationTestResult>{
-                success: 'unknown',
-                message: "Multiple course overview page matches found, unable to check.",
-                links: projectOverviewPages.map(page => page.htmlContentUrl)
-            }
-        }
+        if (projectOverviewPages.length === 0) return testResult('unknown',
+            [], [],
+            stringsToMessageResult("No 'Course Project Overview' page found for this course. This might be fine.")
+        )
+        if (projectOverviewPages.length > 1) return testResult(
+            'unknown',
+            [],
+            [],
+            stringsToMessageResult('Too many course overview pages', projectOverviewPages.map(page => page.htmlContentUrl))
+        )
 
         const projectOverview = projectOverviewPages[0];
         const pageHtml = projectOverview.body;

@@ -1,7 +1,7 @@
 
 import {getRubric, getRubricFetchUrl, getRubricsFetchUrl, IRubricData, rubricsForCourseGen} from "../rubrics";
 import {mockAsyncGenerator} from "../../__mocks__/utils";
-import mockRubric, {mockRubricsForAssignments} from "../__mocks__/mockRubricData";
+import mockRubric, {mockRubricAssociation, mockRubricsForAssignments} from "../__mocks__/mockRubricData";
 
 import {fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
 import {deepObjectMerge} from "../canvasUtils";
@@ -29,17 +29,25 @@ describe('rubricsForCourseGen', () => {
         expect(pagedDataGenMock).toHaveBeenCalledWith(getRubricsFetchUrl(0), config);
     })
 
-    it('passes include options on to fetch', async () => {
-        const mockRubrics = mockRubricsForAssignments([0, 1, 2, 3]);
+    it('includes associations when needed', async () => {
+        const mockRubrics = mockRubricsForAssignments([0, 1, 2, 3], undefined, {});
+        const mockWithAssociations = mockRubricsForAssignments([0, 1, 2, 3])
+        const mockAssociations = mockWithAssociations.map(rubric => rubric.associations);
         const config = { fetchInit: {} };
         (getPagedDataGenerator as jest.Mock).mockImplementation(mockAsyncGenerator(mockRubrics))
         const rubricGen = rubricsForCourseGen(0, {include: ['associations']}, config);
         expect(pagedDataGenMock.mock.lastCall).toEqual([
-            getRubricsFetchUrl(0),
-            { fetchInit: {}, queryParams: {include: ['associations']}}
+            getRubricsFetchUrl(0), config
         ]);
+        const mockRubricIterator = mockRubrics.values();
+        const mockAssocIterator = mockAssociations.values();
 
-        expect(await renderAsyncGen(rubricGen)).toEqual(mockRubrics);
+        fetchJsonMock.mockImplementation(async(url, config) => {
+            const rubric = mockRubricIterator.next().value;
+            return {...rubric, associations: mockAssocIterator.next().value }
+        })
+
+        expect(await renderAsyncGen(rubricGen)).toEqual(mockWithAssociations);
     })
 })
 

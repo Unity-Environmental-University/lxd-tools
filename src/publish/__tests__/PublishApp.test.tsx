@@ -48,7 +48,6 @@ test('TextEncoder is globally defined in Jest', () => {
 describe('PublishApp Component', () => {
     it('renders subcomponents with correct props', async () => {
 
-
         (PublishInterface as jest.Mock).mockImplementation(({course, user}) => (
             <div>PublishInterface: {course && user && 'Loaded'}</div>
         ));
@@ -62,7 +61,6 @@ describe('PublishApp Component', () => {
         render(<PublishApp/>);
         await waitFor(() => expect(mockCourseGetFromUrl).toHaveBeenCalled());
         await waitFor(() => expect(mockFetchJson).toHaveBeenCalledWith('/api/v1/users/self'));
-
 
         await waitFor(() => expect(screen.getByText(/PublishInterface: Loaded/)).toBeInTheDocument());
         await waitFor(() => expect(screen.getByText(/ContentUpdateInterface: Loaded/)).toBeInTheDocument());

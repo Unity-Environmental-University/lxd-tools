@@ -17,8 +17,6 @@ test('Create new course', async () => {
     expect(createdCourse).toStrictEqual(courseData);
 });
 
-
-
 describe('Course Generators', () => {
 
     fetchMock.enableMocks();

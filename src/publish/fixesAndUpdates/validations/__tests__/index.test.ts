@@ -1,6 +1,18 @@
 import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../../canvas/content";
-import {mockAssignmentData, mockDiscussionData, mockPageData, mockQuizData} from "../../../../canvas/content/__mocks__/mockContentData";
-import {capitalize, CourseValidation, matchHighlights, preserveCapsReplace} from "../index";
+import {
+    mockAssignmentData,
+    mockDiscussionData,
+    mockPageData,
+    mockQuizData
+} from "../../../../canvas/content/__mocks__/mockContentData";
+import {
+    capitalize,
+    CourseValidation,
+    matchHighlights,
+    MessageResult,
+    preserveCapsReplace, stringsToMessageResult, testResult,
+    ValidationTestResult
+} from "../index";
 import {ILatePolicyUpdate} from "../../../../canvas/canvasDataDefs";
 import mockLatePolicy from "../../../../canvas/course/__mocks__/mockLatePolicy";
 import assert from "assert";
@@ -137,7 +149,6 @@ export function mockContentHaver(syllabus: string, content: BaseContentItem[], n
 }
 
 
-
 export function getDummyLatePolicyHaver(policyDetails: ILatePolicyUpdate): ILatePolicyHaver {
     const policy = mockLatePolicy;
     return {
@@ -180,3 +191,73 @@ test('match hilights test', () => {
 
 })
 
+describe('testResult', () => {
+    const failure = 'failure';
+    const success = 'success';
+
+    const failureMessageBodyLines = [failure, failure];
+    const successMessageBodyLines = [success, success];
+    const failureMessage = {bodyLines: failureMessageBodyLines}
+    const successMessage = {bodyLines: successMessageBodyLines}
+
+    const links = ['http://localhost:8080']
+
+    const validFailResult = {
+        success: false,
+        messages: [failureMessage],
+        links,
+    }
+    const validSuccessResult = {...validFailResult, success: true, messages:[successMessage]}
+
+    it('returns failureMessage on a failed result', () => {
+        expect(testResult(
+            false,
+            failureMessage,
+            links,
+            successMessage
+        )).toEqual(validFailResult)
+    })
+    it('returns successMessage on a successful result', () => {
+        expect(testResult(true,
+            failureMessage,
+            links,
+            successMessage
+        )).toEqual(validSuccessResult)
+    })
+
+    it('correctly interprets a single string passed in for success and failure', () => {
+        expect(testResult(false, failure, links, success)).toEqual({...validFailResult, messages: [{bodyLines:[failure]}]})
+        expect(testResult(true, failure, links, success)).toEqual({...validSuccessResult, messages: [{bodyLines:[success]}]})
+    })
+
+    it('correctly interprets a list of strings passed in for success and failure', () => {
+        expect(testResult(false, failureMessageBodyLines, links, successMessageBodyLines)).toEqual(validFailResult)
+        expect(testResult(true, failureMessageBodyLines, links, successMessageBodyLines)).toEqual(validSuccessResult)
+    })
+
+})
+
+// export function testResult(
+//     success: boolean | undefined | 'unknown',
+//     failureMessage: string | MessageResult[] | MessageResult,
+//     links?: string[],
+//     successMessage: string | MessageResult[] | MessageResult = [{bodyLines: ['success']}]
+// ): ValidationTestResult {
+//
+//
+//     success = success === 'unknown' ? success : !!success;
+//
+//     failureMessage = typeof failureMessage !== 'string' ? failureMessage : stringsToMessageResult(failureMessage);
+//     successMessage = typeof successMessage !== 'string' ? successMessage : stringsToMessageResult(successMessage);
+//
+//     failureMessage = Array.isArray(failureMessage) ? failureMessage : [failureMessage];
+//     successMessage = Array.isArray(successMessage) ? successMessage : [successMessage];
+//
+//     const response: ValidationTestResult = {
+//         success,
+//         messages: success ? successMessage : failureMessage
+//
+//     }
+//     if (links) response.links = links;
+//     return response;
+// }

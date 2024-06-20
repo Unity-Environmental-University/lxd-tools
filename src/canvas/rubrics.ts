@@ -76,11 +76,17 @@ export function getRubricFetchUrl(courseId:number, rubricId:number) { return `/a
 
 export function rubricsForCourseGen(courseId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {
     const url = getRubricsFetchUrl(courseId);
+    let dataGenerator = getPagedDataGenerator<IRubricData>(url, config);
     if (options?.include) {
-        config ??= {};
-        config.queryParams = deepObjectMerge(config?.queryParams, {include: options.include})
+        return async function* () {
+            for await(let rubric of dataGenerator) {
+
+                yield await getRubric(rubric.context_id, rubric.id, options, config)
+            }
+        }();
     }
-    return getPagedDataGenerator<IRubricData>(url, config);
+    return dataGenerator;
+
 }
 
 export async function getRubric(courseId: number, rubricId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {

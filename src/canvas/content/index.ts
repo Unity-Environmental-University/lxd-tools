@@ -523,11 +523,19 @@ export function getBannerImage(overviewPage:BaseContentItem) {
 }
 
 
-
 export const assignmentDataGen = canvasDataFetchGenFunc<
     IAssignmentData,
     { courseId: number }
 >(({courseId}) => `/api/v1/courses/${courseId}/assignments`)
+
+export const getAssignmentDataUrl =
+    (courseId: number, assignmentId: number) => `/api/v1/courses/${courseId}/assignments/${assignmentId}`;
+
+
+export async function getAssignmentData(courseId:number, assignmentId:number, config?:ICanvasCallConfig) {
+    let url = getAssignmentDataUrl(courseId, assignmentId);
+    return await fetchJson<IAssignmentData>(url, config);
+}
 
 async function getFileData(fileId:number, courseId:number) {
     const url = `/api/v1/courses/${courseId}/files/${fileId}`

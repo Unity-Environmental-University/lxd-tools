@@ -1,5 +1,5 @@
 /// Course Settings
-import {CourseValidation, testResult} from "./index";
+import {CourseValidation, errorMessageResult, stringsToMessageResult, testResult} from "./index";
 import {config} from "dotenv";
 import {
     ICourseSettingsHaver,
@@ -21,7 +21,7 @@ export const extensionsInstalledTest: CourseValidation = {
         }
         return {
             success: missing.size === 0,
-            message: Array.from(missing).join(',') + ' missing from enabled navigation tabs.'
+            messages: [{bodyLines: [Array.from(missing).join(',') + ' missing from enabled navigation tabs.']}]
         }
     }
 }
@@ -31,10 +31,7 @@ export const announcementsOnHomePageTest: CourseValidation = {
     run: async (course) => {
         const settings = await course.getSettings();
         const success = !!settings.show_announcements_on_home_page
-        return {
-            success,
-            message: success ? 'success' : "'show announcements on home page' not turned on"
-        }
+        return testResult(success, "'show announcements on home page' not turned on")
     }
 }
 export const latePolicyTest: CourseValidation<ILatePolicyHaver> = {
@@ -44,7 +41,7 @@ export const latePolicyTest: CourseValidation<ILatePolicyHaver> = {
         const latePolicy = await course.getLatePolicy(config);
         return testResult(
             latePolicy?.missing_submission_deduction_enabled,
-            ["'Automatically apply grade for missing submission' not turned on"]
+            "'Automatically apply grade for missing submission' not turned on"
         );
     }
 }
@@ -57,7 +54,7 @@ export const noEvaluationTest: CourseValidation<IPagesHaver> = {
         const pages = await (course.getPages(config))
         const evalPages = pages.filter(page => /Course Evaluation/i.test(page.name));
         const success = evalPages.length === 0;
-        const result = testResult(success, ["Course eval found"]);
+        const result = testResult(success, "Course eval found");
         if (!success) result.links = evalPages.map(page => page.htmlContentUrl);
         return result;
     }
@@ -67,29 +64,27 @@ export const noEvaluationTest: CourseValidation<IPagesHaver> = {
 export const badGradingPolicyTest: CourseValidation<IModulesHaver & IGradingStandardsHaver> = {
     name: "Correct grading policy selected",
     description: "5 week courses have REVISED DE Undergraduate Programs grading scheme selected. 8 week courses have  DE Graduate Programs grading scheme selected",
-    run: async (course, config) => {
+    run: async function (course, config) {
         try {
             const gradingStandards = await course.getAvailableGradingStandards(config);
             const currentGradingStandard = await course.getCurrentGradingStandard(config);
 
             const modulesByWeekNumber = await course.getModulesByWeekNumber(config);
             const isGrad = modulesByWeekNumber.hasOwnProperty(8);
-            if (!gradingStandards) return testResult(false, [`Grading standards not accessible from ${course.id}`])
+            if (!gradingStandards) return testResult(false, `Grading standards not accessible from ${course.id}`)
 
             const [undergradStandard] = gradingStandards.filter(standard => /REVISED DE Undergraduate Programs/.test(standard.title))
             const [gradStandard] = gradingStandards.filter(standard => /DE Graduate Programs/.test(standard.title))
             const expectedStandard = isGrad ? gradStandard : undergradStandard;
 
             let success = currentGradingStandard?.title == expectedStandard.title;
-            const result = testResult(success, [`Grading standard set to ${currentGradingStandard?.title} expected to be ${expectedStandard.title}`]);
 
-            if (!success) result.links = [`/courses/${course.id}/settings`];
-            return result;
+            return testResult(success, [{
+                bodyLines: [`Grading standard set to ${currentGradingStandard?.title} expected to be ${expectedStandard.title}`],
+                links: [`/courses/${course.id}/settings`]
+            }]);
         } catch (e) {
-            return {
-                success: false,
-                message: e instanceof Error? [e.message, e.stack ?? ''] : ['ERROR']
-            }
+            return  errorMessageResult(e);
         }
     }
 }

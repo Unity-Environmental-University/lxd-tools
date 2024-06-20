@@ -43,7 +43,7 @@ function PublishApp() {
         ...syllabusTests,
         ...courseSettingsTests,
         ...courseContentTests,
-        //rubricsTiedToGradesTest
+        rubricsTiedToGradesTest
         //proxyServerLinkValidation,
     ]
 
