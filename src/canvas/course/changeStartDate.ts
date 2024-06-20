@@ -103,7 +103,7 @@ export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.Pla
     changedText.push(`${oldDates} -> ${datesEl.textContent}`)
 
     const output = {
-        html : syllabusBody.innerHTML.replaceAll(/<p>\s*(&nbsp;)?<\/p>/ig, '\s'),
+        html : syllabusBody.innerHTML.replaceAll(/<p>\s*(&nbsp;)?<\/p>/ig, ''),
         changedText,
     }
     syllabusBody.remove();
