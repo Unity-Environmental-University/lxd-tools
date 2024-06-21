@@ -5,23 +5,28 @@ import {
     latePolicyTest,
     noEvaluationTest
 } from "../courseSettings";
-import {getDummyLatePolicyHaver} from "./index.test";
-import {ICanvasCallConfig, range} from "../../../../canvas/canvasUtils";
+import {deFormDataify, ICanvasCallConfig, range} from "../../../../canvas/canvasUtils";
 import {Page} from "../../../../canvas/content";
 import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {mockGradModules, mockUgModules} from "../../../../canvas/course/__mocks__/mockModuleData";
-import {IModuleData, ITabData} from "../../../../canvas/canvasDataDefs";
+import {ICourseData, IModuleData, ITabData} from "../../../../canvas/canvasDataDefs";
 import {getModulesByWeekNumber} from "../../../../canvas/course/modules";
 import {
     IGradingStandardData,
-    IGradingStandardsHaver,
-    IModulesHaver,
     IPagesHaver
 } from "../../../../canvas/course/courseTypes";
-import {CourseValidation} from "../index";
 import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
 import {Course} from "../../../../canvas/course/Course";
 import mockTabData from "../../../../canvas/__mocks__/mockTabData";
+import {getDummyLatePolicyHaver} from "../__mocks__";
+import {fetchJson} from "../../../../canvas/fetch";
+import assert from "assert";
+
+jest.mock('../../../../canvas/fetch', () => ({
+    ...jest.requireActual('../../../../canvas/fetch'),
+    fetchJson: jest.fn(),
+}));
+
 
 test('Late policy test works', async () => {
     const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});
@@ -66,7 +71,7 @@ const gradingPolicyDummyData: IGradingStandardData = {
 }
 
 
-const dummyGradingPolicies: IGradingStandardData[] = [
+const mockGradingPolicies: IGradingStandardData[] = [
     {...gradingPolicyDummyData, id: 1, title: "DE Undergraduate Programs"},
     {...gradingPolicyDummyData, id: 2, title: "DE Graduate Programs"},
     {...gradingPolicyDummyData, id: 3, title: "REVISED DE Undergraduate Programs"},
@@ -75,38 +80,51 @@ const dummyGradingPolicies: IGradingStandardData[] = [
 
 describe('Grading policy validation correct test', () => {
 
+    const fetchJsonMock = fetchJson as jest.Mock;
 
-    async function getDummyModuleGradingPolicyHaver(gradingPolicy: IGradingStandardData, modules: IModuleData[]) {
-        const out: IModulesHaver & IGradingStandardsHaver = {
-            id: 0,
-            getCurrentGradingStandard: async (config?) => gradingPolicy,
-            getAvailableGradingStandards: async (config) => dummyGradingPolicies,
-            getModules: async (config?) => modules,
-            getModulesByWeekNumber: async (config?: ICanvasCallConfig) => (await getModulesByWeekNumber(modules))
-        }
+    async function mockModuleGradingPolicyHaver(gradingPolicy: IGradingStandardData, modules: IModuleData[]) {
+        const out = new Course({...mockCourseData, id: 0});
+        out.getCurrentGradingStandard = async (config?) => gradingPolicy;
+        out.getAvailableGradingStandards = async (config?) => mockGradingPolicies;
+        out.getModules = async (config?) => modules;
+        out.getModulesByWeekNumber = async (config?: ICanvasCallConfig) => (await getModulesByWeekNumber(modules))
         return out;
-    };
+    }
 
     test("Works for correctly set standards", async () => {
-        const newUgSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[2], [...mockUgModules]);
+        const newUgSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[2], [...mockUgModules]);
         let result = await badGradingPolicyTest.run(newUgSchemeCourse);
         expect(result.success).toBe(true);
 
-        const goodGradSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[1], [...mockGradModules]);
+        const goodGradSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[1], [...mockGradModules]);
         result = await badGradingPolicyTest.run(goodGradSchemeCourse);
         expect(result.success).toBe(true);
     })
 
     test("Flags old UG standard", async () => {
-        const oldUgSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[0], [...mockUgModules]);
+        const oldUgSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockUgModules]);
         let result = await badGradingPolicyTest.run(oldUgSchemeCourse);
         expect(result.success).toBe(false);
     })
 
     test("Flags ug scheme in new course old UG standard", async () => {
-        const badGradSchemeCourse = await getDummyModuleGradingPolicyHaver(dummyGradingPolicies[0], [...mockGradModules]);
+        const badGradSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockGradModules]);
         let result = await badGradingPolicyTest.run(badGradSchemeCourse);
         expect(result.success).toBe(false);
+    })
+
+    it("Fixes bad ug scheme to correct scheme", async () => {
+        fetchJsonMock.mockImplementation(async (url:string, config?: ICanvasCallConfig) => {
+            const formData = config?.fetchInit?.body;
+            assert(formData instanceof FormData);
+            const change:ICourseData = deFormDataify(formData).course as ICourseData;
+            return {...mockCourseData, ...change}
+        })
+        const badGradSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockGradModules]);
+        let result = await badGradingPolicyTest.fix(badGradSchemeCourse);
+        expect(result.success).toBe(true);
+        assert(result.userData && 'id' in result.userData)
+        expect(result.userData.grading_standard_id).toEqual( "2")
     })
 
 })

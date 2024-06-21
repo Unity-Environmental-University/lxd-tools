@@ -1,18 +1,19 @@
 import React, {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
-import {CourseValidation, errorMessageResult, ValidationTestResult} from "./validations";
+import {CourseValidation, errorMessageResult, ValidationResult} from "./validations";
 import assert from "assert";
 import {Row} from "react-bootstrap";
 import {Course} from "../../canvas/course/Course";
+import {ICourseData} from "../../canvas/canvasDataDefs";
 
 type ValidationRowProps = {
     course: Course,
     potemkinVillage?: boolean,
     test: CourseValidation,
     slim?: boolean,
-    initialResult?: ValidationTestResult,
-    refreshCourse: () => Promise<any>
-    onResult?: (result: ValidationTestResult, test: CourseValidation) => any,
+    initialResult?: ValidationResult,
+    refreshCourse: (courseData?:ICourseData) => Promise<any>
+    onResult?: (result: ValidationResult, test: CourseValidation) => any,
     showOnlyFailures?: boolean,
 }
 
@@ -29,24 +30,10 @@ export function ValidationRow({
     const [loading, setLoading] = useState(false);
     const [result, _setResult] = useState(initialResult);
     const [fixText, setFixText] = useState("Fix?")
-
-    function setResult(result: ValidationTestResult) {
+    const [updateTest, setUpdateTest] = useState(false)
+    function setResult(result: ValidationResult) {
         _setResult(result);
         onResult && onResult(result, test);
-    }
-
-    async function reRun() {
-        setLoading(true);
-        try {
-            await refreshCourse();
-            setResult(await (test.run(course)))
-
-        } catch (e) {
-            setResult(errorMessageResult(e))
-        }
-
-
-        setLoading(false);
     }
 
     async function fix() {
@@ -55,10 +42,9 @@ export function ValidationRow({
         try {
             assert(test.fix);
             await test.fix(course);
-            setFixText('Fixed...');
+            setUpdateTest(true);
             await refreshCourse();
-            setResult(await test.run(course))
-
+            setFixText('Fixed...');
         } catch (e) {
             setResult(errorMessageResult(e))
         }
@@ -66,8 +52,8 @@ export function ValidationRow({
     }
 
     useEffectAsync(async () => {
-        if (result) return; //only run once and only if we don't have a result
-        if (potemkinVillage) return;
+        if (result && !updateTest) return; //only run once and only if we don't have a result
+        if (potemkinVillage && !updateTest) return;
         setLoading(true);
         try {
             setResult(await test.run(course));
@@ -75,7 +61,7 @@ export function ValidationRow({
         } catch (e) {
             setResult(errorMessageResult(e))
         }
-
+        setUpdateTest(false);
         setLoading(false);
     }, [course, test])
 
@@ -119,7 +105,7 @@ export function truncateMessage(messageString: string, slim?: boolean) {
     }
 
 
-export function validationStatusMessage(result: ValidationTestResult | undefined, loading: boolean, slim?:boolean) {
+export function validationStatusMessage(result: ValidationResult | undefined, loading: boolean, slim?:boolean) {
     if (loading) return "running..."
     if (!result) return loading ? "still running" : "No Result, an error may have occurred."
     if (result.success) return "Succeeded!"

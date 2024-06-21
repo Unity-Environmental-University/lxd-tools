@@ -37,7 +37,7 @@ describe('rubrics are set to grade assignments', () => {
     let config:ICanvasCallConfig = {};
 
     it('passes when all rubrics are linked to grade their assignments', async () => {
-        let validation:CourseValidation = rubricsTiedToGradesTest;
+        let validation = rubricsTiedToGradesTest;
 
         let course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
@@ -55,7 +55,7 @@ describe('rubrics are set to grade assignments', () => {
         expect(results.success).toBe(true);
     })
     it('fails when at least one association is not used for grading', async () => {
-        let validation:CourseValidation = rubricsTiedToGradesTest;
+        let validation = rubricsTiedToGradesTest;
         const assignmentData = {...mockAssignmentData, html_url: 'localhost:1234'}
 
         let course = new Course({...mockCourseData});

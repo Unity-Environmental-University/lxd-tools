@@ -16,7 +16,9 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHav
     run: async (course, config) => {
         const syllabus = await course.getSyllabus(config);
         const match = /off the final grade/gi.test(syllabus);
-        return testResult(!match, ["'off the final grade' found in syllabus"], [`/courses/${course.id}/assignments/syllabus`]
+        return testResult(!match, {
+            failureMessage: ["'off the final grade' found in syllabus"],
+            links: [`/courses/${course.id}/assignments/syllabus`]}
         );
     },
     fix: badSyllabusFixFunc(/off the final grade/gi, 'off the grade')
@@ -33,11 +35,9 @@ export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
         const el = document.createElement('div');
         el.innerHTML = syllabus;
         const text = el.textContent?.toLowerCase() || "";
-        return testResult(
-            text.includes(testString) && !text.match(/48 hours .* weekends/),
-            ["Communication language section in syllabus does not look right."],
-            [`/courses/${course.id}/assignments/syllabus`]
-        )
+        const failureMessage = "Communication language section in syllabus does not look right.";
+        const links = [`/courses/${course.id}/assignments/syllabus`]
+        return testResult(text.includes(testString) && !text.match(/48 hours .* weekends/), {failureMessage, links})
     }
 }
 
@@ -51,11 +51,9 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
         el.innerHTML = syllabus;
         let strongs = el.querySelectorAll('strong');
         const creditList = Array.from(strongs).filter((strong) => /credits/i.test(strong.textContent || ""));
-        return testResult(
-            creditList && creditList.length > 0,
-            ["Can't find credits in syllabus"],
-            [`/courses/${course.id}/assignments/syllabus`]
-        )
+        const links = [`/courses/${course.id}/assignments/syllabus`];
+        const failureMessage = "Can't find credits in syllabus";
+        return testResult(creditList && creditList.length > 0, {failureMessage, links} )
 
     }
 }
@@ -66,8 +64,9 @@ export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     run: async (course: ISyllabusHaver, config) => {
         const text = await course.getSyllabus(config);
         const success = text.includes('Generative Artificial Intelligence');
-        return testResult(success, [`Can't find AI boilerplate in syllabus`], [`/courses/${course.id}/assignments/syllabus`]
-        )
+        const links = [`/courses/${course.id}/assignments/syllabus`];
+        const failureMessage = `Can't find AI boilerplate in syllabus`
+        return testResult(success, {links, failureMessage} )
     }
 }
 
@@ -78,11 +77,9 @@ export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
     run: async (course, config) => {
         const text = getPlainTextFromHtml(await course.getSyllabus(config));
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
-        return testResult(
-            success,
-            ["Text at the bottom of the syllabus looks incorrect."],
-            [`/courses/${course.id}/assignments/syllabus`]
-        )
+        const links = [`/courses/${course.id}/assignments/syllabus`];
+        const failureMessage = "Text at the bottom of the syllabus looks incorrect."
+        return testResult(success, {links, failureMessage} )
     },
 
 }

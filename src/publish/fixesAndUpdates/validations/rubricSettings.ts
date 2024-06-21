@@ -24,7 +24,7 @@ export const rubricsTiedToGradesTest: CourseValidation<IIdHaver> = {
     run: async (course, config) => {
         try {
             const badAssociations = await getBadRubricAssociations(course.id)
-            const resultMessages = await Promise.all(callAll(
+            const failureMessage = await Promise.all(callAll(
                     badAssociations.map(([rubric, assoc]) => async () => {
                         const id = assoc.association_id;
                         const assignment = await getAssignmentData(course.id, id, config);
@@ -35,7 +35,7 @@ export const rubricsTiedToGradesTest: CourseValidation<IIdHaver> = {
                     })
                 )
             )
-            const result =testResult(badAssociations.length <= 0, resultMessages)
+            const result =testResult(badAssociations.length <= 0, {failureMessage})
             console.log(result);
             return result;
         } catch (e) {

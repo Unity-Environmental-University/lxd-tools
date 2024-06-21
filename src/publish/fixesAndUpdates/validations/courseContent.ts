@@ -1,4 +1,4 @@
-import {CourseValidation, stringsToMessageResult, testResult, ValidationTestResult} from "./index";
+import {CourseValidation, MessageResult, stringsToMessageResult, testResult, ValidationResult} from "./index";
 import {IPagesHaver} from "../../../canvas/course/courseTypes";
 
 export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
@@ -20,13 +20,12 @@ export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
 
         })
         const success = badOverviews.length === 0;
-        const result = testResult(
-            badOverviews.length === 0,
-            badOverviews.map(page => ({
-                bodyLines: [page.name],
-                links: [page.htmlContentUrl]
-            }))
-        )
+        const failureMessage =  badOverviews.map(page => ({
+            bodyLines: [page.name],
+            links: [page.htmlContentUrl]
+        }));
+
+        const result = testResult(badOverviews.length === 0, {failureMessage})
         if (!success) result.links = badOverviews.map(page => page.htmlContentUrl)
         return result;
     }
@@ -41,16 +40,17 @@ export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {
             queryParams: {...config?.queryParams, search_term: 'Course Project', include: ['body']}
         });
         const projectOverviewPages = pages.filter(page => /Course Project Overview/.test(page.name));
-        if (projectOverviewPages.length === 0) return testResult('unknown',
-            [], [],
-            stringsToMessageResult("No 'Course Project Overview' page found for this course. This might be fine.")
-        )
-        if (projectOverviewPages.length > 1) return testResult(
-            'unknown',
-            [],
-            [],
-            stringsToMessageResult('Too many course overview pages', projectOverviewPages.map(page => page.htmlContentUrl))
-        )
+
+        if(projectOverviewPages.length != 1) {
+            const noOverviewMessage = "No 'Course Project Overview' page found for this course. This might be fine.";
+            const tooManyOverviewsMessage = 'Too many course overview pages';
+            const notFailureMessage:MessageResult = {
+                bodyLines: [projectOverviewPages.length === 0? noOverviewMessage : tooManyOverviewsMessage]
+            }
+            if(projectOverviewPages.length > 1) notFailureMessage.links = projectOverviewPages.map(page => page.htmlContentUrl)
+            return testResult('unknown', {notFailureMessage})
+        }
+
 
         const projectOverview = projectOverviewPages[0];
         const pageHtml = projectOverview.body;
@@ -58,11 +58,9 @@ export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {
         el.innerHTML = pageHtml;
         const h2s = Array.from(el.querySelectorAll('h2'));
         const projectHeadings = h2s.filter(h2 => h2.textContent === 'Project outline')
+        const failureMessage = ["Course project page has 'Project outline' as a header"];
 
-        const response = testResult(
-            projectHeadings.length < 1,
-            ["Course project page has 'Project outline' as a header"],
-        )
+        const response = testResult(projectHeadings.length < 1, {failureMessage})
         if (!response.success) response.links = [projectOverview.htmlContentUrl];
         return response;
     }

@@ -6,7 +6,7 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {badContentFixFunc, badContentRunFunc, CourseValidation, preserveCapsReplace} from "./validations";
+import {CourseValidation} from "./validations";
 import {Page} from "../../canvas/content";
 import {Course} from "../../canvas/course/Course";
 
@@ -28,13 +28,12 @@ export type InterfaceMode = 'fix' | 'unitTest'
 
 export function CourseUpdateInterface({
     course,
-    parentCourse,
     refreshCourse,
     allValidations,
     onChangeMode,
 }: CourseUpdateInterfaceProps) {
 
-    const [validations, setValidations] = useState<CourseValidation[]>(allValidations);
+    const [validations, setValidations] = useState<CourseValidation<Course>[]>(allValidations);
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
     const [affectedItems, setAffectedItems] = useState<React.ReactElement[]>([])

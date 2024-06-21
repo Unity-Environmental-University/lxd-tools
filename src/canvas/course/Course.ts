@@ -43,6 +43,7 @@ import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
 import {CourseNotFoundException, getCourseData, getCourseIdFromUrl, getGradingStandards} from "./index";
 import {fetchJson, getPagedData, renderAsyncGen} from "../fetch";
+import index from "isomorphic-git";
 
 const HOMETILE_WIDTH = 500;
 
@@ -305,7 +306,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         let out: IGradingStandardData[] = [];
         console.log(this.name)
         const {id, account_id, root_account_id} = this.canvasData;
-        console.log(this.id, this.rawData.account_id, this.rawData.root_account_id)
         if (id) {
             const courseGradingStandards = await getGradingStandards(id, "course", config);
             out = [...out, ...courseGradingStandards];
@@ -314,7 +314,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (account_id) {
             const accountGradingStandards = await getGradingStandards(account_id, 'account', config);
             out = [...out, ...accountGradingStandards];
-
         }
 
         if (root_account_id) {
@@ -342,7 +341,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             if (!('errors' in gradingStandard)) return gradingStandard;
         }
         return null;
-
     }
 
     async getContentItemFromUrl(url: string | null = null) {
@@ -710,4 +708,18 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return await fetchJson(`/api/v1/courses/${this.id}/settings`, config) as ICourseSettings;
     }
 
+}
+
+export async function saveCourseData(courseId:number, data:Partial<ICourseData>, config?:ICanvasCallConfig) {
+    const url = `/api/v1/courses/${courseId}`
+    return await fetchJson<ICourseData>(url, overrideConfig(config, {
+        fetchInit: {
+            method: 'PUT',
+            body: formDataify({course: data})
+    }
+    }))
+}
+
+export async function setGradingStandardForCourse(courseId: number, standardId:number, config?: ICanvasCallConfig) {
+    return await saveCourseData(courseId, { grading_standard_id: standardId})
 }

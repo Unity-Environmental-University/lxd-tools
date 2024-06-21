@@ -1,7 +1,9 @@
 import proxyServerLinkValidation from "../proxyServerLinkValidation";
-import {badContentTextValidationFixTest, badContentTextValidationTest} from "./index.test";
+
+import {badContentTextValidationFixTest, badContentTextValidationTest} from "../__mocks__";
 
 
+jest.mock('../../../../canvas/fetch');
 describe("Bad Link Tests and Fixes", () => {
     const proxiedUrl = encodeURI('https://unity.instructure.com')
     const badProxyLinkPageHtml = `<div><a href="https://login.proxy1.unity.edu/login?auth=shibboleth&amp;url=${proxiedUrl}">PROXY LINK</a></div>`;

@@ -12,29 +12,34 @@ export type MessageResult = {
 }
 
 
-export type ValidationTestResult<UserDataType = undefined> = {
+export type ValidationResult<UserDataType = unknown> = {
     userData?: UserDataType,
     success: boolean | 'unknown',
     messages: MessageResult[],
     links?: string[],
 }
 
-export type ValidationFixResult = ValidationTestResult
 
 
-export type CourseValidation<T = Course, UserDataType = undefined> = {
+export type CourseValidation<T = Course, UserDataType = unknown, FixUserDataType = UserDataType> = {
     courseCodes?: string[],
     name: string,
     description: string,
-    userData?: UserDataType,
-    run: (course: T, config?: ICanvasCallConfig) => Promise<ValidationTestResult>
-    fix?: (course: T) => Promise<ValidationFixResult>
+    run: (course: T, config?: ICanvasCallConfig) => Promise<ValidationResult<UserDataType>>
+    fix?: (course: T) => Promise<ValidationResult<FixUserDataType>>
 }
 
-export interface TextReplaceValidation<T = Course> extends CourseValidation<T> {
+export interface CourseFixValidation<T = Course,
+    UserDataType = unknown,
+    FixUserDataType = UserDataType
+>  extends CourseValidation<T, UserDataType, FixUserDataType> {
+    fix: (course: T) => Promise<ValidationResult<FixUserDataType>>
+}
+
+export type TextReplaceValidation<T, UserData = unknown> = CourseValidation<T, UserData> & {
     negativeExemplars: string[][],
     positiveExemplars?: string[],
-    fix: (course: T) => Promise<ValidationFixResult>
+    fix: (course: T) => Promise<ValidationResult<UserData>>
 }
 
 
@@ -51,26 +56,39 @@ function ensureMessageResults(value: string | string[] | MessageResult[] | Messa
     return value as MessageResult[];
 }
 
-export function testResult(
-    success: boolean | undefined | 'unknown',
-    failureMessage: string | string[] | MessageResult[] | MessageResult = 'failure',
-    links?: string[],
-    notFailureMessage: string | string[] | MessageResult[] | MessageResult = 'success'
-): ValidationTestResult {
 
+
+
+type TestResultOptions<T> = {
+    failureMessage?: string | string[] | MessageResult[] | MessageResult,
+    links?: string[],
+    notFailureMessage?: string | string[] | MessageResult[] | MessageResult,
+    userData?: T,
+}
+
+const testResultDefaults = {
+    failureMessage: 'failure',
+    notFailureMessage: 'success'
+}
+
+export function testResult<UserData>(
+    success: boolean | "unknown" | undefined, options?: TestResultOptions<UserData> ): ValidationResult<UserData> {
     success = success === 'unknown' ? success : !!success;
+    let { failureMessage, notFailureMessage, links, userData} = {...testResultDefaults, ...options };
 
     failureMessage = ensureMessageResults(failureMessage);
     notFailureMessage = ensureMessageResults(notFailureMessage)
 
-    const response: ValidationTestResult = {
+    const response: ValidationResult<UserData> = {
         success,
-        messages: success ? notFailureMessage : failureMessage
+        messages: success ? notFailureMessage : failureMessage,
+        userData
 
     }
     if (links) response.links = links;
     return response;
 }
+
 
 
 export function capitalize(str: string) {
@@ -140,11 +158,7 @@ export function badContentRunFunc(badTest: RegExp) {
             links: [`/courses/${course.id}/assignments/syllabus`]
         })
 
-        const result = testResult(
-            success,
-            failureMessage,
-            links
-        )
+        const result = testResult(success, {failureMessage, links})
 
         if (!success) result.links = badContent.map(content => content.htmlContentUrl)
         return result;
@@ -158,7 +172,7 @@ export function badSyllabusFixFunc(validateRegEx: RegExp, replace: string | ((st
     return async (course: ISyllabusHaver) => {
         try {
             await fixSyllabus(course, validateRegEx, replaceText);
-            return testResult(true)
+            return testResult<never>(true)
         } catch (e) {
             return errorMessageResult(undefined)
         }
@@ -168,7 +182,7 @@ export function badSyllabusFixFunc(validateRegEx: RegExp, replace: string | ((st
 }
 
 export function badContentFixFunc(validateRegEx: RegExp, replace: string | ((str: string, ...args: any[]) => string)) {
-    return async (course: IContentHaver): Promise<ValidationFixResult> => {
+    return async (course: IContentHaver): Promise<ValidationResult<never>> => {
         let success = false;
         let messages: MessageResult[] = [];
 
@@ -194,6 +208,8 @@ export function badContentFixFunc(validateRegEx: RegExp, replace: string | ((str
         }
     }
 }
+
+
 
 function replaceTextFunc(validateRegEx: RegExp, replace: string | ((text: string) => string)) {
     return (str: string) => {

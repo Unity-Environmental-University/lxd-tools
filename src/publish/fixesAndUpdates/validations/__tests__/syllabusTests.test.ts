@@ -6,8 +6,8 @@ import {
     courseCreditsInSyllabusTest, finalNotInGradingPolicyParaTest
 } from "../syllabusTests";
 import fs from "fs";
-import {dummySyllabusHaver} from "./index.test";
 import {ISyllabusHaver} from "../../../../canvas/course/courseTypes";
+import {dummySyllabusHaver} from "../__mocks__";
 
 const goofusSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.gallant.html').toString()

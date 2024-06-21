@@ -100,11 +100,6 @@ export async function fetchJson<T extends Record<string, any>>(
     }
     config ??= {};
 
-    //TODO: try to remember why this is here. I THINK this the beginning of thinking about integration testing support.
-    if (!document) {
-        config.fetchInit ??= {};
-        config.fetchInit.headers = [];
-    }
 
     const response = await fetch(url, config.fetchInit);
     return await response.json() as T;

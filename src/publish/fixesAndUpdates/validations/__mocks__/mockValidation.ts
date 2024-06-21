@@ -1,7 +1,7 @@
-import {CourseValidation, ValidationTestResult} from "../index";
+import {CourseValidation, ValidationResult} from "../index";
 
 
-export const mockValidationResult: ValidationTestResult = {
+export const mockValidationResult: ValidationResult<any> = {
     success: true,
     messages: [{
         bodyLines: ['message', 'message'],
@@ -9,13 +9,13 @@ export const mockValidationResult: ValidationTestResult = {
     }]
 }
 
-export const mockValidation: CourseValidation = {
+export const mockValidation: CourseValidation<any> = {
     name: "Mock Validation",
     description: "This is a mock validation",
     run: jest.fn(async () => mockValidationResult),
 }
 
-export const mockFailedValidation: CourseValidation = {
+export const mockFailedValidation: CourseValidation<any> = {
     name: "Mock Failed Validation",
     description: "This is a mock validation",
     run: jest.fn(async () => ({
