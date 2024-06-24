@@ -68,22 +68,24 @@ async function isGradByModules(course: IModulesHaver) {
     return modulesByWeekNumber.hasOwnProperty(8);
 }
 
-export function getStandards(gradingStandards: IGradingStandardData[]) {
+export function getStandards(gradingStandards: (IGradingStandardData| undefined)[]) {
 
-    return {
-        grad: gradingStandards.filter(standard => /DE Graduate Programs/.test(standard.title))[0],
-        underGrad: gradingStandards.filter(standard => /REVISED DE Undergraduate Programs/.test(standard.title))[0],
-    }
+    const [grad] = gradingStandards.filter(standard => standard && /DE Graduate Programs/.test(standard.title));
+    const [underGrad] = gradingStandards.filter(standard => standard && /REVISED DE Undergraduate Programs/.test(standard.title));
+        return {
+            grad, underGrad
+        }
 }
 
 
 type BadGradingUserData = {
-    expectedStandard:IGradingStandardData,
+    expectedStandard:IGradingStandardData | undefined,
     gradingStandards:IGradingStandardData[],
     currentGradingStandard:IGradingStandardData | null,
-    gradStandard:IGradingStandardData,
-    underGradStandard:IGradingStandardData,
-}
+    gradStandard:IGradingStandardData | undefined,
+    underGradStandard:IGradingStandardData | undefined,
+} | undefined
+
 export const badGradingPolicyTest: CourseFixValidation<Course, BadGradingUserData, ICourseData | BadGradingUserData> = {
     name: "Correct grading policy selected",
     description: "5 week courses have REVISED DE Undergraduate Programs grading scheme selected. 8 week courses have  DE Graduate Programs grading scheme selected",
@@ -95,8 +97,26 @@ export const badGradingPolicyTest: CourseFixValidation<Course, BadGradingUserDat
                 failureMessage: `Grading standards not accessible from ${course.id}`
             })
 
+            const isGrad = await isGradByModules(course);
             const {grad: gradStandard, underGrad: underGradStandard} = getStandards(gradingStandards);
             const expectedStandard = await isGradByModules(course) ? gradStandard : underGradStandard;
+
+
+
+            if (!expectedStandard || !currentGradingStandard) {
+                return testResult(false, {
+                    failureMessage: (isGrad ? "Graduate" : "Undergraduate") + " grading standard not found. You may not have " +
+                        "permissions to view grading standards on the root account.",
+                })
+            }
+
+            const userData:BadGradingUserData = {
+                expectedStandard,
+                gradingStandards,
+                currentGradingStandard,
+                gradStandard,
+                underGradStandard,
+            }
 
             let success = currentGradingStandard?.title == expectedStandard.title;
 
@@ -104,13 +124,6 @@ export const badGradingPolicyTest: CourseFixValidation<Course, BadGradingUserDat
                 bodyLines: [`Grading standard set to ${currentGradingStandard?.title} expected to be ${expectedStandard.title}`],
                 links: [`/courses/${course.id}/settings`]
             }];
-            const userData = {
-                expectedStandard,
-                gradingStandards,
-                currentGradingStandard,
-                gradStandard,
-                underGradStandard,
-            }
 
             return testResult<typeof userData>(success, {
                 failureMessage,
@@ -122,11 +135,12 @@ export const badGradingPolicyTest: CourseFixValidation<Course, BadGradingUserDat
     },
     async fix(course) {
         try {
-            const test = await this.run(course);
-            if (test.success) return test;
-            const {expectedStandard} = test.userData!;
+            const vResult = await this.run(course);
+            if (vResult.success) return vResult;
+            const {expectedStandard} = vResult.userData!;
+            if(!expectedStandard) return testResult(false, {failureMessage: "You likely dont have permission to access grading standards."})
             const courseDataResults = await setGradingStandardForCourse(course.id, expectedStandard.id);
-            assert(courseDataResults.grading_standard_id === expectedStandard.id)
+            assert(courseDataResults.grading_standard_id.toString() === expectedStandard.id.toString())
             return testResult(true,{userData: courseDataResults})
         } catch (e) {
             return errorMessageResult(e);

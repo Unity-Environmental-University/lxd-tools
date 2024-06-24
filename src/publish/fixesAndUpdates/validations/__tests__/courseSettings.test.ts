@@ -21,6 +21,7 @@ import mockTabData from "../../../../canvas/__mocks__/mockTabData";
 import {getDummyLatePolicyHaver} from "../__mocks__";
 import {fetchJson} from "../../../../canvas/fetch";
 import assert from "assert";
+import {CourseValidation} from "../index";
 
 jest.mock('../../../../canvas/fetch', () => ({
     ...jest.requireActual('../../../../canvas/fetch'),
@@ -78,18 +79,28 @@ const mockGradingPolicies: IGradingStandardData[] = [
 ]
 
 
+type MockModGradPolHavOpts = {
+    overrides: Partial<Course>
+};
+    async function mockModuleGradingPolicyHaver(gradingPolicy: IGradingStandardData | null, modules: IModuleData[], options?: MockModGradPolHavOpts) {
+
+        const additions:Partial<Course> = Object.assign(<Partial<Course>>{
+            getCurrentGradingStandard: async (config?) => gradingPolicy,
+            getAvailableGradingStandards: async (config?) => mockGradingPolicies,
+            getModules: async (config?) => modules,
+            getModulesByWeekNumber: async (config?: ICanvasCallConfig) => (await getModulesByWeekNumber(modules))
+        }, options?.overrides);
+
+        const out:Course = Object.assign(new Course({...mockCourseData, id: 0}), additions)
+        return out;
+    }
+
+    
 describe('Grading policy validation correct test', () => {
 
     const fetchJsonMock = fetchJson as jest.Mock;
-
-    async function mockModuleGradingPolicyHaver(gradingPolicy: IGradingStandardData, modules: IModuleData[]) {
-        const out = new Course({...mockCourseData, id: 0});
-        out.getCurrentGradingStandard = async (config?) => gradingPolicy;
-        out.getAvailableGradingStandards = async (config?) => mockGradingPolicies;
-        out.getModules = async (config?) => modules;
-        out.getModulesByWeekNumber = async (config?: ICanvasCallConfig) => (await getModulesByWeekNumber(modules))
-        return out;
-    }
+    
+    
 
     test("Works for correctly set standards", async () => {
         const newUgSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[2], [...mockUgModules]);
@@ -113,6 +124,33 @@ describe('Grading policy validation correct test', () => {
         expect(result.success).toBe(false);
     })
 
+
+    test("Flags ug scheme in new course old UG standard", async () => {
+        const badGradSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockGradModules]);
+        let result = await badGradingPolicyTest.run(badGradSchemeCourse);
+        expect(result.success).toBe(false);
+    })
+
+    it("Fails gracefully if standards can't be found", async() => {
+        const noPermissionsCourse = await mockModuleGradingPolicyHaver(null, [...mockGradModules], {
+            overrides: {
+                async getAvailableGradingStandards(config?) {
+                    return [];
+                },
+                async getCurrentGradingStandard(config?) {
+                    return null;
+                }
+            }
+        })
+
+        let result = await badGradingPolicyTest.run(noPermissionsCourse);
+        expect(result.success).toEqual(false);
+        expect(result.messages.reduce(
+            (aggregator, current, index, array) =>
+                aggregator + '\n' + current.bodyLines.join('\n'), '')
+        ).toMatch(/grading standard not found/)
+    });
+
     it("Fixes bad ug scheme to correct scheme", async () => {
         fetchJsonMock.mockImplementation(async (url:string, config?: ICanvasCallConfig) => {
             const formData = config?.fetchInit?.body;
@@ -126,6 +164,8 @@ describe('Grading policy validation correct test', () => {
         assert(result.userData && 'id' in result.userData)
         expect(result.userData.grading_standard_id).toEqual( "2")
     })
+
+
 
 })
 

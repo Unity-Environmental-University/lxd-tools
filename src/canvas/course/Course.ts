@@ -306,20 +306,25 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         let out: IGradingStandardData[] = [];
         console.log(this.name)
         const {id, account_id, root_account_id} = this.canvasData;
-        if (id) {
-            const courseGradingStandards = await getGradingStandards(id, "course", config);
-            out = [...out, ...courseGradingStandards];
 
-        }
-        if (account_id) {
-            const accountGradingStandards = await getGradingStandards(account_id, 'account', config);
-            out = [...out, ...accountGradingStandards];
-        }
+        try {
+            if (id) {
+                const courseGradingStandards = await getGradingStandards(id, "course", config);
+                out = [...out, ...courseGradingStandards];
 
-        if (root_account_id) {
-            const rootAccountGradingStandards = await getGradingStandards(root_account_id, 'account', config);
-            out = [...out, ...rootAccountGradingStandards];
+            }
+            if (account_id) {
+                const accountGradingStandards = await getGradingStandards(account_id, 'account', config);
+                out = [...out, ...accountGradingStandards];
+            }
 
+            if (root_account_id) {
+                const rootAccountGradingStandards = await getGradingStandards(root_account_id, 'account', config);
+                out = [...out, ...rootAccountGradingStandards];
+
+            }
+        } catch (e) {
+            console.warn(e);
         }
         return out.filter(filterUniqueFunc);
     }
@@ -335,12 +340,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             if (account_id) urls.push(`/api/v1/accounts/${account_id}/grading_standards/${grading_standard_id}`);
         }
 
-        for (let url of urls) {
-            let gradingStandard = await fetchJson<IGradingStandardData | { errors: string[] }>(url);
-            console.log(gradingStandard);
-            if (!('errors' in gradingStandard)) return gradingStandard;
-        }
-        return null;
+        const standards = (await this.getAvailableGradingStandards(config)).filter(standard => standard.id === grading_standard_id)
+        if(standards.length  == 0) return null;
+        return standards[0];
     }
 
     async getContentItemFromUrl(url: string | null = null) {
@@ -436,7 +438,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         console.warn('deprecated, use assignmentDataGen instead');
         config = overrideConfig(config, {queryParams: {include: ['due_at']}})
         const assignmentDatas = await renderAsyncGen(assignmentDataGen({courseId: this.id}, config));
-        return(assignmentDatas.map(data => new Assignment(data, this.id)));
+        return (assignmentDatas.map(data => new Assignment(data, this.id)));
     }
 
 
@@ -710,16 +712,16 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
 }
 
-export async function saveCourseData(courseId:number, data:Partial<ICourseData>, config?:ICanvasCallConfig) {
+export async function saveCourseData(courseId: number, data: Partial<ICourseData>, config?: ICanvasCallConfig) {
     const url = `/api/v1/courses/${courseId}`
     return await fetchJson<ICourseData>(url, overrideConfig(config, {
         fetchInit: {
             method: 'PUT',
             body: formDataify({course: data})
-    }
+        }
     }))
 }
 
-export async function setGradingStandardForCourse(courseId: number, standardId:number, config?: ICanvasCallConfig) {
-    return await saveCourseData(courseId, { grading_standard_id: standardId})
+export async function setGradingStandardForCourse(courseId: number, standardId: number, config?: ICanvasCallConfig) {
+    return await saveCourseData(courseId, {grading_standard_id: standardId})
 }
