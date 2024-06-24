@@ -20,10 +20,11 @@ import {
 import * as cacheMigrationApi from '../../../canvas/course/migrationCache'
 import {range} from "../../../canvas/canvasUtils";
 import {loadCachedCourseMigrations} from "../../../canvas/course/migrationCache";
+import assert from "assert";
 
 jest.mock('../../../canvas/course/blueprint');
 
-const mockCourse: Course = new Course({...mockCourseData, blueprint: false, course_code: "DEV_TEST000", name: 'DEV_TEST000'})
+const mockCourse: Course = new Course({...mockCourseData, blueprint: false, course_code: "DEV_TEST000", name: 'DEV_TEST000: The Testening'})
 const mockBlueprintCourse: Course = new Course({...mockCourseData, blueprint: true})
 
 const renderComponent = (props: Partial<IMakeBpProps> = {}) => {
@@ -143,7 +144,10 @@ describe('Retirement and updates', () => {
         await waitFor(() => expect(screen.getByLabelText(/New BP/)).toBeInTheDocument());
         fireEvent.click(screen.getByLabelText(/New BP/));
         await waitFor(() => expect(createNewCourse).toHaveBeenCalled());
-        expect(createNewCourse).toHaveBeenCalledWith(bpify(mockCourse.parsedCourseCode ?? ''), mockBlueprintCourse.accountId);
+        assert(mockCourse.parsedCourseCode)
+        const code = bpify(mockCourse.parsedCourseCode);
+        assert(code);
+        expect(createNewCourse).toHaveBeenCalledWith(code, mockBlueprintCourse.accountId, mockCourse.name.replace(mockCourse.courseCode!, code));
     })
 
     it('disabled new BP button if there is an existing BP', async () => {

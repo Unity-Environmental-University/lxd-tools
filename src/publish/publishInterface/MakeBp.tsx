@@ -149,7 +149,12 @@ export function MakeBp({
             return;
         }
         const accountId = devCourse.accountId;
-        const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId);
+        const bpCode = bpify(devCourse.parsedCourseCode);
+        let bpName = bpCode;
+        if(devCourse.courseCode && devCourse.name.match(devCourse.courseCode)) {
+            bpName = devCourse.name.replace(devCourse.courseCode, bpCode)
+        }
+        const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId, bpName);
         setCurrentBp(new Course(newBpShell));
         const migration = await startMigration(devCourse.id, newBpShell.id) as SavedMigration;
         migration.tracked = true;
