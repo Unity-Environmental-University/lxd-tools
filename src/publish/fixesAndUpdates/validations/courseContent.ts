@@ -1,6 +1,13 @@
 import {CourseValidation, MessageResult, stringsToMessageResult, testResult, ValidationResult} from "./index";
 import {IPagesHaver} from "../../../canvas/course/courseTypes";
 
+
+function decodeHtml(html:string) {
+    let text = document.createElement("textarea");
+    text.innerHTML = html;
+    return text.value;
+}
+
 export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
     name: "Learning Objectives -> Weekly Objectives",
     description: 'Make sure weekly objectives are called "Weekly Objectives" and not "Learning Objectives" throughout',
@@ -14,8 +21,9 @@ export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
         const badOverviews = overviews.filter(overview => {
             const el = document.createElement('div');
             el.innerHTML = overview.body;
-            const h2s = el.querySelectorAll('h2');
-            const weeklyObjectivesHeaders = Array.from(h2s).filter(h2 => /Weekly Objectives/i.test(h2.textContent || ''))
+            const headerTexts = [...el.querySelectorAll('h2')].map(h2 => decodeHtml(h2.textContent ?? h2.innerText ?? ''));
+            const weeklyObjectivesHeaders = headerTexts.filter(
+                text => /Weekly\sObjectives/i.test(text))
             return weeklyObjectivesHeaders.length === 0;
 
         })

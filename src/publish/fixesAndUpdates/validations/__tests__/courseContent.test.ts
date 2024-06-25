@@ -5,36 +5,54 @@ import {courseProjectOutlineTest, weeklyObjectivesTest} from "../courseContent";
 import {IPagesHaver} from "../../../../canvas/course/courseTypes";
 import {dummyPagesHaver} from "../__mocks__";
 
-test('Weekly Objectives headers not present test works', async () => {
-    const goofusPages = Array.from(range(1, 5)).map(weekNum => new Page({
-        ...mockPageData,
-        title: `Week ${weekNum} Overview`,
-        body: '<h2>Learning objectives</h2>'
-    }, 0));
-    console.log(goofusPages[0])
-    console.log(goofusPages[0].name);
-    const goofus: IPagesHaver = {
-        id: 0,
-        getPages: async (_config?) => goofusPages,
-    }
-    const goofusResult = await weeklyObjectivesTest.run(goofus);
-    expect(goofusResult.success).toBe(false);
-    expect(goofusResult.links?.length).toBe(5)
+
+describe('Weekly Objectives test', () => {
+
+    it('Fails on "Learning objectives"', async () => {
+        const goofusPages = Array.from(range(1, 5)).map(weekNum => new Page({
+            ...mockPageData,
+            title: `Week ${weekNum} Overview`,
+            body: '<h2>Learning objectives</h2>'
+        }, 0));
+        const goofus: IPagesHaver = {
+            id: 0,
+            getPages: async (_config?) => goofusPages,
+        }
+        const goofusResult = await weeklyObjectivesTest.run(goofus);
+        expect(goofusResult.success).toBe(false);
+        expect(goofusResult.links?.length).toBe(5)
+    });
 
 
-    const gallantPages = Array.from(range(1, 5)).map(weekNum => new Page({
-        ...mockPageData,
-        title: `Week ${weekNum} Overview`,
-        body: '<h2>Weekly Objectives</h2>'
-    }, 0));
+    it('Passes on "Weekly&nbsp;Objectives"', async () => {
+        const pages = Array.from(range(1, 5)).map(weekNum => new Page({
+            ...mockPageData,
+            title: `Week ${weekNum} Overview`,
+            body: '<h2>Weekly&nbsp;Objectives</h2>'
+        }, 0));
+        const goofus: IPagesHaver = {
+            id: 0,
+            getPages: async (_config?) => pages,
+        }
+        const goofusResult = await weeklyObjectivesTest.run(goofus);
+        expect(goofusResult.success).toBe(true);
+    })
 
-    const gallant: IPagesHaver = {
-        id: 0,
-        getPages: async (_config?) => gallantPages,
-    }
-    const gallantResult = await weeklyObjectivesTest.run(gallant);
-    expect(gallantResult.success).toBe(true);
+    it('Passes on "Weekly Objectives"', async() => {
+        const gallantPages = Array.from(range(1, 5)).map(weekNum => new Page({
+            ...mockPageData,
+            title: `Week ${weekNum} Overview`,
+            body: '<h2>Weekly Objectives</h2>'
+        }, 0));
 
+        const gallant: IPagesHaver = {
+            id: 0,
+            getPages: async (_config?) => gallantPages,
+        }
+        const gallantResult = await weeklyObjectivesTest.run(gallant);
+        expect(gallantResult.success).toBe(true);
+
+    })
 })
 
 test('Course project outline header not "Project outline" test works', async () => {

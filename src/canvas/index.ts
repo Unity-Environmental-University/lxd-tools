@@ -12,7 +12,7 @@ import assert from 'assert';
 import {CanvasData, ITermData} from "./canvasDataDefs";
 import {formDataify, ICanvasCallConfig} from "./canvasUtils";
 import {BaseCanvasObject} from "./baseCanvasObject";
-import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
+import {overrideConfig} from "../publish/fixesAndUpdates/validations";
 import {fetchJson, getPagedData} from "./fetch";
 
 
