@@ -7,7 +7,7 @@ import {IUserData} from "../../../canvas/canvasDataDefs";
 
 interface IFacultyProfileSearchProps {
     onProfileSelect(profile: IProfile): Promise<void>
-    user?: IUserData | undefined,
+    user: IUserData,
     minSearchLength?: number
 }
 

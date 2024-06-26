@@ -40,7 +40,7 @@ import {getCurrentStartDate} from "./changeStartDate";
 import {getModuleOverview, getModuleWeekNumber, getModulesByWeekNumber} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
-import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile} from "../profile";
+import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile, IProfileWithUser} from "../profile";
 import {CourseNotFoundException, getCourseData, getCourseIdFromUrl, getGradingStandards} from "./index";
 import {fetchJson, getPagedData, renderAsyncGen} from "../fetch";
 import index from "isomorphic-git";
@@ -697,7 +697,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     public async getPotentialInstructorProfiles() {
         const instructors = await this.getInstructors();
-        let profiles: IProfile[] = [];
+        let profiles: IProfileWithUser[] = [];
         if (!instructors) return profiles;
         for (let instructor of instructors) {
             profiles = profiles.concat(await getPotentialFacultyProfiles(instructor))

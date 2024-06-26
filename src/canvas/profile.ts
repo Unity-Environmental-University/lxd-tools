@@ -7,6 +7,7 @@ import {Course} from "./course/Course";
 
 
 let facultyCourseCached: Course;
+
 export interface IProfile {
     user?: IUserData,
     bio?: string | null,
@@ -15,6 +16,10 @@ export interface IProfile {
     imageLink?: string | null,
     sourcePage?: Page | null,
 
+}
+
+export interface IProfileWithUser extends IProfile {
+    user: IUserData
 }
 
 async function getFacultyCourse() {
@@ -57,13 +62,13 @@ async function getPotentialFacultyProfiles(user:IUserData) {
     return profiles;
 }
 
-export function getProfileFromPage(page:Page, user?:IUserData) {
+export function getProfileFromPage(page:Page, user:IUserData) {
     const profile = getProfileFromPageHtml(page.body, user);
     profile.sourcePage = page;
     return profile;
 }
 
-function getProfileFromPageHtml(html:string, user?: IUserData): IProfile {
+function getProfileFromPageHtml(html:string, user: IUserData) {
     const el = document.createElement('div')
     el.innerHTML = html;
 
@@ -76,8 +81,8 @@ function getProfileFromPageHtml(html:string, user?: IUserData): IProfile {
         bio: body,
         displayName,
         image,
-        imageLink: image?.src
-    }
+        imageLink: image?.src,
+    } as IProfileWithUser
 }
 function getProfileBody(el:Element) {
     const h4s = el.querySelectorAll('h4');
@@ -174,7 +179,13 @@ function getCurioPageFrontPageProfile(html:string, user?: IUserData):IProfile {
    }
 }
 
-export function renderProfileIntoCurioFrontPage(html: string, profile: IProfile) {
+export function frontPageBio(profile:IProfile & {user:IUserData}) {
+    return profile.bio + `<p>${profile.displayName} should be contacted during the term using Canvas Inbox,
+ but can be reached after and before the term via their email address: ${profile.user.email}</p>`
+    
+}
+
+export function renderProfileIntoCurioFrontPage(html: string, profile: IProfile & {user:IUserData}) {
     const el = document.createElement('div');
     el.innerHTML = html;
     if(profile.displayName) {
@@ -187,7 +198,7 @@ export function renderProfileIntoCurioFrontPage(html: string, profile: IProfile)
         if(bio) {
             const classes = bio.classList;
             if(!classes.contains('cbt-instructor-bio')) classes.add('cbt-instructor-bio')
-            bio.innerHTML = profile.bio;
+            bio.innerHTML = frontPageBio(profile);
         }
     }
 
