@@ -147,7 +147,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
         </Row>
             <Row>
                 {validationResults
-                    .filter(a => a.success != false)
+                    .filter(a => a.success !== true)
                     .map(result => {
                         const course = coursesToRunOn.find(a => a.id === result.courseId);
 
@@ -241,7 +241,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
                                             onChange={(e) => setIncludeSections(e.target.checked)}/>
                             </Col>}
                         </Row>
-                        <Row>
+                        <Row>p
                             <Col>
                                 <SearchCourses
                                     setFoundCourses={setFoundCourses}
@@ -309,5 +309,5 @@ export type CourseLinkProps = { course: Course, label?: string }
 
 function CourseLink({course, label}: CourseLinkProps) {
 
-    return <a href={course.htmlContentUrl}>{label ?? course.name}</a>
+    return <a href={course.htmlContentUrl} target={"_blank"}>{label ?? course.name}</a>
 }
