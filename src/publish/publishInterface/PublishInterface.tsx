@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {IProfile, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
+import {IProfile, IProfileWithUser, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
 import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
@@ -32,9 +32,12 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     const [isDev, setIsDev] = useState<boolean>(false);
     const [workingSection, setWorkingSection] = useState<Course | null>();
 
-    const [potentialProfilesByCourseId, setPotentialProfilesByCourseId] = useState<Record<number, IProfile[]>>({})
-    const [frontPageProfilesByCourseId, setFrontPageProfilesByCourseId] = useState<Record<number, IProfile>>({});
-    const [instructorsByCourseId, setInstructorsByCourseId] = useState<Record<number, IUserData[]>>({});
+    const [potentialProfilesByCourseId, setPotentialProfilesByCourseId] =
+        useState<Record<number, IProfileWithUser[]>>({})
+    const [frontPageProfilesByCourseId, setFrontPageProfilesByCourseId] =
+        useState<Record<number, IProfile>>({});
+    const [instructorsByCourseId, setInstructorsByCourseId] =
+        useState<Record<number, IUserData[]>>({});
     const [emails, setEmails] = useState<string[]>([])
 
     const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({})
@@ -64,7 +67,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
 
     useEffectAsync(async () => {
-        const profileSet: Record<number, IProfile[]> = [];
+        const profileSet: Record<number, IProfileWithUser[]> = [];
 
         for (let course of sections)
             profileSet[course.id] ??= await course.getPotentialInstructorProfiles();
@@ -124,7 +127,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         setErrorsByCourseId({...tempErrors})
     }
 
-    async function applySectionProfiles(event: React.MouseEvent) {
+    async function applySectionProfiles(_?: React.MouseEvent) {
         setLoading(true);
         inform("Updating section profiles...");
         const currentProfiles = {...frontPageProfilesByCourseId};

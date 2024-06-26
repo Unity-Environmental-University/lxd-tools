@@ -6,6 +6,7 @@ import {Course} from "../../canvas/course/Course";
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
+
 import PublishApp from '../PublishApp';
 import {IUserData} from '../../canvas/canvasDataDefs';
 import {PublishInterface} from '../publishInterface/PublishInterface';

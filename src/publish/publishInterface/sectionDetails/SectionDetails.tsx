@@ -11,7 +11,7 @@ import {IAssignmentGroup} from "../../../canvas/content";
 type SectionDetailsProps = {
     section?: Course | null,
     onUpdateFrontPageProfile?(profile: IProfile): void,
-    facultyProfileMatches?: IProfile[] | null,
+    facultyProfileMatches?: (IProfile & {user:IUserData})[] | null,
     onClose?: () => void,
 }
 
@@ -79,7 +79,7 @@ export function SectionDetails({
         setInfoClass('alert-success')
     }
 
-    async function applyProfile(profile: IProfile) {
+    async function applyProfile(profile: IProfile & {user: IUserData}) {
         if (!section) return;
         let frontPage = await section.getFrontPage();
         if (!frontPage) return;
