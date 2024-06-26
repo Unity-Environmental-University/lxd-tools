@@ -1,6 +1,7 @@
 import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
 import {IContentHaver, ISyllabusHaver} from "../../../canvas/course/courseTypes";
 import {Course} from "../../../canvas/course/Course";
+import {getByTestId} from "@testing-library/react";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -14,7 +15,7 @@ export type MessageResult = {
 
 export type ValidationResult<UserDataType = unknown> = {
     userData?: UserDataType,
-    success: boolean | 'unknown',
+    success: boolean | 'unknown' | 'not run',
     messages: MessageResult[],
     links?: string[],
 }
@@ -72,7 +73,7 @@ const testResultDefaults = {
 }
 
 export function testResult<UserData>(
-    success: boolean | "unknown" | undefined, options?: TestResultOptions<UserData> ): ValidationResult<UserData> {
+    success: boolean | "unknown" | "not run" | undefined, options?: TestResultOptions<UserData> ): ValidationResult<UserData> {
     success = success === 'unknown' ? success : !!success;
     let { failureMessage, notFailureMessage, links, userData} = {...testResultDefaults, ...options };
 
@@ -132,9 +133,9 @@ export function badContentRunFunc(badTest: RegExp) {
         const defaultConfig = {queryParams: {include: ['body'], per_page: 50}};
         let content = await course.getContent(overrideConfig(config, defaultConfig));
 
-        const badContent = content.filter(item => item.body && item.body.search(badTest) > -1)
+        const badContent = content.filter(item => item.body && badTest.test(item.body))
         const syllabus = await course.getSyllabus(config);
-        let syllabusTest = syllabus.search(badTest) > -1;
+        let syllabusTest = badTest.test(syllabus);
         const success = badContent.length === 0 && !syllabusTest;
         let links: string[] = [];
         let failureMessage: MessageResult[] = []
@@ -181,25 +182,46 @@ export function badSyllabusFixFunc(validateRegEx: RegExp, replace: string | ((st
 
 }
 
-export function badContentFixFunc(validateRegEx: RegExp, replace: string | ((str: string, ...args: any[]) => string)) {
+export function badContentFixFunc(badContentRegex: RegExp, replace: string | ((str: string, ...args: any[]) => string)) {
     return async (course: IContentHaver): Promise<ValidationResult<never>> => {
         let success = false;
         let messages: MessageResult[] = [];
 
-        const errors = [];
         const includeBody = {queryParams: {include: ['body']}};
         let content = await course.getContent(includeBody);
-        content = content.filter(item => item.body && item.body.search(validateRegEx) > -1);
+        content = content.filter(item => item.body && badContentRegex.test(item.body));
 
-        const replaceText = replaceTextFunc(validateRegEx, replace);
-        await fixSyllabus(course, validateRegEx, replaceText);
+        const replaceText = replaceTextFunc(badContentRegex, replace);
+        await fixSyllabus(course, badContentRegex, replaceText);
+        if (content.length === 0) {
+            return testResult('not run', {
+                failureMessage: "No content fixed"
+            })
+        }
+        success = true;
         for (let item of content) {
             if (!item.body) continue;
-            if (item.body.search(validateRegEx) === -1) continue;
+            if (!badContentRegex.test(item.body)) continue;
             const newText = replaceText(item.body)
-            if (newText.search(validateRegEx) > -1) throw new Error(`Fix broken for ${item.name})`);
-            await item.updateContent(newText);
-            messages.push()
+            if (badContentRegex.test(newText)) {
+                success = false;
+                messages.push({
+                    bodyLines: [`fix broken for ${item.name}`],
+                    links: [item.htmlContentUrl]
+                })
+                continue;
+            }
+
+            try {
+                await item.updateContent(newText);
+                messages.push({
+                    bodyLines: [`fix succeeded for ${item.name}`],
+                    links: [item.htmlContentUrl]
+                })
+
+            } catch (e) {
+                return errorMessageResult(e, [item.htmlContentUrl])
+            }
         }
 
         return {
@@ -221,9 +243,9 @@ function replaceTextFunc(validateRegEx: RegExp, replace: string | ((text: string
 
 async function fixSyllabus(course: ISyllabusHaver, validateRegEx: RegExp, replaceText: (text: string) => string) {
     const syllabus = await course.getSyllabus();
-    if (syllabus.search(validateRegEx) > -1) {
+    if (validateRegEx.test(syllabus)) {
         const newText = replaceText(syllabus);
-        if (newText.search(validateRegEx) > -1) throw new Error("Fix broken for syllabus " + validateRegEx.toString() + newText);
+        if (validateRegEx.test(newText)) throw new Error("Fix broken for syllabus " + validateRegEx.toString() + newText);
         await course.changeSyllabus(newText);
     }
 
@@ -237,11 +259,11 @@ export function overrideConfig(
     return deepObjectMerge(source, override) ?? {} as ICanvasCallConfig;
 }
 
-export function errorMessageResult(e: unknown) {
+export function errorMessageResult(e: unknown, links?: string[]) {
     const bodyLines = [
         e?.toString() || 'Error',
     ]
     if (e && e instanceof Error && e.stack) bodyLines.push( e.stack);
 
-    return { success:false, messages: [{bodyLines}]};
+    return { success:false, messages: [{bodyLines}], links};
 }

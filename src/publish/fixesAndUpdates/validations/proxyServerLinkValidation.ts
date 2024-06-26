@@ -3,12 +3,11 @@ import {badContentFixFunc, badContentRunFunc, CourseValidation} from "./";
 import {IContentHaver} from "../../../canvas/course/courseTypes";
 
 
-const oldProxyRegex =/https:\/\/login\.proxy1\.unity\.edu\/login\?auth=shibboleth&(?:amp;)?url=([^"]*)/g;
-const newProxyReplace = 'https://login.unity.idn.oclc.org/login?url=$1';
-const oldProxy = 'https://login.proxy1.unity.edu/login?auth=shibboleth&url='
+const oldProxyRegex =/proxy1\.unity\.edu/g;
+const newProxyReplace = 'unity.idm.oclc.org';
 export const proxyServerLinkValidation: CourseValidation<IContentHaver> = {
     name: "Proxy Server Link Validation",
-    description: `proxy server link should be ${newProxyReplace.replace('$1', '')} not ${oldProxy}`,
+    description: `proxy1.unity.edu => unity.idm.oclc.org`,
     run: badContentRunFunc(oldProxyRegex),
     fix: badContentFixFunc(oldProxyRegex, newProxyReplace),
 }

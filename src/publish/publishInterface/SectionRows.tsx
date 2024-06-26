@@ -38,7 +38,7 @@ export function SectionRows({
             <div className={'col-sm-3'}><strong>Name on Front Page</strong></div>
             <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
         </div>
-        {sections && sections.map((course) => (
+        {sections && sections.toSorted((a, b) => a.name.localeCompare(b.name)).map((course) => (
             <CourseRow
                 instructors={instructorsByCourseId[course.id]}
                 frontPageProfile={frontPageProfilesByCourseId[course.id]}

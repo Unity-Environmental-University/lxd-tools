@@ -15,7 +15,10 @@ import syllabusTests from "./fixesAndUpdates/validations/syllabusTests";
 import courseSettingsTests from "./fixesAndUpdates/validations/courseSettings";
 import courseContentTests from "./fixesAndUpdates/validations/courseContent";
 import {rubricsTiedToGradesTest} from "./fixesAndUpdates/validations/rubricSettings";
+import proxyServerLinkValidation from "./fixesAndUpdates/validations/proxyServerLinkValidation";
+import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
 
+export type ValidationOption = CourseValidation & IMultiSelectOption
 
 function PublishApp() {
 
@@ -38,13 +41,13 @@ function PublishApp() {
         setUser(user);
     }, []);
 
-    const allValidations: CourseValidation[] = [
+    const allValidations = [
         ...capstoneProjectValidations,
         ...syllabusTests,
         ...courseSettingsTests,
         ...courseContentTests,
-        rubricsTiedToGradesTest
-        //proxyServerLinkValidation,
+        rubricsTiedToGradesTest,
+        proxyServerLinkValidation,
     ]
 
 
@@ -57,7 +60,7 @@ function PublishApp() {
             refreshCourse={() => getCourse(true)
         }/>
         <PublishInterface course={course} user={user}/>
-        <AdminApp course={course}/>
+        <AdminApp course={course} allValidations={allValidations}/>
     </div>)
 }
 

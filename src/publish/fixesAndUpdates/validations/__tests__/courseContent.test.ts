@@ -3,7 +3,7 @@ import {Page} from "../../../../canvas/content";
 import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {courseProjectOutlineTest, weeklyObjectivesTest} from "../courseContent";
 import {IPagesHaver} from "../../../../canvas/course/courseTypes";
-import {dummyPagesHaver} from "../__mocks__";
+import {mockPagesHaver} from "../__mocks__";
 
 
 describe('Weekly Objectives test', () => {
@@ -84,19 +84,19 @@ test('Course project outline header not "Project outline" test works', async () 
         body: '<h2>Course Project Overview</h2>'
     }, 0)]
 
-    const goofus = dummyPagesHaver(goofusPages)
+    const goofus = mockPagesHaver(goofusPages)
     const goofusResult = await courseProjectOutlineTest.run(goofus);
     expect(goofusResult.success).toBe(false)
 
-    const noCourseProjectPagesCourse: IPagesHaver = dummyPagesHaver(noCourseProjectPages)
+    const noCourseProjectPagesCourse: IPagesHaver = mockPagesHaver(noCourseProjectPages)
     const noCourseProjectPagesResult = await courseProjectOutlineTest.run(noCourseProjectPagesCourse);
     expect(noCourseProjectPagesResult.success).toBe('unknown')
 
-    const tooManyProjectPagesCourse: IPagesHaver = dummyPagesHaver(tooManyCourseProjectPages)
+    const tooManyProjectPagesCourse: IPagesHaver = mockPagesHaver(tooManyCourseProjectPages)
     const tooManyProjectPagesResult = await courseProjectOutlineTest.run(tooManyProjectPagesCourse);
     expect(tooManyProjectPagesResult.success).toBe('unknown')
 
-    const gallant = dummyPagesHaver(gallantPages)
+    const gallant = mockPagesHaver(gallantPages)
     const gallantResult = await courseProjectOutlineTest.run(gallant);
     expect(gallantResult.success).toBe(true)
 

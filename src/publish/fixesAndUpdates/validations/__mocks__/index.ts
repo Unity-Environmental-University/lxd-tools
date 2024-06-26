@@ -47,6 +47,7 @@ export function badContentTextValidationFixTest(test: CourseValidation<IContentH
             let testResult = await test.run(goofus);
             expect(testResult.success).toBe(false);
             const fixResult = await test.fix(goofus);
+            expect (fixResult.success).toBe(true);
             testResult = await test.run(goofus);
             expect(testResult.success).toBe(true);
         }
@@ -78,7 +79,7 @@ function contentGallant(badHtml: string, goodHtml: string) {
         ], "Gallant");
 }
 
-export function dummyPagesHaver(pages: Page[]): IPagesHaver {
+export function mockPagesHaver(pages: Page[]): IPagesHaver {
 
     return {
         id: 0,
@@ -86,7 +87,7 @@ export function dummyPagesHaver(pages: Page[]): IPagesHaver {
     }
 }
 
-export function dummyAssignmentsHaver(assignments: Assignment[]): IAssignmentsHaver {
+export function mockAssignmentsHaver(assignments: Assignment[]): IAssignmentsHaver {
     return {
         id: 0,
         getAssignments: async (_config?) => assignments
@@ -94,7 +95,7 @@ export function dummyAssignmentsHaver(assignments: Assignment[]): IAssignmentsHa
     }
 }
 
-export function dummyDiscussionsHaver(discussions: Discussion[]): IDiscussionsHaver {
+export function mockDocumentsHaver(discussions: Discussion[]): IDiscussionsHaver {
     return {
         id: 0,
         getDiscussions: async (_config?) => discussions
@@ -102,7 +103,7 @@ export function dummyDiscussionsHaver(discussions: Discussion[]): IDiscussionsHa
     }
 }
 
-export function dummyQuizzesHaver(quizzes: Quiz[]): IQuizzesHaver {
+export function mockQuizzesHaver(quizzes: Quiz[]): IQuizzesHaver {
     return {
         id: 0,
         getQuizzes: async (_config?) => quizzes
@@ -110,7 +111,7 @@ export function dummyQuizzesHaver(quizzes: Quiz[]): IQuizzesHaver {
     }
 }
 
-export function dummySyllabusHaver(syllabus: string): ISyllabusHaver {
+export function mockSyllabusHaver(syllabus: string): ISyllabusHaver {
     return {
         id: 1,
         getSyllabus: async function (_config) {
@@ -130,11 +131,11 @@ export function mockContentHaver(syllabus: string, content: BaseContentItem[], n
 
 
     return {
-        ...dummySyllabusHaver(syllabus),
-        ...dummyQuizzesHaver(quizzes),
-        ...dummyDiscussionsHaver(discussions),
-        ...dummyAssignmentsHaver(assignments),
-        ...dummyPagesHaver(pages),
+        ...mockSyllabusHaver(syllabus),
+        ...mockQuizzesHaver(quizzes),
+        ...mockDocumentsHaver(discussions),
+        ...mockAssignmentsHaver(assignments),
+        ...mockPagesHaver(pages),
         async getContent() {
             return [...discussions, ...quizzes, ...assignments, ...quizzes, ...pages]
         },

@@ -44,9 +44,8 @@ export interface IProgressData {
 
 export function getMigrationsForCourse(courseId:number, config?:ICanvasCallConfig) {
     const url = `/api/v1/courses/${courseId}/content_migrations`
-    const generator = getPagedDataGenerator<IMigrationData>(url, config);
+    return getPagedDataGenerator<IMigrationData>(url, config);
 
-    return generator;
 }
 
 export async function getMigration(courseId:number,migrationId:number, config?:ICanvasCallConfig) {

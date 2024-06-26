@@ -52,7 +52,7 @@ describe('CourseRow Component', () => {
 
     it('renders without crashing', () => {
         renderComponent();
-        expect(screen.getByText('BP_TEST000')).toBeInTheDocument();
+        expect(screen.getByText('Test Course')).toBeInTheDocument();
         expect(screen.getByText('Front Page Profile')).toBeInTheDocument();
         expect(screen.getByText('Instructor 1, Instructor 2')).toBeInTheDocument();
     });

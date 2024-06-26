@@ -1,5 +1,5 @@
 import React, {useReducer, useState} from "react";
-import {CourseValidation} from "../publish/fixesAndUpdates/validations/index";
+import {CourseValidation} from "../publish/fixesAndUpdates/validations";
 import {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
 import Modal from "../ui/widgets/Modal/index";
 import {Col, Container, Form, Row} from "react-bootstrap";
@@ -10,16 +10,21 @@ import {IIncludesTestAndCourseId} from "./index";
 import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";
 import {Course} from "../canvas/course/Course";
+import {ValidationOption} from "../publish/PublishApp";
+import CourseSettings from "../publish/fixesAndUpdates/validations/courseSettings";
+
 
 interface IAdminAppProps {
     course?: Course,
+    allValidations: CourseValidation[]
 }
 
-export function AdminApp({course}: IAdminAppProps) {
+export function AdminApp({course, allValidations}: IAdminAppProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     const [foundCourses, setFoundCourses] = useState<(Course & IMultiSelectOption)[]>([]);
-    const [coursesToRunOn, setCoursesToRunOn] = useState<(Course & IMultiSelectOption)[]>([])
+    const [coursesToRunOn, setCoursesToRunOn] = useState<(Course & IMultiSelectOption)[]>(
+        course ? optionize([course]) : [])
 
     const [validationsToRun, setValidationsToRun] = useState<(CourseValidation & IMultiSelectOption)[]>([])
     const [validationResults, setValidationResults] = useState<IIncludesTestAndCourseId[]>([])
@@ -132,7 +137,7 @@ export function AdminApp({course}: IAdminAppProps) {
 
 
     function ResultsDisplay() {
-        return <Row>
+        return <><Row>
             {coursesToRunOn.map(course => <ResultsDisplayRow
                 course={course}
                 key={course.id}
@@ -140,6 +145,26 @@ export function AdminApp({course}: IAdminAppProps) {
                 sections={sectionLut[course.id]}
             />)}
         </Row>
+            <Row>
+                {validationResults
+                    .filter(a => a.success != false)
+                    .map(result => {
+                        const course = coursesToRunOn.find(a => a.id === result.courseId);
+
+                        return course && <Row>
+                            <Col sm={4}>
+                                {course?.courseCode}
+                            </Col>
+                            <Col sm={4}>
+                                {course.courseCode}
+                            </Col>
+                            <Col sm={4}>
+                                <CourseLink course={course} label={course.htmlContentUrl}/>
+                            </Col>
+                        </Row>
+                    })}
+            </Row>
+        </>
     }
 
     interface IResultsDisplayRowProps {
@@ -149,28 +174,28 @@ export function AdminApp({course}: IAdminAppProps) {
     }
 
     function ResultsDisplayRow({course, parentCourse, sections}: IResultsDisplayRowProps) {
-        return <>
-            <ValidationResultsForCourse
-                key={course.id}
-                slim={false}
-                results={validationResultsLut[course.id]}
-                course={course}/>
+        return <Row>
+        <ValidationResultsForCourse
+            key={course.id}
+            slim={false}
+            results={validationResultsLut[course.id]}
+            course={course}/>
 
-            {includeDev && parentCourse && <ValidationResultsForCourse
-                key={course.id}
-                slim={true}
-                course={parentCourse}
-                results={validationResultsLut[parentCourse.id]}
-            />}
-            {includeSections && sections?.map(section => <ValidationResultsForCourse
-                key={section.id}
-                slim={true}
-                course={section}
-                results={validationResultsLut[section.id]}
-            />)}
+        {includeDev && parentCourse && <ValidationResultsForCourse
+            key={course.id}
+            slim={true}
+            course={parentCourse}
+            results={validationResultsLut[parentCourse.id]}
+        />}
+        {includeSections && sections?.map(section => <ValidationResultsForCourse
+            key={section.id}
+            slim={true}
+            course={section}
+            results={validationResultsLut[section.id]}
+        />)}
 
 
-        </>
+        </Row>
     }
 
     function FoundCoursesDisplay() {
@@ -212,7 +237,8 @@ export function AdminApp({course}: IAdminAppProps) {
                             </Col>}
                             {onlySearchBlueprints && <Col sm={4}>
                                 <Form.Label>Include Sections</Form.Label>
-                                <Form.Check checked={includeSections} onChange={(e) => setIncludeSections(e.target.checked)}/>
+                                <Form.Check checked={includeSections}
+                                            onChange={(e) => setIncludeSections(e.target.checked)}/>
                             </Col>}
                         </Row>
                         <Row>
@@ -224,11 +250,12 @@ export function AdminApp({course}: IAdminAppProps) {
                                 />
                             </Col>{coursesToRunOn.length > 0 && <Col>
                             <SelectValidations
-                                runTests={runTests}
-                                testsToRun={validationsToRun}
+                                runValidations={runTests}
+                                allValidations={allValidations}
+                                validationsToRun={validationsToRun}
                                 setCoursesToRunOn={(courses) => optionize(courses)}
                                 onChangeCustomValidation={() => null}
-                                setTestsToRun={setValidationsToRun}/>
+                                setValidationsToRun={setValidationsToRun}/>
                         </Col>}
                         </Row>
 
@@ -278,3 +305,9 @@ function ValidationResultsForCourse({
 }
 
 
+export type CourseLinkProps = { course: Course, label?: string }
+
+function CourseLink({course, label}: CourseLinkProps) {
+
+    return <a href={course.htmlContentUrl}>{label ?? course.name}</a>
+}

@@ -7,7 +7,7 @@ import {
 } from "../syllabusTests";
 import fs from "fs";
 import {ISyllabusHaver} from "../../../../canvas/course/courseTypes";
-import {dummySyllabusHaver} from "../__mocks__";
+import {mockSyllabusHaver} from "../__mocks__";
 
 const goofusSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.gallant.html').toString()
@@ -22,17 +22,17 @@ describe('Syllabus validation', () => {
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
     return async () => {
-        const gallantCourse: ISyllabusHaver = dummySyllabusHaver(gallantSyllabusHtml);
+        const gallantCourse: ISyllabusHaver = mockSyllabusHaver(gallantSyllabusHtml);
         const gallantResult = await test.run(gallantCourse)
         expect(gallantResult).toHaveProperty('success', true);
 
-        const goofusCourse: ISyllabusHaver = dummySyllabusHaver(goofusSyllabusHtml);
+        const goofusCourse: ISyllabusHaver = mockSyllabusHaver(goofusSyllabusHtml);
         const goofusResult = await test.run(goofusCourse);
         expect(goofusResult).toHaveProperty('success', false);
 
         if ('negativeExemplars' in test && test.fix) {
             for (let [goofus, gallant] of test.negativeExemplars) {
-                const goofusCourse: ISyllabusHaver = dummySyllabusHaver(goofus);
+                const goofusCourse: ISyllabusHaver = mockSyllabusHaver(goofus);
                 await test.fix(goofusCourse);
                 const syllabus = await goofusCourse.getSyllabus();
                 expect(syllabus).toBe(gallant);
