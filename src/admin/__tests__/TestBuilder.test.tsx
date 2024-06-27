@@ -15,16 +15,16 @@ function renderComponent(props?:Partial<TestBuilderProps>) {
     render(TestBuilder({...defaultProps,  ...props}));
 
 }
-//
-//
-// describe("TestBuilder", () => {
-//     it("renders", () => {
-//         renderComponent();
-//         expect(screen.queryByPlaceholderText(REPLACE_PLACEHOLDER)).toBeInTheDocument()
-//         expect(screen.queryByPlaceholderText(FIND_PLACEHOLDER)).toBeInTheDocument()
-//         expect(screen.queryAllByPlaceholderText(BAD_TEST_PLACEHOLDER).length).toBe(2);
-//         expect(screen.queryAllByPlaceholderText(GOOD_TEST_PLACEHOLDER).length).toBe(2);
-//     });
-//     it("Updates ")
-//
-// })
+
+
+describe("TestBuilder", () => {
+    it("renders", () => {
+        renderComponent();
+        // expect(screen.queryByPlaceholderText(REPLACE_PLACEHOLDER)).toBeInTheDocument()
+        // expect(screen.queryByPlaceholderText(FIND_PLACEHOLDER)).toBeInTheDocument()
+        // expect(screen.queryAllByPlaceholderText(BAD_TEST_PLACEHOLDER).length).toBe(2);
+        // expect(screen.queryAllByPlaceholderText(GOOD_TEST_PLACEHOLDER).length).toBe(2);
+    });
+    test.todo("Updates ")
+
+})
