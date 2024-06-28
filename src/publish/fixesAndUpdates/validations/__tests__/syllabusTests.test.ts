@@ -3,7 +3,7 @@ import {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
     communication24HoursTest,
-    courseCreditsInSyllabusTest, finalNotInGradingPolicyParaTest
+    courseCreditsInSyllabusTest, finalNotInGradingPolicyParaTest, gradeTableHeadersCorrectTest
 } from "../syllabusTests";
 import fs from "fs";
 import {ISyllabusHaver} from "../../../../canvas/course/courseTypes";
@@ -18,6 +18,7 @@ describe('Syllabus validation', () => {
     test('Course credits displayed in syllabus test correct', syllabusTestTest(courseCreditsInSyllabusTest))
     test('Communication policy current test correct', syllabusTestTest(communication24HoursTest))
     test('Grading policy language in syllabus text is correct', syllabusTestTest(finalNotInGradingPolicyParaTest))
+    test('Grade table headers correct', syllabusTestTest(gradeTableHeadersCorrectTest))
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {

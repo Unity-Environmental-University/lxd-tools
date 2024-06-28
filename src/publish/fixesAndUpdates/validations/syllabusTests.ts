@@ -11,14 +11,15 @@ import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
     name: "Remove Final",
-    negativeExemplars:[['off the final grade', 'off the grade'], ['final exam', 'final exam']],
+    negativeExemplars: [['off the final grade', 'off the grade'], ['final exam', 'final exam']],
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
         const syllabus = await course.getSyllabus(config);
         const match = /off the final grade/gi.test(syllabus);
         return testResult(!match, {
-            failureMessage: ["'off the final grade' found in syllabus"],
-            links: [`/courses/${course.id}/assignments/syllabus`]}
+                failureMessage: ["'off the final grade' found in syllabus"],
+                links: [`/courses/${course.id}/assignments/syllabus`]
+            }
         );
     },
     fix: badSyllabusFixFunc(/off the final grade/gi, 'off the grade')
@@ -53,7 +54,7 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
         const creditList = Array.from(strongs).filter((strong) => /credits/i.test(strong.textContent || ""));
         const links = [`/courses/${course.id}/assignments/syllabus`];
         const failureMessage = "Can't find credits in syllabus";
-        return testResult(creditList && creditList.length > 0, {failureMessage, links} )
+        return testResult(creditList && creditList.length > 0, {failureMessage, links})
 
     }
 }
@@ -66,7 +67,7 @@ export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
         const success = text.includes('Generative Artificial Intelligence');
         const links = [`/courses/${course.id}/assignments/syllabus`];
         const failureMessage = `Can't find AI boilerplate in syllabus`
-        return testResult(success, {links, failureMessage} )
+        return testResult(success, {links, failureMessage})
     }
 }
 
@@ -79,13 +80,28 @@ export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
         const links = [`/courses/${course.id}/assignments/syllabus`];
         const failureMessage = "Text at the bottom of the syllabus looks incorrect."
-        return testResult(success, {links, failureMessage} )
+        return testResult(success, {links, failureMessage})
     },
 
 }
 
-/// Etc
+export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
+    name: "Grade headers correct",
+    description: "Grade table headers on syllabus should read Letter Grade, Percent, and the third should be blank",
+    async run(course, config) {
+        const el = document.createElement('div');
+        el.innerHTML = await course.getSyllabus();
+        const ths = [...el.querySelectorAll('th')];
+        const letterGradeTh = ths.filter(th => /Letter Grade/i.test( th.innerHTML));
+        const percentTh = ths.filter(th => /Percent/i.test( th.innerHTML));
+        const success = letterGradeTh.length === 1 && percentTh.length === 1;
+        const links = [`/courses/${course.id}/assignments/syllabus`]
+        const failureMessage = 'Grade headers incorrect';
+        return testResult(success, {links, failureMessage})
+    }
 
+
+}
 
 
 
@@ -95,5 +111,6 @@ export default [
     communication24HoursTest,
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
+    gradeTableHeadersCorrectTest
 ]
 

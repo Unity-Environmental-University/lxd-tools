@@ -41,7 +41,7 @@ export function SelectValidations({
             <Row>
                 <Col sm={12}>
                     <MultiSelect
-                        options={optionize(allValidations, a => `${a.name}${a.description}`)}
+                        options={optionize(allValidations, a => `${a.name}${a.description}`, a => a.name)}
                         selectedOptions={validationsToRun}
                         onSelectionChange={setValidationsToRun}></MultiSelect>
                     <button onClick={runValidations}>Run Tests</button>
