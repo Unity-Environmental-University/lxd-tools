@@ -31,8 +31,8 @@ export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextRe
         const goofusResult = await test.run(goofusCourse);
         expect(goofusResult).toHaveProperty('success', false);
 
-        if ('negativeExemplars' in test && test.fix) {
-            for (let [goofus, gallant] of test.negativeExemplars) {
+        if ('beforeAndAfters' in test && test.fix) {
+            for (let [goofus, gallant] of test.beforeAndAfters) {
                 const goofusCourse: ISyllabusHaver = mockSyllabusHaver(goofus);
                 await test.fix(goofusCourse);
                 const syllabus = await goofusCourse.getSyllabus();

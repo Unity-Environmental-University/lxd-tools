@@ -48,7 +48,7 @@ export function badContentTextValidationFixTest<
         assert(test.fix);
         const courseFunc = getCourses ?? contentGoofuses;
         {
-            const goofuses = test.negativeExemplars.reduce(
+            const goofuses = test.beforeAndAfters.reduce(
                 (aggregator, [badExample, goodExample]) =>
                     [...aggregator, ...courseFunc(badExample, goodExample)]
                 , [] as IContentHaver[])
@@ -64,12 +64,12 @@ export function badContentTextValidationFixTest<
                 expect(testResult.success).toBe(true);
             }
         }
-        const successfulText = [...test.negativeExemplars.reduce(function (
+        const successfulText = [...test.beforeAndAfters.reduce(function (
             aggregator,
             current,
             index
         ) {
-            return [...aggregator, ...test.negativeExemplars.map(([_, pass]) => pass)]
+            return [...aggregator, ...test.beforeAndAfters.map(([_, pass]) => pass)]
 
         }, [] as string[])];
 

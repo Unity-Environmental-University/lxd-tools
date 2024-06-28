@@ -11,7 +11,7 @@ import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
     name: "Remove Final",
-    negativeExemplars: [['off the final grade', 'off the grade'], ['final exam', 'final exam']],
+    beforeAndAfters: [['off the final grade', 'off the grade'], ['final exam', 'final exam']],
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
         const syllabus = await course.getSyllabus(config);

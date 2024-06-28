@@ -90,6 +90,7 @@ async function getOverview(course:IContentHaver, config? :ICanvasCallConfig){
     const overview = await course.getPages({
        queryParams: {
            search_string: 'course overview',
+           'include[]' : 'body'
        }
    })
    return overview;
@@ -97,7 +98,7 @@ async function getOverview(course:IContentHaver, config? :ICanvasCallConfig){
 
 export const codeAndCodeOfCodeTest: ContentTextReplaceFix<IContentHaver, Page> = {
     name: "Code and Code of Code",
-    negativeExemplars: [
+    beforeAndAfters: [
         ['<p>Honor Code and Code of Code of Conduct</p>', '<p>Honor Code and Code of Conduct</p>']
     ],
     getContent: getOverview,

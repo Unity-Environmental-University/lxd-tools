@@ -1,8 +1,8 @@
 import {range} from "../../../../canvas/canvasUtils";
-import {Page} from "../../../../canvas/content";
+import {BaseContentItem, Page} from "../../../../canvas/content";
 import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {codeAndCodeOfCodeTest, courseProjectOutlineTest, weeklyObjectivesTest} from "../courseContent";
-import {IPagesHaver} from "../../../../canvas/course/courseTypes";
+import {IContentHaver, IPagesHaver} from "../../../../canvas/course/courseTypes";
 import {
     badContentTextValidationFixTest,
     badContentTextValidationTest,
@@ -10,6 +10,7 @@ import {
     mockPagesHaver
 } from "../__mocks__";
 import * as fetchApi from "../../../../canvas/fetch";
+import {ContentTextReplaceFix} from "../index";
 
 jest.mock('../../../../canvas/fetch', () => ({
     ...jest.requireActual('../../../../canvas/fetch'),
@@ -118,7 +119,7 @@ test('Course project outline header not "Project outline" test works', async () 
 })
 
 describe("Code of code of conduct", () => {
-    for (let [bad, good] of codeAndCodeOfCodeTest.negativeExemplars) {
+    for (let [bad, good] of codeAndCodeOfCodeTest.beforeAndAfters) {
         test(`Text works ${bad}, ${good}`, badContentTextValidationTest(codeAndCodeOfCodeTest, bad, good));
 
     }
@@ -134,3 +135,12 @@ describe("Code of code of conduct", () => {
         ]
     ))
 })
+
+
+function badContentTest(test:ContentTextReplaceFix<IContentHaver, BaseContentItem>) {
+    describe(test.name, () => {
+        it("Works", badContentTextValidationFixTest(test))
+    })
+}
+
+

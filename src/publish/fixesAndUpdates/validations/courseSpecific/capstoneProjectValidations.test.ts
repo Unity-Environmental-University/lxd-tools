@@ -7,7 +7,7 @@ jest.mock('../../../../canvas/fetch');
 
 describe("Capstone content tests", () => {
     for (let validation of capstoneProjectValidations) {
-        for (const [badExample, goodExample] of validation.negativeExemplars) {
+        for (const [badExample, goodExample] of validation.beforeAndAfters) {
             test(`Find ${validation.name} test: ${badExample}`, badContentTextValidationTest(validation, badExample, goodExample));
             test(`Fix ${validation.name} test: ${badExample}`, badContentTextValidationFixTest(validation));
         }

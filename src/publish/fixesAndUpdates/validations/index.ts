@@ -44,7 +44,7 @@ export interface CourseFixValidation<T = Course,
 }
 
 export type TextReplaceValidation<T, UserData = unknown> = {
-    negativeExemplars: [string, string][],
+    beforeAndAfters: [string, string][],
     positiveExemplars?: string[],
 } &  CourseValidation<T, UserData>
 
@@ -62,7 +62,7 @@ export type ContentTextReplaceFix<
     ContentType extends BaseContentItem,
     UserData = unknown
 > = {
-    negativeExemplars: [string, string][],
+    beforeAndAfters: [string, string][],
     getContent?: (course: T) => Promise<ContentType[]>,
 } & TextReplaceValidation<T, UserData>
 
