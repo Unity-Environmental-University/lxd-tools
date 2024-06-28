@@ -1,10 +1,24 @@
 import {range} from "../../../../canvas/canvasUtils";
 import {Page} from "../../../../canvas/content";
 import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
-import {courseProjectOutlineTest, weeklyObjectivesTest} from "../courseContent";
+import {codeAndCodeOfCodeTest, courseProjectOutlineTest, weeklyObjectivesTest} from "../courseContent";
 import {IPagesHaver} from "../../../../canvas/course/courseTypes";
-import {mockPagesHaver} from "../__mocks__";
+import {
+    badContentTextValidationFixTest,
+    badContentTextValidationTest,
+    mockContentHaver,
+    mockPagesHaver
+} from "../__mocks__";
+import * as fetchApi from "../../../../canvas/fetch";
 
+jest.mock('../../../../canvas/fetch', () => ({
+    ...jest.requireActual('../../../../canvas/fetch'),
+    fetchJson: jest.fn(),
+    getPagedDataGenerator: jest.fn(),
+
+}));
+
+const fetchJson = jest.spyOn(fetchApi, 'fetchJson');
 
 describe('Weekly Objectives test', () => {
 
@@ -38,7 +52,7 @@ describe('Weekly Objectives test', () => {
         expect(goofusResult.success).toBe(true);
     })
 
-    it('Passes on "Weekly Objectives"', async() => {
+    it('Passes on "Weekly Objectives"', async () => {
         const gallantPages = Array.from(range(1, 5)).map(weekNum => new Page({
             ...mockPageData,
             title: `Week ${weekNum} Overview`,
@@ -101,4 +115,22 @@ test('Course project outline header not "Project outline" test works', async () 
     expect(gallantResult.success).toBe(true)
 
 
+})
+
+describe("Code of code of conduct", () => {
+    for (let [bad, good] of codeAndCodeOfCodeTest.negativeExemplars) {
+        test(`Text works ${bad}, ${good}`, badContentTextValidationTest(codeAndCodeOfCodeTest, bad, good));
+
+    }
+
+    test('Fix Works', badContentTextValidationFixTest(
+        codeAndCodeOfCodeTest,
+        (badText: string, goodText: string) => [
+            mockContentHaver(goodText, [new Page({
+                ...mockPageData,
+                name: 'Course Overview',
+                body: badText,
+            }, 0)], 'Course Overview Haver')
+        ]
+    ))
 })

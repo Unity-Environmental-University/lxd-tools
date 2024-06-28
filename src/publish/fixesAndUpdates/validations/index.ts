@@ -208,7 +208,7 @@ export function badContentRunFunc<
 
 
 export function badSyllabusFixFunc(
-    validateRegEx: RegExp,
+    validateRegEx: RegExp ,
     replace: string | ((str: string, ...args: any[]) => string)
     ) {
     const replaceText = replaceTextFunc(validateRegEx, replace);
@@ -234,12 +234,15 @@ export function badContentFixFunc<CourseType extends IContentHaver, ContentType 
         let success = false;
         let messages: MessageResult[] = [];
 
+        const testRegex = new RegExp(badContentRegex.source, badContentRegex.flags.replace('g',''))
         const includeBody = {queryParams: {include: ['body']}};
         let content = await( contentFunc ? contentFunc(course) : course.getContent(includeBody));
-        content = content.filter(item => item.body && badContentRegex.test(item.body));
+        content = content.filter(item => item.body && testRegex.test(item.body));
 
+        badContentRegex.lastIndex = 0;
         const replaceText = replaceTextFunc(badContentRegex, replace);
-        await fixSyllabus(course, badContentRegex, replaceText);
+        badContentRegex.lastIndex = 0;
+        if (!contentFunc) await fixSyllabus(course, badContentRegex, replaceText);
         if (content.length === 0) {
             return testResult('not run', {
                 failureMessage: "No content fixed"
@@ -282,10 +285,15 @@ export function badContentFixFunc<CourseType extends IContentHaver, ContentType 
 
 function replaceTextFunc(validateRegEx: RegExp, replace: string | ((text: string) => string)) {
     return (str: string) => {
-        //This is silly, but it gets typescript to stop yelling at me about the overload
-        if (typeof replace === 'string') return str.replaceAll(validateRegEx, replace)
-        return str.replaceAll(validateRegEx, replace);
+        validateRegEx.lastIndex = 0;
+        const out = typeof replace === 'string' ?
+            str.replaceAll(validateRegEx, replace):
+            str.replaceAll(validateRegEx, replace); //This is the silliest thing in the world, but the regex overloads wont recognize it otherwise.
+        validateRegEx.lastIndex = 0; //Resetting the lastIndex so the regext starts from the beginning of the string every time.
+
+        return out;
     }
+
 }
 
 async function fixSyllabus(course: ISyllabusHaver, validateRegEx: RegExp, replaceText: (text: string) => string) {

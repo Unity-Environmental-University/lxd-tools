@@ -87,11 +87,12 @@ export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {
 
 
 async function getOverview(course:IContentHaver, config? :ICanvasCallConfig){
-   return await course.getPages({
+    const overview = await course.getPages({
        queryParams: {
            search_string: 'course overview',
        }
    })
+   return overview;
 }
 
 export const codeAndCodeOfCodeTest: ContentTextReplaceFix<IContentHaver, Page> = {
@@ -101,7 +102,7 @@ export const codeAndCodeOfCodeTest: ContentTextReplaceFix<IContentHaver, Page> =
     ],
     getContent: getOverview,
     description: 'First bullet of course overview should read ... Unity DE Honor Code and Code of Conduct ..., not ',
-    ...badContentReplaceFuncs(/Honor Code and Code of Code of Conduct/ig, 'Honor Code and Code of Conduct', getOverview)
+    ...badContentReplaceFuncs(/Code and Code of Code of Conduct/ig, 'Code and Code of Conduct', getOverview)
 }
 
 

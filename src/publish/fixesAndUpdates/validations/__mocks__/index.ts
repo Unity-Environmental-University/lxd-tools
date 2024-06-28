@@ -18,6 +18,7 @@ import {
 } from "../../../../canvas/content/__mocks__/mockContentData";
 import {ILatePolicyUpdate} from "../../../../canvas/canvasDataDefs";
 import mockLatePolicy from "../../../../canvas/course/__mocks__/mockLatePolicy";
+import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
 
 export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {
 
@@ -41,21 +42,27 @@ export function badContentTextValidationFixTest<
     ContentType extends BaseContentItem
 >(
     test: ContentTextReplaceFix<IContentHaver, ContentType>,
+    getCourses?: (badText:string, goodText:string) => IContentHaver[],
 ) {
     return async () => {
         assert(test.fix);
-        const goofuses = test.negativeExemplars.reduce(
-            (aggregator, [badExample, goodExample]) =>
-                [...aggregator, ...contentGoofuses(badExample, goodExample)]
-            , [] as IContentHaver[])
+        const courseFunc = getCourses ?? contentGoofuses;
+        {
+            const goofuses = test.negativeExemplars.reduce(
+                (aggregator, [badExample, goodExample]) =>
+                    [...aggregator, ...courseFunc(badExample, goodExample)]
+                , [] as IContentHaver[])
 
-        for (let goofus of goofuses) {
-            let testResult = await test.run(goofus);
-            expect(testResult.success).toBe(false);
-            const fixResult = await test.fix(goofus);
-            expect(fixResult.success).toBe(true);
-            testResult = await test.run(goofus);
-            expect(testResult.success).toBe(true);
+            for (let goofus of goofuses) {
+                let testResult = await test.run(goofus);
+                expect(testResult.success).toBe(false);
+                const fixResult = await test.fix(goofus);
+                if(!fixResult.success) console.warn(fixResult.messages.map(a => a.bodyLines))
+                expect(fixResult.success).toBe(true);
+                testResult = await test.run(goofus);
+                if(!testResult.success) console.warn(testResult.messages.map(a => a.bodyLines), goofus)
+                expect(testResult.success).toBe(true);
+            }
         }
         const successfulText = [...test.negativeExemplars.reduce(function (
             aggregator,
