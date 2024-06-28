@@ -1,4 +1,4 @@
-import {CourseValidation} from "../index";
+import {ContentTextReplaceFix, CourseValidation, TextReplaceValidation} from "../index";
 import {
     IAssignmentsHaver,
     IContentHaver,
@@ -30,32 +30,52 @@ export function badContentTextValidationTest(test: CourseValidation<IContentHave
         }
 
 
-        const gallant = contentGallant(badHtml, goodHtml);
+        const gallant = contentGallant(goodHtml);
         const result = await test.run(gallant);
         expect(result.success).toBe(true);
     };
 }
 
 
-export function badContentTextValidationFixTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {
+export function badContentTextValidationFixTest<
+    ContentType extends BaseContentItem
+>(
+    test: ContentTextReplaceFix<IContentHaver, ContentType>,
+) {
     return async () => {
         assert(test.fix);
-        const goofuses: IContentHaver[] = contentGoofuses(badHtml, goodHtml);
-
+        const goofuses = test.negativeExemplars.reduce(
+            (aggregator, [badExample, goodExample]) =>
+                [...aggregator, ...contentGoofuses(badExample, goodExample)]
+            , [] as IContentHaver[])
 
         for (let goofus of goofuses) {
             let testResult = await test.run(goofus);
             expect(testResult.success).toBe(false);
             const fixResult = await test.fix(goofus);
-            expect (fixResult.success).toBe(true);
+            expect(fixResult.success).toBe(true);
             testResult = await test.run(goofus);
             expect(testResult.success).toBe(true);
         }
-        const gallant = contentGallant(badHtml, goodHtml);
-        const result = await test.run(gallant);
-        expect(result.success).toBe(true);
+        const successfulText = [...test.negativeExemplars.reduce(function (
+            aggregator,
+            current,
+            index
+        ) {
+            return [...aggregator, ...test.negativeExemplars.map(([_, pass]) => pass)]
+
+        }, [] as string[])];
+
+        if(test.positiveExemplars) successfulText.push(...test.positiveExemplars);
+        for await (let result of successfulText.map((text) => test.run(contentGallant(text)))) {
+            if(!result.success) {
+                console.error(result.messages.map(msg => msg.bodyLines))
+            }
+            expect(result.success).toBe(true);
+        }
     }
 }
+
 
 function contentGoofuses(badHtml: string, goodHtml: string) {
 
@@ -69,7 +89,7 @@ function contentGoofuses(badHtml: string, goodHtml: string) {
 
 }
 
-function contentGallant(badHtml: string, goodHtml: string) {
+function contentGallant(goodHtml: string) {
     return mockContentHaver(goodHtml,
         [
             new Page({...mockPageData, body: goodHtml}, 0),

@@ -12,7 +12,7 @@ export const projectRegex = /(research proposal|course project)/ig;
 export const courseProjectToCapstoneProjectProposal: TextReplaceValidation<IContentHaver> = {
     courseCodes: ['PROF590', 'PROF690'],
     negativeExemplars: [['your research proposals', 'your capstone project proposals'],  ['our course project', 'our capstone project proposal']],
-    positiveExemplars: ['this Course Project'],
+    positiveExemplars: ['this Capstone Project Proposal'],
     name: "Capstone project -> Capstone Project Proposal",
     description: `Replace 'Research Proposal' and 'Course Project' with 'Capstone Project Proposal'`,
     run: badContentRunFunc(projectRegex),

@@ -1,5 +1,17 @@
-import {CourseValidation, MessageResult, stringsToMessageResult, testResult, ValidationResult} from "./index";
-import {IPagesHaver} from "../../../canvas/course/courseTypes";
+import {
+    badContentFixFunc,
+    badContentRunFunc, ContentTextReplaceFix,
+    CourseFixValidation,
+    CourseValidation,
+    MessageResult,
+    stringsToMessageResult,
+    testResult, TextReplaceValidation,
+    ValidationResult
+} from "./index";
+import {IContentHaver, IPagesHaver} from "../../../canvas/course/courseTypes";
+import {Course} from "../../../canvas/course/Course";
+import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
+import {BaseContentItem, Page} from "../../../canvas/content";
 
 
 function decodeHtml(html:string) {
@@ -59,7 +71,6 @@ export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {
             return testResult('unknown', {notFailureMessage})
         }
 
-
         const projectOverview = projectOverviewPages[0];
         const pageHtml = projectOverview.body;
         const el = document.createElement('div');
@@ -74,7 +85,45 @@ export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {
     }
 }
 
+
+async function getOverview(course:IContentHaver, config? :ICanvasCallConfig){
+   return await course.getPages({
+       queryParams: {
+           search_string: 'course overview',
+       }
+   })
+}
+
+export const codeAndCodeOfCodeTest: ContentTextReplaceFix<IContentHaver, Page> = {
+    name: "Code and Code of Code",
+    negativeExemplars: [
+        ['<p>Honor Code and Code of Code of Conduct</p>', '<p>Honor Code and Code of Conduct</p>']
+    ],
+    getContent: getOverview,
+    description: 'First bullet of course overview should read ... Unity DE Honor Code and Code of Conduct ..., not ',
+    ...badContentReplaceFuncs(/Honor Code and Code of Code of Conduct/ig, 'Honor Code and Code of Conduct', getOverview)
+}
+
+
+function badContentReplaceFuncs<
+    CourseType extends IContentHaver,
+    ContentType extends BaseContentItem,
+>(
+    badTest: RegExp,
+    replace: string,
+    getContentFunc: (course:CourseType) => Promise<ContentType[]>
+) {
+
+    return {
+        run: badContentRunFunc<CourseType, ContentType>(badTest),
+        fix: badContentFixFunc<CourseType, ContentType>(badTest, replace, getContentFunc)
+    }
+}
+
+
 export default [
     courseProjectOutlineTest,
-    weeklyObjectivesTest
+    weeklyObjectivesTest,
+    codeAndCodeOfCodeTest,
 ]
+

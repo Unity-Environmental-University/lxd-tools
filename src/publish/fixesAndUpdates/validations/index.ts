@@ -2,6 +2,8 @@ import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
 import {IContentHaver, ISyllabusHaver} from "../../../canvas/course/courseTypes";
 import {Course} from "../../../canvas/course/Course";
 import {getByTestId} from "@testing-library/react";
+import CourseContent from "./courseContent";
+import {BaseContentItem} from "../../../canvas/content";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -22,7 +24,11 @@ export type ValidationResult<UserDataType = unknown> = {
 
 
 
-export type CourseValidation<T = Course, UserDataType = unknown, FixUserDataType = UserDataType> = {
+export type CourseValidation<
+    T = Course,
+    UserDataType = unknown,
+    FixUserDataType = UserDataType
+> = {
     courseCodes?: string[],
     name: string,
     description: string,
@@ -37,11 +43,30 @@ export interface CourseFixValidation<T = Course,
     fix: (course: T) => Promise<ValidationResult<FixUserDataType>>
 }
 
-export type TextReplaceValidation<T, UserData = unknown> = CourseValidation<T, UserData> & {
-    negativeExemplars: string[][],
+export type TextReplaceValidation<T, UserData = unknown> = {
+    negativeExemplars: [string, string][],
     positiveExemplars?: string[],
-    fix: (course: T) => Promise<ValidationResult<UserData>>
+} &  CourseValidation<T, UserData>
+
+export type ContentValidation<
+    T,
+    ContentType extends BaseContentItem,
+    UserData = unknown
+> = CourseValidation<T, UserData> & {
+    negativeExemplars: [string, string?][],
+    getContent?: (course: T) => Promise<ContentType[]>
 }
+
+export type ContentTextReplaceFix<
+    T,
+    ContentType extends BaseContentItem,
+    UserData = unknown
+> = {
+    negativeExemplars: [string, string][],
+    getContent?: (course: T) => Promise<ContentType[]>,
+} & TextReplaceValidation<T, UserData>
+
+
 
 
 export function stringsToMessageResult(value:string[] | string, links?: string[] | string) {
@@ -128,10 +153,22 @@ export function matchHighlights(content: string, search: RegExp, maxHighlightLen
 }
 
 
-export function badContentRunFunc(badTest: RegExp) {
-    return async (course: IContentHaver, config?: ICanvasCallConfig) => {
+type CustomContentGetter<
+    CourseType extends IContentHaver,
+    ContentType extends BaseContentItem
+> = (course:CourseType) => Promise<ContentType[]>
+
+export function badContentRunFunc<
+    CourseType extends IContentHaver,
+    ContentType extends BaseContentItem,
+>(
+    badTest: RegExp,
+    contentFunc?:CustomContentGetter<CourseType, ContentType>
+) {
+    return async (course: CourseType, config?: ICanvasCallConfig) => {
         const defaultConfig = {queryParams: {include: ['body'], per_page: 50}};
-        let content = await course.getContent(overrideConfig(config, defaultConfig));
+        let content = await (contentFunc ? contentFunc(course) :
+            course.getContent(overrideConfig(config, defaultConfig)));
 
         const badContent = content.filter(item => item.body && badTest.test(item.body))
         const syllabus = await course.getSyllabus(config);
@@ -168,7 +205,12 @@ export function badContentRunFunc(badTest: RegExp) {
 }
 
 
-export function badSyllabusFixFunc(validateRegEx: RegExp, replace: string | ((str: string, ...args: any[]) => string)) {
+
+
+export function badSyllabusFixFunc(
+    validateRegEx: RegExp,
+    replace: string | ((str: string, ...args: any[]) => string)
+    ) {
     const replaceText = replaceTextFunc(validateRegEx, replace);
     return async (course: ISyllabusHaver) => {
         try {
@@ -182,13 +224,18 @@ export function badSyllabusFixFunc(validateRegEx: RegExp, replace: string | ((st
 
 }
 
-export function badContentFixFunc(badContentRegex: RegExp, replace: string | ((str: string, ...args: any[]) => string)) {
-    return async (course: IContentHaver): Promise<ValidationResult<never>> => {
+
+export function badContentFixFunc<CourseType extends IContentHaver, ContentType extends BaseContentItem>(
+    badContentRegex: RegExp,
+    replace: string | ((str: string, ...args: any[]) => string),
+    contentFunc?: CustomContentGetter<CourseType, ContentType>
+    ) {
+    return async (course: CourseType): Promise<ValidationResult<never>> => {
         let success = false;
         let messages: MessageResult[] = [];
 
         const includeBody = {queryParams: {include: ['body']}};
-        let content = await course.getContent(includeBody);
+        let content = await( contentFunc ? contentFunc(course) : course.getContent(includeBody));
         content = content.filter(item => item.body && badContentRegex.test(item.body));
 
         const replaceText = replaceTextFunc(badContentRegex, replace);
