@@ -15,7 +15,7 @@ export function MigrationBar({migration, course, onFinishMigration}: MigrationBa
     const [progress, setProgress] = useState<IProgressData>()
 
     useEffectAsync(async () => {
-        let progressGen = getMigrationProgressGen(migration);
+        let progressGen = getMigrationProgressGen(migration, 2500);
         for await(let progress of progressGen) {
             setProgress(progress);
         }

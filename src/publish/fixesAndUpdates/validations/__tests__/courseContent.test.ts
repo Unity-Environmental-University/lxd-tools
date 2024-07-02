@@ -1,7 +1,12 @@
 import {range} from "../../../../canvas/canvasUtils";
 import {BaseContentItem, Page} from "../../../../canvas/content";
 import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
-import {codeAndCodeOfCodeTest, courseProjectOutlineTest, weeklyObjectivesTest} from "../courseContent";
+import {
+    codeAndCodeOfCodeTest,
+    courseProjectOutlineTest,
+
+    weeklyObjectivesTest
+} from "../courseContent";
 import {IContentHaver, IPagesHaver} from "../../../../canvas/course/courseTypes";
 import {
     badContentTextValidationFixTest,
@@ -10,7 +15,7 @@ import {
     mockPagesHaver
 } from "../__mocks__";
 import * as fetchApi from "../../../../canvas/fetch";
-import {ContentTextReplaceFix} from "../index";
+import {badContentRunFunc, ContentTextReplaceFix} from "../index";
 
 jest.mock('../../../../canvas/fetch', () => ({
     ...jest.requireActual('../../../../canvas/fetch'),
@@ -135,6 +140,8 @@ describe("Code of code of conduct", () => {
         ]
     ))
 })
+
+;
 
 
 function badContentTest(test:ContentTextReplaceFix<IContentHaver, BaseContentItem>) {

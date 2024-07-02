@@ -1,12 +1,17 @@
 import {getPlainTextFromHtml} from "../../../canvas/canvasUtils";
 import {
-    badContentFixFunc,
-    badSyllabusFixFunc,
-    CourseValidation,
+    badSyllabusFixFunc, CourseFixValidation,
+    CourseValidation, errorMessageResult,
     testResult,
-    TextReplaceValidation
+    TextReplaceValidation, ValidationResult
 } from "./index";
 import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
+import {BaseContentItem} from "../../../canvas/content";
+import {isBooleanObject} from "node:util/types";
+import {setMaxIdleHTTPParsers} from "node:http";
+
+const justSyllabusContentFunc = () => [] as BaseContentItem[];
+
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
@@ -92,8 +97,8 @@ export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
         const el = document.createElement('div');
         el.innerHTML = await course.getSyllabus();
         const ths = [...el.querySelectorAll('th')];
-        const letterGradeTh = ths.filter(th => /Letter Grade/i.test( th.innerHTML));
-        const percentTh = ths.filter(th => /Percent/i.test( th.innerHTML));
+        const letterGradeTh = ths.filter(th => /Letter Grade/i.test(th.innerHTML));
+        const percentTh = ths.filter(th => /Percent/i.test(th.innerHTML));
         const success = letterGradeTh.length === 1 && percentTh.length === 1;
         const links = [`/courses/${course.id}/assignments/syllabus`]
         const failureMessage = 'Grade headers incorrect';
@@ -103,6 +108,69 @@ export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
 
 }
 
+
+function htmlDiv(text: string) {
+    const el = document.createElement('div');
+    el.innerHTML = text;
+    return el;
+}
+
+const iteratorFindOptionDefaults = {
+    maxIterations: 1000,
+}
+type IteratorFindOptions = Partial<typeof iteratorFindOptionDefaults>;
+
+
+function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
+    const discussExpectEl = [...document.querySelectorAll('h3')]
+        .find(h3 => (h3.innerText ?? h3.textContent ?? '').includes('Discussion Expectations'))
+    if (!discussExpectEl) return undefined;
+    return discussExpectEl.querySelectorAll('p')[1] as HTMLParagraphElement | undefined;
+
+}
+
+
+const correctSecondPara = 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" (for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".'
+
+
+export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, { el: HTMLElement, secondPara?: HTMLElement }|undefined> = {
+    name: "Second discussion expectation paragraph",
+    description: 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" ' +
+        '(for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".',
+    async run(course, config) {
+        const el = htmlDiv(await course.getSyllabus(config));
+        const secondPara = findSecondParaOfDiscExpect(el);
+        const userData = { el, secondPara};
+        if(!secondPara) return testResult('not run', {
+            notFailureMessage: "Second paragraph of discussion expectations not found",
+            userData,
+        })
+
+        const secondParaText = secondPara.textContent ?? secondPara.innerText ?? '';
+        const success =
+            secondParaText.toLowerCase().replace(/\W*/,'')
+            === correctSecondPara.toLowerCase().replace(/\W*/, '');
+        return testResult(success, {
+            failureMessage: `Second paragraph does not match ${correctSecondPara}`,
+            userData
+        })
+    },
+    async fix(course) {
+        let { success, userData } = await this.run(course);
+        if(success) return testResult('not run', {notFailureMessage: "No need to run fix"});
+
+        if(!userData?.secondPara) return testResult(false, { failureMessage: "There was a problem accessing the syllabus."})
+        const { el, secondPara } = userData;
+
+        secondPara.innerHTML = correctSecondPara;
+        try {
+            await course.changeSyllabus(el.innerHTML)
+            return testResult(true);
+        } catch(e) {
+            return errorMessageResult(e);
+        }
+    }
+}
 
 
 export default [
