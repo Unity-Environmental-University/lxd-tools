@@ -3,6 +3,7 @@ const path = require("path");
 const HTMLPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
+const {TsconfigPathsPlugin} = require("tsconfig-paths-webpack-plugin");
 
 const dotenv = require('dotenv').config({path: __dirname + '/.env'})
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -10,6 +11,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 
 module.exports = {
     mode: isDevelopment ? 'development' : 'production',
+
     performance: {
         hints: isDevelopment ? false : 'warning'
     },
@@ -73,7 +75,6 @@ module.exports = {
         new webpack.ProvidePlugin({
             process: 'process/browser',
         }),
-
         new webpack.SourceMapDevToolPlugin({
             exclude: /node_modules|dist/,
             test: /\.(ts|js|s?[ca]ss|mjs|tsx)/,
@@ -108,6 +109,13 @@ module.exports = {
     ],
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
+        alias: {
+            config: path.resolve(__dirname, process.env.NODE_ENV),
+        },
+        plugins: [
+            new TsconfigPathsPlugin({}),
+
+        ]
     },
     stats: {
         errorDetails: true,
@@ -120,7 +128,6 @@ module.exports = {
         chunkFilename:
             '[name]/.js'
     },
-
 }
 
 function getHtmlPlugins(chunks) {

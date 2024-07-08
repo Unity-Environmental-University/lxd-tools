@@ -1,8 +1,11 @@
 import {ITermData, IUserData} from "../../canvas/canvasDataDefs";
 import {Temporal} from "temporal-polyfill";
 import {renderToString} from "react-dom/server";
-import React from "react";
+import React, {useState} from "react";
 import {Course} from "../../canvas/course/Course";
+import {useEffectAsync} from "@/ui/utils";
+import {PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/consts";
+import {Alert} from "react-bootstrap";
 
 type EmailLinkProps = {
     user: IUserData,
@@ -26,11 +29,39 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
 
     const bcc = emails.join(',');
     const subject = encodeURIComponent(course.name?.replace('BP_', '') + ' Section(s) Ready Notification');
+    const [emailTemplate, setEmailTemplate] = useState<string|undefined>();
+    const [errorMessages, setErrorMessages] = useState<string[]>([]);
+
+    useEffectAsync(async () => {
+        if(emailTemplate) return;
+        const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
+        if(!emailResponse.ok) {
+            setErrorMessages([emailResponse.statusText, await emailResponse.text()])
+            return;
+        }
+        let template = await emailResponse.text();
+
+        setEmailTemplate(template);
+    }, [])
+
+
 
     async function copyToClipboard() {
+        if(!emailTemplate) {
+            setErrorMessages([`Can't find template email to fill at ` + PUBLISH_FORM_EMAIL_TEMPLATE_URL]);
+            return;
+        }
+        const body = renderEmailTemplate(emailTemplate, {
+        userName: user.name,
+        userTitle: "Learning Experience Designer",
+        courseCode: course.parsedCourseCode?.replace('BP_', '') ?? '[[CODE NOT FOUND]]',
+        termName:termData ? termData.name : '[[TERM NAME]]',
+        courseStart: getCourseStart(),
+        publishDate: getPublishDate(),
+    })
         await navigator.clipboard.write([
             new ClipboardItem({
-                'text/html': new Blob([renderToString(body)], {type: 'text/html'})
+                'text/html': new Blob([body], {type: 'text/html'})
             })
         ])
     }
@@ -53,46 +84,27 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
         });
     }
 
-    const body = (<>
-        <p>My name is {user.name} and I’m the Learning Experience Designer who is preparing your course to run
-            this term.
-            Your course section(s) of {course.parsedCourseCode?.replace('BP_', '')} has/have been created for you to teach
-            for {termData ? termData.name : '[[TERM NAME]]'}. Your students will
-            have access to the syllabus and homepage on <strong>Monday, {getPublishDate()}</strong>.
-            Actual course assignments will become available to the students
-            on <strong>Monday, {getCourseStart()}</strong>,
-            the official start of the term.</p>
-        <ul>
-            <li>Please do not make any corrections or changes to your live course yourself, no matter how small. In
-                order to maintain consistency between the live section and the course template,
-                submit any issues via the <a href={'https://docs.google.com/forms/d/e/1FAIpQLSeybl9b-xk-pL1bsWX7x9esQYoHHyi3rPPOq75mK4Q4n4b5tQ/viewform'}>Course Edit and Feedback Form</a> so a Learning Technology Support Specialist can
-                make sure the changes are made everywhere they need to be made.
-            </li>
-            <li>Let me know, when you have a chance to look, if you have any questions, or spot any issues with the
-                course content.
-            </li>
 
-            <li>Be sure to check out the Instructor Orientation for useful information, such as your instructor
-                bio/picture, grading. There is also a Labster Instructor Guide that you should review if your course
-                contains a Labster simulation(s) in the course modules.
-            </li>
-            <li>Consult the Instructor Guide in your course for a brief overview of important information for teaching
-                the course
-            </li>
-            <li>If you have technology or Canvas related questions, please contact <a
-                href={'helpdesk@unity.edu'}>helpdesk@unity.edu</a>.
-            </li>
-            <li>For other questions or issues, please contact my supervisor, Chris Malmberg (<a
-                href={'cmalmberg@unity.edu'}>cmalmberg@unity.edu</a>).
-            </li>
-        </ul>
-        <p>We appreciate your help in making sure these courses are good to go. Have a wonderful term.</p>
-        <p>Cheers,</p>
-        <p>{user.name}</p>
-    </>);
+
 
     return <>
         <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join(', ')}</a>
         {termData && <button onClick={copyToClipboard}>Copy Form Email to Clipboard</button>}
+        { errorMessages.map(msg => <Alert>{msg}</Alert>) }
     </>
+}
+
+
+export type EmailTextProps = {
+    userName: string,
+    courseCode: string,
+    userTitle: string,
+    termName: string,
+    courseStart: string,
+    publishDate: string,
+}
+
+export function renderEmailTemplate(emailTemplate:string, props: EmailTextProps) {
+    let renderedTemplate = emailTemplate.split('\n').slice(1).join('\n')
+    return Object.entries(props).reduce((accumulator, [key, value]) => accumulator.replaceAll(`{{${key}}}`, value), renderedTemplate)
 }

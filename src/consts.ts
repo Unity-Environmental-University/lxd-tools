@@ -1,1 +1,2 @@
 export const OPEN_AI_API_KEY_KEY = "OPEN_AI_API_KEY";
+export const PUBLISH_FORM_EMAIL_TEMPLATE_URL = 'https://raw.githubusercontent.com/Unity-Environmental-University/LXD-Documentation/main/Writerside/topics/Form-Email-Template.md';

@@ -1,17 +1,15 @@
 import React, {useReducer, useState} from "react";
-import {CourseValidation} from "../publish/fixesAndUpdates/validations";
-import {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
-import Modal from "../ui/widgets/Modal/index";
+import {CourseValidation} from "@/publish/fixesAndUpdates/validations";
+import {IMultiSelectOption, optionize, optionizeOne} from "@/ui/widgets/MuliSelect";
+import Modal from "@/ui/widgets/Modal/index";
 import {Col, Container, Form, Row} from "react-bootstrap";
-import {batchify, filterUniqueFunc} from "../canvas/canvasUtils";
-import {ValidationRow} from "../publish/fixesAndUpdates/ValidationRow";
-import {listLutDispatcher, lutDispatcher} from "../ui/reducerDispatchers";
+import {batchify, filterUniqueFunc} from "@/canvas/canvasUtils";
+import {ValidationRow} from "@/publish/fixesAndUpdates/ValidationRow";
+import {listLutDispatcher, lutDispatcher} from "@/ui/reducerDispatchers";
 import {IIncludesTestAndCourseId} from "./index";
 import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";
-import {Course} from "../canvas/course/Course";
-import {ValidationOption} from "../publish/PublishApp";
-import CourseSettings from "../publish/fixesAndUpdates/validations/courseSettings";
+import {Course} from "@/canvas/course/Course";
 
 
 interface IAdminAppProps {

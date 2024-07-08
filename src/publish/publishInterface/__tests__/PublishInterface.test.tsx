@@ -13,6 +13,10 @@ import {ICourseData, IUserData} from '../../../canvas/canvasDataDefs';
 import {Course} from "../../../canvas/course/Course";
 
 
+import fetchMock from "jest-fetch-mock";
+import publishEmailMock from "@/publish/publishInterface/__mocks__/publishEmailMock";
+
+fetchMock.enableMocks();
 const mockCourse: Course = new Course({
     ...mockCourseData,
     id: 1,
@@ -63,6 +67,8 @@ describe('PublishInterface Component', () => {
     });
 
     it('displays loading state when publishing courses', async () => {
+
+        fetchMock.mockResponse(publishEmailMock);
         renderComponent();
         fireEvent.click(screen.getByText('Manage Sections'));
 
