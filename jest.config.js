@@ -3,6 +3,10 @@ const path = require('path')
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
+   "transformIgnorePatterns": [
+      "node_modules/(?!isomorphic-git)"
+    ],
+
   moduleNameMapper: {
     '^@/(.*)' : '<rootDir>/src/$1',
     "^webextension-polyfill$": path.join(process.cwd(), "src", "__mocks__", "runtime.ts"),

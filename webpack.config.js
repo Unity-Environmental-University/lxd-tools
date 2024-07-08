@@ -83,17 +83,17 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {from: "./README.dist.md", to: "README.md"},
-                {
-                    from: path.resolve(__dirname, 'manifest.json'),
-                    to: "manifest.json",
-                    transform: (content, path) => {
-                        let packageJson = require('./package.json');
-                        console.log(JSON.stringify(packageJson));
-                        let manifest = JSON.parse(content.toString());
-                        manifest.version = packageJson.version;
-                        return JSON.stringify(manifest, null, 2);
-                    }
-                },
+                // {
+                //     from: path.resolve(__dirname, 'manifest.json'),
+                //     to: "manifest.json",
+                //     transform: (content, path) => {
+                //         let packageJson = require('./package.json');
+                //         console.log(JSON.stringify(packageJson));
+                //         let manifest = JSON.parse(content.toString());
+                //         manifest.version = packageJson.version;
+                //         return JSON.stringify(manifest, null, 2);
+                //     }
+                // },
                 {from: "./img/*", to: 'img/[name][ext]'}
             ]
         }),

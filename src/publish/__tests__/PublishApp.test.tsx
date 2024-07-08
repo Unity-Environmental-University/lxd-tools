@@ -1,4 +1,6 @@
 // PublishApp.test.tsx
+import {runtime} from "webextension-polyfill";
+
 global.TextEncoder = require('util').TextEncoder;
 
 import {fetchJson} from "../../canvas/fetch";
@@ -7,11 +9,12 @@ import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import PublishApp from '../PublishApp';
+import PublishApp, {getLatestVersionNumber, versionCompare} from '../PublishApp';
 import {IUserData} from '../../canvas/canvasDataDefs';
 import {PublishInterface} from '../publishInterface/PublishInterface';
 import {CourseUpdateInterface} from '../fixesAndUpdates/CourseUpdateInterface';
 import {AdminApp} from '../../admin/AdminApp';
+import fetchMock from "jest-fetch-mock";
 
 
 
@@ -21,7 +24,22 @@ jest.mock('../../canvas/fetch');
 jest.mock('../publishInterface/PublishInterface');
 jest.mock('../fixesAndUpdates/CourseUpdateInterface');
 jest.mock('../../admin/AdminApp');
+jest.mock('webextension-polyfill', () => ({
+    ...jest.requireActual('webextension-polyfill'),
+    runtime: {
+        getManifest: jest.fn(() => ({ version: '2.0'})),
+    }
+}));
 
+
+
+fetchMock.enableMocks();
+
+jest.mock('isomorphic-git', () => ({
+    getRemoteInfo: jest.fn(() => ({
+        tags: ['1', '2', '3']
+    }))
+}));
 
 const mockCourse: Course = {
     getParentCourse: jest.fn().mockResolvedValue({}),
@@ -69,3 +87,30 @@ describe('PublishApp Component', () => {
     });
 
 });
+
+
+describe('Version Number Sort', () => {
+    it('sorts correctly', () => {
+        expect([
+            '2.1',
+            '2.0.9',
+            '3.0.0.1',
+            '3.0',
+            '2.1.1',
+            '2.1.11',
+            '2.1.13',
+            '3.1',
+            '2.1.12'
+        ].toSorted(versionCompare)).toEqual([
+            '2.0.9',
+            '2.1',
+            '2.1.1',
+            '2.1.11',
+            '2.1.12',
+            '2.1.13',
+            '3.0',
+            '3.0.0.1',
+            '3.1'
+        ])
+    })
+})

@@ -1,12 +1,13 @@
+
 import "./publish.scss"
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useSyncExternalStore} from 'react';
 import {useEffectAsync} from "../ui/utils";
 
 import {CourseUpdateInterface} from "./fixesAndUpdates/CourseUpdateInterface";
 import {IUserData} from "../canvas/canvasDataDefs";
 import {AdminApp} from "../admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
-import {Button} from "react-bootstrap";
+import {Alert, Button, Row} from "react-bootstrap";
 import {Course} from "../canvas/course/Course";
 import {fetchJson} from "../canvas/fetch";
 import {CourseValidation} from "./fixesAndUpdates/validations";
@@ -17,6 +18,8 @@ import courseContentTests from "./fixesAndUpdates/validations/courseContent";
 import {rubricsTiedToGradesTest} from "./fixesAndUpdates/validations/rubricSettings";
 import proxyServerLinkValidation from "./fixesAndUpdates/validations/proxyServerLinkValidation";
 import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
+import { runtime } from "webextension-polyfill";
+import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/consts";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
@@ -61,9 +64,44 @@ function PublishApp() {
         }/>
         <PublishInterface course={course} user={user}/>
         <AdminApp course={course} allValidations={allValidations}/>
+        <Row>
+            <UpdateNeeded/>
+        </Row>
     </div>)
 }
 
 
+export function UpdateNeeded() {
+    const currentVersion = runtime.getManifest().version;
+    const [latestVersion, setLatestVersion] = useState<string|undefined>();
+
+    useEffectAsync(async () => {
+        if(!latestVersion)  setLatestVersion(await getLatestVersionNumber());
+    }, [])
+
+
+
+    return latestVersion && versionCompare(
+        latestVersion,
+        currentVersion
+    ) > 0 && <Alert>You are not running the latest version ({latestVersion}) of the extension. You are running {currentVersion}.</Alert>
+}
+
+export function versionCompare(a:string, b:string) {
+    const aSplit = a.split('.');
+    const bSplit = b.split('.');
+    for (let i = 0; i < Math.max(aSplit.length, bSplit.length); i++) {
+        const aInt = parseInt(aSplit[i] ?? '0');
+        const bInt = parseInt(bSplit[i] ?? '0');
+        if(aInt === bInt) continue;
+        return aInt - bInt;
+    }
+    return 0;
+}
+
+export async function getLatestVersionNumber() {
+    const manifest = await fetchJson(DIST_REPO_MANIFEST) as { version: string };
+    return manifest.version;
+}
 export default PublishApp
 
