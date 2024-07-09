@@ -71,9 +71,8 @@ describe('PublishInterface Component', () => {
         fetchMock.mockResponse(publishEmailMock);
         renderComponent();
         fireEvent.click(screen.getByText('Manage Sections'));
-
         fireEvent.click(screen.getByText('Publish'));
-        await waitFor(() => screen.getByRole(/alert/));
+        await waitFor(() => screen.getByRole('alert'));
         expect(screen.getByText('Publishing')).toBeInTheDocument();
         // Simulate delay for publishing
         await waitFor(() => screen.getByText(/Published/i));

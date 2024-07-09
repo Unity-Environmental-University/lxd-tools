@@ -41,5 +41,5 @@ export const rubricsTiedToGradesTest: CourseValidation<IIdHaver> = {
         } catch (e) {
             return errorMessageResult(e)
         }
-    }
+    },
 }

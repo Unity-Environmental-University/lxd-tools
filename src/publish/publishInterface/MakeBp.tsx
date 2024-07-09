@@ -1,23 +1,23 @@
-import {createNewCourse} from "../../canvas/course";
+import {createNewCourse} from "@/canvas/course";
 import {Button, Col, FormControl, FormText, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
-import {useEffectAsync} from "../../ui/utils";
+import {useEffectAsync} from "@/ui/utils";
 import {
     getBlueprintsFromCode,
     getSections,
     getTermNameFromSections, lockBlueprint,
     retireBlueprint, setAsBlueprint
-} from "../../canvas/course/blueprint";
-import {bpify} from "../../admin";
-import {getMigrationsForCourse, IMigrationData, startMigration} from "../../canvas/course/migration";
-import {Course} from "../../canvas/course/Course";
-import {listDispatcher} from "../../ui/reducerDispatchers";
+} from "@/canvas/course/blueprint";
+import {bpify} from "@/admin";
+import {getMigrationsForCourse, IMigrationData, startMigration} from "@/canvas/course/migration";
+import {Course} from "@/canvas/course/Course";
+import {listDispatcher} from "@/ui/reducerDispatchers";
 import {
     loadCachedCourseMigrations,
     SavedMigration,
     cacheCourseMigrations,
     loadCachedMigrations
-} from "../../canvas/course/migrationCache";
+} from "@/canvas/course/migrationCache";
 import {MigrationBar} from "./MigrationBar";
 import assert from "assert";
 

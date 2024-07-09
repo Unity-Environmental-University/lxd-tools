@@ -1,8 +1,7 @@
-import {render, waitFor} from "@testing-library/react";
+import {render, screen} from "@testing-library/react";
 import "@testing-library/jest-dom"
-import {mockCourseData} from "../../../canvas/course/__mocks__/mockCourseData";
-import {Course} from "../../../canvas/course/Course";
-import {screen} from "@testing-library/react";
+import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {Course} from "@/canvas/course/Course";
 import React from "react";
 import {CourseValidator, CourseValidatorProps} from "../CourseValidator";
 import {mockFailedValidation, mockValidation} from "../validations/__mocks__/mockValidation";

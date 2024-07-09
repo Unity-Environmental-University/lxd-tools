@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^16.18.82",
     "@types/react-dom": "^18.2.20",
@@ -20,7 +19,6 @@
     "precss": "^4.0.0",
     "react-bootstrap": "^2.10.2",
     "react-datepicker": "^6.6.0",
-    "react-dom": "^18.2.0",
     "sass": "^1.72.0",
     "style-loader": "^3.3.4",
     "temporal-polyfill": "^0.2.4",
@@ -54,6 +52,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+    "@testing-library/react": "^16.0.0",
     "@types/bootstrap": "^5.2.10",
     "@types/chrome": "^0.0.263",
     "@types/jest": "^29.5.12",
@@ -69,6 +68,7 @@
     "jest-fetch-mock": "^3.0.3",
     "process": "^0.11.10",
     "react": "^18.2.0",
+    "react-dom": "^18.3.1",
     "react-error-overlay": "^6.0.9",
     "react-modal": "^3.16.1",
     "sass-loader": "^14.1.1",
