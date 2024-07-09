@@ -317,8 +317,6 @@ export async function getItemTypeAndId(
  */
 export function searchParamsFromObject(queryParams: string[][] | Record<string, string>): URLSearchParams {
     return queryStringify(queryParams);
-
-
 }
 
 

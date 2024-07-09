@@ -1,10 +1,17 @@
 
-import {getRubric, getRubricFetchUrl, getRubricsFetchUrl, IRubricData, rubricsForCourseGen} from "../rubrics";
+import {
+    getRubric,
+    rubricApiUrl,
+    getRubricsFetchUrl,
+    IRubricData,
+    rubricsForCourseGen,
+    rubricAssociationUrl, updateRubricAssociation
+} from "../rubrics";
 import {mockAsyncGenerator} from "../../__mocks__/utils";
 import mockRubric, {mockRubricAssociation, mockRubricsForAssignments} from "../__mocks__/mockRubricData";
 
 import {fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
-import {deepObjectMerge} from "../canvasUtils";
+import {deepObjectMerge, formDataify} from "../canvasUtils";
 
 
 jest.mock('../fetch', () => ({
@@ -12,6 +19,11 @@ jest.mock('../fetch', () => ({
     getPagedDataGenerator: jest.fn(),
     fetchJson: jest.fn(),
 }))
+
+jest.mock('../canvasUtils', () => ({
+    ...jest.requireActual('../canvasUtils'),
+    formDataify: jest.fn(),
+}));
 
 const pagedDataGenMock = getPagedDataGenerator as jest.Mock;
 const fetchJsonMock = fetchJson as jest.Mock;
@@ -58,7 +70,7 @@ describe('getRubric', ()=> {
 
     it('calls with the correct parameters, returnValue', async() => {
         const [courseId, rubricId] = [1,2];
-        const expectedUrl = getRubricFetchUrl(courseId, rubricId);
+        const expectedUrl = rubricApiUrl(courseId, rubricId);
         fetchJsonMock.mockResolvedValue(mockRubric);
         const rubric = await getRubric(courseId, rubricId, {include: ["associations"]}, {fetchInit: {}});
 
@@ -72,3 +84,45 @@ describe('getRubric', ()=> {
         expect(rubric).toEqual(mockRubric);
     })
 })
+
+
+
+describe('rubricAssociationUrl', () => {
+    it('should return the correct URL for given courseId and rubricAssociationId', () => {
+        const courseId = 123;
+        const rubricAssociationId = 456;
+        const expectedUrl = `/api/v1/courses/${courseId}/rubric_associations/${rubricAssociationId}`;
+
+        expect(rubricAssociationUrl(courseId, rubricAssociationId)).toBe(expectedUrl);
+    });
+});
+// Mock dependencies
+
+describe('updateRubricAssociation', () => {
+    const courseId = 123;
+    const rubricAssociationId = 456;
+    const data = { id: 1, rubric_association: {} };
+    const config = { fetchInit: {} };
+
+    beforeEach(() => {
+        fetchJsonMock.mockClear();
+    });
+
+    it('should call fetchJson with the correct URL and merged config', async () => {
+        const mergedConfig = {
+            fetchInit: {
+                method: 'PUT',
+                body: 'someFormData'
+            }
+        };
+
+        (formDataify as jest.Mock).mockReturnValue('someFormData');
+        fetchJsonMock.mockResolvedValue('response');
+
+        const result = await updateRubricAssociation(courseId, rubricAssociationId, data, config);
+
+        expect(formDataify).toHaveBeenCalledWith(data);
+        expect(fetchJson).toHaveBeenCalledWith(`/api/v1/courses/${courseId}/rubric_associations/${rubricAssociationId}`, mergedConfig);
+        expect(result).toBe('response');
+    });
+});

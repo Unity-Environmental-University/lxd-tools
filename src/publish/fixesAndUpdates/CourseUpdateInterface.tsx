@@ -14,7 +14,7 @@ export type CourseUpdateInterfaceProps = {
     course?: Course,
     parentCourse?: Course,
     onChangeMode?: (mode:InterfaceMode) => any,
-    allValidations: CourseValidation[],
+    allValidations: CourseValidation<Course, any, any>[],
     refreshCourse: () => Promise<void>
 }
 
@@ -33,7 +33,7 @@ export function CourseUpdateInterface({
     onChangeMode,
 }: CourseUpdateInterfaceProps) {
 
-    const [validations, setValidations] = useState<CourseValidation<Course>[]>(allValidations);
+    const [validations, setValidations] = useState<CourseValidation<Course, any, any>[]>(allValidations);
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
     const [affectedItems, setAffectedItems] = useState<React.ReactElement[]>([])
@@ -58,7 +58,6 @@ export function CourseUpdateInterface({
         }
 
         setValidations(allValidations.filter(validation => {
-            console.log(allValidations);
             if(!validation.courseCodes) return true;
             for(let code of validation.courseCodes) {
                 if ( course.parsedCourseCode?.toUpperCase().includes(code.toLocaleUpperCase('en-US'))) {

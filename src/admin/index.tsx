@@ -2,6 +2,7 @@ import {CourseValidation, ValidationResult} from "../publish/fixesAndUpdates/val
 import courseContent from "../publish/fixesAndUpdates/validations/courseContent";
 import courseSettings from "../publish/fixesAndUpdates/validations/courseSettings";
 import syllabusTests from "../publish/fixesAndUpdates/validations/syllabusTests";
+import {Course} from "@/canvas/course/Course";
 
 export function bpify(code: string) {
     let [, prefix] = code.match(/^([^_ ]*)[_ ]/) || [null, ''];
@@ -14,7 +15,7 @@ export interface IIncludesTestAndCourseId extends ValidationResult {
     courseId: number,
 }
 
-export const tests: CourseValidation[] = [
+export const tests: CourseValidation<Course, any, any>[] = [
     ...courseContent,
     ...courseSettings,
     ...syllabusTests,

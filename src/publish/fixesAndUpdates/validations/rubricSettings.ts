@@ -1,9 +1,14 @@
 import {CourseValidation, errorMessageResult, MessageResult, testResult} from "./index";
-import {Course} from "../../../canvas/course/Course";
-import {getRubric, IRubricAssociationData, IRubricData, rubricsForCourseGen} from "../../../canvas/rubrics";
-import {IIdHaver} from "../../../canvas/course/courseTypes";
-import {assignmentDataGen, getAssignmentData} from "../../../canvas/content";
-import {callAll} from "../../../canvas/canvasUtils";
+import {
+    IRubricAssociationData,
+    IRubricData,
+    rubricsForCourseGen,
+    updateRubricAssociation
+} from "@/canvas/rubrics";
+import {IIdHaver} from "@/canvas/course/courseTypes";
+import {getAssignmentHtmlUrl, updateAssignmentData} from "@/canvas/content/assignments";
+import {callAll} from "@/canvas/canvasUtils";
+import {assignmentDataGen, getAssignmentData} from "@/canvas/content/assignments";
 
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});
@@ -18,7 +23,8 @@ async function getBadRubricAssociations(courseId: number) {
     return returnPairs;
 }
 
-export const rubricsTiedToGradesTest: CourseValidation<IIdHaver> = {
+type RubricsTiedToGradeUserDataType = {badAssociations: Awaited<ReturnType<typeof getBadRubricAssociations>>}
+export const rubricsTiedToGradesTest: CourseValidation<IIdHaver, RubricsTiedToGradeUserDataType | undefined, undefined> = {
     name: "Rubrics update grades",
     description: "All assignment rubrics are tied to the assignment grade",
     run: async (course, config) => {
@@ -35,11 +41,44 @@ export const rubricsTiedToGradesTest: CourseValidation<IIdHaver> = {
                     })
                 )
             )
-            const result =testResult(badAssociations.length <= 0, {failureMessage})
-            console.log(result);
+            const result =testResult(badAssociations.length <= 0, {failureMessage,
+                userData: {
+                badAssociations
+            }})
             return result;
         } catch (e) {
             return errorMessageResult(e)
         }
     },
+    async fix(course, result) {
+        try {
+            if(!result) result = await this.run(course);
+            const fixedAssociations: IRubricAssociationData[] = [];
+            let success = false;
+            let { badAssociations } = result?.userData ?? {};
+            if(result.success) return testResult('not run', { notFailureMessage: "Validation passed, no need to run."});
+            if(!badAssociations) return testResult(false, {failureMessage: "Can't find rubric associations."})
+            for (let [ rubric, association ] of badAssociations) {
+                if(!association.use_for_grading) {
+                    await updateRubricAssociation(course.id, association.id, {
+                        id: association.id,
+                        rubric_association: { use_for_grading: true }
+                    })
+                    fixedAssociations.push(association);
+                    await updateAssignmentData(course.id, association.id, {
+                        assignment: {
+                            points_possible: rubric.points_possible
+                        }
+                    })
+                }
+            }
+            success = fixedAssociations.length === badAssociations.length;
+
+            return testResult(success, {
+                links: fixedAssociations.map(a => getAssignmentHtmlUrl(course.id, a.association_id))
+            });
+        } catch (e) {
+            return errorMessageResult(e);
+        }
+    }
 }

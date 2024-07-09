@@ -1,11 +1,11 @@
 import {NoAssignmentsWithDueDatesError, sortAssignmentsByDueDate, updatedDateSyllabusHtml} from '../changeStartDate'
 import fs from "fs";
 import {Temporal} from "temporal-polyfill";
-import {Assignment} from "../../content";
 import {oldDateToPlainDate} from "../../../date";
 import assert from "assert";
 import {mockAssignmentData} from "../../content/__mocks__/mockContentData";
 import {range} from "../../canvasUtils";
+import {Assignment} from "@/canvas/content/assignments";
 
 
 describe('Syllabus date changes', () => {

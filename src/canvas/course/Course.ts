@@ -23,11 +23,9 @@ import {
 } from "./courseTypes";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
 import {
-    Assignment, assignmentDataGen,
     BaseContentItem,
     Discussion,
     getBannerImage,
-    IAssignmentGroup,
     IPageData,
     Page,
     Quiz
@@ -44,6 +42,7 @@ import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile, IPr
 import {CourseNotFoundException, getCourseData, getCourseIdFromUrl, getGradingStandards} from "./index";
 import {fetchJson, getPagedData, renderAsyncGen} from "../fetch";
 import index from "isomorphic-git";
+import {Assignment, assignmentDataGen, IAssignmentGroup} from "@/canvas/content/assignments";
 
 const HOMETILE_WIDTH = 500;
 

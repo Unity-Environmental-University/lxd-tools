@@ -14,10 +14,11 @@ import {
     IUserData, LookUpTable, ModuleItemType
 } from "../../canvas/canvasDataDefs";
 import {text} from "node:stream/consumers";
-import {Assignment, IAssignmentData, IDiscussionData} from "../../canvas/content";
+import {IDiscussionData} from "../../canvas/content";
 
 import {Course} from "../../canvas/course/Course";
 import {IRubricCriterionData} from "../../canvas/rubrics";
+import {Assignment, IAssignmentData} from "@/canvas/content/assignments";
 
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.

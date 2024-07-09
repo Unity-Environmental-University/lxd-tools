@@ -26,21 +26,21 @@ export type ValidationResult<UserDataType = unknown> = {
 
 export type CourseValidation<
     T = Course,
-    UserDataType = unknown,
+    UserDataType = any,
     FixUserDataType = UserDataType
 > = {
     courseCodes?: string[],
     name: string,
     description: string,
     run: (course: T, config?: ICanvasCallConfig) => Promise<ValidationResult<UserDataType>>
-    fix?: (course: T) => Promise<ValidationResult<FixUserDataType>>
+    fix?: (course: T, result?: ValidationResult<UserDataType>) => Promise<ValidationResult<FixUserDataType>>
 }
 
 export interface CourseFixValidation<T = Course,
     UserDataType = unknown,
     FixUserDataType = UserDataType
 >  extends CourseValidation<T, UserDataType, FixUserDataType> {
-    fix: (course: T) => Promise<ValidationResult<FixUserDataType>>
+    fix: (course: T, result?: ValidationResult<UserDataType>) => Promise<ValidationResult<FixUserDataType>>
 }
 
 export type TextReplaceValidation<T, UserData = unknown> = {

@@ -1,6 +1,6 @@
 import {BaseCanvasObject} from "./baseCanvasObject";
 import {CanvasData} from "./canvasDataDefs";
-import {deepObjectMerge, ICanvasCallConfig} from "./canvasUtils";
+import {deepObjectMerge, formDataify, ICanvasCallConfig} from "./canvasUtils";
 import {fetchJson, getPagedDataGenerator} from "./fetch";
 
 
@@ -39,7 +39,7 @@ export interface IRubricAssociationData {
     id: number,
     rubric_id: number,
     association_id: number,
-    association_type: string,
+    association_type: "Assignment" | "Course" | "Account",
     use_for_grading: boolean,
     summary_data?: string,
     purpose: 'grading' | 'bookmark',
@@ -67,12 +67,27 @@ export interface IRubricData {
 
 type RubricCallIncludeTypes = 'assessments' | 'graded_assessments' | 'peer_assessments' |
     'associations' | 'assignment_associations' | 'course_associations' | 'account_associations'
+
 type GetRubricsForCourseOptions = {
     include?: RubricCallIncludeTypes[]
 }
 
+type RubricAssociationUpdateOptions = {
+    id: number,
+    rubric_association: Partial<Pick<IRubricAssociationData,
+        'rubric_id'|
+        'association_id'|
+        'association_type' |
+        'use_for_grading' |
+        'hide_score_total' |
+        'purpose'>> & {
+        title?: string
+        bookmarked?: boolean
+    }
+}
+
 export function getRubricsFetchUrl(courseId:number) { return `/api/v1/courses/${courseId}/rubrics`}
-export function getRubricFetchUrl(courseId:number, rubricId:number) { return `/api/v1/courses/${courseId}/rubrics/${rubricId}` }
+export function rubricApiUrl(courseId:number, rubricId:number) { return `/api/v1/courses/${courseId}/rubrics/${rubricId}` }
 
 export function rubricsForCourseGen(courseId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {
     const url = getRubricsFetchUrl(courseId);
@@ -90,10 +105,24 @@ export function rubricsForCourseGen(courseId: number, options?: GetRubricsForCou
 }
 
 export async function getRubric(courseId: number, rubricId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {
-    const url = getRubricFetchUrl(courseId, rubricId);
+    const url = rubricApiUrl(courseId, rubricId);
     if (options?.include) {
         config ??= {};
         config.queryParams = deepObjectMerge(config?.queryParams, {include: options.include})
     }
     return await fetchJson(url, config) as IRubricData
+}
+
+export function rubricAssociationUrl(courseId:number, rubricAssociationId:number) {
+    return `/api/v1/courses/${courseId}/rubric_associations/${rubricAssociationId}`;
+}
+
+export async function updateRubricAssociation(courseId: number, rubricAssociationId: number, data: RubricAssociationUpdateOptions, config?:ICanvasCallConfig) {
+    const url = rubricAssociationUrl(courseId, rubricAssociationId);
+    return await fetchJson(url, deepObjectMerge(config, {
+        fetchInit: {
+            method: 'PUT',
+            body: formDataify(data)
+        },
+    }, true));
 }

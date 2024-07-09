@@ -14,7 +14,7 @@ import {Course} from "@/canvas/course/Course";
 
 interface IAdminAppProps {
     course?: Course,
-    allValidations: CourseValidation[]
+    allValidations: CourseValidation<Course, any, any>[]
 }
 
 export function AdminApp({course, allValidations}: IAdminAppProps) {

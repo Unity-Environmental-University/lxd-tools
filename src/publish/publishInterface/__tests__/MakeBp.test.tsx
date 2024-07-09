@@ -37,8 +37,8 @@ async function renderComponent (props: Partial<IMakeBpProps> = {}) {
 }
 
 
-jest.mock('../../../canvas/course', () => ({
-    Course: jest.requireActual('../../../canvas/course').Course,
+jest.mock('@/canvas/course', () => ({
+    Course: jest.requireActual('@/canvas/course').Course,
     createNewCourse: jest.fn(async (code: string, accountId: number) => {
         return {
             ...mockCourseData,

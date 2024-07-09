@@ -1,12 +1,13 @@
 import {IRubricData, IRubricAssociationData, IRubricAssessmentData} from "../rubrics";
 import mock = jest.mock;
 
-import {IAssignmentData} from "../content";
+
+import {IAssignmentData} from "@/canvas/content/assignments";
 
 
 export const mockRubricAssociation:IRubricAssociationData = {
   association_id: 0,
-  association_type: "",
+  association_type: "Assignment",
   hide_outcome_results: false,
   hide_points: false,
   hide_score_total: false,

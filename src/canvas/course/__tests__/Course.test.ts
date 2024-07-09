@@ -1,4 +1,3 @@
-import {assignmentDataGen} from "../../content";
 import {mockAssignmentData} from "../../content/__mocks__/mockContentData";
 import {mockAsyncGenerator} from "../../../__mocks__/utils";
 import {mockCourseData} from "../__mocks__/mockCourseData";
@@ -12,8 +11,8 @@ jest.mock('../../fetch', () => ({
 }));
 
 
-jest.mock('../../content', () => ({
-    ...jest.requireActual('../../content'),
+jest.mock('@/canvas/content/assignments', () => ({
+    ...jest.requireActual('@/canvas/content/assignments'),
     assignmentDataGen: jest.fn(),
 }))
 
@@ -36,6 +35,7 @@ describe('get content', () => {
 import {fetchJson} from "../../fetch";
 import {formDataify, ICanvasCallConfig} from "../../canvasUtils";
 import {ICourseData} from "../../canvasDataDefs";
+import {assignmentDataGen} from "@/canvas/content/assignments";
 
 
 test('get tabs', async () => {

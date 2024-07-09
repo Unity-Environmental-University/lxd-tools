@@ -1,4 +1,5 @@
-import {IAssignmentData, IDiscussionData, IPageData, IQuizData} from "../index";
+import {IDiscussionData, IPageData, IQuizData} from "../index";
+import {IAssignmentData} from "@/canvas/content/assignments";
 
 
 export const mockPageData: IPageData = {
@@ -37,6 +38,15 @@ export const mockQuizData: IQuizData = {
 }
 
 export const mockAssignmentData: IAssignmentData = {
+    anonymous_grading: false,
+    final_grader_id: 0,
+    grader_comments_visible_to_graders: false,
+    grader_count: 0,
+    grader_names_visible_to_final_grader: false,
+    graders_anonymous_to_graders: false,
+    hide_in_gradebook: false,
+    moderated_grading: false,
+    omit_from_final_grade: false,
     allowed_extensions: [],
     assignment_group_id: 0,
     automatic_peer_reviews: false,

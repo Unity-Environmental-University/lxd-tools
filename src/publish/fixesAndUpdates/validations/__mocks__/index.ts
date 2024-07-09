@@ -9,7 +9,7 @@ import {
     ISyllabusHaver
 } from "../../../../canvas/course/courseTypes";
 import assert from "assert";
-import {Assignment, BaseContentItem, Discussion, Page, Quiz} from "../../../../canvas/content";
+import {BaseContentItem, Discussion, Page, Quiz} from "../../../../canvas/content";
 import {
     mockAssignmentData,
     mockDiscussionData,
@@ -19,6 +19,7 @@ import {
 import {ILatePolicyUpdate} from "../../../../canvas/canvasDataDefs";
 import mockLatePolicy from "../../../../canvas/course/__mocks__/mockLatePolicy";
 import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
+import {Assignment} from "@/canvas/content/assignments";
 
 export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {
 

@@ -2,8 +2,8 @@ import {Temporal} from "temporal-polyfill";
 import {IModuleData} from "../canvasDataDefs";
 import {findDateRange, oldDateToPlainDate} from "../../date";
 import assert from "assert";
-import {Assignment} from "../content/index";
 import local = chrome.storage.local;
+import {Assignment} from "@/canvas/content/assignments";
 
 const DEFAULT_LOCALE = 'en-US';
 

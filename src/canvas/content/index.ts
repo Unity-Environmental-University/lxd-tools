@@ -1,87 +1,23 @@
 import {Temporal} from "temporal-polyfill";
-import {CanvasData, IFile, IGradingRules} from "../canvasDataDefs";
-import {formDataify, getCourseIdFromUrl, ICanvasCallConfig} from "../canvasUtils";
+import {CanvasData, IFile} from "../canvasDataDefs";
+import {deepObjectMerge, formDataify, getCourseIdFromUrl, ICanvasCallConfig} from "../canvasUtils";
 import {BaseCanvasObject} from "../baseCanvasObject";
 import assert from "assert";
 import {NotImplementedException} from "../index";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
-import {IRubricCriterionData} from "../rubrics";
-import {canvasDataFetchGenFunc, fetchJson, getPagedData} from "../fetch";
+import {fetchJson, getPagedData} from "../fetch";
 
 const SAFE_MAX_BANNER_WIDTH = 1400;
 
 
-type DateString = string;
+export type DateString = string;
+
 export interface IPageData extends CanvasData {
     page_id: number,
     url: string,
     title: string,
     body?: string,
-}
-
-export interface AssignmentDate extends CanvasData{
-id: number,
-    base?: boolean,
-    title: string,
-    due_at?: DateString | null,
-    lock_at?: DateString | null,
-    unlock_at?: DateString | null,
-}
-
-export interface IAssignmentData<IntegrationDataType = Record<string, any>> extends CanvasData {
-    id: number,
-    name: string,
-    description: string,
-    created_at: DateString, //ISO string
-    updated_at: DateString | null,
-    due_at: DateString | null,
-    lock_at: DateString | null,
-    unlock_at: DateString | null,
-    has_overrides: boolean,
-    all_dates?: AssignmentDate[],
-    course_id: number,
-    html_url: string,
-    submissions_download_url: string,
-    assignment_group_id: number,
-    due_date_required: boolean,
-    allowed_extensions: string[],
-    max_name_length: number,
-    turnitin_enabled?:boolean,
-    vericite_enabled?:boolean,
-    turnitin_settings?: Record<string, any>,
-    grade_group_students_individually:boolean,
-    external_tool_tag_attributes?: {
-        url: string,
-        new_tab: boolean
-    },
-    peer_reviews: boolean,
-    automatic_peer_reviews: boolean,
-    peer_review_count?: number,
-    peer_reviews_assign_at?: DateString,
-    intra_group_peer_reviews: boolean,
-    group_category_id?: number,
-    needs_grading_count?: number,
-    needs_grading_count_by_section?: {section_id: number, needs_grading_count: number}[],
-    position: number,
-    post_to_sis?: boolean,
-    integration_id?: string,
-    integration_data?: IntegrationDataType,
-    points_possible: number,
-    submission_types: SubmissionType[]
-
-    rubric: IRubricCriterionData[]
-}
-export type SubmissionType = 'discussion_topic' | 'online_quiz' | 'on_paper' | 'none' |
-    'external_tool' | 'online_text_entry' | 'online_url'
-
-export interface IAssignmentGroup extends CanvasData {
-    id: number,
-    name: string,
-    position: number,
-    group_weight: number,
-    assignments?: IAssignmentData[],
-    rules?: IGradingRules[]
 }
 
 export interface IDiscussionData extends CanvasData {
@@ -213,7 +149,6 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     }
 
 
-
     static get contentUrlPart() {
         assert(this.allContentUrlTemplate, "Not a content url template");
         const urlTermMatch = /\/([\w_]+)$/.exec(this.allContentUrlTemplate);
@@ -272,7 +207,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         if (!this.canvasData.hasOwnProperty('due_at')) {
             return null;
         }
-        if(!this.canvasData.due_at) return null;
+        if (!this.canvasData.due_at) return null;
         return new Date(this.canvasData.due_at);
     }
 
@@ -302,7 +237,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return this._courseId;
     }
 
-    async updateContent(text?: string | null, name?: string | null, config?:ICanvasCallConfig) {
+    async updateContent(text?: string | null, name?: string | null, config?: ICanvasCallConfig) {
         const data: Record<string, any> = {};
         const constructor = <typeof BaseContentItem>this.constructor;
         assert(constructor.bodyProperty);
@@ -348,13 +283,13 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return el;
     }
 
-    async resizeBanner(maxWidth=SAFE_MAX_BANNER_WIDTH) {
+    async resizeBanner(maxWidth = SAFE_MAX_BANNER_WIDTH) {
         const bannerImg = getBannerImage(this);
-        if(!bannerImg) throw new Error("No banner");
+        if (!bannerImg) throw new Error("No banner");
         let fileData = await getFileDataFromUrl(bannerImg.src, this.courseId)
-        if(!fileData) throw new Error("File not found");
-        if(bannerImg.naturalWidth < maxWidth) return; //Dont resize image unless we're shrinking it
-        let resizedImageBlob = await getResizedBlob(bannerImg.src,  maxWidth);
+        if (!fileData) throw new Error("File not found");
+        if (bannerImg.naturalWidth < maxWidth) return; //Dont resize image unless we're shrinking it
+        let resizedImageBlob = await getResizedBlob(bannerImg.src, maxWidth);
         let fileName = fileData.filename;
         let fileUploadUrl = `/api/v1/courses/${this.courseId}/files`
         assert(resizedImageBlob);
@@ -363,81 +298,15 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     }
 }
 
-async function getFileDataFromUrl(url:string, courseId:number) {
+async function getFileDataFromUrl(url: string, courseId: number) {
     const match = /.*\/files\/(\d+)/.exec(url);
-    if(!match) return null;
-    if(match) {
+    if (!match) return null;
+    if (match) {
         const fileId = parseInt(match[1]);
         return await getFileData(fileId, courseId);
     }
 }
 
-
-
-
-
-export class Assignment extends BaseContentItem {
-    static nameProperty = 'name';
-    static bodyProperty = 'description';
-    static contentUrlTemplate = "/api/v1/courses/{course_id}/assignments/{content_id}";
-    static allContentUrlTemplate = "/api/v1/courses/{course_id}/assignments";
-
-
-    constructor(assignmentData: IAssignmentData, courseId:number) {
-        super(assignmentData, courseId);
-    }
-
-    async setDueAt(dueAt: Date, config?:ICanvasCallConfig) {
-        const sourceDueAt = this.rawData.due_at ? Temporal.Instant.from(this.rawData.due_at) : null;
-        const targetDueAt = Temporal.Instant.from(dueAt.toISOString());
-
-        const payload: Record<string, { due_at: string, peer_reviews_assign_at?: string }> = {
-            assignment: {
-                due_at: dueAt.toISOString(),
-            }
-        }
-
-        if (this.rawData.peer_reviews && 'automatic_peer_reviews' in this.rawData) {
-            const peerReviewTime =  this.rawData.peer_reviews_assign_at? Temporal.Instant.from(this.rawData.peer_reviews_assign_at) : null;
-            assert(sourceDueAt, "Trying to set peer review date without a due date for the assignment.")
-            if(peerReviewTime) {
-                const peerReviewOffset = sourceDueAt.until(peerReviewTime);
-                const newPeerReviewTime = targetDueAt.add(peerReviewOffset);
-                payload.assignment.peer_reviews_assign_at =
-                    new Date(newPeerReviewTime.epochMilliseconds).toISOString();
-            }
-
-        }
-
-        let data = await this.saveData(payload, config);
-
-
-        this.canvasData['due_at'] = dueAt.toISOString();
-        return data;
-
-    }
-
-    get rawData() {
-        return this.canvasData as IAssignmentData;
-    }
-
-
-    async updateContent(text?: string | null, name?: string | null, config?:ICanvasCallConfig) {
-        const assignmentData: Record<string, any> = {};
-        if (text) {
-            assignmentData.description = text
-            this.rawData.description = text
-        }
-        if (name) {
-            assignmentData.name = name;
-            this.rawData.name = name;
-        }
-
-        return await this.saveData({
-            assignment: assignmentData
-        }, config)
-    }
-}
 
 export class Quiz extends BaseContentItem {
     static nameProperty = 'title';
@@ -475,7 +344,7 @@ export class Page extends BaseContentItem {
         return this.canvasData[this.bodyKey];
     }
 
-    async updateContent(text?: string | null, name?: string|null, config?:ICanvasCallConfig) {
+    async updateContent(text?: string | null, name?: string | null, config?: ICanvasCallConfig) {
         let data: Record<string, any> = {};
         if (text) {
             this.canvasData[this.bodyKey] = text;
@@ -497,7 +366,7 @@ export class Discussion extends BaseContentItem {
     static allContentUrlTemplate = "/api/v1/courses/{course_id}/discussion_topics"
 
 
-    async offsetPublishDelay(days: number, config?:ICanvasCallConfig) {
+    async offsetPublishDelay(days: number, config?: ICanvasCallConfig) {
         const data = this.rawData
         if (!this.rawData.delayed_post_at) return;
         let delayedPostAt = Temporal.Instant.from(this.rawData.delayed_post_at).toZonedDateTimeISO('UTC');
@@ -515,30 +384,45 @@ export class Discussion extends BaseContentItem {
 }
 
 
-export function getBannerImage(overviewPage:BaseContentItem) {
+export function getBannerImage(overviewPage: BaseContentItem) {
     const pageBody = document.createElement('html');
-    if(!overviewPage.body) throw new Error(`Content item ${overviewPage.name} has no html body`)
+    if (!overviewPage.body) throw new Error(`Content item ${overviewPage.name} has no html body`)
     pageBody.innerHTML = overviewPage.body;
     return pageBody.querySelector<HTMLImageElement>('.cbt-banner-image img');
 }
 
 
-export const assignmentDataGen = canvasDataFetchGenFunc<
-    IAssignmentData,
-    { courseId: number }
->(({courseId}) => `/api/v1/courses/${courseId}/assignments`)
-
-export const getAssignmentDataUrl =
-    (courseId: number, assignmentId: number) => `/api/v1/courses/${courseId}/assignments/${assignmentId}`;
-
-
-export async function getAssignmentData(courseId:number, assignmentId:number, config?:ICanvasCallConfig) {
-    let url = getAssignmentDataUrl(courseId, assignmentId);
-    return await fetchJson<IAssignmentData>(url, config);
-}
-
-async function getFileData(fileId:number, courseId:number) {
+async function getFileData(fileId: number, courseId: number) {
     const url = `/api/v1/courses/${courseId}/files/${fileId}`
     return await fetchJson(url) as IFile;
 }
 
+export function apiAndHtmlContentUrlFuncs(contentUrlPart: string) {
+    return [
+        courseContentUrlFunc(`/api/v1/courses/{courseId}/${contentUrlPart}/{contentId}`),
+        courseContentUrlFunc(`/courses/{courseId}/${contentUrlPart}/{contentId}`),
+    ]
+}
+
+function courseContentUrlFunc(url: string) {
+    return (courseId: number, contentId: number) => url
+        .replaceAll('{courseId}', courseId.toString())
+        .replaceAll('{contentId}', contentId.toString())
+}
+
+export function putContentFunc<PutOptionsType extends Record<string, any>, ResponseDataType extends Record<string, any>>(contentUrlPart:string){
+    const [urlFunc] = apiAndHtmlContentUrlFuncs(contentUrlPart);
+    return async function(courseId:number, contentId:number, content:PutOptionsType, config?:ICanvasCallConfig) {
+        const url = urlFunc(courseId, contentId);
+        return await fetchJson<ResponseDataType>(url, putContentConfig(content, config))
+    }
+}
+
+export function putContentConfig<T extends Record<string, any>>(data:T, config?:ICanvasCallConfig) {
+    return deepObjectMerge(config, {
+        fetchInit: {
+            method: 'PUT',
+            body: formDataify(data)
+        }
+    }, true);
+}
