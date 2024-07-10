@@ -2,9 +2,8 @@ import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
 import {formDataify, ICanvasCallConfig} from "./canvasUtils";
 import {BaseContentItem} from "./content";
-import {overrideConfig} from "../publish/fixesAndUpdates/validations/index";
 import {Course} from "./course/Course";
-import {fetchJson, getPagedData} from "./fetch";
+import {fetchJson, getPagedData, overrideConfig} from "./fetch";
 
 
 export interface ICanvasObject<CanvasDataType extends CanvasData> {

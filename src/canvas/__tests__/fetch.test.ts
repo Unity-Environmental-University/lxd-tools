@@ -1,10 +1,7 @@
-import {ICanvasCallConfig, range} from "../canvasUtils";
-import {canvasDataFetchGenFunc, fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
+import {deepObjectMerge, ICanvasCallConfig, queryStringify, range} from "../canvasUtils";
+import {canvasDataFetchGenFunc, fetchGetConfig, fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
 import {describe, expect} from "@jest/globals";
 import {CanvasData} from "../canvasDataDefs";
-import {AssertionError} from "node:assert";
-import {json} from "node:stream/consumers";
-
 
 global.fetch = jest.fn();
 const fetchMock = fetch as jest.Mock;
@@ -42,7 +39,7 @@ describe('canvasDataFetchGenFunc', () => {
         for (let i = 0; i < 10; i++) {
             expect(fetchMock).toBeCalledTimes(i);
             const expectedFetchResult = [goobers[i]];
-            fetchMock.mockReturnValue({
+            fetchMock.mockResolvedValue({
                 json: async () => expectedFetchResult
             })
             const getGoobers = fetchGoobersGen({courseId: i, gooberId: i * 2}, config);
@@ -60,15 +57,15 @@ describe('fetchJson', () => {
         await expect(async () => await fetchJson('apple/dumpling/gang')).rejects.toThrow()
     })
     it('accepts paths starting with /', async () => {
-        fetchMock.mockReturnValue({json: async () => testData})
+        fetchMock.mockResolvedValue({json: async () => testData})
         expect(await fetchJson('/apple/dumpling/gang')).toEqual(testData)
     })
     it('accepts paths starting with http, http, ftp', async () => {
-        fetchMock.mockReturnValue({json: async () => testData})
+        fetchMock.mockResolvedValue({json: async () => testData})
         expect(await fetchJson('http://localhost:8080/apple/dumpling/gang')).toEqual(testData)
-        fetchMock.mockReturnValue({json: async () => testData})
+        fetchMock.mockResolvedValue({json: async () => testData})
         expect(await fetchJson('https://localhost:8080/apple/dumpling/gang')).toEqual(testData)
-        fetchMock.mockReturnValue({json: async () => testData})
+        fetchMock.mockResolvedValue({json: async () => testData})
         expect(await fetchJson('ftp://localhost:8080/apple/dumpling/gang')).toEqual(testData)
     })
 
@@ -85,3 +82,221 @@ describe('fetchJson', () => {
 
     })
 })
+
+describe('fetchGetConfig', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should merge the options in', () => {
+        const options = {param1: 'value1'};
+        const baseConfig = {queryParams: {a: '1'}};
+
+        const config = fetchGetConfig(options, baseConfig);
+
+        expect(config).toEqual(deepObjectMerge<Record<string, any>>({queryParams: options}, baseConfig))
+    });
+})
+
+
+describe('getPagedDataGenerator', () => {
+
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should append queryParams to the URL if provided', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const mockConfig: ICanvasCallConfig = {
+            queryParams: { key1: 'value1', key2: 'value2' },
+        };
+
+        const mockData = [{ id: 1 }, { id: 2 }];
+        fetchMock.mockResolvedValue({
+            json: jest.fn().mockResolvedValue(mockData),
+            headers: new Headers({}),
+            ok: true,
+        } as any);
+
+        const urlWithParams = `${mockUrl}?key1=value1&key2=value2`;
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl, mockConfig);
+        await generator.next();
+
+        expect(fetchMock).toHaveBeenCalledWith(urlWithParams, mockConfig.fetchInit);
+    });
+
+    it('should yield data from the response', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const mockData = [{ id: 1 }, { id: 2 }];
+        fetchMock.mockResolvedValue({
+            json: jest.fn().mockResolvedValue(mockData),
+            headers: new Headers({}),
+            ok: true,
+        } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+
+        const result1 = await generator.next();
+        const result2 = await generator.next();
+
+        expect(result1.value).toEqual({ id: 1 });
+        expect(result2.value).toEqual({ id: 2 });
+    });
+
+    it('should handle paginated responses', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const mockDataPage1 = [{ id: 1 }, { id: 2 }];
+        const mockDataPage2 = [{ id: 3 }, { id: 4 }];
+        const nextLink = '<http://example.com/api/data?page=2>; rel="next"';
+
+        fetchMock
+            .mockResolvedValueOnce({
+                json: jest.fn().mockResolvedValue(mockDataPage1),
+                headers: new Headers({ Link: nextLink }),
+                ok: true,
+            } as any)
+            .mockResolvedValueOnce({
+                json: jest.fn().mockResolvedValue(mockDataPage2),
+                headers: new Headers({}),
+                ok: true,
+            } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+
+        const result1 = await generator.next();
+        const result2 = await generator.next();
+        const result3 = await generator.next();
+        const result4 = await generator.next();
+
+        expect(result1.value).toEqual({ id: 1 });
+        expect(result2.value).toEqual({ id: 2 });
+        expect(result3.value).toEqual({ id: 3 });
+        expect(result4.value).toEqual({ id: 4 });
+    });
+
+    it('should log a warning if the URL contains "undefined"', async () => {
+        const mockUrl = 'http://example.com/api/data/undefined';
+        const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+        const mockData = [{ id: 1 }];
+        fetchMock.mockResolvedValue({
+            json: jest.fn().mockResolvedValue(mockData),
+            headers: new Headers({}),
+            ok: true,
+        } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+        await generator.next();
+
+        expect(consoleWarnSpy).toHaveBeenCalledWith(mockUrl);
+
+        consoleWarnSpy.mockRestore();
+    });
+
+    it('should return an empty array and log a warning if no data is found', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+        fetchMock.mockResolvedValue({
+            json: jest.fn().mockResolvedValue(null),
+            headers: new Headers({}),
+            ok: true,
+        } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+        const result = await generator.next();
+
+        expect(result.value).toEqual([]);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(`no data for ${mockUrl}`);
+
+        consoleWarnSpy.mockRestore();
+    });
+
+    it('should process non-array object response data and yield values', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const mockData = { items: [{ id: 1 }, { id: 2 }], otherKey: 'value' };
+        fetchMock.mockResolvedValue({
+            json: jest.fn().mockResolvedValue(mockData),
+            headers: new Headers({}),
+            ok: true,
+        } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+
+        const result1 = await generator.next();
+        const result2 = await generator.next();
+
+        expect(result1.value).toEqual({ id: 1 });
+        expect(result2.value).toEqual({ id: 2 });
+    });
+
+    it('should handle nested non-array object response data and yield values', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const mockData = { items: [{ id: 1 }, { id: 2 }], otherKey: 'value' };
+        fetchMock.mockResolvedValue({
+            json: jest.fn().mockResolvedValue(mockData),
+            headers: new Headers({}),
+            ok: true,
+        } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+
+        const result1 = await generator.next();
+        const result2 = await generator.next();
+
+        expect(result1.value).toEqual({ id: 1 });
+        expect(result2.value).toEqual({ id: 2 });
+    });
+
+    it('should concatenate previous and current page data if response data is non-array object', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const mockDataPage1 = [{ id: 1 }];
+        const mockDataPage2 = { items: [{ id: 2 }, { id: 3 }], otherKey: 'value' };
+        const nextLink = '<http://example.com/api/data?page=2>; rel="next"';
+
+        fetchMock
+            .mockResolvedValueOnce({
+                json: jest.fn().mockResolvedValue(mockDataPage1),
+                headers: new Headers({ Link: nextLink }),
+                ok: true,
+            } as any)
+            .mockResolvedValueOnce({
+                json: jest.fn().mockResolvedValue(mockDataPage2),
+                headers: new Headers({}),
+                ok: true,
+            } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+
+        const result1 = await generator.next();
+        const result2 = await generator.next();
+        const result3 = await generator.next();
+
+        expect(result1.value).toEqual({ id: 1 });
+        expect(result2.value).toEqual({ id: 2 });
+        expect(result3.value).toEqual({ id: 3 });
+    });
+
+      it('should stop pagination when no next link is present', async () => {
+        const mockUrl = 'http://example.com/api/data';
+        const mockDataPage1 = [{ id: 1 }];
+        const noNextLink = '';
+
+        fetchMock.mockResolvedValueOnce({
+            json: jest.fn().mockResolvedValue(mockDataPage1),
+            headers: new Headers({ Link: noNextLink }),
+            ok: true,
+        } as any);
+
+        const generator = getPagedDataGenerator<CanvasData>(mockUrl);
+
+        const result1 = await generator.next();
+        const result2 = await generator.next();
+
+        expect(result1.value).toEqual({ id: 1 });
+        expect(result2.done).toBe(true);
+    });
+
+});

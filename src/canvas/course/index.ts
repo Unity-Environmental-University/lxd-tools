@@ -5,9 +5,8 @@ import {
     ICanvasCallConfig,
     IQueryParams
 } from "../canvasUtils";
-import {Term} from "../index";
+import {overrideConfig, Term} from "../index";
 
-import {overrideConfig} from "../../publish/fixesAndUpdates/validations";
 import {IGradingStandardData} from "./courseTypes";
 import {Course} from "./Course";
 import {fetchJson, getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "../fetch";

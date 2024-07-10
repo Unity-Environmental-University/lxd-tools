@@ -1,7 +1,6 @@
 import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
-import {ICanvasCallConfig, searchParamsFromObject} from "./canvasUtils";
-import {overrideConfig} from "@/publish/fixesAndUpdates/validations";
+import {deepObjectMerge, ICanvasCallConfig, queryStringify, searchParamsFromObject} from "./canvasUtils";
 
 /**
  * @param url The entire path of the url
@@ -33,6 +32,21 @@ export async function* mergePagedDataGenerators<T extends CanvasData = CanvasDat
     }
 }
 
+
+function handleResponseData<T extends CanvasData>(data:T, url:string) {
+    if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
+        let values = Array.from(Object.values(data));
+        if (values) {
+            data = values.find((a) => Array.isArray(a));
+        }
+    }
+    if (!Array.isArray(data)) {
+        console.warn(`no data for ${url}`)
+        return [];
+    }
+    return data;
+
+}
 export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     url: string, config: ICanvasCallConfig | null = null
 ): AsyncGenerator<T> {
@@ -44,51 +58,38 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     if (url.includes('undefined')) {
         console.warn(url);
     }
+
+
     /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
     let response = await fetch(url, config?.fetchInit);
-    let data = await response.json();
-    if (typeof data === 'object' && !Array.isArray(data)) {
-        let values = Array.from(Object.values(data));
-        if (values) {
-            data = values.find((a) => Array.isArray(a));
-        }
-    }
-    if (!Array.isArray(data)) {
-        console.warn(`no data for ${url}`)
-        return [];
-    }
-    for (let value of data) {
-        yield value;
-    }
+    let data = handleResponseData(await response.json(), url);
+    if(data.length === 0) return data;
+    for (let value of data) yield value;
 
     let next_page_link = "!";
     while (next_page_link.length !== 0 &&
     response &&
-    response.headers.has("Link") && response.ok) {
-        const link = response.headers.get("Link");
-        assert(link);
-        const paginationLinks = link.split(",");
+    response.ok) {
+        const nextLink = getNextLink(response);
+        if(!nextLink) break;
+        next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
+        response = await fetch(next_page_link, config?.fetchInit);
+        let responseData = handleResponseData<T>(await response.json(), url);
+        data = [data, ...responseData];
 
-        const nextLink = paginationLinks.find((link) => link.includes('next'));
-        if (nextLink) {
-            next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
-            response = await fetch(next_page_link, config?.fetchInit);
-            let responseData = await response.json();
-            if (typeof responseData === 'object' && !Array.isArray(responseData)) {
-                let values = Array.from(Object.values(responseData));
-                if (values) {
-                    responseData = values?.find((a) => Array.isArray(a));
-                }
-                data = [data, ...responseData];
-            }
-
-            for (let value of responseData) {
-                yield value;
-            }
-        } else {
-            next_page_link = "";
+        for (let value of responseData) {
+            yield value;
         }
     }
+}
+
+function getNextLink (response:Response) {
+        const link = response.headers.get("Link");
+        if(!link) return null;
+        const paginationLinks = link.split(",");
+
+        return paginationLinks.find((link) => link.includes('next'));
+
 }
 
 export async function fetchJson<T extends Record<string, any>>(
@@ -107,6 +108,14 @@ export async function fetchJson<T extends Record<string, any>>(
 }
 
 type UrlFuncType<UrlParams extends Record<string, any>> = (args: UrlParams, config?: ICanvasCallConfig) => string
+
+export function overrideConfig(
+    source: ICanvasCallConfig | undefined,
+    override: ICanvasCallConfig | undefined
+) {
+
+    return deepObjectMerge(source, override) ?? {} as ICanvasCallConfig;
+}
 
 export function canvasDataFetchGenFunc<
     Content extends CanvasData,
@@ -128,3 +137,8 @@ export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefi
     return out;
 }
 
+export function fetchGetConfig<CallOptions extends Record<string, any>>(options:CallOptions, baseConfig?:ICanvasCallConfig) {
+    return overrideConfig(baseConfig, {
+        queryParams: options,
+    });
+}

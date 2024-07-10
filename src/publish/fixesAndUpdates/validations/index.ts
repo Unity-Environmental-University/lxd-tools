@@ -1,9 +1,8 @@
-import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
-import {IContentHaver, ISyllabusHaver} from "../../../canvas/course/courseTypes";
-import {Course} from "../../../canvas/course/Course";
-import {getByTestId} from "@testing-library/react";
-import CourseContent from "./courseContent";
-import {BaseContentItem} from "../../../canvas/content";
+import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {IContentHaver, ISyllabusHaver} from "@/canvas/course/courseTypes";
+import {Course} from "@/canvas/course/Course";
+import {BaseContentItem} from "@/canvas/content";
+import {overrideConfig} from "@/canvas";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -304,14 +303,6 @@ async function fixSyllabus(course: ISyllabusHaver, validateRegEx: RegExp, replac
         await course.changeSyllabus(newText);
     }
 
-}
-
-export function overrideConfig(
-    source: ICanvasCallConfig | undefined,
-    override: ICanvasCallConfig | undefined
-) {
-
-    return deepObjectMerge(source, override) ?? {} as ICanvasCallConfig;
 }
 
 export function errorMessageResult(e: unknown, links?: string[]) {

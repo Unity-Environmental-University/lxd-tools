@@ -12,8 +12,7 @@ import assert from 'assert';
 import {CanvasData, ITermData} from "./canvasDataDefs";
 import {formDataify, ICanvasCallConfig} from "./canvasUtils";
 import {BaseCanvasObject} from "./baseCanvasObject";
-import {overrideConfig} from "../publish/fixesAndUpdates/validations";
-import {fetchJson, getPagedData} from "./fetch";
+import {fetchJson, getPagedData, overrideConfig} from "./fetch";
 
 
 /**
@@ -132,3 +131,5 @@ export function apiWriteConfig(method: 'POST' | 'PUT', data: Record<string, any>
         }
     }, baseConfig);
 }
+
+export {overrideConfig} from "@/canvas/fetch";

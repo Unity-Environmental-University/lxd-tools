@@ -31,9 +31,8 @@ import {
     Quiz
 } from "../content";
 import {filterUniqueFunc, formDataify, ICanvasCallConfig} from "../canvasUtils";
-import {NotImplementedException, Term} from "../index";
+import {NotImplementedException, overrideConfig, Term} from "../index";
 import assert from "assert";
-import {overrideConfig} from "../../publish/fixesAndUpdates/validations";
 import {getCurrentStartDate} from "./changeStartDate";
 import {getModuleOverview, getModuleWeekNumber, getModulesByWeekNumber} from "./modules";
 import {getResizedBlob} from "../image";
@@ -711,5 +710,4 @@ export function baseCourseCode(code:string) {
 
 export function stringIsCourseCode(code: string) {
         return COURSE_CODE_REGEX.exec(code);
-
 }

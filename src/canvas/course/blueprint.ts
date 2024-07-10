@@ -3,7 +3,7 @@ import {ICourseData, IModuleData, IModuleItemData} from "../canvasDataDefs";
 import {getCourseGenerator} from "./index";
 import {apiWriteConfig} from "../index";
 import {ICourseCodeHaver, IIdHaver} from "./courseTypes";
-import {Course} from "./Course";
+import {baseCourseCode, Course} from "./Course";
 import {fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
 
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
@@ -17,6 +17,13 @@ export function isBlueprint({blueprint}: { blueprint?: boolean | undefined }) {
 
 
 export async function getBlueprintsForCode(courseCode:string) {
+    const code = baseCourseCode(courseCode);
+    if(!code) {
+        console.warn(`Code ${courseCode} invalid`);
+        return null;
+    }
+
+
 }
 
 export async function getSections(course: IBlueprintCourse) {
