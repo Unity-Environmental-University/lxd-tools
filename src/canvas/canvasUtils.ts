@@ -1,10 +1,13 @@
 import assert from "assert";
-import {ICourseData, IModuleItemData, ModuleItemType, RestrictModuleItemType} from "./canvasDataDefs";
+import {IModuleItemData, ModuleItemType, RestrictModuleItemType} from "./canvasDataDefs";
 
 
 import {Course} from "./course/Course";
 import {IPageData} from "./content";
-import {fetchJson} from "./fetch";
+
+import {ICourseData} from "@/canvas/courseTypes";
+
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
 type FuncType<T> = FuncObject<T> | WithoutParamsFuncType<T> | WithParamsFuncType<T>

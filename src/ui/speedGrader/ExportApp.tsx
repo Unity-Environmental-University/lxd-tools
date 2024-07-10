@@ -2,16 +2,14 @@
 
 import "./speedGrader.scss"
 import {Modal, Col, Row, Card, Button} from "react-bootstrap";
-import {Term} from "../../canvas/index";
 import React, {useEffect, useState} from "react";
 import DatePicker from "react-datepicker"
 
 import assert from "assert";
 import {
     CanvasData,
-    ICourseData, IEnrollmentData,
-    IModuleData, IModuleItemData, ITermData,
-    IUserData, LookUpTable, ModuleItemType
+    IEnrollmentData,
+    IModuleData, IModuleItemData, IUserData, LookUpTable, ModuleItemType
 } from "../../canvas/canvasDataDefs";
 import {text} from "node:stream/consumers";
 import {IDiscussionData} from "../../canvas/content";
@@ -19,6 +17,9 @@ import {IDiscussionData} from "../../canvas/content";
 import {Course} from "../../canvas/course/Course";
 import {IRubricCriterionData} from "../../canvas/rubrics";
 import {Assignment, assignmentDataGen, IAssignmentData} from "@/canvas/content/assignments";
+import {ITermData, Term} from "@/canvas/Term";
+
+import {ICourseData} from "@/canvas/courseTypes";
 import {renderAsyncGen} from "@/canvas/fetch";
 
 

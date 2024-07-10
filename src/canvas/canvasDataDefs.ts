@@ -1,15 +1,5 @@
-export type TermWorkflowState = 'all' | 'active' | 'deleted'
 export type CanvasData = Record<string, any>
 
-
-export interface ITermData extends CanvasData {
-    start_at: string,
-    end_at: string,
-    name: string,
-    workflow_state: TermWorkflowState,
-    overrides?: Record<string, any>,
-    course_count: number
-}
 
 export interface IEnrollmentData extends CanvasData {
     user: IUserData
@@ -25,111 +15,6 @@ export interface IUserData extends CanvasData {
     email: string,
     bio?: string
 }
-
-
-export interface ICourseData extends CanvasData {
-    id: number,
-    sis_course_id?: string,
-    uuid: string,
-    name: string,
-    course_code: string,
-    original_name: string,
-    workflow_state: 'available' | 'unpublished' | 'completed' | 'deleted',
-    account_id: number,
-    root_account_id: number,
-    enrollment_term_id: number[] | number,
-    grading_periods?: CanvasData[] | null,
-    grading_standard_id: number,
-    grade_passback_setting?: "nightly_sync" | "disabled" | '',
-    created_at: string,
-    start_at: string,
-    end_at: string,
-    locale: string,
-    enrollments: number | null,
-    total_students?: number,
-    calendar: CanvasData,
-    default_view: 'feed' | 'wiki' | 'modules' | 'assignments' | 'syllabus',
-    syllabus_body?: string,
-    needs_grading_count?: number,
-    term?: ITermData,
-    course_progress: CanvasData,
-    apply_assignment_group_weights: boolean,
-    permissions: Record<string, boolean>,
-    public_description: string,
-    storage_quota_mb: number,
-    storage_quota_used_mb: number,
-    hide_final_grades: boolean,
-    license: string,
-    allow_student_assignment_edits: boolean,
-    allow_wiki_comments: boolean,
-    allow_student_forum_attachments: boolean,
-    open_enrollment: boolean,
-    self_enrollment: boolean,
-    restrict_enrollments_to_course_dates: boolean,
-    course_format: string,
-    access_restricted_by_date?: boolean
-    time_zone: string,
-    blueprint: boolean,
-    blueprint_restrictions: IBlueprintContentRestrictions,
-    blueprint_restrictions_by_object_type: {
-        assignment?: IBlueprintContentRestrictions,
-        attachment?: IBlueprintContentRestrictions,
-        discussion_topic?: IBlueprintContentRestrictions,
-        quiz?: IBlueprintContentRestrictions,
-        wiki_page?: IBlueprintContentRestrictions
-    }
-    template: boolean
-
-}
-
-export interface ICourseSettings {
-    "allow_student_discussion_topics": boolean,
-    "allow_student_forum_attachments": boolean,
-    "allow_student_discussion_editing": boolean,
-    "grading_standard_enabled": boolean,
-    "grading_standard_id": number,
-    "allow_student_organized_groups": boolean,
-    "hide_final_grades": boolean,
-    "hide_distribution_graphs": boolean,
-    "hide_sections_on_course_users_page": boolean,
-    "lock_all_announcements": boolean,
-    "usage_rights_required": boolean,
-    "homeroom_course": boolean,
-    "default_due_time": string,
-    "conditional_release": boolean,
-    show_announcements_on_home_page?: boolean
-}
-
-export interface ITabData {
-    id: string,
-    html_url: string,
-    full_url: string,
-    position: number,
-    hidden?: boolean,
-    visibility: string,
-    label: string,
-    type: string
-}
-
-export interface IBlueprintContentRestrictions {
-    content: boolean,
-    points: boolean,
-    due_dates: boolean,
-    availability_dates: boolean
-}
-
-
-export interface IGradingRules {
-    drop_lowest?: number,
-    drop_highest?: number,
-    never_drop?: number[],
-}
-
-
-// export interface IQuizData extends ICanvasData {
-//     id: number,
-//
-// }
 
 
 export interface IModuleData extends CanvasData {
@@ -226,35 +111,6 @@ export interface ILatePolicyData extends ILatePolicyUpdate{
 
 
 type LockInfo = Record<string, any>
-
-export interface IFile {
-  "id": number,
-  "uuid": string,
-  "folder_id": number,
-  "display_name": string,
-  "filename": string,
-  "content-type": string,
-  "url": string,
-  "size": number,
-  "created_at": string,
-  "updated_at": string,
-  "unlock_at"?: string,
-  "locked": boolean,
-  "hidden": boolean,
-  "lock_at"?: string,
-  "hidden_for_user": boolean,
-  "visibility_level"?: "course" | "institution" | "public" | "inherit",
-  "thumbnail_url"?: string | null,
-  "modified_at": string,
-  // simplified content-type mapping
-  "mime_class": string,
-  // identifier for file in third-party transcoding service
-  "media_entry_id"?: string,
-  "locked_for_user": boolean,
-  "lock_info"?: any,
-  "lock_explanation"?: string,
-  "preview_url"?: string
-}
 
 export interface IAccountData {
     root_account_id: number|null;

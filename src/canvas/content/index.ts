@@ -1,12 +1,14 @@
 import {Temporal} from "temporal-polyfill";
-import {CanvasData, IFile} from "../canvasDataDefs";
+import {CanvasData} from "../canvasDataDefs";
 import {deepObjectMerge, formDataify, getCourseIdFromUrl, ICanvasCallConfig} from "../canvasUtils";
 import {BaseCanvasObject} from "../baseCanvasObject";
 import assert from "assert";
 import {NotImplementedException} from "../index";
 import {getResizedBlob} from "../image";
-import {uploadFile} from "../files";
-import {fetchJson, getPagedData} from "../fetch";
+import {IFile, uploadFile} from "../files";
+import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
+
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 const SAFE_MAX_BANNER_WIDTH = 1400;
 
@@ -425,3 +427,5 @@ export function putContentConfig<T extends Record<string, any>>(data:T, config?:
         }
     }, true);
 }
+
+

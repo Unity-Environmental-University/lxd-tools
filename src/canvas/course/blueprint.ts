@@ -1,11 +1,16 @@
 import {formDataify, getItemTypeAndId, ICanvasCallConfig} from "../canvasUtils";
-import {ICourseData, IModuleData, IModuleItemData} from "../canvasDataDefs";
-import {getCourseGenerator} from "./index";
+import {IModuleData, IModuleItemData} from "../canvasDataDefs";
+import {getCourseDataGenerator, getCourseGenerator} from "./index";
 import {apiWriteConfig} from "../index";
 import {GetCourseOptions, GetCoursesFromAccountOptions, ICourseCodeHaver, IIdHaver} from "./courseTypes";
-import {baseCourseCode, Course} from "./Course";
-import {fetchGetConfig, fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
+import {Course} from "./Course";
 import {config} from "dotenv";
+import {baseCourseCode} from "@/canvas/course/code";
+
+import {ICourseData} from "@/canvas/courseTypes";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
@@ -17,17 +22,22 @@ export function isBlueprint({blueprint}: { blueprint?: boolean | undefined }) {
     return !!blueprint;
 }
 
-
-export async function getBlueprintsForCode(courseCode:string, accountIds:number[], config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+export function genBlueprintDataForCode(courseCode:string | null, accountIds:number[], queryParams?: GetCoursesFromAccountOptions) {
+    if(!courseCode) {
+        console.warn("Course code not present")
+        return null;
+    }
     const code = baseCourseCode(courseCode);
     if(!code) {
         console.warn(`Code ${courseCode} invalid`);
         return null;
     }
-    const courses = getCourseGenerator(courseCode, accountIds, undefined, fetchGetConfig<GetCoursesFromAccountOptions>({
-    }, config))
 
-
+    const courseGen = getCourseDataGenerator(courseCode, accountIds, undefined, fetchGetConfig<GetCoursesFromAccountOptions>({
+        blueprint: true,
+        include: ['concluded'],
+    }, { queryParams }))
+    return courseGen;
 }
 
 export async function getSections(course: IBlueprintCourse) {
@@ -77,11 +87,6 @@ export async function retireBlueprint(course: Course, termName: string | null, c
     await course.saveData({
         course: saveData
     }, config);
-}
-
-export async function makeNewBpFromDev(devCourse:Course, termName?: string) {
-
-
 }
 
 
@@ -134,6 +139,7 @@ export async function setAsBlueprint(courseId: number, config?: ICanvasCallConfi
     }
     return await fetchJson(url, apiWriteConfig('PUT', payload, config)) as ICourseData;
 }
+
 
 export async function unSetAsBlueprint(courseId: number, config?: ICanvasCallConfig) {
     const url = `/api/v1/courses/${courseId}`;

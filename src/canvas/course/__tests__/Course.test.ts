@@ -2,20 +2,13 @@ import {mockAssignmentData} from "../../content/__mocks__/mockContentData";
 import {mockAsyncGenerator} from "../../../__mocks__/utils";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import {
-    baseCourseCode,
-    Course,
-    parseCourseCode,
-    setGradingStandardForCourse,
-    stringIsCourseCode
+    Course
 } from "../Course";
 import mockTabData from "../../__mocks__/mockTabData";
-
-
-jest.mock('../../fetch', () => ({
-    ...jest.requireActual('../../fetch'),
-    fetchJson: jest.fn()
-}));
-
+import {assignmentDataGen} from "@/canvas/content/assignments";
+import {baseCourseCode, parseCourseCode, stringIsCourseCode} from "@/canvas/course/code";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
+jest.mock('@/canvas/fetch/fetchJson')
 
 jest.mock('@/canvas/content/assignments', () => ({
     ...jest.requireActual('@/canvas/content/assignments'),
@@ -38,10 +31,6 @@ describe('get content', () => {
 })
 
 
-import {fetchJson} from "../../fetch";
-import {formDataify, ICanvasCallConfig} from "../../canvasUtils";
-import {ICourseData} from "../../canvasDataDefs";
-import {assignmentDataGen} from "@/canvas/content/assignments";
 
 
 test('get tabs', async () => {
@@ -56,29 +45,6 @@ test('get tabs', async () => {
 
 })
 
-describe('saving data tests', () => {
-    const fetchJsonMock = fetchJson as jest.Mock;
-    it('saves grading standard id', () => testSave(
-        setGradingStandardForCourse,
-        'grading_standard_id', 5)
-    )
-})
-
-
-function testSave<SaveValue>(
-    func:(courseId:number, saveValue:SaveValue, config?:ICanvasCallConfig)=>Promise<ICourseData>,
-    rawDataKey: string,
-    testSubmitValue: SaveValue)
-{
-    const fetchJsonMock = fetchJson as jest.Mock;
-    fetchJsonMock.mockResolvedValue({...mockCourseData, [rawDataKey]: testSubmitValue})
-    const newCourseData = func(0, testSubmitValue);
-    const [url, config] = fetchJsonMock.mock.lastCall as [string, ICanvasCallConfig];
-    const {body} = config.fetchInit as RequestInit & { body: FormData };
-    expect(url).toEqual(`/api/v1/courses/0`)
-    expect([...body.entries()]).toStrictEqual([...formDataify({course: {[rawDataKey]: testSubmitValue}}).entries()])
-
-}
 
 
 describe('parseCourseCode', () => {

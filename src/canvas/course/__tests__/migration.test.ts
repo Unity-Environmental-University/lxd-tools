@@ -1,5 +1,5 @@
 import fetchMock, {FetchMock} from "jest-fetch-mock";
-import {ICourseData, IUserData} from "../../canvasDataDefs";
+import {IUserData} from "../../canvasDataDefs";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import {
     copyToNewCourseGenerator,
@@ -15,7 +15,11 @@ import * as canvasUtils from "../../canvasUtils";
 import * as CourseModule from "../index";
 import {Course} from "../Course";
 import {config} from "dotenv";
-import {fetchJson, getPagedDataGenerator} from "../../fetch";
+
+import {ICourseData} from "@/canvas/courseTypes";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
 beforeEach(() => {

@@ -4,7 +4,9 @@ import {CourseValidation, errorMessageResult, ValidationResult} from "./validati
 import assert from "assert";
 import {Row} from "react-bootstrap";
 import {Course} from "@/canvas/course/Course";
-import {ICourseData} from "@/canvas/canvasDataDefs";
+
+
+import {ICourseData} from "@/canvas/courseTypes";
 
 export type ValidationRowProps = {
     course: Course,

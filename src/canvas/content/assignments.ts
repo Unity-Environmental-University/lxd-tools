@@ -1,10 +1,11 @@
-import {canvasDataFetchGenFunc, fetchJson} from "@/canvas/fetch";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
-import {CanvasData, IGradingRules} from "@/canvas/canvasDataDefs";
+import {CanvasData} from "@/canvas/canvasDataDefs";
 import {IRubricCriterionData} from "@/canvas/rubrics";
 import {apiAndHtmlContentUrlFuncs, BaseContentItem, DateString, putContentFunc} from "@/canvas/content/index";
+import {canvasDataFetchGenFunc} from "@/canvas/fetch";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 export interface AssignmentDate extends CanvasData {
     id: number,
@@ -70,6 +71,12 @@ export interface IAssignmentData<IntegrationDataType = Record<string, any>> exte
 
 export type SubmissionType = 'discussion_topic' | 'online_quiz' | 'on_paper' | 'none' |
     'external_tool' | 'online_text_entry' | 'online_url'
+
+export interface IGradingRules {
+    drop_lowest?: number,
+    drop_highest?: number,
+    never_drop?: number[],
+}
 
 export interface IAssignmentGroup extends CanvasData {
     id: number,

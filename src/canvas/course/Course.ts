@@ -1,13 +1,9 @@
 import {BaseCanvasObject} from "../baseCanvasObject";
 import {
     CanvasData,
-    ICourseData,
-    ICourseSettings,
     ILatePolicyData,
     IModuleData,
     IModuleItemData,
-    ITabData,
-    IUpdateCallback,
     IUserData,
     ModuleItemType
 } from "../canvasDataDefs";
@@ -22,31 +18,24 @@ import {
     IModulesHaver
 } from "./courseTypes";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
-import {
-    BaseContentItem,
-    Discussion,
-    getBannerImage,
-    IPageData,
-    Page,
-    Quiz
-} from "../content";
+import {BaseContentItem, Discussion, getBannerImage, IPageData, Page, Quiz} from "../content";
 import {filterUniqueFunc, formDataify, ICanvasCallConfig} from "../canvasUtils";
-import {NotImplementedException, overrideConfig, Term} from "../index";
+import {overrideConfig} from "../index";
 import assert from "assert";
 import {getCurrentStartDate} from "./changeStartDate";
-import {getModuleOverview, getModuleWeekNumber, getModulesByWeekNumber} from "./modules";
+import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
-import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile, IProfileWithUser} from "../profile";
-import {
-    CourseNotFoundException,
-    getCourseData,
-    getCourseIdFromUrl,
-    getGradingStandards
-} from "./index";
-import {fetchJson, getPagedData, renderAsyncGen} from "../fetch";
-import index from "isomorphic-git";
+import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfileWithUser} from "../profile";
+import {getCourseData, getCourseIdFromUrl, getGradingStandards} from "./index";
 import {Assignment, assignmentDataGen, IAssignmentGroup} from "@/canvas/content/assignments";
+import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
+import {Term} from "@/canvas/Term";
+
+import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
+import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
+import {renderAsyncGen} from "@/canvas/fetch";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 const HOMETILE_WIDTH = 500;
 
@@ -89,30 +78,13 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return null;
     }
 
-    /**
-     * Returns this library's class corresponding to the current url, drawing from Course.contentClasses.
-     * Classes can be included in Course.contentClasses using the decorator @contentClass
-     *
-     * @param url
-     */
-    static getContentClassFromUrl(url: string | null = null) {
-        if (!url) url = document.documentURI;
-
-        for (let class_ of this.contentClasses) {
-            if (class_.contentUrlPart && url.includes(class_.contentUrlPart)) return class_;
-        }
-        return null;
-    }
-
 
     static async getCourseById(courseId: number, config: ICanvasCallConfig | undefined = undefined) {
         const data = await getCourseData(courseId, config);
         return new Course(data);
     }
 
-
     /**
-     * TODO: Replace this whole pipeline with something that returns a getApiPagesData generator instead.
      * @param code
      * @param term
      * @param config
@@ -332,13 +304,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return standards[0];
     }
 
-    async getContentItemFromUrl(url: string | null = null) {
-        let ContentClass = Course.getContentClassFromUrl(url);
-        if (!ContentClass) return null;
-        return ContentClass.getFromUrl(url);
-    }
-
-
     async getModulesByWeekNumber(config?: ICanvasCallConfig) {
         if (this.modulesByWeekNumber) return this.modulesByWeekNumber;
         let modules = await this.getModules(config);
@@ -446,11 +411,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             ]
 
         }
-
         return this.cachedContent;
-
     }
-
 
     async getDiscussions(config?: ICanvasCallConfig): Promise<Discussion[]> {
         return await Discussion.getAllInCourse(this.id, config) as Discussion[];
@@ -515,12 +477,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
                 })
             }
         });
-    }
-
-
-    resetCache() {
-        //delete this.subsections;
-        //delete this.associatedCourses;
     }
 
     static async publishAll(courses: number[] | Course[], accountId: number) {
@@ -674,39 +630,5 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
 }
 
-export async function saveCourseData(courseId: number, data: Partial<ICourseData>, config?: ICanvasCallConfig) {
-    const url = `/api/v1/courses/${courseId}`
-    return await fetchJson<ICourseData>(url, overrideConfig(config, {
-        fetchInit: {
-            method: 'PUT',
-            body: formDataify({course: data})
-        }
-    }))
-}
-
-export async function setGradingStandardForCourse(courseId: number, standardId: number, config?: ICanvasCallConfig) {
-    return await saveCourseData(courseId, {grading_standard_id: standardId})
-}
 
 
-
-export function parseCourseCode(code:string) {
-        let match = COURSE_CODE_REGEX.exec(code);
-        if (!match) return null;
-        let prefix = match[1] || "";
-        let courseCode = match[2] || "";
-        if (prefix.length > 0) {
-            return `${prefix}_${courseCode}`;
-        }
-        return courseCode;
-}
-
-export function baseCourseCode(code:string) {
-    let match = COURSE_CODE_REGEX.exec(code);
-    if(!match) return null;
-    return match[2];
-}
-
-export function stringIsCourseCode(code: string) {
-        return COURSE_CODE_REGEX.exec(code);
-}

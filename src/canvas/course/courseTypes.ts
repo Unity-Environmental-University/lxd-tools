@@ -1,8 +1,10 @@
 //const HOMETILE_WIDTH = 500;
 import {ICanvasCallConfig} from "../canvasUtils";
 import {Discussion, Page, Quiz} from "../content/index";
-import {ICourseData, ICourseSettings, ILatePolicyData, IModuleData} from "../canvasDataDefs";
+import {ILatePolicyData, IModuleData} from "../canvasDataDefs";
 import {Assignment} from "@/canvas/content/assignments";
+
+import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
 
 export interface IIdHaver<IdType = number> {
     id: IdType,

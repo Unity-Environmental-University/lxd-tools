@@ -9,12 +9,14 @@ import React, {act} from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {PublishInterface, IPublishInterfaceProps, OpenButton} from '../PublishInterface';
-import {ICourseData, IUserData} from '../../../canvas/canvasDataDefs';
+import {IUserData} from '../../../canvas/canvasDataDefs';
 import {Course} from "../../../canvas/course/Course";
 
 
 import fetchMock from "jest-fetch-mock";
 import publishEmailMock from "@/publish/publishInterface/__mocks__/publishEmailMock";
+
+import {ICourseData} from "@/canvas/courseTypes";
 
 fetchMock.enableMocks();
 const mockCourse: Course = new Course({

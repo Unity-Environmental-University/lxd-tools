@@ -1,23 +1,29 @@
 //We should really write integration tests for these eventually rather than just unit tests
 
 
-import {deFormDataify, range} from "../../canvasUtils";
+import {deFormDataify, ICanvasCallConfig, range} from "../../canvasUtils";
 import {
     getSections,
     getTermNameFromSections,
     IBlueprintCourse,
     retireBlueprint,
-    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint
+    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint, genBlueprintDataForCode
 } from "../blueprint";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
-import {IAccountData, ICourseData, IModuleData, ITermData} from "../../canvasDataDefs";
+import {IAccountData, IModuleData} from "../../canvasDataDefs";
 import {mockTermData} from "../../__mocks__/mockTermData";
 import {mockAccountData} from "../../__mocks__/mockAccountData";
 import assert from "assert";
 import mockModuleData, { mockModuleItemData } from "../__mocks__/mockModuleData";
 import {Course} from "../Course";
+import {GetCoursesFromAccountOptions} from "@/canvas/course/courseTypes";
+import {getCourseData, getCourseDataGenerator, getCourseGenerator} from "@/canvas/course/index";
 
+jest.mock('@/canvas/fetch', () => ({
+    ...jest.requireActual('@/canvas/fetch'),
+    fetchGetConfig: jest.fn()
+}))
 
 fetchMock.enableMocks();
 
@@ -218,3 +224,45 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
     return JSON.stringify(outCourseData);
 }
 
+
+import * as courseApi from '@/canvas/course/index'
+import {ITermData} from "@/canvas/Term";
+
+import {ICourseData} from "@/canvas/courseTypes";
+import {fetchGetConfig} from "@/canvas/fetch";
+describe("genBlueprintsForCode", () => {
+  const mockCourseDataGenerator = jest.spyOn(courseApi, 'getCourseDataGenerator')
+  const courseCode = "BP_TEST123";
+  const accountIds = [1, 2, 3];
+  const config: ICanvasCallConfig<GetCoursesFromAccountOptions> = {queryParams: { search_term: "x"} }; // replace with actual config type
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  let consoleWarnSpy = jest.spyOn(console, 'warn');
+
+  it("should return null for invalid course code", async () => {
+    (getCourseDataGenerator as jest.Mock).mockReturnValue(mockCourseDataGenerator);
+    const courseCode = 'BP_ST123'
+    const result = genBlueprintDataForCode("BP_ST123", accountIds);
+    expect(result).toBeNull();
+    expect(consoleWarnSpy).toHaveBeenCalledWith(`Code ${courseCode} invalid`);
+  });
+
+  it("should generate blueprints for a valid course code", async () => {
+    (fetchGetConfig as jest.Mock).mockReturnValue({ blueprint: true });
+    (getCourseDataGenerator as jest.Mock).mockReturnValue(mockCourseDataGenerator);
+    const result = genBlueprintDataForCode(courseCode, accountIds, config.queryParams);
+    expect(fetchGetConfig).toHaveBeenCalled();
+
+    expect(result).toBe(mockCourseDataGenerator);
+    expect(getCourseDataGenerator).toHaveBeenCalledWith(
+      courseCode,
+      accountIds,
+      undefined,
+      { blueprint: true}
+    );
+    expect(fetchGetConfig).toHaveBeenCalledWith({ blueprint: true, include: ['concluded'] }, config);
+  });
+});

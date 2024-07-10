@@ -8,7 +8,9 @@ import {createNewCourse, getCourseData} from "./index";
 import {Course} from "./Course";
 
 import { storage} from "webextension-polyfill";
-import {fetchJson, getPagedDataGenerator} from "../fetch";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
 
 

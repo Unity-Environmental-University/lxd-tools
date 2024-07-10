@@ -3,7 +3,7 @@ import proxyServerLinkValidation from "../proxyServerLinkValidation";
 import {badContentTextValidationFixTest, badContentTextValidationTest} from "../__mocks__";
 
 
-jest.mock('../../../../canvas/fetch');
+jest.mock('@/canvas/fetch/fetchJson')
 describe("Bad Link Tests and Fixes", () => {
     describe('works for login proxies', () => {
         const proxiedUrl = encodeURI('https://unity.instructure.com')

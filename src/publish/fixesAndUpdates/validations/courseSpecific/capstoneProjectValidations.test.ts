@@ -1,8 +1,7 @@
 import capstoneProjectValidations from "./capstoneProjectValidations";
 
 import {badContentTextValidationFixTest, badContentTextValidationTest} from "../__mocks__";
-
-jest.mock('../../../../canvas/fetch');
+jest.mock('@/canvas/fetch/fetchJson')
 
 
 describe("Capstone content tests", () => {

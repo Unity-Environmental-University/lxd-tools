@@ -8,9 +8,11 @@ import {
     IModulesHaver,
     IPagesHaver
 } from "../../../canvas/course/courseTypes";
-import {Course, setGradingStandardForCourse} from "../../../canvas/course/Course";
-import {ICourseData} from "../../../canvas/canvasDataDefs";
+import {Course} from "../../../canvas/course/Course";
 import assert from "assert";
+import {setGradingStandardForCourse} from "@/canvas/course";
+
+import {ICourseData} from "@/canvas/courseTypes";
 
 export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
 export const extensionsInstalledTest: CourseValidation<Course> = {

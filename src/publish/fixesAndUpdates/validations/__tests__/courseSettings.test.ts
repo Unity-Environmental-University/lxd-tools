@@ -5,29 +5,26 @@ import {
     latePolicyTest,
     noEvaluationTest
 } from "../courseSettings";
-import {deFormDataify, ICanvasCallConfig, range} from "../../../../canvas/canvasUtils";
-import {Page} from "../../../../canvas/content";
-import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
-import {mockGradModules, mockUgModules} from "../../../../canvas/course/__mocks__/mockModuleData";
-import {ICourseData, IModuleData, ITabData} from "../../../../canvas/canvasDataDefs";
-import {getModulesByWeekNumber} from "../../../../canvas/course/modules";
+import {deFormDataify, ICanvasCallConfig, range} from "@/canvas/canvasUtils";
+import {Page} from "@/canvas/content";
+import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";
+import {mockGradModules, mockUgModules} from "@/canvas/course/__mocks__/mockModuleData";
+import {IModuleData} from "@/canvas/canvasDataDefs";
+import {getModulesByWeekNumber} from "@/canvas/course/modules";
 import {
     IGradingStandardData,
     IPagesHaver
-} from "../../../../canvas/course/courseTypes";
-import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
-import {Course} from "../../../../canvas/course/Course";
-import mockTabData from "../../../../canvas/__mocks__/mockTabData";
+} from "@/canvas/course/courseTypes";
+import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {Course} from "@/canvas/course/Course";
+import mockTabData from "@/canvas/__mocks__/mockTabData";
 import {getDummyLatePolicyHaver} from "../__mocks__";
-import {fetchJson} from "../../../../canvas/fetch";
 import assert from "assert";
-import {CourseValidation} from "../index";
 
-jest.mock('../../../../canvas/fetch', () => ({
-    ...jest.requireActual('../../../../canvas/fetch'),
-    fetchJson: jest.fn(),
-}));
+import {ICourseData, ITabData} from "@/canvas/courseTypes";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
+jest.mock('@/canvas/fetch/fetchJson')
 
 test('Late policy test works', async () => {
     const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});
@@ -99,8 +96,6 @@ type MockModGradPolHavOpts = {
 describe('Grading policy validation correct test', () => {
 
     const fetchJsonMock = fetchJson as jest.Mock;
-    
-    
 
     test("Works for correctly set standards", async () => {
         const newUgSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[2], [...mockUgModules]);

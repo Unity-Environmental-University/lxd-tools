@@ -1,13 +1,23 @@
 import ReactDOM from "react-dom/client";
-import React from "react";
+import React, {FormEvent, useState} from "react";
 import {HomeTileApp} from "./HomeTileApp";
 import {BaseContentItem} from "../../canvas/content";
 import {HighlightBigImages} from "./HighlightBigImages";
 import {Course} from "../../canvas/course/Course";
+import {Button} from "react-bootstrap";
+import {useEffectAsync} from "@/ui/utils";
+import {genBlueprintDataForCode} from "@/canvas/course/blueprint";
+import {getContentClassFromUrl} from "@/canvas/content/getContent";
+import Modal from "@/ui/widgets/Modal";
+import assert from "assert";
+import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
+
+import {ICourseData} from "@/canvas/courseTypes";
+import {renderAsyncGen} from "@/canvas/fetch";
 
 (async () => {
     const currentCourse = await Course.getFromUrl(document.documentURI);
-    let CurrentContentClass = Course.getContentClassFromUrl();
+    let CurrentContentClass = getContentClassFromUrl(document.documentURI);
     let currentContentItem = await CurrentContentClass?.getFromUrl();
     if (!CurrentContentClass && /courses\/\d+/.test(document.URL)) {
         currentContentItem = await currentCourse?.getFrontPage();
@@ -24,8 +34,8 @@ import {Course} from "../../canvas/course/Course";
         await addSectionsButton(header, currentCourse);
     } else {
         bp = await Course.getByCode(`BP_${currentCourse.baseCode}`);
+        await addBpButton(header, currentCourse);
         if (bp) {
-            await addBpButton(header, bp, currentCourse);
             await addSectionsButton(header, bp, currentCourse);
         }
     }
@@ -53,28 +63,6 @@ function addHomeTileButton(el: HTMLElement, course: Course) {
     document.body.append(root);
 }
 
-async function openThisContentInTarget(currentCourse: Course, target: Course | Course[]) {
-    if (!window) return;
-    let currentContentItem: BaseContentItem | null = await currentCourse.getContentItemFromUrl();
-    let targetCourses = Array.isArray(target) ? target : [target];
-    let targetInfos = targetCourses.map((targetCourse) => {
-        return {
-            course: targetCourse,
-            contentItemPromise: currentContentItem?.getMeInAnotherCourse(targetCourse.id)
-        }
-    });
-
-    for (let {course, contentItemPromise} of targetInfos) {
-        let targetContentItem = await contentItemPromise;
-        if (targetContentItem) {
-            window.open(targetContentItem.htmlContentUrl);
-        } else {
-            let url = document.URL.replace(currentCourse.id.toString(), course.id.toString())
-            window.open(url);
-        }
-    }
-}
-
 async function addSectionsButton(header: HTMLElement, bp: Course, currentCourse: Course | null = null) {
     const sourceCourse = currentCourse ?? bp;
     let sectionBtn = document.createElement('btn');
@@ -100,15 +88,50 @@ async function addDevButton(header: HTMLElement, course: Course) {
     }
 }
 
-async function addBpButton(header: HTMLElement, bp: Course, currentCourse: Course) {
-    let bpBtn = document.createElement('btn');
-    bpBtn.classList.add('btn');
-    bpBtn.innerHTML = "BP";
-    bpBtn.title = "Open the blueprint version of this course"
-    header.append(bpBtn);
+type BpButtonProps = {
+    course: Course,
+    currentBp?: Course,
+}
 
-    bpBtn.addEventListener('click', async () => await openThisContentInTarget(currentCourse, bp))
+function BpButton({course, currentBp}: BpButtonProps) {
+    const [bps, setBps] = useState<ICourseData[]>([])
+    const [open, setOpen] = useState(false);
+    useEffectAsync(async () => {
+        const bpGen = genBlueprintDataForCode(course.courseCode, [course.accountId, course.rootAccountId])
+        setBps(bpGen ? await renderAsyncGen(bpGen) : []);
+    }, [course]);
 
+    async function openMainBp(e: FormEvent) {
+        assert(currentBp, "Attempted to open main BP with no BP")
+        await openThisContentInTarget(course.id, currentBp.id);
+    }
+
+    if (!currentBp || bps.length === 0) return <Button disabled={true}>No BPs Found</Button>;
+    if (bps.length <= 1 && currentBp) return <Button onClick={openMainBp}>BP</Button>;
+    return <>
+        <Button
+            title={"Open the blueprint version of this course"}
+            onClick={openMainBp}
+        >BP</Button>
+        <Button
+            onClick={e => setOpen(true)}
+            title={"Open the blueprint version of this course"}
+        >Archived BPs</Button>
+        <Modal isOpen={open} requestClose={() => setOpen(false)}>
+            {bps.map(bp =>
+                <Button
+                    key={bp.id}
+                    onClick={e => openThisContentInTarget(course, bp.id)}
+                >{bp.course_code}</Button>)}
+        </Modal>
+    </>
+}
+
+async function addBpButton(header: HTMLElement, currentCourse: Course) {
+    const rootDiv = document.createElement('div');
+    header.append(rootDiv);
+    const bpButtonRoot = ReactDOM.createRoot(rootDiv);
+    bpButtonRoot.render(<BpButton course={currentCourse}/>)
 }
 
 async function addOpenAllLinksButton(

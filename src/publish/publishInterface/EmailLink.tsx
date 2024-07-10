@@ -1,4 +1,4 @@
-import {ITermData, IUserData} from "../../canvas/canvasDataDefs";
+import {IUserData} from "../../canvas/canvasDataDefs";
 import {Temporal} from "temporal-polyfill";
 import {renderToString} from "react-dom/server";
 import React, {useState} from "react";
@@ -6,6 +6,7 @@ import {Course} from "../../canvas/course/Course";
 import {useEffectAsync} from "@/ui/utils";
 import {PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/consts";
 import {Alert} from "react-bootstrap";
+import {ITermData} from "@/canvas/Term";
 
 type EmailLinkProps = {
     user: IUserData,

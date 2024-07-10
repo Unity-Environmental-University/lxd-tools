@@ -1,6 +1,5 @@
-import {CanvasData} from "./canvasDataDefs";
-import assert from "assert";
-import {deepObjectMerge, ICanvasCallConfig, queryStringify, searchParamsFromObject} from "./canvasUtils";
+import {CanvasData} from "@/canvas/canvasDataDefs";
+import {ICanvasCallConfig, searchParamsFromObject} from "@/canvas/canvasUtils";
 
 /**
  * @param url The entire path of the url
@@ -32,8 +31,7 @@ export async function* mergePagedDataGenerators<T extends CanvasData = CanvasDat
     }
 }
 
-
-function handleResponseData<T extends CanvasData>(data:T, url:string) {
+function handleResponseData<T extends CanvasData>(data: T, url: string) {
     if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
         let values = Array.from(Object.values(data));
         if (values) {
@@ -47,6 +45,7 @@ function handleResponseData<T extends CanvasData>(data:T, url:string) {
     return data;
 
 }
+
 export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     url: string, config: ICanvasCallConfig | null = null
 ): AsyncGenerator<T> {
@@ -63,7 +62,7 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
     let response = await fetch(url, config?.fetchInit);
     let data = handleResponseData(await response.json(), url);
-    if(data.length === 0) return data;
+    if (data.length === 0) return data;
     for (let value of data) yield value;
 
     let next_page_link = "!";
@@ -71,7 +70,7 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     response &&
     response.ok) {
         const nextLink = getNextLink(response);
-        if(!nextLink) break;
+        if (!nextLink) break;
         next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
         response = await fetch(next_page_link, config?.fetchInit);
         let responseData = handleResponseData<T>(await response.json(), url);
@@ -83,62 +82,11 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     }
 }
 
-function getNextLink (response:Response) {
-        const link = response.headers.get("Link");
-        if(!link) return null;
-        const paginationLinks = link.split(",");
+function getNextLink(response: Response) {
+    const link = response.headers.get("Link");
+    if (!link) return null;
+    const paginationLinks = link.split(",");
 
-        return paginationLinks.find((link) => link.includes('next'));
+    return paginationLinks.find((link) => link.includes('next'));
 
-}
-
-export async function fetchJson<T extends Record<string, any>>(
-    url: string, config: ICanvasCallConfig | null = null
-): Promise<T> {
-    const match = url.search(/^(\/|\w+:\/\/)/);
-    if(match < 0) throw new Error("url does not start with / or http")
-    if (config?.queryParams) {
-        url += '?' + new URLSearchParams(config.queryParams);
-    }
-    config ??= {};
-
-
-    const response = await fetch(url, config.fetchInit);
-    return await response.json() as T;
-}
-
-type UrlFuncType<UrlParams extends Record<string, any>> = (args: UrlParams, config?: ICanvasCallConfig) => string
-
-export function overrideConfig<ConfigType extends ICanvasCallConfig>(
-    source: ConfigType | undefined,
-    override: ConfigType | undefined
-) {
-
-    return deepObjectMerge(source, override) ?? {} as ConfigType;
-}
-
-export function canvasDataFetchGenFunc<
-    Content extends CanvasData,
-    UrlParams extends Record<string, any>
->(urlFunc: UrlFuncType<UrlParams>, defaultConfig?:ICanvasCallConfig) {
-
-    return function (args: UrlParams, config?: ICanvasCallConfig) {
-        config = overrideConfig(defaultConfig, config);
-        const url = urlFunc(args, config);
-        return getPagedDataGenerator<Content>(url, config);
-    }
-}
-
-export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefined>) {
-    const out = [];
-    for await (let item of generator) {
-        out.push(item);
-    }
-    return out;
-}
-
-export function fetchGetConfig<CallOptions extends Record<string, any>>(options:CallOptions, baseConfig?:ICanvasCallConfig<CallOptions>) {
-    return overrideConfig(baseConfig, {
-        queryParams: options,
-    });
 }

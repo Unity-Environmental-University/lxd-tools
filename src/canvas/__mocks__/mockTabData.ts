@@ -1,4 +1,4 @@
-import {ITabData} from "../canvasDataDefs";
+import {ITabData} from "@/canvas/courseTypes";
 
 export const mockTabData:ITabData = {
     full_url: "/api/v1/...",

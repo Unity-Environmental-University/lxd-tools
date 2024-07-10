@@ -17,14 +17,13 @@ import {
 import * as fetchApi from "../../../../canvas/fetch";
 import {badContentRunFunc, ContentTextReplaceFix} from "../index";
 
-jest.mock('../../../../canvas/fetch', () => ({
-    ...jest.requireActual('../../../../canvas/fetch'),
+jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
-    getPagedDataGenerator: jest.fn(),
-
 }));
 
-const fetchJson = jest.spyOn(fetchApi, 'fetchJson');
+jest.mock('@/canvas/fetch/getPagedDataGenerator', () => ({
+    getPagedDataGenerator: jest.fn(),
+}));
 
 describe('Weekly Objectives test', () => {
 

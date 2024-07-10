@@ -68,7 +68,6 @@ test('FormDatify properly serializes objects', () => {
 
     const formD = formDataify(testData);
     const entries = [...formD.entries()];
-    console.log(entries);
     expect(entries[0]).toStrictEqual(['a[]', '1'])
     expect(entries[1]).toStrictEqual(['b', 'hello!'])
     expect(entries[2]).toStrictEqual(['c[c1][]', '1'])
@@ -87,9 +86,7 @@ test('deFormDatify properly deserializes objects', () => {
 
     const formD = formDataify(testData);
     const entries = [...formD.entries()];
-    console.log(entries);
     const newData = deFormDataify(formD);
-    console.log(newData);
     expect(newData).toEqual({
         a: ['1'],
         b: 'hello!',

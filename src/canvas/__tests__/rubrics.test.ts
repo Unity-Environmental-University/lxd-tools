@@ -10,14 +10,18 @@ import {
 import {mockAsyncGenerator} from "../../__mocks__/utils";
 import mockRubric, {mockRubricAssociation, mockRubricsForAssignments} from "../__mocks__/mockRubricData";
 
-import {fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
 import {deepObjectMerge, formDataify} from "../canvasUtils";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {renderAsyncGen} from "@/canvas/fetch";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
-jest.mock('../fetch', () => ({
-    ...jest.requireActual('../fetch'),
-    getPagedDataGenerator: jest.fn(),
+jest.mock('../fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
+}))
+
+jest.mock('../fetch/getPagedDataGenerator', () => ({
+    getPagedDataGenerator: jest.fn(),
 }))
 
 jest.mock('../canvasUtils', () => ({

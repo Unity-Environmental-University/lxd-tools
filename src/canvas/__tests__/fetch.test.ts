@@ -1,7 +1,9 @@
 import {deepObjectMerge, ICanvasCallConfig, queryStringify, range} from "../canvasUtils";
-import {canvasDataFetchGenFunc, fetchGetConfig, fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
 import {describe, expect} from "@jest/globals";
 import {CanvasData} from "../canvasDataDefs";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {canvasDataFetchGenFunc, fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 global.fetch = jest.fn();
 const fetchMock = fetch as jest.Mock;

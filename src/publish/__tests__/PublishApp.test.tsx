@@ -3,7 +3,6 @@ import {runtime} from "webextension-polyfill";
 
 global.TextEncoder = require('util').TextEncoder;
 
-import {fetchJson} from "../../canvas/fetch";
 import {Course} from "../../canvas/course/Course";
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
@@ -16,11 +15,13 @@ import {CourseUpdateInterface} from '../fixesAndUpdates/CourseUpdateInterface';
 import {AdminApp} from '../../admin/AdminApp';
 import fetchMock from "jest-fetch-mock";
 
+import {fetchJson} from "@/canvas/fetch/fetchJson";
+
 
 
 jest.mock('../../canvas/course');
 jest.mock('../../canvas/canvasUtils');
-jest.mock('../../canvas/fetch');
+jest.mock('../../canvas/fetch/fetchJson');
 jest.mock('../publishInterface/PublishInterface');
 jest.mock('../fixesAndUpdates/CourseUpdateInterface');
 jest.mock('../../admin/AdminApp');

@@ -1,4 +1,4 @@
-import {ICourseData} from "../../canvasDataDefs";
+import {ICourseData} from "@/canvas/courseTypes";
 
 export const mockCourseData: ICourseData = {
     account_id: 0,

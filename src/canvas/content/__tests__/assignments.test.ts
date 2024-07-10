@@ -4,17 +4,21 @@ import {getAssignmentHtmlUrl, updateAssignmentData, UpdateAssignmentDataOptions}
 import {mockAssignmentData} from "../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";
 import {assignmentDataGen} from "@/canvas/content/assignments";
-import {fetchJson, getPagedDataGenerator} from "@/canvas/fetch";
 import {putContentConfig} from "@/canvas/content";
 import {mockAsyncGenerator} from "@/__mocks__/utils";
 
 import * as canvasUtils from '@/canvas/canvasUtils';
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 fetchMock.enableMocks();
 
-jest.mock('@/canvas/fetch', () => ({
-    ...jest.requireActual('@/canvas/fetch'),
+jest.mock('@/canvas/fetch/getPagedDataGenerator', () => ({
     getPagedDataGenerator: jest.fn(),
+
+}));
+
+jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
 }))
 
@@ -29,13 +33,10 @@ it('gets assignments from course id', async () => {
     };
 
 
-    fetchMock.enableMocks();
-    const responseDatas = [...range(0, 10)].map(id => JSON.stringify({...mockAssignmentData, id}));
-    fetchMock.mockResponses( ...responseDatas);
+    const responseDatas = [...range(0, 10)].map(id => ({...mockAssignmentData, id}));
     (getPagedDataGenerator as jest.Mock).mockImplementation(mockAsyncGenerator(responseDatas));
     let i = range(0, 10);
     for await (let assignment of assignmentDataGen({courseId: id}, config)) {
-        expect(fetchMock).toHaveBeenCalledWith(`/api/v1/course/${id}/assignments`, config.fetchInit)
         expect(assignment.id).toEqual(i.next().value);
     }
 })

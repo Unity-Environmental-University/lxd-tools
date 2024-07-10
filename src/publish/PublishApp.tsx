@@ -9,7 +9,6 @@ import {AdminApp} from "../admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Alert, Button, Row} from "react-bootstrap";
 import {Course} from "../canvas/course/Course";
-import {fetchJson} from "../canvas/fetch";
 import {CourseValidation} from "./fixesAndUpdates/validations";
 import capstoneProjectValidations from "./fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import syllabusTests from "./fixesAndUpdates/validations/syllabusTests";
@@ -20,6 +19,8 @@ import proxyServerLinkValidation from "./fixesAndUpdates/validations/proxyServer
 import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/consts";
+
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
