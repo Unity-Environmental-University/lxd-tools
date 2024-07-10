@@ -7,7 +7,7 @@ import {
 } from "../canvasUtils";
 import {overrideConfig, Term} from "../index";
 
-import {IGradingStandardData} from "./courseTypes";
+import {GetCourseOptions, GetCoursesFromAccountOptions, IGradingStandardData} from "./courseTypes";
 import {Course} from "./Course";
 import {fetchJson, getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "../fetch";
 
@@ -38,14 +38,15 @@ export function getCourseData(id:number, config?: ICanvasCallConfig) {
     return fetchJson(url, config) as Promise<ICourseData>;
 }
 
-export function getCourseGenerator(queryString: string, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig) {
+export function getCourseGenerator(
+    queryString: string, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     if (!Array.isArray(accountIds)) accountIds = [accountIds];
 
     interface IGetCourseQueryParams extends IQueryParams {
         enrollment_term_id?: number,
     }
 
-    const defaultConfig: ICanvasCallConfig<IGetCourseQueryParams> = {
+    const defaultConfig: ICanvasCallConfig<GetCoursesFromAccountOptions> = {
         queryParams: {
             search_term: queryString,
         }

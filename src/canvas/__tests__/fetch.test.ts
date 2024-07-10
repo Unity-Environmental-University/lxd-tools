@@ -92,7 +92,7 @@ describe('fetchGetConfig', () => {
         const options = {param1: 'value1'};
         const baseConfig = {queryParams: {a: '1'}};
 
-        const config = fetchGetConfig(options, baseConfig);
+        const config = fetchGetConfig<Record<string, any>>(options, baseConfig);
 
         expect(config).toEqual(deepObjectMerge<Record<string, any>>({queryParams: options}, baseConfig))
     });

@@ -5,7 +5,6 @@ import {
     baseCourseCode,
     Course,
     parseCourseCode,
-    saveCourseData,
     setGradingStandardForCourse,
     stringIsCourseCode
 } from "../Course";
@@ -24,19 +23,19 @@ jest.mock('@/canvas/content/assignments', () => ({
 }))
 
 
-// describe('get content', () => {
-//     const config = {};
-//     test('Gets assignments', async () => {
-//         const id = Math.floor(Math.random() * 1000);
-//         const assignmentDatas = [{...mockAssignmentData, id}];
-//         const course = new Course(mockCourseData);
-//         (assignmentDataGen as jest.Mock).mockImplementation(mockAsyncGenerator(assignmentDatas))
-//
-//         const extractedAssignments = await course.getAssignments(config);
-//         expect(extractedAssignments.length).toEqual(assignmentDatas.length);
-//         expect(extractedAssignments[0].rawData).toEqual(assignmentDatas[0])
-//     })
-// })
+describe('get content', () => {
+    const config = {};
+    test('Gets assignments', async () => {
+        const id = Math.floor(Math.random() * 1000);
+        const assignmentDatas = [{...mockAssignmentData, id}];
+        const course = new Course(mockCourseData);
+        (assignmentDataGen as jest.Mock).mockImplementation(mockAsyncGenerator(assignmentDatas))
+
+        const extractedAssignments = await course.getAssignments(config);
+        expect(extractedAssignments.length).toEqual(assignmentDatas.length);
+        expect(extractedAssignments[0].rawData).toEqual(assignmentDatas[0])
+    })
+})
 
 
 import {fetchJson} from "../../fetch";

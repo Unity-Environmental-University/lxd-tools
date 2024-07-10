@@ -2,9 +2,11 @@ import {formDataify, getItemTypeAndId, ICanvasCallConfig} from "../canvasUtils";
 import {ICourseData, IModuleData, IModuleItemData} from "../canvasDataDefs";
 import {getCourseGenerator} from "./index";
 import {apiWriteConfig} from "../index";
-import {ICourseCodeHaver, IIdHaver} from "./courseTypes";
+import {GetCourseOptions, GetCoursesFromAccountOptions, ICourseCodeHaver, IIdHaver} from "./courseTypes";
 import {baseCourseCode, Course} from "./Course";
-import {fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
+import {fetchGetConfig, fetchJson, getPagedDataGenerator, renderAsyncGen} from "../fetch";
+import {config} from "dotenv";
+
 
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
     isBlueprint(): boolean,
@@ -16,12 +18,14 @@ export function isBlueprint({blueprint}: { blueprint?: boolean | undefined }) {
 }
 
 
-export async function getBlueprintsForCode(courseCode:string) {
+export async function getBlueprintsForCode(courseCode:string, accountIds:number[], config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const code = baseCourseCode(courseCode);
     if(!code) {
         console.warn(`Code ${courseCode} invalid`);
         return null;
     }
+    const courses = getCourseGenerator(courseCode, accountIds, undefined, fetchGetConfig<GetCoursesFromAccountOptions>({
+    }, config))
 
 
 }
@@ -81,7 +85,7 @@ export async function makeNewBpFromDev(devCourse:Course, termName?: string) {
 }
 
 
-export async function getBlueprintsFromCode(code: string, accountIds: number[], config?: ICanvasCallConfig) {
+export async function getBlueprintsFromCode(code: string, accountIds: number[], config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const [_, baseCode] = code.match(/_(\w{4}\d{3})$/) || [];
     if (!baseCode) return null;
     const bps = getCourseGenerator(`BP_${baseCode}`, accountIds, undefined, config);

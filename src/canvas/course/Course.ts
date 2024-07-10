@@ -189,7 +189,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         });
 
     }
-
     get contentUrlPath() {
         return `/api/v1/courses/${this.id}`;
     }

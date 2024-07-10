@@ -109,12 +109,12 @@ export async function fetchJson<T extends Record<string, any>>(
 
 type UrlFuncType<UrlParams extends Record<string, any>> = (args: UrlParams, config?: ICanvasCallConfig) => string
 
-export function overrideConfig(
-    source: ICanvasCallConfig | undefined,
-    override: ICanvasCallConfig | undefined
+export function overrideConfig<ConfigType extends ICanvasCallConfig>(
+    source: ConfigType | undefined,
+    override: ConfigType | undefined
 ) {
 
-    return deepObjectMerge(source, override) ?? {} as ICanvasCallConfig;
+    return deepObjectMerge(source, override) ?? {} as ConfigType;
 }
 
 export function canvasDataFetchGenFunc<
@@ -137,7 +137,7 @@ export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefi
     return out;
 }
 
-export function fetchGetConfig<CallOptions extends Record<string, any>>(options:CallOptions, baseConfig?:ICanvasCallConfig) {
+export function fetchGetConfig<CallOptions extends Record<string, any>>(options:CallOptions, baseConfig?:ICanvasCallConfig<CallOptions>) {
     return overrideConfig(baseConfig, {
         queryParams: options,
     });

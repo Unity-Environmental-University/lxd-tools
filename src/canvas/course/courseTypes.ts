@@ -87,3 +87,66 @@ export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussi
 
 }
 
+
+export type GetCoursesFromAccountOptions = {
+  with_enrollments?: boolean;
+  enrollment_type?: ('teacher' | 'student' | 'ta' | 'observer' | 'designer')[];
+  published?: boolean;
+  completed?: boolean;
+  blueprint?: boolean;
+  blueprint_associated?: boolean;
+  public?: boolean;
+  by_teachers?: number[];
+  by_subaccounts?: number[];
+  hide_enrollmentless_courses?: boolean;
+  state?: ('created' | 'claimed' | 'available' | 'completed' | 'deleted' | 'all')[];
+  enrollment_term_id?: number;
+  search_term?: string;
+  include?: (
+    | 'syllabus_body'
+    | 'term'
+    | 'course_progress'
+    | 'storage_quota_used_mb'
+    | 'total_students'
+    | 'teachers'
+    | 'account_name'
+    | 'concluded'
+  )[];
+  sort?: 'course_name' | 'sis_course_id' | 'teacher' | 'account_name';
+  order?: 'asc' | 'desc';
+  search_by?: 'course' | 'teacher';
+  starts_before?: string; // Date formatted as yyyy-mm-dd or ISO 8601 YYYY-MM-DDTHH:MM:SSZ
+  ends_after?: string; // Date formatted as yyyy-mm-dd or ISO 8601 YYYY-MM-DDTHH:MM:SSZ
+  homeroom?: boolean;
+};
+
+export type GetCourseOptions = {
+    enrollment_type?: 'teacher' | 'student' | 'ta' | 'observer' | 'designer';
+    enrollment_role?: string; // Deprecated
+    enrollment_role_id?: number;
+    enrollment_state?: 'active' | 'invited_or_pending' | 'completed';
+    exclude_blueprint_courses?: boolean;
+    include?: (
+        | 'needs_grading_count'
+        | 'syllabus_body'
+        | 'public_description'
+        | 'total_scores'
+        | 'current_grading_period_scores'
+        | 'grading_periods'
+        | 'term'
+        | 'account'
+        | 'course_progress'
+        | 'sections'
+        | 'storage_quota_used_mb'
+        | 'total_students'
+        | 'passback_status'
+        | 'favorites'
+        | 'teachers'
+        | 'observed_users'
+        | 'tabs'
+        | 'course_image'
+        | 'banner_image'
+        | 'concluded'
+        )[];
+    state?: ('unpublished' | 'available' | 'completed' | 'deleted')[];
+};
