@@ -18,7 +18,8 @@ import {IDiscussionData} from "../../canvas/content";
 
 import {Course} from "../../canvas/course/Course";
 import {IRubricCriterionData} from "../../canvas/rubrics";
-import {Assignment, IAssignmentData} from "@/canvas/content/assignments";
+import {Assignment, assignmentDataGen, IAssignmentData} from "@/canvas/content/assignments";
+import {renderAsyncGen} from "@/canvas/fetch";
 
 
 const MAX_SECTION_SLICE_SIZE = 5; //The number of sections to query data for at once.
@@ -307,9 +308,8 @@ async function csvRowsForCourse(course: Course, assignment: Assignment | null = 
 
     const baseSubmissionsUrl = assignment ? `/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
     const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IUserData[];
-    const assignments = await course.getAssignments();
+    const assignments = await renderAsyncGen(assignmentDataGen({courseId}, {queryParams: {include: ['due_at']}}));
     const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
-    //const modules = await getAllPagesAsync(`/api/v1/courses/${courseId}/modules?include[]=items&include[]=content_details`) as IModuleData[];
     const modules = await  course.getModules({
         queryParams: {
             include: ['items', 'content_details']

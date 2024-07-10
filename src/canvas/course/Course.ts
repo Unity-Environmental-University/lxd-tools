@@ -39,12 +39,20 @@ import {getModuleOverview, getModuleWeekNumber, getModulesByWeekNumber} from "./
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile, IProfileWithUser} from "../profile";
-import {CourseNotFoundException, getCourseData, getCourseIdFromUrl, getGradingStandards} from "./index";
+import {
+    CourseNotFoundException,
+    getCourseData,
+    getCourseIdFromUrl,
+    getGradingStandards
+} from "./index";
 import {fetchJson, getPagedData, renderAsyncGen} from "../fetch";
 import index from "isomorphic-git";
 import {Assignment, assignmentDataGen, IAssignmentGroup} from "@/canvas/content/assignments";
 
 const HOMETILE_WIDTH = 500;
+
+export const COURSE_CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i;
+
 
 export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,
     ICourseDataHaver,
@@ -54,8 +62,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     IBlueprintCourse,
     ICourseCodeHaver,
     IModulesHaver {
-
-    static CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i; // Adapted to JavaScript's regex syntax.
     static nameProperty = 'name';
     private _modules: IModuleData[] | undefined = undefined;
     private modulesByWeekNumber: Record<string | number, IModuleData> | undefined = undefined;
@@ -82,14 +88,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             return await this.getCourseById(id);
         }
         return null;
-    }
-
-    /**
-     * Checks if a string looks like a course code
-     * @param code
-     */
-    static stringIsCourseCode(code: string) {
-        return this.CODE_REGEX.exec(code);
     }
 
     /**
@@ -121,8 +119,12 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
      * @param config
      * @private
      */
-    private static async getCoursesByString(code: string, term: Term | null = null, config: ICanvasCallConfig = {}) {
+    private static async getCoursesByString(code: string | null, term: Term | null = null, config: ICanvasCallConfig = {}) {
         console.warn("Replace this with getCourseGenerator")
+        if(typeof code === 'undefined') {
+            return null;
+            console.warn("Course code empty");
+        }
         let courseDataList: ICourseData[] | null = null;
         const accountIdsByName = await Course.getAccountIdsByName();
         for (let accountKey in accountIdsByName) {
@@ -151,7 +153,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return courseDataList.map(courseData => new Course(courseData));
     }
 
-    static async getAllByCode(code: string, term: Term | null = null, config: ICanvasCallConfig | undefined = undefined) {
+    static async getAllByCode(code: string | null, term: Term | null = null, config: ICanvasCallConfig | undefined = undefined) {
         return this.getCoursesByString(code, term, config);
     }
 
@@ -202,27 +204,15 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     get parsedCourseCode(): null | string {
-        let match = this.codeMatch;
-        if (!match) return null;
-        let prefix = match[1] || "";
-        let courseCode = match[2] || "";
-        if (prefix.length > 0) {
-            return `${prefix}_${courseCode}`;
-        }
-        return courseCode;
+        return parseCourseCode(this.canvasData.course_code);
     }
 
     get courseCode(): null | string {
         return this.canvasData.course_code
     }
 
-    get codeMatch() {
-        return Course.CODE_REGEX.exec(this.canvasData.course_code);
-    }
-
     get baseCode() {
-        let match = this.codeMatch;
-        return match ? match[2] : '';
+        return baseCourseCode(this.canvasData.course_code);
     }
 
     get termId(): number | null {
@@ -245,7 +235,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     get codePrefix() {
-        let match = this.codeMatch;
+        let match = COURSE_CODE_REGEX.exec(this.rawData.course_code);
         return match ? match[1] : '';
     }
 
@@ -428,11 +418,11 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return this.canvasData.syllabus_body;
     }
 
-    /**
-     * gets all assignments in a course
-     * @returns {Promise<Assignment[]>}
-     * @param config
-     */
+    // /**
+    //  * gets all assignments in a course
+    //  * @returns {Promise<Assignment[]>}
+    //  * @param config
+    //  */
     async getAssignments(config?: ICanvasCallConfig): Promise<Assignment[]> {
         console.warn('deprecated, use assignmentDataGen instead');
         config = overrideConfig(config, {queryParams: {include: ['due_at']}})
@@ -446,12 +436,12 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     async getContent(config?: ICanvasCallConfig, refresh = false) {
         if (refresh || this.cachedContent.length == 0) {
             let discussions = await this.getDiscussions(config);
-            let assignments = await this.getAssignments(config);
+            let assignments = await renderAsyncGen(assignmentDataGen({courseId: this.id}, config))
             let quizzes = await this.getQuizzes(config);
             let pages = await this.getPages(config);
             this.cachedContent = [
                 ...discussions,
-                ...assignments,
+                ...assignments.map(a => new Assignment(a, this.id)),
                 ...quizzes,
                 ...pages
 
@@ -558,18 +548,19 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         })
     }
 
-    async updateDueDates(offset: number) {
+    async updateDueDates(offset: number, config?: ICanvasCallConfig) {
         const promises: Promise<any>[] = [];
-        let assignments = await this.getAssignments();
+        const returnAssignments:Assignment[] = [];
 
+        const assignments = assignmentDataGen({courseId: this.id}, config)
         if (offset === 0 || offset) {
-            for (let assignment of assignments) {
-                console.log(assignment);
+            for await (let assignmentData of assignments) {
+                const assignment = new Assignment(assignmentData, this.id);
+                returnAssignments.push(assignment);
                 promises.push(assignment.dueAtTimeDelta(Number(offset)));
             }
         }
-        await Promise.all(promises);
-        return [...assignments];
+        return returnAssignments;
     }
 
     async publish() {
@@ -607,32 +598,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return false;
     }
 
-    /**
-     * NOT IMPLEMENTED
-     * @param prompt Either a boolean or an async function that takes in a source and destination course and returns a boolean
-     * @param updateCallback
-     */
-    async importDevCourse(
-        prompt: ((source: Course, destination: Course) => Promise<boolean>) | false = false,
-        updateCallback: IUpdateCallback | undefined
-    ) {
-        const devCourse = await this.getParentCourse();
-
-        if (!devCourse) {
-            throw new CourseNotFoundException(`DEV not found for ${this.name}.`)
-        }
-
-        if (prompt) {
-            const canContinue = await prompt(devCourse, this);
-            if (!canContinue) return;
-        }
-
-        await this.importCourse(devCourse, updateCallback);
-    }
-
-    async importCourse(course: Course, updateCallback: IUpdateCallback | undefined) {
-        throw new NotImplementedException();
-    }
 
     async getParentCourse(return_dev_search = false) {
         let migrations = await getPagedData(`/api/v1/courses/${this.id}/content_migrations`);
@@ -723,4 +688,28 @@ export async function saveCourseData(courseId: number, data: Partial<ICourseData
 
 export async function setGradingStandardForCourse(courseId: number, standardId: number, config?: ICanvasCallConfig) {
     return await saveCourseData(courseId, {grading_standard_id: standardId})
+}
+
+
+
+export function parseCourseCode(code:string) {
+        let match = COURSE_CODE_REGEX.exec(code);
+        if (!match) return null;
+        let prefix = match[1] || "";
+        let courseCode = match[2] || "";
+        if (prefix.length > 0) {
+            return `${prefix}_${courseCode}`;
+        }
+        return courseCode;
+}
+
+export function baseCourseCode(code:string) {
+    let match = COURSE_CODE_REGEX.exec(code);
+    if(!match) return null;
+    return match[2];
+}
+
+export function stringIsCourseCode(code: string) {
+        return COURSE_CODE_REGEX.exec(code);
+
 }

@@ -16,7 +16,8 @@ import {oldDateToPlainDate} from "../../date";
 import {BaseContentItem, Discussion, IDiscussionData} from "../../canvas/content";
 
 import {Course} from "../../canvas/course/Course";
-import {getPagedDataGenerator} from "../../canvas/fetch";
+import {getPagedDataGenerator, renderAsyncGen} from "../../canvas/fetch";
+import {assignmentDataGen} from "@/canvas/content/assignments";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,
@@ -63,6 +64,7 @@ export function UpdateStartDate(
 
                 const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate);
                 if (syllabusChanges) affectedItems.concat(syllabusChanges);
+                const assignments = await renderAsyncGen(assignmentDataGen({courseId: course.id}))
                 let startOfFirstWeek = getStartDateAssignments(await course.getAssignments());
                 console.log(startOfFirstWeek.toString());
                 let contentDateOffset = startDate.until(workingStartDate).days;

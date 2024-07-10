@@ -220,7 +220,6 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         let result = new Date(this.dueAt);
         result.setDate(result.getDate() + timeDelta)
 
-
         return await this.setDueAt(result);
     }
 

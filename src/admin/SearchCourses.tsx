@@ -46,7 +46,7 @@ export function SearchCourses({
                     course => course.id,
                     course => course.parsedCourseCode ?? course.name ?? course.id.toString()
                 );
-                courses = [...courses, optionCourse].toSorted((a, b) => a.baseCode?.localeCompare(b.baseCode));
+                courses = [...courses, optionCourse].toSorted((a, b) => (a.baseCode ?? a.name).localeCompare(b.baseCode ?? b.name));
                 if (onlySearchBlueprints) courses = courses.filter(course => course.isBlueprint())
                 setFoundCourses(courses);
 

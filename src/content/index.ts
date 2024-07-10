@@ -3,7 +3,7 @@ import {extension, runtime} from "webextension-polyfill";
 
 
 import {getModuleWeekNumber} from "../canvas/course/modules";
-import {Course} from "../canvas/course/Course";
+import {Course, stringIsCourseCode} from "../canvas/course/Course";
 
 runtime.onMessage.addListener(async(
     message: Record<string, any>,
@@ -29,7 +29,7 @@ async function openTargetCourse(queryString: string) {
         return;
     }
 
-    const courses = Course.stringIsCourseCode(searchCode) ? await getJson(queryUrl) : null;
+    const courses = stringIsCourseCode(searchCode) ? await getJson(queryUrl) : null;
     const course: Course = courses ? getCourseToNavTo(searchCode, courses) : await Course.getFromUrl();
 
 

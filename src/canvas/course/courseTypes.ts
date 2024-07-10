@@ -16,8 +16,7 @@ export interface ICourseCodeHaver {
     name: string,
     parsedCourseCode: string | null,
     courseCode: string | null,
-    codeMatch: RegExpExecArray | null,
-    baseCode: string,
+    baseCode: string | null,
 }
 
 export interface ISyllabusHaver extends IIdHaver {

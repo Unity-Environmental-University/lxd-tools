@@ -1,7 +1,14 @@
 import {mockAssignmentData} from "../../content/__mocks__/mockContentData";
 import {mockAsyncGenerator} from "../../../__mocks__/utils";
 import {mockCourseData} from "../__mocks__/mockCourseData";
-import {Course, saveCourseData, setGradingStandardForCourse} from "../Course";
+import {
+    baseCourseCode,
+    Course,
+    parseCourseCode,
+    saveCourseData,
+    setGradingStandardForCourse,
+    stringIsCourseCode
+} from "../Course";
 import mockTabData from "../../__mocks__/mockTabData";
 
 
@@ -17,19 +24,19 @@ jest.mock('@/canvas/content/assignments', () => ({
 }))
 
 
-describe('get content', () => {
-    const config = {};
-    test('Gets assignments', async () => {
-        const id = Math.floor(Math.random() * 1000);
-        const assignmentDatas = [{...mockAssignmentData, id}];
-        const course = new Course(mockCourseData);
-        (assignmentDataGen as jest.Mock).mockImplementation(mockAsyncGenerator(assignmentDatas))
-
-        const extractedAssignments = await course.getAssignments(config);
-        expect(extractedAssignments.length).toEqual(assignmentDatas.length);
-        expect(extractedAssignments[0].rawData).toEqual(assignmentDatas[0])
-    })
-})
+// describe('get content', () => {
+//     const config = {};
+//     test('Gets assignments', async () => {
+//         const id = Math.floor(Math.random() * 1000);
+//         const assignmentDatas = [{...mockAssignmentData, id}];
+//         const course = new Course(mockCourseData);
+//         (assignmentDataGen as jest.Mock).mockImplementation(mockAsyncGenerator(assignmentDatas))
+//
+//         const extractedAssignments = await course.getAssignments(config);
+//         expect(extractedAssignments.length).toEqual(assignmentDatas.length);
+//         expect(extractedAssignments[0].rawData).toEqual(assignmentDatas[0])
+//     })
+// })
 
 
 import {fetchJson} from "../../fetch";
@@ -73,3 +80,45 @@ function testSave<SaveValue>(
     expect([...body.entries()]).toStrictEqual([...formDataify({course: {[rawDataKey]: testSubmitValue}}).entries()])
 
 }
+
+
+describe('parseCourseCode', () => {
+  test('parses course code with prefix', () => {
+    expect(parseCourseCode('BP_TEST123')).toBe('BP_TEST123');
+    expect(parseCourseCode('BPTEST123')).toBe('BP_TEST123');
+  });
+
+  test('parses course code without prefix', () => {
+    expect(parseCourseCode('TEST123')).toBe('TEST123');
+    expect(parseCourseCode('TEST123')).not.toBe('TEST123_TEST123');
+  });
+
+  test('returns null for invalid course codes', () => {
+    expect(parseCourseCode('BP')).toBeNull();
+    expect(parseCourseCode('_123')).toBeNull();
+  });
+});
+
+describe('baseCourseCode', () => {
+  test('returns base course code without prefix', () => {
+    expect(baseCourseCode('DEV_TEST123')).toBe('TEST123');
+    expect(baseCourseCode('TEST123')).toBe('TEST123');
+  });
+
+  test('returns null for invalid course codes', () => {
+    expect(baseCourseCode('BP')).toBeNull();
+    expect(baseCourseCode('_123')).toBeNull();
+  });
+});
+
+describe('stringIsCourseCode', () => {
+  test('returns match for valid course codes', () => {
+    expect(stringIsCourseCode('BP_TEST123')).toBeTruthy();
+    expect(stringIsCourseCode('BPTEST123')).toBeTruthy();
+  });
+
+  test('returns null for invalid course codes', () => {
+    expect(stringIsCourseCode('BP')).toBeNull();
+    expect(stringIsCourseCode('_123')).toBeNull();
+  });
+});

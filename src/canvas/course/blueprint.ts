@@ -16,6 +16,9 @@ export function isBlueprint({blueprint}: { blueprint?: boolean | undefined }) {
 }
 
 
+export async function getBlueprintsForCode(courseCode:string) {
+}
+
 export async function getSections(course: IBlueprintCourse) {
     const id = course.id;
     if (!course.isBlueprint()) return [];

@@ -13,6 +13,8 @@ import {Course} from "./Course";
 import {fetchJson, getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "../fetch";
 
 
+
+
 export async function getGradingStandards(contextId: number, contextType: 'account' | 'course', config?: ICanvasCallConfig) {
     const url = `/api/v1/${contextType}s/${contextId}/grading_standards`
     return await getPagedData<IGradingStandardData>(url, config)

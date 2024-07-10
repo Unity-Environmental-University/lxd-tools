@@ -1,6 +1,7 @@
 import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
 import {ICanvasCallConfig, searchParamsFromObject} from "./canvasUtils";
+import {overrideConfig} from "@/publish/fixesAndUpdates/validations";
 
 /**
  * @param url The entire path of the url
@@ -110,9 +111,10 @@ type UrlFuncType<UrlParams extends Record<string, any>> = (args: UrlParams, conf
 export function canvasDataFetchGenFunc<
     Content extends CanvasData,
     UrlParams extends Record<string, any>
->(urlFunc: UrlFuncType<UrlParams>) {
+>(urlFunc: UrlFuncType<UrlParams>, defaultConfig?:ICanvasCallConfig) {
 
     return function (args: UrlParams, config?: ICanvasCallConfig) {
+        config = overrideConfig(defaultConfig, config);
         const url = urlFunc(args, config);
         return getPagedDataGenerator<Content>(url, config);
     }
