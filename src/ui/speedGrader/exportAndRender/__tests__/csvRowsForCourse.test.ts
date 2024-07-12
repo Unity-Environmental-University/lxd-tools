@@ -1,4 +1,4 @@
-import { csvRowsForCourse, csvEncode } from "../exportAndRender/csvRowsForCourse";
+import { csvRowsForCourse, csvEncode } from "../csvRowsForCourse";
 import { Course } from "@/canvas/course/Course";
 import { Assignment } from "@/canvas/content/assignments";
 import fetchMock from 'jest-fetch-mock';

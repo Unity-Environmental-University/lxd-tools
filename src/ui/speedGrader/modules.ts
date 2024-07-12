@@ -38,17 +38,18 @@ export function getModuleInfo(contentItem: CanvasData, modules: IModuleData[], a
     }
 }
 
+
+export function getContentItemId(contentItem:CanvasData, type:ModuleItemType) {
+    if (type === 'Discussion') return contentItem.discussion_topic.id;
+    if (type === 'Quiz')  return contentItem.quiz_id;
+    return contentItem.id;
+
+}
+
 export function getItemInModule(contentItem: CanvasData, module: IModuleData, assignmentsCollection: AssignmentsCollection) {
 
-    let contentId;
     let type: ModuleItemType = assignmentsCollection.getAssignmentContentType(contentItem);
-    if (type === 'Discussion') {
-        contentId = contentItem.discussion_topic.id;
-    } else if (type === 'Quiz') {
-        contentId = contentItem.quiz_id;
-    } else {
-        contentId = contentItem.id;
-    }
+    let contentId = getContentItemId(contentItem, type)
 
     let count = 1;
     for (let moduleItem of module.items) {
@@ -68,11 +69,10 @@ export function getItemInModule(contentItem: CanvasData, module: IModuleData, as
             return moduleItem;
         }
 
-        if (type === 'Discussion' && !moduleItemAssignment?.hasOwnProperty('rubric')) {
+        if (type === 'Discussion' && !moduleItemAssignment.rubric) {
             continue;
         }
 
         count++;
     }
-    return null;
 }

@@ -64,6 +64,9 @@ export class AssignmentsCollection {
      * @returns {string}
      */
     getAssignmentContentType(contentItem: CanvasData): ModuleItemType {
+        if(contentItem) {
+
+        }
         if (contentItem.hasOwnProperty('submission_types')) {
             if (contentItem.submission_types.includes('external_tool')) {
                 return 'ExternalTool'
@@ -76,19 +79,15 @@ export class AssignmentsCollection {
             return 'Quiz'
         }
         let id = contentItem?.id;
-
-        if (this.assignmentsByQuizId.hasOwnProperty(id)) {
-            return "Quiz";
-        } else if (this.assignmentsByDiscussionId.hasOwnProperty(id)) {
-            return 'Discussion';
-        } else {
-            return 'Assignment';
-        }
+        return "Assignment";
     }
 
-    getModuleItemType(moduleItem: IModuleItemData) {
-        if (moduleItem.type !== 'Assignment') return moduleItem.type;
-        const assignment = this.assignmentsById[moduleItem.content_id];
+    getModuleItemType(contentItem: IModuleItemData) {
+        if (contentItem.type !== 'Assignment') return contentItem.type;
+        const assignment = this.assignmentsById[contentItem.content_id];
+        if(!assignment) return undefined;
         return this.getAssignmentContentType(assignment);
     }
+
+
 }
