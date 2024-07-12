@@ -87,3 +87,5 @@ describe('stringIsCourseCode', () => {
     expect(stringIsCourseCode('_123')).toBeNull();
   });
 });
+
+

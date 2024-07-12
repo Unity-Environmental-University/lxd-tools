@@ -1,5 +1,6 @@
 import {IDiscussionData, IPageData, IQuizData} from "../index";
-import {IAssignmentData} from "@/canvas/content/assignments";
+
+import {IAssignmentData} from "@/canvas/content/types";
 
 
 export const mockPageData: IPageData = {

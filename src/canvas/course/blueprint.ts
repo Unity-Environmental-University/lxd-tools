@@ -40,11 +40,11 @@ export function genBlueprintDataForCode(courseCode:string | null, accountIds:num
     return courseGen;
 }
 
-export async function getSections(course: IBlueprintCourse) {
+export async function getSections(course: IBlueprintCourse, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const id = course.id;
     if (!course.isBlueprint()) return [];
     const url = `/api/v1/courses/${id}/blueprint_templates/default/associated_courses`;
-    const courseDataGenerator = getPagedDataGenerator<ICourseData>(url, {queryParams: {per_page: 50}});
+    const courseDataGenerator = getPagedDataGenerator<ICourseData>(url, fetchGetConfig({queryParams: {per_page: 50}, config}));
     const sections: Course[] = [];
     for await (let sectionData of courseDataGenerator) {
         sections.push(await Course.getCourseById(sectionData.id))

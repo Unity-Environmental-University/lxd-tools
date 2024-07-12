@@ -1,6 +1,6 @@
 import {mockCourseData} from "../../course/__mocks__/mockCourseData";
 import {formDataify, ICanvasCallConfig, range} from "../../canvasUtils";
-import {getAssignmentHtmlUrl, updateAssignmentData, UpdateAssignmentDataOptions} from "../assignments";
+import {getAssignmentHtmlUrl, updateAssignmentData} from "../assignments";
 import {mockAssignmentData} from "../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";
 import {assignmentDataGen} from "@/canvas/content/assignments";
@@ -10,6 +10,7 @@ import {mockAsyncGenerator} from "@/__mocks__/utils";
 import * as canvasUtils from '@/canvas/canvasUtils';
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {UpdateAssignmentDataOptions} from "@/canvas/content/types";
 
 fetchMock.enableMocks();
 

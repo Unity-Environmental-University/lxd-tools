@@ -2,7 +2,7 @@ import {IRubricData, IRubricAssociationData, IRubricAssessmentData} from "../rub
 import mock = jest.mock;
 
 
-import {IAssignmentData} from "@/canvas/content/assignments";
+import {IAssignmentData} from "@/canvas/content/types";
 
 
 export const mockRubricAssociation:IRubricAssociationData = {

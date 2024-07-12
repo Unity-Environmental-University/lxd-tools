@@ -7,7 +7,8 @@ import {FacultyProfileSearch} from "./FacultyProfileSearch";
 import {Col, Row} from "react-bootstrap";
 import {Course} from "../../../canvas/course/Course";
 
-import {IAssignmentGroup} from "@/canvas/content/assignments";
+
+import {IAssignmentGroup} from "@/canvas/content/types";
 
 type SectionDetailsProps = {
     section?: Course | null,

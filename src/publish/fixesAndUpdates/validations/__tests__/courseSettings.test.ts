@@ -159,11 +159,7 @@ describe('Grading policy validation correct test', () => {
         assert(result.userData && 'id' in result.userData)
         expect(result.userData.grading_standard_id).toEqual( "2")
     })
-
-
-
 })
-
 
 describe('Extensions installed', () => {
     const mockGetTabs = (tabs: ITabData[]) => jest.fn(async () => tabs)

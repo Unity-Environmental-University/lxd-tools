@@ -9,6 +9,7 @@ import {ICourseData} from "@/canvas/courseTypes";
 import {getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "@/canvas/fetch/getPagedDataGenerator";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {generatorMap} from "@/canvas/fetch";
 
 
 export async function getGradingStandards(contextId: number, contextType: 'account' | 'course', config?: ICanvasCallConfig) {
@@ -18,25 +19,14 @@ export async function getGradingStandards(contextId: number, contextType: 'accou
 
 
 
-async function* generatorMap<T, MapOutput>(
-    generator: AsyncGenerator<T>,
-    nextMapFunc: (value: T, index: number, generator: AsyncGenerator<T>) => MapOutput,
-) {
-
-    let i = 0;
-    for await(let value of generator) {
-        yield nextMapFunc(value, i, generator);
-        i++;
-    }
-}
-
 export function getCourseData(id:number, config?: ICanvasCallConfig) {
     const url = `/api/v1/courses/${id}`;
     return fetchJson(url, config) as Promise<ICourseData>;
 }
 
+
 export function getCourseDataGenerator(
-    queryString: string, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>
+    queryString: string | undefined | null, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>
 ) {
     if (!Array.isArray(accountIds)) accountIds = [accountIds];
 
@@ -44,11 +34,12 @@ export function getCourseDataGenerator(
         enrollment_term_id?: number,
     }
 
-    const defaultConfig: ICanvasCallConfig<GetCoursesFromAccountOptions> = {
+    const defaultConfig: ICanvasCallConfig<GetCoursesFromAccountOptions> = queryString ? {
         queryParams: {
             search_term: queryString,
         }
-    }
+    } : {};
+
     if (term && defaultConfig.queryParams) defaultConfig.queryParams.enrollment_term_id = term.id;
     config = overrideConfig(defaultConfig, config);
     const generators = accountIds.map(accountId => {
@@ -59,8 +50,16 @@ export function getCourseDataGenerator(
 }
 
 export function getCourseGenerator(
-    queryString: string, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+    queryString: string | undefined | null, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     return generatorMap(getCourseDataGenerator(queryString, accountIds, term, config), courseData => new Course(courseData));
+}
+
+export async function getSingleCourse(queryString:string, accountIds:number[], term?:Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+    for (let accountId of accountIds) {
+        const courseDatas = await fetchJson<ICourseData[]>(`/api/v1/${accountId}`);
+        if(courseDatas.length > 0) return new Course(courseDatas[0]);
+    }
+    return undefined;
 }
 
 export async function createNewCourse(courseCode: string, accountId:number, name?: string, config?: ICanvasCallConfig) {

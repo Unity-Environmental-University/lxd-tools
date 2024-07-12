@@ -4,6 +4,8 @@ import {parentElement} from "./canvasUtils";
 import {Page} from "./content";
 
 import {Course} from "./course/Course";
+import {Account} from "@/canvas/Account";
+import {getSingleCourse} from "@/canvas/course";
 
 
 let facultyCourseCached: Course;
@@ -23,7 +25,7 @@ export interface IProfileWithUser extends IProfile {
 }
 
 async function getFacultyCourse() {
-    const facultyCourse = facultyCourseCached ?? await Course.getByCode('Faculty Bios');
+    const facultyCourse = facultyCourseCached ?? await getSingleCourse('Faculty Bios', (await Account.getAll()).map(a => a.id));
     facultyCourseCached = facultyCourse;
     assert(facultyCourse);
     return facultyCourse;

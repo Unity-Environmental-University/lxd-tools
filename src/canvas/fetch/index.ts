@@ -1,8 +1,4 @@
 import {deepObjectMerge, ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-
-type UrlFuncType<UrlParams extends Record<string, any>> = (args: UrlParams, config?: ICanvasCallConfig) => string
 
 export function overrideConfig<ConfigType extends ICanvasCallConfig>(
     source: ConfigType | undefined,
@@ -10,18 +6,6 @@ export function overrideConfig<ConfigType extends ICanvasCallConfig>(
 ) {
 
     return deepObjectMerge(source, override) ?? {} as ConfigType;
-}
-
-export function canvasDataFetchGenFunc<
-    Content extends CanvasData,
-    UrlParams extends Record<string, any>
->(urlFunc: UrlFuncType<UrlParams>, defaultConfig?: ICanvasCallConfig) {
-
-    return function (args: UrlParams, config?: ICanvasCallConfig) {
-        config = overrideConfig(defaultConfig, config);
-        const url = urlFunc(args, config);
-        return getPagedDataGenerator<Content>(url, config);
-    }
 }
 
 export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefined>) {
@@ -36,4 +20,16 @@ export function fetchGetConfig<CallOptions extends Record<string, any>>(options:
     return overrideConfig(baseConfig, {
         queryParams: options,
     });
+}
+
+export async function* generatorMap<T, MapOutput>(
+    generator: AsyncGenerator<T>,
+    nextMapFunc: (value: T, index: number, generator: AsyncGenerator<T>) => MapOutput,
+) {
+
+    let i = 0;
+    for await(let value of generator) {
+        yield nextMapFunc(value, i, generator);
+        i++;
+    }
 }
