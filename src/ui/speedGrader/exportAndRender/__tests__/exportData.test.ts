@@ -31,7 +31,7 @@ describe('exportData', () => {
 
         mockAssignment = {
             ...mockAssignmentData,
-            title: 'Assignment 1',
+            name: 'Assignment 1',
         };
 
         mockCsvRows = ['header', 'row1', 'row2'];

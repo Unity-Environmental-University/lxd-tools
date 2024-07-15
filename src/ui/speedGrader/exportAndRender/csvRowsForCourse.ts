@@ -7,15 +7,15 @@ import {renderAsyncGen} from "@/canvas/fetch";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
 import {IAssignmentData} from "@/canvas/content/types";
+import {Account} from "@/canvas/Account";
 
 export async function csvRowsForCourse(course: Course, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];
     const courseId = course.id;
     const courseData = course.rawData as ICourseData;
 
-    const accounts = await getAllPagesAsync(`/api/v1/accounts/${courseData.account_id}`);
-    const account = accounts[0];
-    const rootAccountId = account.root_account_id;
+    const accounts = await Account.getAccountById(courseData.account_id)
+    const rootAccountId = courseData.root_account_id;
 
     const baseSubmissionsUrl = assignment ? `/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
     const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IAssignmentSubmission[];
@@ -30,8 +30,7 @@ export async function csvRowsForCourse(course: Course, assignment: IAssignmentDa
 
     const termsResponse = await fetch(`/api/v1/accounts/${rootAccountId}/terms/${courseData.enrollment_term_id}`);
     const term = await termsResponse.json();
-    const assignmentsCollection = new AssignmentsCollection(
-        assignments.map(assignment => assignment.rawData as IAssignmentData));
+    const assignmentsCollection = new AssignmentsCollection(assignments);
 
 
     for (let enrollment of enrollments) {

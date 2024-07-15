@@ -15,9 +15,9 @@ import {
     mockDiscussionData,
     mockPageData,
     mockQuizData
-} from "../../../../canvas/content/__mocks__/mockContentData";
-import {ILatePolicyUpdate} from "../../../../canvas/canvasDataDefs";
-import mockLatePolicy from "../../../../canvas/course/__mocks__/mockLatePolicy";
+} from "@/canvas/content/__mocks__/mockContentData";
+import {ILatePolicyUpdate} from "@/canvas/canvasDataDefs";
+import mockLatePolicy from "@/canvas/course/__mocks__/mockLatePolicy";
 import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
 import {Assignment} from "@/canvas/content/assignments";
 import {BaseContentItem} from "@/canvas/content/baseContentItem";
