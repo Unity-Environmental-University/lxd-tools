@@ -1,5 +1,5 @@
 import {Course} from "@/canvas/course/Course";
-import {Assignment, assignmentDataGen} from "@/canvas/content/assignments";
+import {Assignment, assignmentDataGen, IAssignmentSubmission} from "@/canvas/content/assignments";
 import {ICourseData} from "@/canvas/courseTypes";
 import {getAllPagesAsync} from "@/ui/speedGrader/getAllPagesAsync";
 import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
@@ -18,7 +18,7 @@ export async function csvRowsForCourse(course: Course, assignment: Assignment | 
     const rootAccountId = account.root_account_id;
 
     const baseSubmissionsUrl = assignment ? `/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
-    const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IUserData[];
+    const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IAssignmentSubmission[];
     const assignments = await renderAsyncGen(assignmentDataGen({courseId}, {queryParams: {include: ['due_at']}}));
     const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
     const modules = await course.getModules({
@@ -50,7 +50,7 @@ export async function csvRowsForCourse(course: Course, assignment: Assignment | 
     return csvRows;
 }
 
-export function csvEncode(string: | null | undefined | string) {
+export function csvEncode(string: | number | null | undefined | string) {
 
     if (typeof (string) === 'undefined' || string === null || string === 'null') {
         return '';

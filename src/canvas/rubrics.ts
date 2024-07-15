@@ -11,7 +11,7 @@ export interface IRubricCriterionData {
     description?: string | null,
     long_description?: string | null,
     points: number,
-    criterion_use_range: boolean,
+    criterion_use_range?: boolean,
     ratings: IRubricRatingData[]
 }
 
@@ -36,6 +36,12 @@ export interface IRubricAssessmentData {
     data?: any,
     comments?: string,
 }
+
+export type RubricAssessment = Record<string, {
+    points: number,
+    rating_id: string,
+    comments?: string,
+}>
 
 export interface IRubricAssociationData {
     id: number,

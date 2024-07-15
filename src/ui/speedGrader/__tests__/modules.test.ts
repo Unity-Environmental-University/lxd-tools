@@ -29,6 +29,7 @@ const mockModules: IModuleData[] = [
         items: [
             {title: "Introductions", content_id: 5, type: 'Discussion' as ModuleItemType},
             {title: 'Week 1 Discussion', content_id: 101, type: 'Discussion' as ModuleItemType},
+            {title: 'Week 1 Discussion 2', content_id: 102, type: 'Discussion' as ModuleItemType},
             {title: 'Week 1 Quiz', content_id: 201, type: 'Quiz' as ModuleItemType}
         ].map(a => ({...mockModuleItemData, ...a}))
     },
@@ -52,6 +53,7 @@ const mockAssignmentsCollection: AssignmentsCollection = new AssignmentsCollecti
     mockIntroduction,
     {...mockIntroduction, discussion_topic: {id: 10}, id:30},
     {...mockAssignmentData, discussion_topic: {id: 101}, id:20},
+    {...mockAssignmentData, discussion_topic: {id: 102}, id:25},
     {...mockAssignmentData, quiz_id: 201, id: 10},
     {...mockAssignmentData, id: 300},
 ])
@@ -63,12 +65,12 @@ jest.spyOn(mockAssignmentsCollection, 'getModuleItemType')
 
 describe('getModuleInfo', () => {
         it('should return correct module info for a content item in a module', () => {
-            const result = getModuleInfo({id: 1, discussion_topic: {id: 101}, rubric: []}, mockModules, mockAssignmentsCollection);
+            const result = getModuleInfo({id: 1, discussion_topic: {id: 102}, rubric: []}, mockModules, mockAssignmentsCollection);
             expect(result).toEqual({
                 weekNumber: 1,
                 moduleName: 'Week 1',
                 type: 'Discussion',
-                numberInModule: 1
+                numberInModule: 2
             });
         });
 

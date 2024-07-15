@@ -56,6 +56,7 @@ describe('BpButton', () => {
         await waitFor(() => {
             expect(getByText('BP')).toBeInTheDocument();
         });
+        console.log(document.body.innerHTML)
         await act(async () => fireEvent.click(screen.getByText('BP')));
         await waitFor(() => {
             expect(openThisContentInTarget).toHaveBeenCalledWith(course.id, currentBp.id);

@@ -56,7 +56,11 @@ export function getCourseGenerator(
 
 export async function getSingleCourse(queryString:string, accountIds:number[], term?:Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     for (let accountId of accountIds) {
-        const courseDatas = await fetchJson<ICourseData[]>(`/api/v1/${accountId}`);
+        const courseDatas = await fetchJson<ICourseData[]>(
+            `/api/v1/accounts/${accountId}/courses`,
+            overrideConfig({ queryParams: { search_term: queryString } },config)
+        )
+
         if(courseDatas.length > 0) return new Course(courseDatas[0]);
     }
     return undefined;

@@ -26,8 +26,7 @@ export function BpButton({course, currentBp}: BpButtonProps) {
         assert(currentBp, "Attempted to open main BP with no BP")
         await openThisContentInTarget(course.id, currentBp.id);
     }
-
-    if (!currentBp || bps.length === 0) return <Button disabled={true}>No BPs Found</Button>;
+    if (!currentBp && bps.length === 0) return <Button disabled={true}>No BPs Found</Button>;
     if (bps.length <= 1 && currentBp) return <Button onClick={openMainBp}>BP</Button>;
     return <>
         <Button

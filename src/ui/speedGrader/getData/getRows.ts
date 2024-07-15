@@ -1,46 +1,32 @@
-/**
- *
- * @param {object} course
- * The course
- * @param {object} enrollment
- * The enrollment of the user to generate rows for
- * @param {array} modules
- * All modules in the course
- * @param {int} assignmentId
- * The ID of the assignment to retrieve data for, if any
- * @param {array} instructors
- * The instructors of the course
- * @param {array} userSubmissions
- * an object containing an array of user submissions { user_id, submissions: []}
- * OR just an array of all users submissions for a single assignment, if assignmentId is specified
- * @param {object} term
- * The term
- * @param {AssignmentsCollection} assignmentsCollection
- * The assignmentsCollection for assignments in this course
- * @returns {Promise<string[]>}
- */
 import {ICourseData} from "@/canvas/courseTypes";
 import {CanvasData, IEnrollmentData, IModuleData, IUserData, LookUpTable} from "@/canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {ITermData} from "@/canvas/Term";
-import {IRubricCriterionData} from "@/canvas/rubrics";
+import {IRubricAssessmentData, IRubricCriterionData, RubricAssessment} from "@/canvas/rubrics";
 import {getModuleInfo} from "@/ui/speedGrader/modules";
 import assert from "assert";
 
 import {csvEncode} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
-import createUtilityClassName from "react-bootstrap/createUtilityClasses";
 import {IAssignmentData} from "@/canvas/content/types";
+import {IAssignmentSubmission} from "@/canvas/content/assignments";
 
-interface IGetRowsConfig {
+
+export type CriteriaAssessment = {
+    id: any,
+    points: any,
+    rating: any
+}
+
+
+export interface IGetRowsConfig {
     course: ICourseData,
     enrollment: IEnrollmentData,
     modules: IModuleData[],
-    userSubmissions: CanvasData[],
+    userSubmissions: IAssignmentSubmission[],
     assignmentsCollection: AssignmentsCollection,
     instructors: IUserData[],
     term: ITermData
 }
-
 
 
 export async function getRows(args: IGetRowsConfig) {
@@ -63,23 +49,24 @@ export async function getRows(args: IGetRowsConfig) {
     const baseCode = baseCodeMatch ? baseCodeMatch[1] : null;
 
     let instructorName = getInstructorName(instructors);
-    const cachedInstructorName = instructorName;
-
     // Let's not actually do this if we can't find the user's submissions.
 
-    const rows: (string | null | undefined)[][] = [];
     const baseRow = [
         term.name,
-        cachedInstructorName,
+        instructorName,
         baseCode,
         section,
 
     ]
-    const submissions = parseSubmissions(user, userSubmissions);
-    for (let submission of submissions) {
+    const rows = parseSubmissions(user, userSubmissions).reduce((rows, submission) => {
+        if (!user) return rows;
+
         let {assignment} = submission;
         let rubricSettings;
-
+        if(!assignment) {
+            console.warn('No assignment associated with submission')
+            return [];
+        }
         if (assignment.hasOwnProperty('rubric_settings')) {
             rubricSettings = assignment.rubric_settings;
         }
@@ -91,9 +78,6 @@ export async function getRows(args: IGetRowsConfig) {
         let rubricId = typeof (rubricSettings) !== 'undefined' && rubricSettings.hasOwnProperty('id') ?
             rubricSettings.id : 'No Rubric Settings';
 
-        if (!user) continue;
-
-        const [critIds, critAssessments] = getCritIdsAndAssessments(rubricAssessment, criteriaInfo);
 
 
         const submissionBaseRow = getSubmissionBaseRow({
@@ -102,44 +86,51 @@ export async function getRows(args: IGetRowsConfig) {
             submission,
         });
 
-        rows.push(submissionHeader(submissionBaseRow, submission, assignment, rubricId));
+        const out = [
+            ...rows,
+            submissionHeader(submissionBaseRow, submission, assignment, rubricId),
+            ...criteriaAssessmentRows(rubricAssessment, criteriaInfo, submissionBaseRow)
+        ]
+        return out;
 
+    }, [] as Array<string|number|undefined|null>[]);
 
-        // Check for any criteria entries that might be missing; set them to null
-        for (let critKey in criteriaInfo?.order) {
-            if (!critIds.includes(critKey)) {
-                critAssessments.push({'id': critKey, 'points': null, 'rating': null});
-            }
-        }
-        // Sort into same order as column order
-        let critOrder = criteriaInfo?.order;
-        if (critOrder) {
-            critAssessments.sort(function (a, b) {
-                assert(critOrder);
-                return critOrder[a.id] - critOrder[b.id];
-            });
-        }
-        for (let critIndex in critAssessments) {
-            let critAssessment = critAssessments[critIndex];
-            let criterion = criteriaInfo?.critsById[critAssessment.id];
+    return rows.map( row => row.map(csvEncode).join(',') + '\n' )
+}
 
-            rows.push(submissionBaseRow.concat([
-                criterion ? criterion.id : critAssessment.id,
-                Number(critIndex) + 1,
-                criterion ? criterion.description : "-REMOVED-",
-                critAssessment.points,
-                criterion?.points
-            ]));
-        }
+export function criteriaAssessmentRows(rubricAssessment:RubricAssessment | null | undefined, criteriaInfo: CriteriaInfo | null,  submissionBaseRow: Array<string|number|null|undefined>) {
+    let [critIds, critAssessments] = getCritIdsAndAssessments(rubricAssessment, criteriaInfo);
+    critAssessments = fillEmptyCriteria(critAssessments, criteriaInfo, critIds);
+    sortCritAssessments(critAssessments, criteriaInfo);
+    return critAssessments.map((critAssessment, critIndex) => {
+        let criterion = criteriaInfo?.critsById[critAssessment.id];
+        return [...submissionBaseRow,
+            criterion ? criterion.id : critAssessment.id,
+            Number(critIndex) + 1,
+            criterion ? criterion.description : "-REMOVED-",
+            critAssessment.points,
+            criterion?.points
+        ]
+    })
+}
 
+export function sortCritAssessments(critAssessments: CriteriaAssessment[], criteriaInfo?: CriteriaInfo | null) {
+    let critOrder = criteriaInfo?.order;
+    if (critOrder) {
+        critAssessments.sort(function (a, b) {
+            assert(critOrder);
+            return critOrder[a.id] - critOrder[b.id];
+        });
     }
+}
 
-    let out = [];
-    for (let row of rows) {
-        let row_string = row.map(item => csvEncode(item)).join(',') + '\n';
-        out.push(row_string);
+export function fillEmptyCriteria(critAssessments: CriteriaAssessment[], criteriaInfo: any, critIds: any) {
+    for (let critKey in criteriaInfo?.order) {
+        if (!critIds.includes(critKey)) {
+            critAssessments.push({'id': critKey, 'points': null, 'rating': null});
+        }
     }
-    return out;
+    return critAssessments;
 }
 
 export interface CriteriaInfo {
@@ -187,12 +178,11 @@ export function getInstructorName(instructors: IUserData[]) {
     }
 }
 
-export function getCritIdsAndAssessments(rubricAssessment: any, criteriaInfo?: CriteriaInfo | null) {
+export function getCritIdsAndAssessments(rubricAssessment: RubricAssessment | undefined | null, criteriaInfo?: CriteriaInfo | null) {
     let critAssessments = []
     let critIds = []
-    if (rubricAssessment !== null) {
-        for (let critKey in rubricAssessment) {
-            let critValue = rubricAssessment[critKey];
+    if (rubricAssessment) {
+        for (let [critKey, critValue] of Object.entries(rubricAssessment)) {
             let crit = {
                 'id': critKey,
                 'points': critValue.points,
@@ -202,7 +192,7 @@ export function getCritIdsAndAssessments(rubricAssessment: any, criteriaInfo?: C
                 if (criteriaInfo?.ratingDescriptions && critKey in criteriaInfo.ratingDescriptions) {
                     crit.rating = criteriaInfo.ratingDescriptions[critKey][critValue.rating_id];
                 } else {
-                    console.log('critKey not found ', critKey, criteriaInfo, rubricAssessment)
+                    console.warn('critKey not found ', critKey, criteriaInfo, rubricAssessment)
                 }
             }
             critAssessments.push(crit);
@@ -213,9 +203,8 @@ export function getCritIdsAndAssessments(rubricAssessment: any, criteriaInfo?: C
 }
 
 
-
 type GetSubmissionBaseRowProps = {
-    baseRow: Array<any>,
+    baseRow: Array<string|number|null|undefined>,
     enrollment: IEnrollmentData,
     modules: IModuleData[],
     assignmentsCollection: AssignmentsCollection,
@@ -249,7 +238,7 @@ export function getSubmissionBaseRow({
         assignment.id,
         assignment.name,
         submission.workflow_state,
-    ];
+    ] as Array<string|number|null|undefined>;
 
 
 }
@@ -262,15 +251,16 @@ export function submissionHeader(submissionBaseRow: Array<any>, submission: any,
         submission.grade,
         assignment.points_possible
 
-    ]
+    ] as Array<string|number|null|undefined>
 }
 
-export function parseSubmissions(user: IUserData, userSubmissions: CanvasData[]) {
+
+export function parseSubmissions(user: IUserData, userSubmissions: (IAssignmentSubmission[])  | { user_id: number, submissions: IAssignmentSubmission[] }[] ) {
     const singleUserSubmissions = userSubmissions.filter(a => a.user_id === user.id);
     if (singleUserSubmissions.length === 0) return [];
-    let submissions;
+
     let entry = singleUserSubmissions[0];
-    if (entry.hasOwnProperty('submissions')) {
+    if ('submissions' in entry) {
         return entry.submissions;
     } else {
         return [entry];

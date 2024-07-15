@@ -29,6 +29,7 @@ export async function main() {
         await addSectionsButton(header, currentCourse);
     } else {
         bp = await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+        console.log(bp);
         await addBpButton(header, currentCourse, bp);
         if (bp) {
             await addSectionsButton(header, bp, currentCourse);
@@ -41,7 +42,6 @@ export async function main() {
     const homeTileHost = document.querySelector('#Modules-anchor');
 
     if (homeTileHost) {
-        console.log(homeTileHost);
         const buttonHolder = document.createElement('div');
         homeTileHost.append(buttonHolder);
         addHomeTileButton(buttonHolder, currentCourse);

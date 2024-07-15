@@ -18,6 +18,7 @@ import {
     addBpButton,
     addDevButton,
     addHighlightBigImageResizer,
+    addHomeTileButton,
     addOpenAllLinksButton,
     addSectionsButton
 } from "../addButtons"
@@ -112,7 +113,7 @@ describe('Base level async call', () => {
         if (homeTileHost) {
             const buttonHolder = document.querySelector('#Modules-anchor > div');
             expect(buttonHolder).toBeInTheDocument();
-            expect(ReactDOM.createRoot).toHaveBeenCalledWith(buttonHolder);
+            expect(addHomeTileButton).toHaveBeenCalledWith(buttonHolder, course);
         }
     });
 });

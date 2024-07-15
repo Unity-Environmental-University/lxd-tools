@@ -6,7 +6,6 @@ module.exports = {
    "transformIgnorePatterns": [
       "node_modules/(?!isomorphic-git)"
     ],
-    moduleFileExtensions: ['mjs', 'ts', 'tsx', 'jsx', 'js'],
   moduleNameMapper: {
     '^@/(.*)' : '<rootDir>/src/$1',
     "^webextension-polyfill$": path.join(process.cwd(), "src", "__mocks__", "runtime.ts"),

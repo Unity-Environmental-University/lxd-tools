@@ -20,8 +20,6 @@ export async function exportSectionsInTerm(course: Course | null = null, term: T
 
     let sections = await getSections(course);
     const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
-
-    console.log("Writing Final Output Document...")
     saveDataGenFunc()(allSectionRows, `${term.name} ${course.baseCode} All Sections.csv`);
     return allSectionRows;
 }
