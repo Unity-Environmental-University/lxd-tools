@@ -45,7 +45,7 @@ export async function getRows(args: IGetRowsConfig) {
     const {course_code} = course;
     const sectionMatch = course_code.match(/-\s*(\d+)$/);
     const baseCodeMatch = course_code.match(/([a-zA-Z]{4}\d{3})/);
-    const section: string | null = sectionMatch ? sectionMatch[1] : null;
+    const section: number | null = sectionMatch ? parseInt(sectionMatch[1]) : null;
     const baseCode = baseCodeMatch ? baseCodeMatch[1] : null;
 
     let instructorName = getInstructorName(instructors);
@@ -56,7 +56,6 @@ export async function getRows(args: IGetRowsConfig) {
         instructorName,
         baseCode,
         section,
-
     ]
     const rows = parseSubmissions(user, userSubmissions).reduce((rows, submission) => {
         if (!user) return rows;
@@ -77,8 +76,6 @@ export async function getRows(args: IGetRowsConfig) {
         let {rubric_assessment: rubricAssessment} = submission;
         let rubricId = typeof (rubricSettings) !== 'undefined' && rubricSettings.hasOwnProperty('id') ?
             rubricSettings.id : 'No Rubric Settings';
-
-
 
         const submissionBaseRow = getSubmissionBaseRow({
             ...args,

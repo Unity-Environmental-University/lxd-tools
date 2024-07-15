@@ -3,11 +3,11 @@ import {Course} from "@/canvas/course/Course";
 import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
 import React from "react";
 
-type ExportSectionsButtonProps = UiHandlerProps & {
+export type ExportSectionsButtonProps = UiHandlerProps & {
     course: Course,
 }
 
-export function ExportAcrossSectionsButton({course, ...handlers}: ExportSectionsButtonProps) {
+export default function ExportAcrossSectionsButton({course, ...handlers}: ExportSectionsButtonProps) {
     return <button id="all_sections" onClick={async (event) => {
         event.preventDefault();
         handlers.popUp("Exporting scores, please wait...", "Exporting");

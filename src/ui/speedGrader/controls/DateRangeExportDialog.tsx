@@ -6,7 +6,7 @@ import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import {getSections} from "@/canvas/course/blueprint";
 
-interface IDateRangeExportProps {
+export interface IDateRangeExportProps {
     course: Course,
     show: boolean,
     handleShow: () => void,
@@ -15,7 +15,7 @@ interface IDateRangeExportProps {
     onFinishedExporting: () => void
 }
 
-export function DateRangeExportDialog({
+export default function DateRangeExportDialog({
     course, show,
     handleShow, handleHide,
     onExporting, onFinishedExporting

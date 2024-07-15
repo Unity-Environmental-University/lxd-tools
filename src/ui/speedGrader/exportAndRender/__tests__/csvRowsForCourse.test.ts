@@ -16,7 +16,7 @@ fetchMock.enableMocks();
 
 describe('csvRowsForCourse', () => {
     const mockCourse = new Course({ ...mockCourseData, id: 1,  account_id: 1, enrollment_term_id: 1 });
-    const mockAssignment = new Assignment({... mockAssignmentData, id: 1 }, mockCourse.id);
+    const mockAssignment = {... mockAssignmentData, id: 1 };
     const mockAccounts = [{ root_account_id: 1 }];
     const mockUserSubmissions = [{ id: 1 }];
     const mockAssignments = [{ rawData: { id: 1, due_at: '2021-01-01' } }];

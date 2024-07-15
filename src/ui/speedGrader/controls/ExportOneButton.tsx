@@ -3,10 +3,11 @@ import {Course} from "@/canvas/course/Course";
 import {Assignment} from "@/canvas/content/assignments";
 import {exportData} from "@/ui/speedGrader/exportAndRender/exportData";
 import React from "react";
+import {IAssignmentData} from "@/canvas/content/types";
 
-export type ExportOneButtonProps = UiHandlerProps & { course: Course, assignment?: Assignment | null };
+export type ExportOneButtonProps = UiHandlerProps & { course: Course, assignment?: IAssignmentData | null };
 
-export function ExportOneButton({course, assignment, ...handlers}: ExportOneButtonProps) {
+export default function ExportOneButton({course, assignment, ...handlers}: ExportOneButtonProps) {
 
     return <button id="export_one_btn" onClick={async (event) => {
         event.preventDefault();

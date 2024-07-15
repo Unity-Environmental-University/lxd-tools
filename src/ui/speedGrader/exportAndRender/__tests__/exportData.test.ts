@@ -4,6 +4,8 @@ import { saveDataGenFunc } from '@/ui/speedGrader/saveDataGenFunc';
 import { Course } from '@/canvas/course/Course';
 import { UiHandlerProps } from '@/ui/speedGrader/controls/UiHandlerProps';
 import { Assignment } from '@/canvas/content/assignments';
+import {IAssignmentData} from "@/canvas/content/types";
+import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 
 jest.mock('@/ui/speedGrader/exportAndRender/csvRowsForCourse');
 jest.mock('@/ui/speedGrader/saveDataGenFunc');
@@ -11,7 +13,7 @@ jest.mock('@/ui/speedGrader/saveDataGenFunc');
 describe('exportData', () => {
     let mockCourse: Course;
     let mockUiHandlerProps: UiHandlerProps;
-    let mockAssignment: Assignment | null;
+    let mockAssignment: IAssignmentData | null;
     let mockCsvRows: string[];
     let mockSaveData: jest.Mock;
 
@@ -28,9 +30,9 @@ describe('exportData', () => {
         };
 
         mockAssignment = {
-            name: 'Assignment 1',
-            // other properties as needed
-        } as Assignment;
+            ...mockAssignmentData,
+            title: 'Assignment 1',
+        };
 
         mockCsvRows = ['header', 'row1', 'row2'];
         (csvRowsForCourse as jest.Mock).mockResolvedValue(mockCsvRows);

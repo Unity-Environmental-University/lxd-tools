@@ -66,6 +66,10 @@ export async function getSingleCourse(queryString:string, accountIds:number[], t
     return undefined;
 }
 
+export async function getCourseById(id:number, config?:ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+    return new Course(await fetchJson(`/api/v1/courses/${id}`, config));
+}
+
 export async function createNewCourse(courseCode: string, accountId:number, name?: string, config?: ICanvasCallConfig) {
     name ??= courseCode;
     const createUrl = `/api/v1/accounts/${accountId}/courses/`

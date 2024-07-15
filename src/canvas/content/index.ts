@@ -1,6 +1,6 @@
 import {Temporal} from "temporal-polyfill";
 import {CanvasData} from "../canvasDataDefs";
-import {deepObjectMerge, formDataify, getCourseIdFromUrl, ICanvasCallConfig} from "../canvasUtils";
+import {deepObjectMerge, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {BaseCanvasObject} from "../baseCanvasObject";
 import assert from "assert";
 import {NotImplementedException} from "../index";
@@ -9,6 +9,7 @@ import {IFile, uploadFile} from "../files";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {getCourseIdFromUrl} from "@/canvas/course";
 
 const SAFE_MAX_BANNER_WIDTH = 1400;
 

@@ -8,7 +8,7 @@ import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
 import {IAssignmentData} from "@/canvas/content/types";
 
-export async function csvRowsForCourse(course: Course, assignment: Assignment | null = null) {
+export async function csvRowsForCourse(course: Course, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];
     const courseId = course.id;
     const courseData = course.rawData as ICourseData;

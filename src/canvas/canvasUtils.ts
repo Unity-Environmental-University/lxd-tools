@@ -365,13 +365,6 @@ export function getPlainTextFromHtml(html: string) {
 }
 
 
-export function getCourseIdFromUrl(url: string) {
-    let match = /courses\/(\d+)/.exec(url);
-    if (match) {
-        return parseInt(match[1]);
-    }
-    return null;
-}
 
 export function batchify<T>(toBatch: T[], batchSize: number) {
     const out: T[][] = [];

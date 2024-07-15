@@ -3,12 +3,13 @@ import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
 import {Assignment} from "@/canvas/content/assignments";
 import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
+import {IAssignmentData} from "@/canvas/content/types";
 
 export async function exportData(course: Course, {
     popUp,
     popClose,
     showError
-}: UiHandlerProps, assignment: Assignment | null = null) {
+}: UiHandlerProps, assignment: IAssignmentData | null = null) {
     try {
         window.addEventListener("error", showError);
         let csvRows = await csvRowsForCourse(course, assignment)
