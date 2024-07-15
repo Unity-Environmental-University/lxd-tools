@@ -1,8 +1,8 @@
 import React, {useState} from "react";
 import {createPortal} from "react-dom";
 import Modal from "../widgets/Modal/index";
-import {BaseContentItem} from "@/canvas/content";
 import "./bigImages.scss"
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 interface IHighlightBigImagesProps {
     el: HTMLElement,

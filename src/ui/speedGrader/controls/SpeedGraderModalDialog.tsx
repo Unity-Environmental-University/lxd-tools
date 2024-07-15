@@ -2,7 +2,7 @@ import {Modal} from "react-bootstrap";
 import React from "react";
 
 
-export default function ModalDialog(props: {
+export default function SpeedGraderModalDialog(props: {
     show: boolean,
     canClose: boolean,
     header: string,

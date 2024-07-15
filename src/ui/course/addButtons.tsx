@@ -1,4 +1,3 @@
-import {BaseContentItem} from "@/canvas/content";
 import ReactDOM from "react-dom/client";
 import {HighlightBigImages} from "@/ui/course/HighlightBigImages";
 import React from "react";
@@ -6,6 +5,7 @@ import {Course} from "@/canvas/course/Course";
 import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
 import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
@@ -59,9 +59,10 @@ export async function addOpenAllLinksButton(
     header.append(btn);
     if (!currentContentItem) return;
     btn.addEventListener('click', () => openAllLinksInContent(currentContentItem))
+    return btn;
 }
 
-function openAllLinksInContent(contentItem: BaseContentItem) {
+export function openAllLinksInContent(contentItem: BaseContentItem) {
     const urls = new Set(contentItem.getAllLinks());
     for (let url of urls) window.open(url, "_blank");
 }

@@ -1,5 +1,5 @@
 import {range} from "../../../../canvas/canvasUtils";
-import {BaseContentItem, Page} from "../../../../canvas/content";
+import {Page} from "../../../../canvas/content";
 import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
 import {
     codeAndCodeOfCodeTest,
@@ -16,6 +16,7 @@ import {
 } from "../__mocks__";
 import * as fetchApi from "../../../../canvas/fetch";
 import {badContentRunFunc, ContentTextReplaceFix} from "../index";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),

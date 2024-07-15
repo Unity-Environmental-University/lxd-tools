@@ -13,12 +13,13 @@ import {
 } from "../../canvas/course/changeStartDate";
 import {changeModuleLockDate} from "../../canvas/course/modules";
 import {oldDateToPlainDate} from "../../date";
-import {BaseContentItem, Discussion, IDiscussionData} from "../../canvas/content";
+import {Discussion, IDiscussionData} from "../../canvas/content";
 
 import {Course} from "../../canvas/course/Course";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {renderAsyncGen} from "@/canvas/fetch";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,

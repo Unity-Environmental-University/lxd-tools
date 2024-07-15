@@ -6,9 +6,9 @@ import {
     TextReplaceValidation, ValidationResult
 } from "./index";
 import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
-import {BaseContentItem} from "../../../canvas/content";
 import {isBooleanObject} from "node:util/types";
 import {setMaxIdleHTTPParsers} from "node:http";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 const justSyllabusContentFunc = () => [] as BaseContentItem[];
 

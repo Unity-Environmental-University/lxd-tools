@@ -10,11 +10,11 @@ import * as assignmentApi from '@/canvas/content/assignments';
 
 
 import * as courseApi from '@/canvas/course';
+import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 
 const getCourseById = jest.spyOn(courseApi, 'getCourseById');
-const getCourseIdFromUrl = jest.spyOn(courseApi, 'getCourseIdFromUrl')
+jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn())
 const getAssignmentById = jest.spyOn(assignmentApi, 'getAssignmentData')
-
 
 jest.mock('@/ui/speedGrader/controls/ExportOneButton', () => () => (
     <div data-testid="export-one-button">Export One Button</div>
@@ -22,7 +22,7 @@ jest.mock('@/ui/speedGrader/controls/ExportOneButton', () => () => (
 jest.mock('@/ui/speedGrader/controls/ExportAllButton', () => () => (
     <div data-testid="export-all-button">Export All Button</div>
 ));
-jest.mock('@/ui/speedGrader/controls/ModalDialog', () => ({show, header, message}: Record<string, any>) => (
+jest.mock('@/ui/speedGrader/controls/SpeedGraderModalDialog', () => ({show, header, message}: Record<string, any>) => (
     show ? <div data-testid="modal-dialog">{header}: {message}</div> : undefined
 ));
 jest.mock('@/ui/speedGrader/controls/DateRangeExportDialog', () => ({show}: { show: boolean }) => (
@@ -32,7 +32,7 @@ jest.mock('@/ui/speedGrader/controls/DateRangeExportDialog', () => ({show}: { sh
 describe('ExportApp Component', () => {
     beforeEach(() => {
         getCourseById.mockResolvedValue(new Course({...mockCourseData}));
-        getCourseIdFromUrl.mockReturnValue(15);
+        (getCourseIdFromUrl as jest.Mock).mockReturnValue(15);
 
     })
 

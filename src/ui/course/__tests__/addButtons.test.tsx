@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
 import { fireEvent, waitFor } from '@testing-library/dom';
 import { Course } from '@/canvas/course/Course';
-import { BaseContentItem } from '@/canvas/content';
 import ReactDOM from 'react-dom/client';
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Assignment} from "@/canvas/content/assignments";
@@ -14,8 +13,9 @@ import {
     addOpenAllLinksButton,
     addSectionsButton
 } from "@/ui/course/addButtons";
+import {act} from "react";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
-jest.mock('@/canvas/content');
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
 jest.mock('@/canvas/fetch/fetchJson')
@@ -24,7 +24,7 @@ describe('Button Functions', () => {
     let header: HTMLElement;
     let course: Course;
     let bp: Course;
-    let currentContentItem: BaseContentItem;
+    let currentContentItem = new Assignment(mockAssignmentData, 10);
 
     beforeEach(() => {
         header = document.createElement('div');
@@ -69,15 +69,18 @@ describe('Button Functions', () => {
     });
 
     test('addOpenAllLinksButton adds button and sets click handler', async () => {
-        await addOpenAllLinksButton(header, currentContentItem);
+        const contentItem = new Assignment({...mockAssignmentData, description: `<a href='www.google.com'>Link</a>`}, 10)
+        const addedButton = await addOpenAllLinksButton(header, contentItem);
 
         const button = header.querySelector('btn');
+        expect(addedButton).toBeInTheDocument();
         expect(button).toBeInTheDocument();
         expect(button).toHaveTextContent('Links');
+        global.open = jest.fn();
+        contentItem.getAllLinks = jest.fn();
+        await act( async () => fireEvent.click(addedButton!));
 
-        fireEvent.click(button!);
-
-        await waitFor(() => expect(currentContentItem.getAllLinks).toHaveBeenCalled());
+        await waitFor(() => expect(contentItem.getAllLinks).toHaveBeenCalled());
     });
 
 });

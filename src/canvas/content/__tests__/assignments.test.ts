@@ -4,13 +4,13 @@ import {getAssignmentHtmlUrl, updateAssignmentData} from "../assignments";
 import {mockAssignmentData} from "../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";
 import {assignmentDataGen} from "@/canvas/content/assignments";
-import {putContentConfig} from "@/canvas/content";
 import {mockAsyncGenerator} from "@/__mocks__/utils";
 
 import * as canvasUtils from '@/canvas/canvasUtils';
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {UpdateAssignmentDataOptions} from "@/canvas/content/types";
+import {putContentConfig} from "@/canvas/content/baseContentItem";
 
 fetchMock.enableMocks();
 

@@ -87,14 +87,6 @@ export async function createNewCourse(courseCode: string, accountId:number, name
     return await fetchJson(createUrl, deepObjectMerge(createConfig, config, true)) as ICourseData;
 }
 
-export function getCourseIdFromUrl(url: string) {
-    let match = /courses\/(\d+)/.exec(url);
-    if (match) {
-        return parseInt(match[1]);
-    }
-    return null;
-}
-
 export class CourseNotFoundException extends Error {}
 
 export async function saveCourseData(courseId: number, data: Partial<ICourseData>, config?: ICanvasCallConfig) {

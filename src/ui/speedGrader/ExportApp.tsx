@@ -5,15 +5,16 @@ import assert from "assert";
 
 import {Course} from "@/canvas/course/Course";
 import {Assignment, getAssignmentData} from "@/canvas/content/assignments";
-import ModalDialog from "@/ui/speedGrader/controls/ModalDialog";
+import SpeedGraderModalDialog from "@/ui/speedGrader/controls/SpeedGraderModalDialog";
 import DateRangeExportDialog from "@/ui/speedGrader/controls/DateRangeExportDialog";
 
 import ExportOneButton from "@/ui/speedGrader/controls/ExportOneButton";
 import ExportAllButton from "@/ui/speedGrader/controls/ExportAllButton";
-import {getCourseById, getCourseIdFromUrl, getSingleCourse} from "@/canvas/course";
+import {getCourseById, getSingleCourse} from "@/canvas/course";
 import {useEffectAsync} from "@/ui/utils";
 import * as url from "url";
 import {IAssignmentData} from "@/canvas/content/types";
+import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 
 
 export type ExportAppProps = {
@@ -87,8 +88,8 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
         }}>...
         </button>
 
-        <ModalDialog canClose={canClose} show={modalOpen} header={header} message={message}>
-        </ModalDialog>
+        <SpeedGraderModalDialog canClose={canClose} show={modalOpen} header={header} message={message}>
+        </SpeedGraderModalDialog>
         <DateRangeExportDialog
             show={multiTermModal}
             course={course}

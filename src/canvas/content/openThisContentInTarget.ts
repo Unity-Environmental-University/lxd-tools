@@ -1,6 +1,6 @@
 import {Course} from "@/canvas/course/Course";
-import {BaseContentItem} from "@/canvas/content/index";
 import {getContentItemFromUrl} from "@/canvas/content/getContent";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 function getIdOrCourse(courseOrId: number | Course) {
     if (typeof courseOrId === 'object') return courseOrId.id;

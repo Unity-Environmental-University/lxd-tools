@@ -1,13 +1,13 @@
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
-import {BaseContentItem} from "@/canvas/content/index";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {apiAndHtmlContentUrlFuncs, putContentFunc} from "@/canvas/content/contentGenFuncs";
 import {canvasDataFetchGenFunc} from "@/canvas/fetch/canvasDataFetchGenFunc";
 import {IAssignmentData, UpdateAssignmentDataOptions} from "@/canvas/content/types";
 import {IRubricAssessmentData, RubricAssessment} from "@/canvas/rubrics";
 import {ICourseData} from "@/canvas/courseTypes";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 
 export class Assignment extends BaseContentItem {

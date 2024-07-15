@@ -11,7 +11,8 @@ import {
 import {IContentHaver, IPagesHaver} from "../../../canvas/course/courseTypes";
 import {Course} from "../../../canvas/course/Course";
 import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
-import {BaseContentItem, Page} from "../../../canvas/content";
+import {Page} from "../../../canvas/content";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 
 function decodeHtml(html:string) {

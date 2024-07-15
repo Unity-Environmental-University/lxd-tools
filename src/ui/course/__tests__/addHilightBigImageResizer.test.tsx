@@ -2,10 +2,10 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import ReactDOM from 'react-dom/client';
-import { BaseContentItem } from '@/canvas/content';
 import { HighlightBigImages } from '../HighlightBigImages';
 
 import {addHighlightBigImageResizer} from "@/ui/course/addButtons";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 // Mock dependencies
 jest.mock('react-dom/client', () => ({

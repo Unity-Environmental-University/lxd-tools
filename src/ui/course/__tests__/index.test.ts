@@ -6,13 +6,6 @@ import ReactDOM from 'react-dom/client';
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {act} from "react";
 
-jest.mock('@/canvas/content');
-jest.mock('@/canvas/content/getContent');
-jest.mock('@/ui/course/BpButton');
-jest.mock('react-dom/client');
-jest.mock('@/canvas/fetch/getPagedDataGenerator')
-jest.mock('@/canvas/fetch/fetchJson')
-jest.mock('../addButtons')
 import {main} from "../main";
 import {
     addBpButton,
@@ -26,6 +19,13 @@ import assert from "assert";
 import {Course} from "@/canvas/course/Course";
 import {getContentClassFromUrl} from "@/canvas/content/getContent";
 import {getSingleCourse} from "@/canvas/course";
+jest.mock('@/canvas/fetch/getPagedDataGenerator')
+jest.mock('@/canvas/fetch/fetchJson')
+jest.mock('../addButtons')
+
+jest.mock('@/canvas/content/getContent');
+jest.mock('@/ui/course/BpButton');
+jest.mock('react-dom/client');
 
 
 describe('Base level async call', () => {

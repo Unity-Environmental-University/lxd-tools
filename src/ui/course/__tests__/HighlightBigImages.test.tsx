@@ -2,7 +2,8 @@ import React, { act } from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { HighlightBigImages } from '../HighlightBigImages';
-import { BaseContentItem } from '@/canvas/content/index';
+
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 // Mock dependencies
 jest.mock('@/ui/widgets/Modal/index', () => ({ isOpen, children }: { isOpen: boolean, children: React.ReactNode }) => (

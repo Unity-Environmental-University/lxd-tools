@@ -1,6 +1,7 @@
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {putContentConfig} from "@/canvas/content/index";
+
+import {putContentConfig} from "@/canvas/content/baseContentItem";
 
 export function apiAndHtmlContentUrlFuncs(contentUrlPart: string) {
     return [

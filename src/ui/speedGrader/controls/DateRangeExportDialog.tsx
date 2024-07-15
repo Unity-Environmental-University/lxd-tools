@@ -22,7 +22,7 @@ export default function DateRangeExportDialog({
 }: IDateRangeExportProps) {
 
     const [exportStart, setExportStart] = useState<Date | null>(new Date());
-    const [exportEnd, setExportEnd] = useState<Date | null>(new Date);
+    const [exportEnd, setExportEnd] = useState<Date | null>(new Date());
     const colWidth = 'sm-6';
 
     return (<Modal show={show} onHide={handleHide} onShow={handleShow}>
@@ -31,17 +31,17 @@ export default function DateRangeExportDialog({
             <Row>
                 <Col className={colWidth}>
                     <Card>
-                        <Card.Title>Start Date</Card.Title>
+                        <Card.Title id={'startDate'}>Start Date</Card.Title>
                         <Card.Body>
-                            <DatePicker selected={exportStart} onChange={(date) => setExportStart(date)}></DatePicker>
+                            <DatePicker ariaLabelledBy={'startDate'} selected={exportStart} onChange={(date) => setExportStart(date)}></DatePicker>
                         </Card.Body>
                     </Card>
                 </Col>
                 <Col className={colWidth}>
                     <Card>
-                        <Card.Title>End Date</Card.Title>
+                        <Card.Title id={'endDate'}>End Date</Card.Title>
                         <Card.Body>
-                            <DatePicker selected={exportEnd} onChange={(date) => setExportEnd(date)}></DatePicker>
+                            <DatePicker ariaLabelledBy={'endDate'} selected={exportEnd} onChange={(date) => setExportEnd(date)}></DatePicker>
                         </Card.Body>
                     </Card>
                 </Col>

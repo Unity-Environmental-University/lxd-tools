@@ -1,8 +1,8 @@
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {IContentHaver, ISyllabusHaver} from "@/canvas/course/courseTypes";
 import {Course} from "@/canvas/course/Course";
-import {BaseContentItem} from "@/canvas/content";
 import {overrideConfig} from "@/canvas";
+import {BaseContentItem} from "@/canvas/content/baseContentItem";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
