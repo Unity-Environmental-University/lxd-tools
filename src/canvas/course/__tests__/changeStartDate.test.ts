@@ -5,7 +5,7 @@ import {oldDateToPlainDate} from "../../../date";
 import assert from "assert";
 import {mockAssignmentData} from "../../content/__mocks__/mockContentData";
 import {range} from "../../canvasUtils";
-import {Assignment} from "@/canvas/content/assignments";
+import {Assignment} from "@/canvas/content/Assignment";
 
 
 describe('Syllabus date changes', () => {

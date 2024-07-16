@@ -3,11 +3,12 @@ import {IModuleItemData, ModuleItemType, RestrictModuleItemType} from "./canvasD
 
 
 import {Course} from "./course/Course";
-import {IPageData} from "./content";
 
 import {ICourseData} from "@/canvas/courseTypes";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+
+import {IPageData} from "@/canvas/content/types";
 
 
 type FuncType<T> = FuncObject<T> | WithoutParamsFuncType<T> | WithParamsFuncType<T>

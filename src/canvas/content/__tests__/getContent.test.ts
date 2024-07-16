@@ -1,9 +1,11 @@
-import {Discussion, Page, Quiz} from '@/canvas/content/index';
-import {Assignment} from "@/canvas/content/assignments";
-import {getContentClassFromUrl, getContentItemFromUrl} from "@/canvas/content/getContent";
+import {Assignment} from "@/canvas/content/Assignment";
+import {getContentClassFromUrl, getContentItemFromUrl} from "@/canvas/content/contentFromUrl";
 import assert from "assert";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {Quiz} from "@/canvas/content/Quiz";
+import {Page} from "@/canvas/content/Page";
+import {Discussion} from "@/canvas/content/Discussion";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
@@ -36,7 +38,7 @@ describe('getContentClassFromUrl', () => {
 });
 
 describe('getContentItemFromUrl', () => {
-    const getContentApi = require('../getContent');
+    const getContentApi = require('../contentFromUrl');
     const getContentClassFromUrlSpy = jest.spyOn(getContentApi, 'getContentClassFromUrl');
 
     it('should return null if getContentClassFromUrl returns null', async () => {

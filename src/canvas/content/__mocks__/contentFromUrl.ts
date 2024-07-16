@@ -1,4 +1,4 @@
-import {Assignment} from "@/canvas/content/assignments";
+import {Assignment} from "@/canvas/content/Assignment";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 

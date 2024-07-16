@@ -5,7 +5,7 @@ import {Course} from "@/canvas/course/Course";
 import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
 import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
-import {BaseContentItem} from "@/canvas/content/baseContentItem";
+import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")

@@ -6,7 +6,6 @@ import {
     noEvaluationTest
 } from "../courseSettings";
 import {deFormDataify, ICanvasCallConfig, range} from "@/canvas/canvasUtils";
-import {Page} from "@/canvas/content";
 import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";
 import {mockGradModules, mockUgModules} from "@/canvas/course/__mocks__/mockModuleData";
 import {IModuleData} from "@/canvas/canvasDataDefs";
@@ -23,6 +22,7 @@ import assert from "assert";
 
 import {ICourseData, ITabData} from "@/canvas/courseTypes";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {Page} from "@/canvas/content/Page";
 
 jest.mock('@/canvas/fetch/fetchJson')
 

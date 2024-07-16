@@ -1,7 +1,6 @@
 import {ICourseData} from '@/canvas/courseTypes';
 import {AssignmentsCollection} from '@/ui/speedGrader/AssignmentsCollection';
-import {IAssignmentData} from '@/canvas/content/types';
-import {IAssignmentSubmission} from '@/canvas/content/assignments';
+import {IAssignmentData, IAssignmentSubmission} from '@/canvas/content/types';
 
 import {IRubricCriterionData, RubricAssessment} from '@/canvas/rubrics';
 

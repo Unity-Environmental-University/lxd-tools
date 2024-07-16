@@ -7,8 +7,8 @@ import {getModuleInfo} from "@/ui/speedGrader/modules";
 import assert from "assert";
 
 import {csvEncode} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
-import {IAssignmentData} from "@/canvas/content/types";
-import {IAssignmentSubmission} from "@/canvas/content/assignments";
+import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/types";
+
 
 
 export type CriteriaAssessment = {

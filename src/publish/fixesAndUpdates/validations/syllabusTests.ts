@@ -8,7 +8,7 @@ import {
 import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
 import {isBooleanObject} from "node:util/types";
 import {setMaxIdleHTTPParsers} from "node:http";
-import {BaseContentItem} from "@/canvas/content/baseContentItem";
+import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 
 const justSyllabusContentFunc = () => [] as BaseContentItem[];
 

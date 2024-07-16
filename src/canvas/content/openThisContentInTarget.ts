@@ -1,6 +1,6 @@
 import {Course} from "@/canvas/course/Course";
-import {getContentItemFromUrl} from "@/canvas/content/getContent";
-import {BaseContentItem} from "@/canvas/content/baseContentItem";
+import {getContentItemFromUrl} from "@/canvas/content/contentFromUrl";
+import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 
 function getIdOrCourse(courseOrId: number | Course) {
     if (typeof courseOrId === 'object') return courseOrId.id;
@@ -34,4 +34,8 @@ export default async function openThisContentInTarget(
             window.open(url);
         }
     }
+}
+
+export function findContentInTarget(contentItem:BaseContentItem) {
+
 }

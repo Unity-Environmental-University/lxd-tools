@@ -1,16 +1,16 @@
 import {mockCourseData} from "../../course/__mocks__/mockCourseData";
 import {formDataify, ICanvasCallConfig, range} from "../../canvasUtils";
-import {getAssignmentHtmlUrl, updateAssignmentData} from "../assignments";
+import {AssignmentKindInfo, updateAssignmentData} from "../Assignment";
 import {mockAssignmentData} from "../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";
-import {assignmentDataGen} from "@/canvas/content/assignments";
+import {assignmentDataGen} from "@/canvas/content/Assignment";
 import {mockAsyncGenerator} from "@/__mocks__/utils";
 
 import * as canvasUtils from '@/canvas/canvasUtils';
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {UpdateAssignmentDataOptions} from "@/canvas/content/types";
-import {putContentConfig} from "@/canvas/content/baseContentItem";
+import {putContentConfig} from "@/canvas/content/BaseContentItem";
 
 fetchMock.enableMocks();
 
@@ -37,13 +37,13 @@ it('gets assignments from course id', async () => {
     const responseDatas = [...range(0, 10)].map(id => ({...mockAssignmentData, id}));
     (getPagedDataGenerator as jest.Mock).mockImplementation(mockAsyncGenerator(responseDatas));
     let i = range(0, 10);
-    for await (let assignment of assignmentDataGen({courseId: id}, config)) {
+    for await (let assignment of assignmentDataGen(id, config)) {
         expect(assignment.id).toEqual(i.next().value);
     }
 })
 
 it('gets assignment HTML url', () => {
-    expect(getAssignmentHtmlUrl(1, 2)).toEqual('/courses/1/assignments/2');
+    expect(AssignmentKindInfo.getHtmlUrl(1, 2)).toEqual('/courses/1/assignments/2');
 })
 
 it('updates assignment data', async () => {
@@ -68,3 +68,4 @@ it('updates assignment data', async () => {
 
 
 })
+

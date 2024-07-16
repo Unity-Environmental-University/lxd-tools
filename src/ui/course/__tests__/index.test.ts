@@ -17,13 +17,13 @@ import {
 } from "../addButtons"
 import assert from "assert";
 import {Course} from "@/canvas/course/Course";
-import {getContentClassFromUrl} from "@/canvas/content/getContent";
+import {getContentClassFromUrl} from "@/canvas/content/contentFromUrl";
 import {getSingleCourse} from "@/canvas/course";
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('../addButtons')
 
-jest.mock('@/canvas/content/getContent');
+jest.mock('@/canvas/content/contentFromUrl');
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
 
@@ -62,7 +62,8 @@ describe('Base level async call', () => {
             expect(Course.getFromUrl).toHaveBeenCalled();
         });
 
-        const course = await Course.getFromUrl(document.documentURI);
+        const course = await Course.getFromUrl(document.documentURI) as Course;
+        const frontPageSpy = jest.spyOn(course, 'getFrontPage')
 
         await waitFor(() => {
             expect(getContentClassFromUrl).toHaveBeenCalled();
@@ -71,9 +72,10 @@ describe('Base level async call', () => {
         const CurrentContentClass = getContentClassFromUrl(document.documentURI);
         const currentContentItem = await CurrentContentClass?.getFromUrl();
 
-        if (!CurrentContentClass && /courses\/\d+/.test(document.URL)) {
+        if (!CurrentContentClass && /courses\/\d+/.test(document.documentURI)) {
+
             await waitFor(() => {
-                expect(course!.getFrontPage).toHaveBeenCalled();
+                expect(frontPageSpy).toHaveBeenCalled();
             });
         }
 

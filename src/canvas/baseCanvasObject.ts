@@ -5,7 +5,7 @@ import {Course} from "./course/Course";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
 import {overrideConfig} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {BaseContentItem} from "@/canvas/content/baseContentItem";
+import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 
 
 export interface ICanvasObject<CanvasDataType extends CanvasData> {

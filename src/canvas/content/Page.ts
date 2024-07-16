@@ -1,0 +1,32 @@
+import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {IPageData} from "@/canvas/content/types";
+
+export class Page extends BaseContentItem {
+    static idProperty = 'page_id';
+    static nameProperty = 'title';
+    static bodyProperty = 'body';
+    static contentUrlTemplate = "/api/v1/courses/{course_id}/pages/{content_id}";
+    static allContentUrlTemplate = "/api/v1/courses/{course_id}/pages";
+
+    constructor(canvasData: IPageData, courseId: number) {
+        super(canvasData, courseId);
+    }
+
+    get body(): string {
+        return this.canvasData[this.bodyKey];
+    }
+
+    async updateContent(text?: string | null, name?: string | null, config?: ICanvasCallConfig) {
+        let data: Record<string, any> = {};
+        if (text) {
+            this.canvasData[this.bodyKey] = text;
+            data['wiki_page[body]'] = text;
+        }
+        if (name) {
+            this.canvasData[this.nameKey] = name;
+            data[this.nameKey] = name;
+        }
+        return this.saveData(data, config);
+    }
+}

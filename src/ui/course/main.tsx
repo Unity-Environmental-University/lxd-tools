@@ -1,5 +1,5 @@
 import {Course} from "@/canvas/course/Course";
-import {getContentClassFromUrl} from "@/canvas/content/getContent";
+import {getContentClassFromUrl} from "@/canvas/content/contentFromUrl";
 import {
     addBpButton,
     addDevButton,
@@ -29,7 +29,6 @@ export async function main() {
         await addSectionsButton(header, currentCourse);
     } else {
         bp = await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
-        console.log(bp);
         await addBpButton(header, currentCourse, bp);
         if (bp) {
             await addSectionsButton(header, bp, currentCourse);

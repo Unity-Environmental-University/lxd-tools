@@ -16,3 +16,4 @@ export function canvasDataFetchGenFunc<
         return getPagedDataGenerator<Content>(url, config);
     }
 }
+

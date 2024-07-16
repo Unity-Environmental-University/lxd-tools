@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import assert from "assert";
 
 import {Course} from "@/canvas/course/Course";
-import {Assignment, getAssignmentData} from "@/canvas/content/assignments";
+import {Assignment, AssignmentKindInfo} from "@/canvas/content/Assignment";
 import SpeedGraderModalDialog from "@/ui/speedGrader/controls/SpeedGraderModalDialog";
 import DateRangeExportDialog from "@/ui/speedGrader/controls/DateRangeExportDialog";
 
@@ -51,8 +51,8 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
         const stringId = urlParams.get('assignment_id');
         const assignmentId = stringId? parseInt(stringId) : undefined;
         if (assignmentId && !assignment) {
-            const data = await getAssignmentData(course.id, assignmentId)
-            const assignment = assignmentId ? await getAssignmentData(course?.id, assignmentId) : undefined;
+            const data = await AssignmentKindInfo.get(course.id, assignmentId)
+            const assignment = assignmentId ? await AssignmentKindInfo.get(course?.id, assignmentId) : undefined;
             setAssignment(assignment);
         }
     }, [course])

@@ -1,5 +1,7 @@
-import {Assignment} from "@/canvas/content/assignments";
-import {Discussion, Page, Quiz} from "@/canvas/content/index";
+import {Assignment} from "@/canvas/content/Assignment";
+import {Quiz} from "@/canvas/content/Quiz";
+import {Page} from "@/canvas/content/Page";
+import {Discussion} from "@/canvas/content/Discussion";
 
 export function getContentClassFromUrl(url: string | null = null) {
     if (!url) url = document.documentURI;

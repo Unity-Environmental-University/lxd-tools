@@ -17,9 +17,8 @@ import { AssignmentsCollection } from '@/ui/speedGrader/AssignmentsCollection';
 
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {mockUserData} from "@/canvas/__mocks__/mockUserData";
-import {IAssignmentData} from "@/canvas/content/types";
+import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/types";
 import {getModuleInfo} from "@/ui/speedGrader/modules";
-import {IAssignmentSubmission} from "@/canvas/content/assignments";
 import mockAssignmentSubmission from "@/canvas/content/__mocks__/mockAssignmentSubmission";
 import {RubricAssessment} from "@/canvas/rubrics";
 

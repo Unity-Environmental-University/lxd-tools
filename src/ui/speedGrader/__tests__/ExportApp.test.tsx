@@ -3,10 +3,10 @@ import {render, screen, waitFor, fireEvent} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ExportApp from '../ExportApp';
 import {Course} from "@/canvas/course/Course";
-import {Assignment} from "@/canvas/content/assignments";
+import {Assignment, AssignmentKindInfo} from "@/canvas/content/Assignment";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import * as assignmentApi from '@/canvas/content/assignments';
+import * as assignmentApi from '@/canvas/content/Assignment';
 
 
 import * as courseApi from '@/canvas/course';
@@ -14,7 +14,7 @@ import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 
 const getCourseById = jest.spyOn(courseApi, 'getCourseById');
 jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn())
-const getAssignmentById = jest.spyOn(assignmentApi, 'getAssignmentData')
+const getAssignmentById = jest.spyOn(AssignmentKindInfo, 'get')
 
 jest.mock('@/ui/speedGrader/controls/ExportOneButton', () => () => (
     <div data-testid="export-one-button">Export One Button</div>

@@ -1,6 +1,5 @@
 import {CanvasData, IModuleItemData, LookUpTable, ModuleItemType} from "@/canvas/canvasDataDefs";
-import {IDiscussionData} from "@/canvas/content";
-import {IAssignmentData} from "@/canvas/content/types";
+import {IAssignmentData, IDiscussionData} from "@/canvas/content/types";
 
 /**
  * A collection of assignments grabbed from the submissions that returns and finds them in various ways

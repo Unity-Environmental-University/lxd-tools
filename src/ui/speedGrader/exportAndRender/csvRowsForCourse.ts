@@ -1,12 +1,12 @@
 import {Course} from "@/canvas/course/Course";
-import {Assignment, assignmentDataGen, IAssignmentSubmission} from "@/canvas/content/assignments";
+import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
 import {ICourseData} from "@/canvas/courseTypes";
 import {getAllPagesAsync} from "@/ui/speedGrader/getAllPagesAsync";
 import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
-import {IAssignmentData} from "@/canvas/content/types";
+import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/types";
 import {Account} from "@/canvas/Account";
 
 export async function csvRowsForCourse(course: Course, assignment: IAssignmentData | null = null) {
@@ -19,7 +19,7 @@ export async function csvRowsForCourse(course: Course, assignment: IAssignmentDa
 
     const baseSubmissionsUrl = assignment ? `/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
     const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IAssignmentSubmission[];
-    const assignments = await renderAsyncGen(assignmentDataGen({courseId}, {queryParams: {include: ['due_at']}}));
+    const assignments = await renderAsyncGen(assignmentDataGen(courseId, {queryParams: {include: ['due_at']}}));
     const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
     const modules = await course.getModules({
         queryParams: {

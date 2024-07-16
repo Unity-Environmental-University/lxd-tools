@@ -1,7 +1,7 @@
 import {ContentFix, findReplaceFunc, FixFailureResult, notInTest, runReplacements} from "./index";
-import {Page} from "../content";
 
 import {Course} from "../course/Course";
+import {Page} from "@/canvas/content/Page";
 
 const removeMediaPlaceholder = {
     run: findReplaceFunc(/<p>\[Text[^\]]*by SME[^\]]*]<\/p>/, ''),

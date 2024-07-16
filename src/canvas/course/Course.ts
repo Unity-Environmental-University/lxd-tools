@@ -18,7 +18,6 @@ import {
     IModulesHaver
 } from "./courseTypes";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
-import {Discussion, IPageData, Page, Quiz} from "../content";
 import {filterUniqueFunc, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {overrideConfig} from "../index";
 import assert from "assert";
@@ -28,7 +27,7 @@ import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfileWithUser} from "../profile";
 import {getCourseData, getCourseGenerator, getGradingStandards, getSingleCourse} from "./index";
-import {Assignment, assignmentDataGen} from "@/canvas/content/assignments";
+import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
 import {Term} from "@/canvas/Term";
 
@@ -36,9 +35,12 @@ import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {IAssignmentGroup} from "@/canvas/content/types";
-import {BaseContentItem, getBannerImage} from "@/canvas/content/baseContentItem";
+import {IAssignmentGroup, IPageData} from "@/canvas/content/types";
+import {BaseContentItem, getBannerImage} from "@/canvas/content/BaseContentItem";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
+import {Quiz} from "@/canvas/content/Quiz";
+import {Page} from "@/canvas/content/Page";
+import {Discussion} from "@/canvas/content/Discussion";
 
 const HOMETILE_WIDTH = 500;
 
@@ -351,7 +353,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     async getAssignments(config?: ICanvasCallConfig): Promise<Assignment[]> {
         console.warn('deprecated, use assignmentDataGen instead');
         config = overrideConfig(config, {queryParams: {include: ['due_at']}})
-        const assignmentDatas = await renderAsyncGen(assignmentDataGen({courseId: this.id}, config));
+        const assignmentDatas = await renderAsyncGen(assignmentDataGen(this.id, config));
         return (assignmentDatas.map(data => new Assignment(data, this.id)));
     }
 
@@ -361,7 +363,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     async getContent(config?: ICanvasCallConfig, refresh = false) {
         if (refresh || this.cachedContent.length == 0) {
             let discussions = await this.getDiscussions(config);
-            let assignments = await renderAsyncGen(assignmentDataGen({courseId: this.id}, config))
+            let assignments = await renderAsyncGen(assignmentDataGen(this.id, config))
             let quizzes = await this.getQuizzes(config);
             let pages = await this.getPages(config);
             this.cachedContent = [
@@ -468,7 +470,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         const promises: Promise<any>[] = [];
         const returnAssignments:Assignment[] = [];
 
-        const assignments = assignmentDataGen({courseId: this.id}, config)
+        const assignments = assignmentDataGen(this.id, config)
         if (offset === 0 || offset) {
             for await (let assignmentData of assignments) {
                 const assignment = new Assignment(assignmentData, this.id);

@@ -3,7 +3,7 @@ import {IModuleData} from "../canvasDataDefs";
 import {findDateRange, oldDateToPlainDate} from "../../date";
 import assert from "assert";
 import local = chrome.storage.local;
-import {Assignment} from "@/canvas/content/assignments";
+import {Assignment} from "@/canvas/content/Assignment";
 
 const DEFAULT_LOCALE = 'en-US';
 

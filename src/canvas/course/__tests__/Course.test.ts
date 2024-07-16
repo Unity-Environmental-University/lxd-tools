@@ -5,13 +5,13 @@ import {
     Course
 } from "../Course";
 import mockTabData from "../../__mocks__/mockTabData";
-import {assignmentDataGen} from "@/canvas/content/assignments";
+import {assignmentDataGen} from "@/canvas/content/Assignment";
 import {baseCourseCode, parseCourseCode, stringIsCourseCode} from "@/canvas/course/code";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 jest.mock('@/canvas/fetch/fetchJson')
 
-jest.mock('@/canvas/content/assignments', () => ({
-    ...jest.requireActual('@/canvas/content/assignments'),
+jest.mock('@/canvas/content/Assignment', () => ({
+    ...jest.requireActual('@/canvas/content/Assignment'),
     assignmentDataGen: jest.fn(),
 }))
 

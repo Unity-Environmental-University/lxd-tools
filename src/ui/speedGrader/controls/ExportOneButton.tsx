@@ -1,6 +1,6 @@
 import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
 import {Course} from "@/canvas/course/Course";
-import {Assignment} from "@/canvas/content/assignments";
+import {Assignment} from "@/canvas/content/Assignment";
 import {exportData} from "@/ui/speedGrader/exportAndRender/exportData";
 import React from "react";
 import {IAssignmentData} from "@/canvas/content/types";
