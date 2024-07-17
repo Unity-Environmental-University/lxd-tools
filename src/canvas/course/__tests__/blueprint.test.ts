@@ -15,17 +15,26 @@ import {IAccountData, IModuleData} from "../../canvasDataDefs";
 import {mockTermData} from "../../__mocks__/mockTermData";
 import {mockAccountData} from "../../__mocks__/mockAccountData";
 import assert from "assert";
-import mockModuleData, { mockModuleItemData } from "../__mocks__/mockModuleData";
+import mockModuleData, {mockModuleItemData} from "../__mocks__/mockModuleData";
 import {Course} from "../Course";
 import {GetCoursesFromAccountOptions} from "@/canvas/course/courseTypes";
-import {getCourseData, getCourseDataGenerator, getCourseGenerator} from "@/canvas/course/index";
+import * as courseApi from '@/canvas/course/index';
+import * as fetchApi from '@/canvas/fetch'
+import {ICourseData} from "@/canvas/courseTypes";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {mockAsyncGen, returnMockAsyncGen} from "@/__mocks__/utils";
+import {baseCourseCode} from "@/canvas/course/code";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
-jest.mock('@/canvas/fetch', () => ({
-    ...jest.requireActual('@/canvas/fetch'),
-    fetchGetConfig: jest.fn()
-}))
 
+jest.mock('@/canvas/fetch/fetchJson');
+jest.mock('@/canvas/fetch/getPagedDataGenerator');
 fetchMock.enableMocks();
+
+const getCourseGenerator = jest.spyOn(courseApi, 'getCourseGenerator')
+const getCourseDataGenerator = jest.spyOn(courseApi, 'getCourseDataGenerator')
+const fetchGetConfig = jest.spyOn(fetchApi, 'fetchGetConfig')
+
 
 function getDummyBlueprintCourse(blueprint: boolean, id: number = 0) {
     let out: IBlueprintCourse;
@@ -35,7 +44,7 @@ function getDummyBlueprintCourse(blueprint: boolean, id: number = 0) {
         name: 'BP_TEST000',
         courseCode: 'BP_TEST000',
         blueprint,
-        getAssociatedCourses: () => getSections(out)
+        getAssociatedCourses: () => getSections(out.id)
     })
     return out;
 }
@@ -43,12 +52,10 @@ function getDummyBlueprintCourse(blueprint: boolean, id: number = 0) {
 test("Testing get associated courses logic", async () => {
     const mockData = [...range(0, 9)].map(i => {
         return {...mockCourseData, id: i}
-    })
-    fetchMock.mockResponseOnce(JSON.stringify(mockData));
-    for (let data of mockData) {
-        fetchMock.mockResponseOnce(JSON.stringify(data));
-    }
-    const courses = await getSections(getDummyBlueprintCourse(true, 0))
+    });
+
+    (getPagedDataGenerator as jest.Mock).mockImplementation(returnMockAsyncGen(mockData.map(a => new Course(a))));
+    const courses = await getSections(getDummyBlueprintCourse(true, 0).id)
     const courseIds = courses.map(course => course.id).toSorted();
     expect(courseIds).toStrictEqual([...range(0, 9)]);
 
@@ -66,13 +73,9 @@ test("Testing blueprint retirement", async () => {
     };
     const notBpMockBpData = {...mockBpData, blueprint: false};
     const badNameMockBpData = {...mockBpData, course_code: `BP-${termName}_TEST000`}
-    fetchMock.once(JSON.stringify(mockBpData))
-    .once(JSON.stringify(notBpMockBpData))
-    .once(JSON.stringify(badNameMockBpData))
-    const mockBlueprint: Course = await Course.getCourseById(0);
-    const notBpMockBlueprint: Course = await Course.getCourseById(0);
-    const badNameMockBlueprint: Course = await Course.getCourseById(0);
-    //await expect(retireBlueprint(notBpMockBlueprint, termName)).rejects.toThrow("Trying to retire a blueprint that's not a blueprint")
+    const mockBlueprint = new Course(mockBpData);
+    const notBpMockBlueprint: Course = new Course(notBpMockBpData);
+    const badNameMockBlueprint: Course = new Course(badNameMockBpData);
     await expect(retireBlueprint(badNameMockBlueprint, termName)).rejects.toThrow("This blueprint is not named BP_")
 
     const mockAssociatedCourseData: ICourseData[] = [{
@@ -80,32 +83,31 @@ test("Testing blueprint retirement", async () => {
         id: 1,
         course_code: `${termName}_TEST000-01`,
         enrollment_term_id: [10]
-    }]
-    fetchMock.once(JSON.stringify(mockAssociatedCourseData));
-    for (let data of mockAssociatedCourseData) {
-        fetchMock.once(JSON.stringify(data));
-    }
-    const sections = await mockBlueprint.getAssociatedCourses();
+    }];
 
-    fetchMock.once(JSON.stringify(<IAccountData[]>[{...mockAccountData, id: 2, root_account_id: null}]))
-    fetchMock.once(JSON.stringify(<ITermData>{...mockTermData, id: 10, name: termName}))
+    (getPagedDataGenerator as jest.Mock).mockImplementationOnce(returnMockAsyncGen(mockAssociatedCourseData))
+    const sections = await mockBlueprint.getAssociatedCourses();
+    (getPagedDataGenerator as jest.Mock).mockImplementationOnce(returnMockAsyncGen([{
+        ...mockAccountData,
+        id: 2,
+        root_account_id: null
+    }]));
+    sections.forEach(section => section.getTerm = jest.fn(async () => (new Term({...mockTermData, id: 10, name: termName}))))
     let derivedTermName = await getTermNameFromSections(sections);
     expect(derivedTermName).toBe(termName);
 
-    await fetchMock.withImplementation(async (requestUrl, requestInit) => {
-        assert(requestInit)
-        assert('body' in requestInit);
-        const formData = requestInit.body;
-        assert(formData instanceof FormData)
-        const data = deFormDataify(formData);
-        return new Response(JSON.stringify(data.course))
 
-    }, async () => {
-        await retireBlueprint(mockBlueprint, derivedTermName);
-    })
+    mockBlueprint.saveData = jest.fn();
+    const config:ICanvasCallConfig = {};
+    await retireBlueprint(mockBlueprint, derivedTermName, config);
 
-    expect(mockBlueprint.parsedCourseCode).toBe(`BP-${termName}_TEST000`)
-    expect(mockBlueprint.name).toContain(`BP-${termName}_TEST000`)
+
+    expect( mockBlueprint.saveData).toHaveBeenCalledWith({
+        course: {
+            course_code: `BP-${termName}_TEST000`,
+            name: `BP-${termName}_TEST000: Testing with Tests`
+        }
+    }, config)
 })
 
 describe('getBlueprintFromCode', () => {
@@ -116,13 +118,19 @@ describe('getBlueprintFromCode', () => {
     })
 
     test("Returns null when there's no BP", async () => {
-        fetchMock.once('[]');
+        (getCourseGenerator as jest.Mock).mockReturnValue(mockAsyncGen([]))
         const bp = dummyDev.parsedCourseCode && await getBlueprintsFromCode(dummyDev.parsedCourseCode, [0]);
         expect(bp).toStrictEqual([]);
     })
 
     test("Searches for BP from a dev course", async () => {
-        fetchMock.once(mockBpResponse)
+        (getCourseGenerator as jest.Mock).mockImplementation((url: string) => {
+            const bpCode = `BP_${baseCourseCode(url)}`;
+            return mockAsyncGen([
+                {...mockCourseData, name: bpCode, course_code: bpCode, blueprint: true}
+            ].map(a => new Course(a)))
+        })
+
         const [bp] = dummyDev.parsedCourseCode && await getBlueprintsFromCode(dummyDev.parsedCourseCode, [0]) || [];
         expect(bp).toBeInstanceOf(Course);
         assert(typeof bp === 'object');
@@ -150,43 +158,47 @@ describe('getBlueprintFromCode', () => {
 
 test("setAsBlueprint", async () => {
     let responseData: ICourseData;
-    await fetchMock.withImplementation(async (requestUrl, requestInit) => {
-        assert(requestInit)
-        assert('body' in requestInit);
-        const formData = requestInit.body;
-        assert(formData instanceof FormData)
-        return new Response(JSON.stringify(deFormDataify(formData)))
+    const payload = {
+        course: {
+            blueprint: true,
+            use_blueprint_restrictions_by_object_type: 0,
+            blueprint_restrictions: {
+                content: 1,
+                points: 1,
+                due_dates: 1,
+                availability_dates: 1,
+            }
+        }
+    }
 
-    }, async () => {
-        responseData = await setAsBlueprint(0)
-        expect(responseData.course.blueprint).toBe("true");
-    })
+
+    const config: ICanvasCallConfig = {};
+    responseData = await setAsBlueprint(0, config)
+    expect(fetchJson).toHaveBeenCalledWith(`/api/v1/courses/0`, apiWriteConfig('PUT', payload, config))
 })
 
 test("unSetAsBlueprint", async () => {
-    let responseData: ICourseData;
-    await fetchMock.withImplementation(async (requestUrl, requestInit) => {
-        assert(requestInit)
-        assert('body' in requestInit);
-        const formData = requestInit.body;
-        assert(formData instanceof FormData)
-        return new Response(JSON.stringify(deFormDataify(formData)))
-
-    }, async () => {
-        responseData = await setAsBlueprint(0);
-        expect(responseData.course.blueprint).toBe('true');
-        responseData = await unSetAsBlueprint(0);
-        expect(responseData.course.blueprint).toBe('false');
-    })
+    const payload = {
+        course: {
+            blueprint: false
+        }
+    };
+    const config = {
+        queryParams: {
+            include: ['a']
+        }
+    };
+    await unSetAsBlueprint(0, config);
+    expect(fetchJson).toHaveBeenCalledWith(`/api/v1/courses/0`, apiWriteConfig('PUT', payload, config))
 })
 
 
 test('lock blueprint', async () => {
-    fetchMock.mockClear();
-    const modules:IModuleData[] = [];
+    (fetchJson as jest.Mock).mockClear()
+    const modules: IModuleData[] = [];
     const moduleCount = 10;
     const itemCount = 6;
-    for(let i = 0; i < moduleCount; i++) {
+    for (let i = 0; i < moduleCount; i++) {
         modules.push({
             ...mockModuleData,
             name: `Week ${i}`,
@@ -197,19 +209,15 @@ test('lock blueprint', async () => {
             }))
         })
     }
-    fetchMock.mockResponse('{}')
+    (fetchJson as jest.Mock).mockResolvedValue({})
     await lockBlueprint(0, modules);
-    const contentIds:number[] = [];
+    const contentIds: number[] = [];
     modules.forEach(module => module.items.forEach(item => contentIds.push(item.content_id)))
 
-    for(let call of fetchMock.mock.calls) {
+    for (let call of (fetchJson as jest.Mock).mock.calls) {
         expect(call[0]).toBe('/api/v1/courses/0/blueprint_templates/default/restrict_item')
-        const fetchInit = call[1];
-        assert(fetchInit);
-        assert(fetchInit.body instanceof FormData)
-        const body = deFormDataify(fetchInit.body);
     }
-    expect(fetchMock).toHaveBeenCalledTimes(itemCount * moduleCount);
+    expect(fetchJson).toHaveBeenCalledTimes(itemCount * moduleCount);
     fetchMock.mockClear();
 })
 
@@ -217,52 +225,50 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
     const dummyBpData: ICourseData = {...mockCourseData, blueprint: true};
     const [_, requestCode] = mockRequest.url.match(/=[^=]*(\w{4}\d{3})/i) || [];
     const outCourseData: ICourseData[] = [...range(1, numberToMock)].map((number) => ({
-        ...dummyBpData,
-        name: `BP_${requestCode}${number > 1 ? number : ''}`,
+        ...dummyBpData, name: `BP_${requestCode}${number > 1 ? number : ''}`,
         course_code: `BP_${requestCode}${number > 1 ? number : ''}`
     }))
     return JSON.stringify(outCourseData);
 }
 
 
-import * as courseApi from '@/canvas/course/index'
-import {ITermData} from "@/canvas/Term";
+import {ITermData, Term} from "@/canvas/Term";
+import {apiWriteConfig} from "@/canvas";
 
-import {ICourseData} from "@/canvas/courseTypes";
-import {fetchGetConfig} from "@/canvas/fetch";
+
 describe("genBlueprintsForCode", () => {
-  const mockCourseDataGenerator = jest.spyOn(courseApi, 'getCourseDataGenerator')
-  const courseCode = "BP_TEST123";
-  const accountIds = [1, 2, 3];
-  const config: ICanvasCallConfig<GetCoursesFromAccountOptions> = {queryParams: { search_term: "x"} }; // replace with actual config type
+    const mockCourseDataGenerator = mockAsyncGen([]);
+    const courseCode = "BP_TEST123";
+    const accountIds = [1, 2, 3];
+    const config: ICanvasCallConfig<GetCoursesFromAccountOptions> = {queryParams: {search_term: "x"}}; // replace with actual config type
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
-  let consoleWarnSpy = jest.spyOn(console, 'warn');
+    let consoleWarnSpy = jest.spyOn(console, 'warn');
 
-  it("should return null for invalid course code", async () => {
-    (getCourseDataGenerator as jest.Mock).mockReturnValue(mockCourseDataGenerator);
-    const courseCode = 'BP_ST123'
-    const result = genBlueprintDataForCode("BP_ST123", accountIds);
-    expect(result).toBeNull();
-    expect(consoleWarnSpy).toHaveBeenCalledWith(`Code ${courseCode} invalid`);
-  });
+    it("should return null for invalid course code", async () => {
+        (getCourseDataGenerator as jest.Mock).mockReturnValue(mockCourseDataGenerator);
+        const courseCode = 'BP_ST123'
+        const result = genBlueprintDataForCode("BP_ST123", accountIds);
+        expect(result).toBeNull();
+        expect(consoleWarnSpy).toHaveBeenCalledWith(`Code ${courseCode} invalid`);
+    });
 
-  it("should generate blueprints for a valid course code", async () => {
-    (fetchGetConfig as jest.Mock).mockReturnValue({ blueprint: true });
-    (getCourseDataGenerator as jest.Mock).mockReturnValue(mockCourseDataGenerator);
-    const result = genBlueprintDataForCode(courseCode, accountIds, config.queryParams);
-    expect(fetchGetConfig).toHaveBeenCalled();
+    it("should generate blueprints for a valid course code", async () => {
+        (fetchGetConfig as jest.Mock).mockReturnValue({blueprint: true});
+        (getCourseDataGenerator as jest.Mock).mockReturnValue(mockCourseDataGenerator);
+        const result = genBlueprintDataForCode(courseCode, accountIds, config.queryParams);
+        expect(fetchGetConfig).toHaveBeenCalled();
 
-    expect(result).toBe(mockCourseDataGenerator);
-    expect(getCourseDataGenerator).toHaveBeenCalledWith(
-      courseCode,
-      accountIds,
-      undefined,
-      { blueprint: true}
-    );
-    expect(fetchGetConfig).toHaveBeenCalledWith({ blueprint: true, include: ['concluded'] }, config);
-  });
+        expect(result).toBe(mockCourseDataGenerator);
+        expect(getCourseDataGenerator).toHaveBeenCalledWith(
+            courseCode,
+            accountIds,
+            undefined,
+            {blueprint: true}
+        );
+        expect(fetchGetConfig).toHaveBeenCalledWith({blueprint: true, include: ['concluded']}, config);
+    });
 });

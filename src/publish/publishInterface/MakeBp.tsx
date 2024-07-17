@@ -115,7 +115,7 @@ export function MakeBp({
 
     useEffectAsync(async () => {
         if (currentBp && currentBp.isBlueprint()) {
-            const sections = await getSections(currentBp);
+            const sections = await getSections(currentBp.id);
             setSections(sections);
             try {
                 setTermName(await getTermNameFromSections(sections))

@@ -186,4 +186,4 @@ export function UpdateStartDate(
 
 class StartDateNotSetError extends Error {
     name = "StartDateNotSetError"
-};
+}

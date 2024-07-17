@@ -13,6 +13,8 @@ import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
+
+
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
     isBlueprint(): boolean,
     getAssociatedCourses(redownload?: boolean): Promise<Course[]>
@@ -40,23 +42,19 @@ export function genBlueprintDataForCode(courseCode:string | null, accountIds:num
     return courseGen;
 }
 
-export async function getSections(course: IBlueprintCourse, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
-    const id = course.id;
-    if (!course.isBlueprint()) return [];
-    const url = `/api/v1/courses/${id}/blueprint_templates/default/associated_courses`;
-    const courseDataGenerator = getPagedDataGenerator<ICourseData>(url, fetchGetConfig({queryParams: {per_page: 50}, config}));
-    const sections: Course[] = [];
-    for await (let sectionData of courseDataGenerator) {
-        sections.push(await Course.getCourseById(sectionData.id))
-    }
-    return sections;
+export async function getSections(courseId: number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+    return (await renderAsyncGen(sectionDataGenerator(courseId, config))).map(section => new Course(section));
 }
 
+export function sectionDataGenerator(courseId:number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+    const url = `/api/v1/courses/${courseId}/blueprint_templates/default/associated_courses`;
+    return getPagedDataGenerator<ICourseData>(url, fetchGetConfig({queryParams: {per_page: 50}, config}));
+}
 export function cachedGetAssociatedCoursesFunc(course: IBlueprintCourse) {
     let cache: Course[] | null = null;
     return async (redownload = false) => {
         if (!redownload && cache) return cache;
-        cache = await getSections(course);
+        cache = await getSections(course.id);
         return cache;
     }
 }
@@ -70,13 +68,9 @@ export async function getTermNameFromSections(sections: Course[]) {
 }
 
 export async function retireBlueprint(course: Course, termName: string | null, config?: ICanvasCallConfig) {
-    ///if (!course.isBlueprint()) throw new Error("Trying to retire a blueprint that's not a blueprint")
 
     const isCurrentBlueprint = course.parsedCourseCode?.match('BP_');
     if (!isCurrentBlueprint) throw new Error("This blueprint is not named BP_; are you trying to retire a retired blueprint?")
-
-    // const associatedCourses = await course.getAssociatedCourses();
-    // if (associatedCourses.length < 1) throw new Error("Can't find associated courses")
 
     const newCode = `BP-${termName}_${course.baseCode}`;
     const saveData: Record<string, any> = {};

@@ -1,43 +1,56 @@
 import {csvRowsForCourse, csvEncode} from "../csvRowsForCourse";
 import {Course} from "@/canvas/course/Course";
-import {Assignment} from "@/canvas/content/Assignment";
+import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
 import fetchMock from 'jest-fetch-mock';
-import {getAllPagesAsync} from "@/ui/speedGrader/getAllPagesAsync";
-import {renderAsyncGen} from "@/canvas/fetch";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {Account} from "@/canvas/Account";
 
+import * as assignmentsApi from "@/canvas/content/Assignment";
+
 jest.mock('@/ui/speedGrader/getAllPagesAsync');
 jest.mock('@/canvas/fetch');
 jest.mock('@/ui/speedGrader/getData/getRows');
+jest.mock('@/canvas/fetch/getPagedDataGenerator')
 
+import * as moduleApi from '@/canvas/course/modules';
 
+import {mockAsyncGen} from "@/__mocks__/utils";
+import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+
+import mockModuleData from "@/canvas/course/__mocks__/mockModuleData";
+import {mockUserData} from "@/canvas/__mocks__/mockUserData";
+
+const generateModulesSpy = jest.spyOn(moduleApi, 'moduleGenerator')
 const getAccountByIdSpy = jest.spyOn(Account, 'getDataById');
+const mockAssignmentDataGen = jest.spyOn(assignmentsApi, 'assignmentDataGen');
 fetchMock.enableMocks();
 
+
+
 describe('csvRowsForCourse', () => {
-    const mockCourse = new Course({...mockCourseData, id: 1, account_id: 1, enrollment_term_id: 1});
+    const mockCourse = {...mockCourseData, id: 1, account_id: 1, enrollment_term_id: 1};
     const mockAssignment = {...mockAssignmentData, id: 1};
     const mockAccount = {root_account_id: 1};
     const mockUserSubmissions = [{id: 1}];
-    const mockAssignments = [{rawData: {id: 1, due_at: '2021-01-01'}}];
-    const mockInstructors = [{id: 1}];
-    const mockModules = [{id: 1}];
+    const mockAssignments = [ new Assignment({...mockAssignmentData, id: 1, due_at: '2021-01-01'}, mockCourse.id)];
+    const mockInstructors = [{...mockUserData, id: 1}];
+    const mockModules = [{...mockModuleData, id: 1}];
     const mockEnrollments = [{id: 1}];
     const mockTerm = {id: 1};
     const mockRows = ['row1', 'row2'];
 
+
     function mockResponses() {
         getAccountByIdSpy.mockResolvedValue(mockAccount);
-        (getAllPagesAsync as jest.Mock)
+        (getPagedData as jest.Mock)
             .mockResolvedValueOnce(mockUserSubmissions)
-            .mockResolvedValueOnce(mockInstructors)
-            .mockResolvedValueOnce(mockEnrollments);
-        (renderAsyncGen as jest.Mock).mockResolvedValue(mockAssignments);
+            .mockResolvedValueOnce(mockInstructors);
+        (getPagedDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen(mockEnrollments));
+        (assignmentDataGen as jest.Mock).mockReturnValue(mockAsyncGen([{mockAssignmentData}]));
         fetchMock.mockResponseOnce(JSON.stringify(mockTerm));
-        mockCourse.getModules = jest.fn().mockResolvedValue(mockModules);
+        generateModulesSpy.mockReturnValue(mockAsyncGen(mockModules));
 
     }
 

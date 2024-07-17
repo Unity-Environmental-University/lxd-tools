@@ -84,7 +84,7 @@ async function openTargetCourse(queryString: string) {
     } else {
         window.open(url, "_blank");
     }
-};
+}
 
 /**
  * Gets the course to navigate to. First, looks for exact code matches. Then sorts by ID. Returns null if

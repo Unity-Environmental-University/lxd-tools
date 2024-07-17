@@ -1,11 +1,11 @@
-import {Assignment} from "@/canvas/content/Assignment";
-import {getContentClassFromUrl, getContentItemFromUrl} from "@/canvas/content/contentFromUrl";
+import {Assignment, AssignmentKindInfo} from "@/canvas/content/Assignment";
+import {getContentClassFromUrl, getContentItemFromUrl, getContentKindFromUrl} from "@/canvas/content/contentFromUrl";
 import assert from "assert";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Quiz} from "@/canvas/content/Quiz";
-import {Page} from "@/canvas/content/Page";
-import {Discussion} from "@/canvas/content/Discussion";
+import {Quiz, QuizKindInfo} from "@/canvas/content/Quiz";
+import {Page, PageKindInfo} from "@/canvas/content/Page";
+import {Discussion, DiscussionKindInfo} from "@/canvas/content/Discussion";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
@@ -58,3 +58,21 @@ describe('getContentItemFromUrl', () => {
 
     });
 });
+
+
+describe('getContentKindFromUrl', () => {
+    it('Finds Assignments', () => {
+        console.log(getContentKindFromUrl('/api/v1/courses/1/assignments/5'));
+        expect(getContentKindFromUrl('/api/v1/courses/1/assignments/5')).toEqual(AssignmentKindInfo)
+    })
+    it('Finds Discussions', () => {
+        expect(getContentKindFromUrl('/api/v1/courses/1/discussion_topics/5')).toEqual(DiscussionKindInfo)
+    })
+    it('Finds Quizzes', () => {
+        expect(getContentKindFromUrl('/api/v1/courses/1/quizzes/5')).toEqual(QuizKindInfo)
+    })
+    it('Finds Pages', () => {
+        expect(getContentKindFromUrl('/api/v1/courses/1/pages/5')).toEqual(PageKindInfo)
+    })
+
+})

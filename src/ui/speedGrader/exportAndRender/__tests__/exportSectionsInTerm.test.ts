@@ -6,10 +6,18 @@ import {mockTermData} from "@/canvas/__mocks__/mockTermData";
 import {getSections} from "@/canvas/course/blueprint";
 import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
-import mock = jest.mock;
+import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 
 
 jest.mock('@/canvas/course/blueprint');
+jest.mock('@/canvas/course/index', () => ({
+    getCourseById: jest.fn(),
+    getCourseData: jest.fn(() => ({
+        ...mockCourseData,
+        term: mockTermData,
+    })),
+}))
+jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn(() => 1))
 jest.mock('@/ui/speedGrader/saveDataGenFunc')
 jest.mock('@/ui/speedGrader/getData/getRowsForSections')
 jest.mock('@/canvas/Account')
@@ -39,40 +47,19 @@ describe('exportSectionsInTerm', () => {
 
     it("Gets the course from Url if not provided", async() => {
         const rows = await exportSectionsInTerm();
-        expect(Course.getFromUrl as jest.Mock).toHaveBeenCalled();
+        expect(getCourseIdFromUrl as jest.Mock).toHaveBeenCalled();
         expect(rows).toEqual(mockRows)
     })
     it("Does not get course from Url if course is provided", async() => {
-        const rows = await exportSectionsInTerm(mockCourse);
-        expect(Course.getFromUrl as jest.Mock).not.toHaveBeenCalled();
+        const rows = await exportSectionsInTerm(mockCourseData);
+        expect(getCourseIdFromUrl as jest.Mock).not.toHaveBeenCalled();
         expect(rows).toEqual(mockRows)
     })
 
     it("Works if term is provided in various forms", async() => {
-        expect(await exportSectionsInTerm(mockCourse)).toEqual(mockRows);
-        expect(await exportSectionsInTerm(mockCourse, 1)).toEqual(mockRows);
-        expect(await exportSectionsInTerm(mockCourse, mockTerm)).toEqual(mockRows);
+        expect(await exportSectionsInTerm(mockCourseData)).toEqual(mockRows);
+        expect(await exportSectionsInTerm(mockCourseData, 1)).toEqual(mockRows);
+        expect(await exportSectionsInTerm(mockCourseData, mockTerm)).toEqual(mockRows);
     })
 
 })
-
-// export async function exportSectionsInTerm(course: Course | null = null, term: Term | number | null = null) {
-//
-//     course ??= await Course.getFromUrl();
-//     assert(course)
-//     if (typeof term === "number") {
-//         term = await Term.getTermById(term);
-//     } else {
-//         term ??= await course?.getTerm();
-//     }
-//
-//     assert(term);
-//     assert(course);
-//
-//     let sections = await getSections(course);
-//     const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
-//
-//     console.log("Writing Final Output Document...")
-//     saveDataGenFunc()(allSectionRows, `${term.name} ${course.baseCode} All Sections.csv`);
-//     return allSectionRows;
-// }

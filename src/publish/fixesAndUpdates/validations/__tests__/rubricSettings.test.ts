@@ -4,7 +4,7 @@ import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {CourseValidation, ValidationResult} from "../index";
 import {rubricsTiedToGradesTest} from "../rubricSettings";
 import mockRubricData, {mockRubricAssociation} from "@/canvas/__mocks__/mockRubricData";
-import {mockAsyncGenerator} from "@/__mocks__/utils";
+import {returnMockAsyncGen} from "@/__mocks__/utils";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 
 import * as rubricApi from "@/canvas/rubrics";
@@ -49,7 +49,7 @@ describe('rubrics are set to grade assignments', () => {
 
         let course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
-            mockAsyncGenerator<IRubricData>([{
+            returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
                 associations: [
                     {...mockRubricAssociation, use_for_grading: true, association_id: 1},
@@ -57,7 +57,7 @@ describe('rubrics are set to grade assignments', () => {
                 ]
             }]));
 
-        assignmentDataGen.mockImplementation(mockAsyncGenerator([mockAssignmentData]))
+        assignmentDataGen.mockImplementation(returnMockAsyncGen([mockAssignmentData]))
 
         let results = await validation.run(course);
         expect(results.success).toBe(true);
@@ -68,7 +68,7 @@ describe('rubrics are set to grade assignments', () => {
 
         let course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
-            mockAsyncGenerator<IRubricData>([{
+            returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
                 associations: [
                     {...mockRubricAssociation, use_for_grading: true, association_id: 1},
@@ -76,7 +76,7 @@ describe('rubrics are set to grade assignments', () => {
                 ]
             }]));
 
-        assignmentDataGen.mockImplementation(mockAsyncGenerator([assignmentData]))
+        assignmentDataGen.mockImplementation(returnMockAsyncGen([assignmentData]))
         getAssignmentData.mockResolvedValue(assignmentData)
 
         let results = await validation.run(course);
@@ -87,14 +87,14 @@ describe('rubrics are set to grade assignments', () => {
 
     function runMockValidation<T, UserDataType>(course: T, validation: CourseValidation<T, UserDataType>) {
         rubricsForCourseGen.mockImplementation(
-            mockAsyncGenerator<IRubricData>([{
+            returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
                 associations: [
                     {...mockRubricAssociation, use_for_grading: true, association_id: 1},
                     {...mockRubricAssociation, use_for_grading: false, association_id: 2}
                 ]
             }]));
-        assignmentDataGen.mockImplementation(mockAsyncGenerator([mockAssignmentData]))
+        assignmentDataGen.mockImplementation(returnMockAsyncGen([mockAssignmentData]))
         getAssignmentData.mockResolvedValue(mockAssignmentData);
         return validation.run(course);
 

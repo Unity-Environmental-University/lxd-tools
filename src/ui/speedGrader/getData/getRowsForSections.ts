@@ -2,8 +2,9 @@ import {Course} from "@/canvas/course/Course";
 import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {MAX_SECTION_SLICE_SIZE} from "@/ui/speedGrader/consts";
+import {ICourseData} from "@/canvas/courseTypes";
 
-export async function getRowsForSections(sections: Course[], sectionsAtATime = MAX_SECTION_SLICE_SIZE) {
+export async function getRowsForSections(sections: ICourseData[], sectionsAtATime = MAX_SECTION_SLICE_SIZE) {
     const allSectionRows: string[] = [];
     let sectionsLeftToProcess = sections.slice(0);
     while (sectionsLeftToProcess.length > 0) {

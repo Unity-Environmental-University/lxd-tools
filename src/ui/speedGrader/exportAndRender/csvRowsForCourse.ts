@@ -1,45 +1,53 @@
 import {Course} from "@/canvas/course/Course";
 import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
 import {ICourseData} from "@/canvas/courseTypes";
-import {getAllPagesAsync} from "@/ui/speedGrader/getAllPagesAsync";
 import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
 import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/types";
 import {Account} from "@/canvas/Account";
+import {render} from "@testing-library/react";
+import { fetchJson } from "@/canvas/fetch/fetchJson";
+import {ITermData} from "@/canvas/Term";
+import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {moduleGenerator} from "@/canvas/course/modules";
 
-export async function csvRowsForCourse(course: Course, assignment: IAssignmentData | null = null) {
+export async function csvRowsForCourse(course: ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];
     const courseId = course.id;
-    const courseData = course.rawData as ICourseData;
-
-    const accounts = await Account.getAccountById(courseData.account_id)
-    const rootAccountId = courseData.root_account_id;
+    const rootAccountId = course.root_account_id;
 
     const baseSubmissionsUrl = assignment ? `/api/v1/courses/${courseId}/assignments/${assignment.id}/submissions` : `/api/v1/courses/${courseId}/students/submissions`;
-    const userSubmissions = await getAllPagesAsync(`${baseSubmissionsUrl}?student_ids=all&per_page=5&include[]=rubric_assessment&include[]=assignment&include[]=user&grouped=true`) as IAssignmentSubmission[];
+    const userSubmissions = await getPagedData<IAssignmentSubmission>(
+        baseSubmissionsUrl, {
+            queryParams: {
+                student_ids: 'all',
+                per_page: 5,
+                grouped: true,
+                include: [
+                    'rubric_assessment',
+                    'assignment',
+                    'user',
+                ]
+            }
+        });
     const assignments = await renderAsyncGen(assignmentDataGen(courseId, {queryParams: {include: ['due_at']}}));
-    const instructors = await getAllPagesAsync(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
-    const modules = await course.getModules({
-        queryParams: {
-            include: ['items', 'content_details']
-        }
-    })
-    const enrollments = await getAllPagesAsync(`/api/v1/courses/${courseId}/enrollments?per_page=5`) as IEnrollmentData[];
+    const instructors = await getPagedData<IUserData>(`/api/v1/courses/${courseId}/users?enrollment_type=teacher`) as IUserData[];
+    const modules = await renderAsyncGen(moduleGenerator(courseId, {queryParams: {include: ['items', 'content_details']}}));
+    const enrollments = getPagedDataGenerator<IEnrollmentData>(`/api/v1/courses/${courseId}/enrollments?per_page=5`);
+    const term = await  fetchJson<ITermData>(`/api/v1/accounts/${rootAccountId}/terms/${course.enrollment_term_id}`);
 
-    const termsResponse = await fetch(`/api/v1/accounts/${rootAccountId}/terms/${courseData.enrollment_term_id}`);
-    const term = await termsResponse.json();
     const assignmentsCollection = new AssignmentsCollection(assignments);
 
 
-    for (let enrollment of enrollments) {
+    for await (let enrollment of enrollments) {
         let out_rows = await getRows({
             enrollment,
             modules,
             userSubmissions,
             term,
-            course: courseData,
+            course: course,
             instructors,
             assignmentsCollection,
         });

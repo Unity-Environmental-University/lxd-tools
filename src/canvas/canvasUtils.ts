@@ -272,7 +272,7 @@ export function queryStringify(data: Record<string, any>) {
     for (let key in data) {
         addToQuery(searchParams, key, data[key])
     }
-    ;
+
     return searchParams;
 }
 

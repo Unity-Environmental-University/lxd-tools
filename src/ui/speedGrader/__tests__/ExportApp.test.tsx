@@ -13,6 +13,7 @@ import * as courseApi from '@/canvas/course';
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 
 const getCourseById = jest.spyOn(courseApi, 'getCourseById');
+const getCourseData = jest.spyOn(courseApi, 'getCourseData');
 jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn())
 const getAssignmentById = jest.spyOn(AssignmentKindInfo, 'get')
 
@@ -29,6 +30,10 @@ jest.mock('@/ui/speedGrader/controls/DateRangeExportDialog', () => ({show}: { sh
     show ? <div data-testid="date-range-export-dialog">Date Range Export Dialog</div> : undefined
 ));
 
+jest.mock('@/canvas/fetch/fetchJson')
+jest.mock('@/canvas/fetch/canvasDataFetchGenFunc')
+jest.mock('@/canvas/fetch/getPagedDataGenerator')
+
 describe('ExportApp Component', () => {
     beforeEach(() => {
         getCourseById.mockResolvedValue(new Course({...mockCourseData}));
@@ -38,7 +43,7 @@ describe('ExportApp Component', () => {
 
     test('renders without crashing', async () => {
         await act(async () => render(<ExportApp/>));
-        expect(getCourseById).toHaveBeenCalled();
+        expect(getCourseData).toHaveBeenCalled();
         expect(getCourseIdFromUrl).toHaveBeenCalled();
     });
 

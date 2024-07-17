@@ -6,12 +6,14 @@ import { UiHandlerProps } from '@/ui/speedGrader/controls/UiHandlerProps';
 import { Assignment } from '@/canvas/content/Assignment';
 import {IAssignmentData} from "@/canvas/content/types";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
+import {ICourseData} from "@/canvas/courseTypes";
+import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 
 jest.mock('@/ui/speedGrader/exportAndRender/csvRowsForCourse');
 jest.mock('@/ui/speedGrader/saveDataGenFunc');
 
 describe('exportData', () => {
-    let mockCourse: Course;
+    let mockCourse: ICourseData;
     let mockUiHandlerProps: UiHandlerProps;
     let mockAssignment: IAssignmentData | null;
     let mockCsvRows: string[];
@@ -19,9 +21,10 @@ describe('exportData', () => {
 
     beforeEach(() => {
         mockCourse = {
+            ...mockCourseData,
             courseCode: 'CS101',
 
-        } as Course;
+        } as ICourseData;
 
         mockUiHandlerProps = {
             popUp: jest.fn(),

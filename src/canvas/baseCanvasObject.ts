@@ -2,8 +2,8 @@ import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
 import {formDataify, ICanvasCallConfig} from "./canvasUtils";
 import {Course} from "./course/Course";
-import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
-import {overrideConfig} from "@/canvas/fetch";
+import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {overrideConfig, renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 
@@ -16,6 +16,7 @@ export interface ICanvasObject<CanvasDataType extends CanvasData> {
 }
 
 export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICanvasObject<CanvasDataType>{
+
     static idProperty = 'id'; // The field name of the id of the canvas object type
     static nameProperty: string | null = 'name'; // The field name of the primary name of the canvas object type
     static contentUrlTemplate: string | null = null; // A templated url to get a single item
@@ -103,8 +104,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
 
     static async getAll(config: ICanvasCallConfig | null = null) {
         let url = this.getAllUrl();
-        let data = await getPagedData(url, config);
-        return data.map(item => new this(item));
+        return await renderAsyncGen(getPagedDataGenerator(this.getAllUrl(), config))
     }
 
     get id(): number {

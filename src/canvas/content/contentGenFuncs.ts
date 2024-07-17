@@ -3,10 +3,7 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 import {putContentConfig} from "@/canvas/content/BaseContentItem";
 import {CanvasData} from "@/canvas/canvasDataDefs";
-import {getContentItemFromUrl} from "@/canvas/content/contentFromUrl";
-import {canvasDataFetchGenFunc} from "@/canvas/fetch/canvasDataFetchGenFunc";
-import {overrideConfig} from "@/canvas";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+
 
 export type ContentFuncsOptions<
     GetOptionsType extends IQueryParams,
@@ -14,18 +11,44 @@ export type ContentFuncsOptions<
     PutDataType extends Record<string, any> = Record<string, any>
 > = {
 
-    defaultGetQuery?:GetOptionsType,
-    defaultGetAllQuery?:GetAllOptionsType,
+    defaultGetQuery?: GetOptionsType,
+    defaultGetAllQuery?: GetAllOptionsType,
 
 }
 
-export function contentUrlFuncs(contentUrlPart: string,) {
-    return {
-        getApiUrl: courseContentUrlFunc(`/api/v1/courses/{courseId}/${contentUrlPart}/{contentId}`),
-        getAllApiUrl: (courseId:number) => `/course/{courseId}/${contentUrlPart}`,
-        getHtmlUrl: courseContentUrlFunc(`/courses/{courseId}/${contentUrlPart}/{contentId}`),
-    }
+export type ContentKind<
+    DataType extends CanvasData,
+    GetQueryOptions extends IQueryParams = Record<string, any>,
+    PutDataType extends CanvasData = DataType,
+    IdType = number,
+> = {
+    getId: (data: DataType) => IdType,
+    getName: (data: DataType) => string,
+    getBody: (data: DataType) => string | undefined,
+    get: (courseId: number, contentId: number, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>
+    dataGenerator: (courseId: number, config?: ICanvasCallConfig<GetQueryOptions>) => AsyncGenerator<DataType>
+    put?: (courseId: number, contentId: number, data: PutDataType) => Promise<DataType>,
+} & ReturnType<typeof contentUrlFuncs>
 
+export function contentUrlFuncs(contentUrlPart: string) {
+
+    const urlRegex = new RegExp(`courses\/(\\d+)\/${contentUrlPart}/(\\d+)`, 'i');
+
+    const getApiUrl = courseContentUrlFunc(`/api/v1/courses/{courseId}/${contentUrlPart}/{contentId}`);
+    const getAllApiUrl = (courseId: number) => `/course/{courseId}/${contentUrlPart}`;
+    const getHtmlUrl = courseContentUrlFunc(`/courses/{courseId}/${contentUrlPart}/{contentId}`);
+    function getCourseAndContentIdFromUrl(url: string) {
+        const [full, courseId, contentId] = url.match(urlRegex) ?? [undefined, undefined, undefined];
+        return [courseId, contentId].map(a => a ? parseInt(a) : undefined);
+    }
+    const isValidUrl = (url?: string) => typeof url === 'string' && typeof getCourseAndContentIdFromUrl(url)[0] !== 'undefined';
+    return {
+        getApiUrl,
+        getAllApiUrl,
+        getHtmlUrl,
+        getCourseAndContentIdFromUrl,
+        isValidUrl,
+    }
 }
 
 function courseContentUrlFunc(url: string) {
@@ -37,7 +60,7 @@ function courseContentUrlFunc(url: string) {
 export function putContentFunc<
     PutOptionsType extends Record<string, any>,
     ResponseDataType extends Record<string, any>
->(getApiUrl:(courseId:number, contentId:number) => string) {
+>(getApiUrl: (courseId: number, contentId: number) => string) {
     return async function (
         courseId: number,
         contentId: number,

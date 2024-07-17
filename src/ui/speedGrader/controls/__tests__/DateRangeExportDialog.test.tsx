@@ -25,7 +25,7 @@ describe('DateRangeExportDialog', () => {
   const onFinishedExporting = jest.fn();
 
   const defaultProps: IDateRangeExportProps = {
-    course: mockCourse,
+    course: mockCourseData,
     show: true,
     handleShow,
     handleHide,

@@ -1,14 +1,25 @@
 import {Temporal} from "temporal-polyfill";
 import {IModuleData} from "../canvasDataDefs";
-import {formDataify, ICanvasCallConfig} from "../canvasUtils";
+import {formDataify, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
 
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {Page} from "@/canvas/content/Page";
 import {IPageData} from "@/canvas/content/types";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
 export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],
+}
+
+export interface GenerateModulesOptions {
+    include?: ('items' | 'content_details')[],
+    search_term?: string,
+    student_id?: string
+}
+
+export function moduleGenerator(courseId:number, config?: ICanvasCallConfig<GenerateModulesOptions>) {
+    return getPagedDataGenerator<IModuleData>(`/api/v1/courses/${courseId}/modules`, config);
 }
 
 export async function changeModuleLockDate(courseId: number, module: IModuleData, targetDate: Temporal.PlainDate) {

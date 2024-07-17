@@ -2,32 +2,34 @@ import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 import {IAssignmentData, IDiscussionData, UpdateAssignmentDataOptions} from "@/canvas/content/types";
-import {contentUrlFuncs, putContentFunc} from "@/canvas/content/contentGenFuncs";
-import {ContentKindInfo} from "@/canvas/content/ContentKindInfo";
+import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/contentGenFuncs";
 import {CanvasData} from "@/canvas/canvasDataDefs";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
+type SaveDiscussionData = Record<string, any>;
+type GetDiscussionOptions = Record<string, any>
+const DiscussionUrlFuncs = contentUrlFuncs('discussion_topics');
 
-const DiscussionUrlFuncs = contentUrlFuncs('assignments');
-
-export const DiscussionKindInfo:ContentKindInfo<
-    IAssignmentData,
-    CanvasData,
-    UpdateAssignmentDataOptions
+export const DiscussionKindInfo:ContentKind<
+    IDiscussionData,
+    GetDiscussionOptions,
+    SaveDiscussionData
 > = {
+    ...DiscussionUrlFuncs,
+    getId: (data) => data.id,
     getName: (data) => data.title,
     getBody: (data) => data.message,
-    async get(courseId:number, contentId: number, config?:ICanvasCallConfig<Record<string, any>>) {
-        const data = await fetchJson(this.getApiUrl(courseId, contentId), config) as IAssignmentData;
+    async get(courseId:number, contentId: number, config?:ICanvasCallConfig<GetDiscussionOptions>) {
+        const data = await fetchJson(this.getApiUrl(courseId, contentId), config) as IDiscussionData;
         return data;
     },
-    ...DiscussionUrlFuncs,
-    dataGenerator: (courseId, config) => getPagedDataGenerator<IAssignmentData>(DiscussionUrlFuncs.getAllApiUrl(courseId), config),
-    put: putContentFunc<UpdateAssignmentDataOptions, IAssignmentData>(DiscussionUrlFuncs.getApiUrl),
+    dataGenerator: (courseId, config) => getPagedDataGenerator<IDiscussionData>(DiscussionUrlFuncs.getAllApiUrl(courseId), config),
+    put: putContentFunc<SaveDiscussionData, IDiscussionData>(DiscussionUrlFuncs.getApiUrl),
 }
 
 export class Discussion extends BaseContentItem {
+    static kindInfo = DiscussionKindInfo;
     static nameProperty = 'title';
     static bodyProperty = 'message';
     static contentUrlTemplate = "/api/v1/courses/{course_id}/discussion_topics/{content_id}";

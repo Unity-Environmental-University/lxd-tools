@@ -4,7 +4,7 @@ import {AssignmentKindInfo, updateAssignmentData} from "../Assignment";
 import {mockAssignmentData} from "../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";
 import {assignmentDataGen} from "@/canvas/content/Assignment";
-import {mockAsyncGenerator} from "@/__mocks__/utils";
+import {returnMockAsyncGen} from "@/__mocks__/utils";
 
 import * as canvasUtils from '@/canvas/canvasUtils';
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
@@ -35,7 +35,7 @@ it('gets assignments from course id', async () => {
 
 
     const responseDatas = [...range(0, 10)].map(id => ({...mockAssignmentData, id}));
-    (getPagedDataGenerator as jest.Mock).mockImplementation(mockAsyncGenerator(responseDatas));
+    (getPagedDataGenerator as jest.Mock).mockImplementation(returnMockAsyncGen(responseDatas));
     let i = range(0, 10);
     for await (let assignment of assignmentDataGen(id, config)) {
         expect(assignment.id).toEqual(i.next().value);

@@ -10,15 +10,16 @@ import DateRangeExportDialog from "@/ui/speedGrader/controls/DateRangeExportDial
 
 import ExportOneButton from "@/ui/speedGrader/controls/ExportOneButton";
 import ExportAllButton from "@/ui/speedGrader/controls/ExportAllButton";
-import {getCourseById, getSingleCourse} from "@/canvas/course";
+import {getCourseById, getCourseData, getSingleCourse} from "@/canvas/course";
 import {useEffectAsync} from "@/ui/utils";
 import * as url from "url";
 import {IAssignmentData} from "@/canvas/content/types";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
+import {ICourseData} from "@/canvas/courseTypes";
 
 
 export type ExportAppProps = {
-    initialCourse?: Course | undefined,
+    initialCourse?: ICourseData | undefined,
     initialAssignment?: IAssignmentData | undefined,
 }
 
@@ -27,7 +28,7 @@ export type ExportAppProps = {
 
 function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
 
-    const [course, setCourse] = useState<Course | null | undefined>(initialCourse);
+    const [course, setCourse] = useState<ICourseData | null | undefined>(initialCourse);
     const [assignment, setAssignment] = useState<IAssignmentData | undefined>(initialAssignment)
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [canClose, setCanClose] = useState<boolean>(false);
@@ -38,7 +39,7 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
     useEffectAsync(async () => {
         if (!course) {
             const id = getCourseIdFromUrl(document.documentURI);
-            if (id) setCourse(await getCourseById(id));
+            if (id) setCourse(await getCourseData(id));
         }
     }, []);
 

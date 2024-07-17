@@ -4,10 +4,12 @@ import DatePicker from "react-datepicker";
 import {Course} from "@/canvas/course/Course";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
-import {getSections} from "@/canvas/course/blueprint";
+import {getSections, sectionDataGenerator} from "@/canvas/course/blueprint";
+import {renderAsyncGen} from "@/canvas/fetch";
+import {ICourseData} from "@/canvas/courseTypes";
 
 export interface IDateRangeExportProps {
-    course: Course,
+    course: ICourseData,
     show: boolean,
     handleShow: () => void,
     handleHide: () => void,
@@ -54,7 +56,7 @@ export default function DateRangeExportDialog({
                 onExporting();
                 handleHide();
                 const by_subaccounts = course.termId? [course.termId] : [];
-                let sections = await getSections(course, {
+                let sections = await renderAsyncGen(sectionDataGenerator(course.id, {
                     queryParams: {
                         starts_before: exportEnd?.toString() ?? undefined,
                         ends_after: exportStart?.toString() ?? undefined,
@@ -62,11 +64,11 @@ export default function DateRangeExportDialog({
                         by_subaccounts,
                         with_enrollments: true,
                     }
-                });
+                }));
 
                 sections ??= [];
-                sections.sort((a: Course, b: Course) => {
-                    return b.start.getTime() - a.start.getTime();
+                sections.sort((a: ICourseData, b: ICourseData) => {
+                    return new Date(b.start_at).getTime() - new Date(b.start_at).getTime();
                 })
                 const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
 

@@ -101,6 +101,6 @@ function MultiSelect<SelectedType extends IMultiSelectOption>({
             )}
         </div>
     );
-};
+}
 
 export default MultiSelect;

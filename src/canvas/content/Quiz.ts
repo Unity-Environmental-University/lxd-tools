@@ -1,6 +1,10 @@
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {formDataify} from "@/canvas/canvasUtils";
+import {formDataify, ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {IAssignmentData, UpdateAssignmentDataOptions} from "@/canvas/content/types";
+import {CanvasData} from "@/canvas/canvasDataDefs";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/contentGenFuncs";
 
 export interface IQuizData {
     // the ID of the quiz
@@ -101,7 +105,24 @@ export interface IQuizData {
 }
 
 type QuizPermissions = Record<string, any>
+type SaveQuizOptions = Record<string, any>
+type GetQuizOptions = Record<string, any>
 
+
+
+const QuizUrlFuncs = contentUrlFuncs('quizzes');
+export const QuizKindInfo:ContentKind<IQuizData> = {
+    getId: (data) => data.id,
+    getName: (data) => data.title,
+    getBody: (data) => data.description,
+    async get(courseId:number, contentId: number, config?:ICanvasCallConfig<Record<string, any>>) {
+        const data = await fetchJson(this.getApiUrl(courseId, contentId), config) as IQuizData;
+        return data;
+    },
+    ...QuizUrlFuncs,
+    dataGenerator: (courseId, config) => getPagedDataGenerator<IQuizData>(QuizUrlFuncs.getAllApiUrl(courseId), config),
+    put: putContentFunc<SaveQuizOptions, IQuizData>(QuizUrlFuncs.getApiUrl),
+}
 export class Quiz extends BaseContentItem {
     static nameProperty = 'title';
     static bodyProperty = 'description';

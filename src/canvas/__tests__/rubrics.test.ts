@@ -7,7 +7,7 @@ import {
     rubricsForCourseGen,
     rubricAssociationUrl, updateRubricAssociation
 } from "../rubrics";
-import {mockAsyncGenerator} from "../../__mocks__/utils";
+import {returnMockAsyncGen} from "../../__mocks__/utils";
 import mockRubric, {mockRubricAssociation, mockRubricsForAssignments} from "../__mocks__/mockRubricData";
 
 import {deepObjectMerge, formDataify} from "../canvasUtils";
@@ -39,7 +39,7 @@ describe('rubricsForCourseGen', () => {
     it('gets rubrics for a course', async () => {
         const mockRubrics = [{...mockRubric, id: 1}, {...mockRubric, id: 2}];
         const config = { fetchInit: {} };
-        pagedDataGenMock.mockImplementation(mockAsyncGenerator(mockRubrics))
+        pagedDataGenMock.mockImplementation(returnMockAsyncGen(mockRubrics))
         const rubricGen = rubricsForCourseGen(0, {}, config);
         expect(await renderAsyncGen(rubricGen)).toEqual(mockRubrics);
         expect(pagedDataGenMock).toHaveBeenCalledWith(getRubricsFetchUrl(0), config);
@@ -50,7 +50,7 @@ describe('rubricsForCourseGen', () => {
         const mockWithAssociations = mockRubricsForAssignments([0, 1, 2, 3])
         const mockAssociations = mockWithAssociations.map(rubric => rubric.associations);
         const config = { fetchInit: {} };
-        (getPagedDataGenerator as jest.Mock).mockImplementation(mockAsyncGenerator(mockRubrics))
+        (getPagedDataGenerator as jest.Mock).mockImplementation(returnMockAsyncGen(mockRubrics))
         const rubricGen = rubricsForCourseGen(0, {include: ['associations']}, config);
         expect(pagedDataGenMock.mock.lastCall).toEqual([
             getRubricsFetchUrl(0), config

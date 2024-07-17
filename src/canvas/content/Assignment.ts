@@ -2,11 +2,10 @@ import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {contentUrlFuncs, putContentFunc} from "@/canvas/content/contentGenFuncs";
+import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/contentGenFuncs";
 import {canvasDataFetchGenFunc} from "@/canvas/fetch/canvasDataFetchGenFunc";
 import {IAssignmentData, UpdateAssignmentDataOptions} from "@/canvas/content/types";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {ContentKindInfo} from "@/canvas/content/ContentKindInfo";
 import {overrideConfig} from "@/canvas";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {CanvasData} from "@/canvas/canvasDataDefs";
@@ -16,11 +15,12 @@ import {CanvasData} from "@/canvas/canvasDataDefs";
 
 const AssignmentUrlFuncs = contentUrlFuncs('assignments');
 
-export const AssignmentKindInfo:ContentKindInfo<
+export const AssignmentKindInfo:ContentKind<
     IAssignmentData,
     CanvasData,
     UpdateAssignmentDataOptions
 > = {
+    getId: (data) => data.id,
     getName: (data) => data.name,
     getBody: (data) => data.description,
     async get(courseId:number, contentId: number, config?:ICanvasCallConfig<Record<string, any>>) {
