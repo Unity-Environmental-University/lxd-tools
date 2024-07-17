@@ -100,7 +100,6 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
                 popUp("Exporting")
             }}
             onFinishedExporting={() => {
-                console.log("Finished Exporting")
                 popClose();
             }}
         ></DateRangeExportDialog>

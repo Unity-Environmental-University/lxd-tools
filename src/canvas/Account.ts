@@ -26,7 +26,6 @@ export class Account extends BaseCanvasObject<CanvasData> {
 
     static async getAccountById(accountId: number, config: ICanvasCallConfig | undefined = undefined): Promise<Account> {
         const data = await this.getDataById(accountId, null, config)
-        console.assert()
         return new Account(data);
     }
 

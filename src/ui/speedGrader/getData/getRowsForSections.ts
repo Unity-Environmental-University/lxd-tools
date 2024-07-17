@@ -12,7 +12,7 @@ export async function getRowsForSections(sections: ICourseData[], sectionsAtATim
         sectionsLeftToProcess = sectionsLeftToProcess.slice(sectionsAtATime);
         const rowsOfRows = await Promise.all(sliceToProcessNow.map(async (section) => {
             const sectionRows = await csvRowsForCourse(section);
-            saveDataGenFunc()(sectionRows, `Rubric Scores ${section.courseCode}.csv`);
+            saveDataGenFunc()(sectionRows, `Rubric Scores ${section.course_code}.csv`);
             return sectionRows;
         }))
         for (let rowSet of rowsOfRows) {

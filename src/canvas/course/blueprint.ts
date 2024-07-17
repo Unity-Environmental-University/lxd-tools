@@ -48,7 +48,7 @@ export async function getSections(courseId: number, config?: ICanvasCallConfig<G
 
 export function sectionDataGenerator(courseId:number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const url = `/api/v1/courses/${courseId}/blueprint_templates/default/associated_courses`;
-    return getPagedDataGenerator<ICourseData>(url, fetchGetConfig({queryParams: {per_page: 50}, config}));
+    return getPagedDataGenerator<ICourseData>(url, fetchGetConfig({per_page: 50}, config));
 }
 export function cachedGetAssociatedCoursesFunc(course: IBlueprintCourse) {
     let cache: Course[] | null = null;

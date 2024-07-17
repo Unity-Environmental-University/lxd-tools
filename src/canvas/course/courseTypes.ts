@@ -92,7 +92,11 @@ export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussi
 }
 
 
-export type GetCoursesFromAccountOptions = {
+export type GetOptions = {
+    per_page?: number
+}
+
+export type GetCoursesFromAccountOptions = GetOptions & {
   with_enrollments?: boolean;
   enrollment_type?: ('teacher' | 'student' | 'ta' | 'observer' | 'designer')[];
   published?: boolean;

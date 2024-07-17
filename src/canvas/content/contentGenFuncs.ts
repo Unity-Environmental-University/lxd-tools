@@ -35,7 +35,7 @@ export function contentUrlFuncs(contentUrlPart: string) {
     const urlRegex = new RegExp(`courses\/(\\d+)\/${contentUrlPart}/(\\d+)`, 'i');
 
     const getApiUrl = courseContentUrlFunc(`/api/v1/courses/{courseId}/${contentUrlPart}/{contentId}`);
-    const getAllApiUrl = (courseId: number) => `/course/{courseId}/${contentUrlPart}`;
+    const getAllApiUrl = (courseId: number) => `/api/v1/courses/${courseId}/${contentUrlPart}`;
     const getHtmlUrl = courseContentUrlFunc(`/courses/{courseId}/${contentUrlPart}/{contentId}`);
     function getCourseAndContentIdFromUrl(url: string) {
         const [full, courseId, contentId] = url.match(urlRegex) ?? [undefined, undefined, undefined];

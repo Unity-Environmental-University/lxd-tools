@@ -7,6 +7,8 @@ import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import {getSections, sectionDataGenerator} from "@/canvas/course/blueprint";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {ICourseData} from "@/canvas/courseTypes";
+import {getCourseDataGenerator} from "@/canvas/course";
+import {baseCourseCode} from "@/canvas/course/code";
 
 export interface IDateRangeExportProps {
     course: ICourseData,
@@ -56,7 +58,9 @@ export default function DateRangeExportDialog({
                 onExporting();
                 handleHide();
                 const by_subaccounts = course.termId? [course.termId] : [];
-                let sections = await renderAsyncGen(sectionDataGenerator(course.id, {
+                let sections = await renderAsyncGen(getCourseDataGenerator( baseCourseCode(course.course_code),[
+                    course.account_id, course.root_account_id
+                ],undefined, {
                     queryParams: {
                         starts_before: exportEnd?.toString() ?? undefined,
                         ends_after: exportStart?.toString() ?? undefined,
