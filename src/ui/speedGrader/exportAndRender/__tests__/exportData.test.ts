@@ -8,6 +8,7 @@ import {IAssignmentData} from "@/canvas/content/types";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {ICourseData} from "@/canvas/courseTypes";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {Term} from "@/canvas/Term";
 
 jest.mock('@/ui/speedGrader/exportAndRender/csvRowsForCourse');
 jest.mock('@/ui/speedGrader/saveDataGenFunc');
@@ -50,7 +51,6 @@ describe('exportData', () => {
 
     test('should call csvRowsForCourse and saveDataGenFunc with correct parameters when assignment is provided', async () => {
         await exportData(mockCourse, mockUiHandlerProps, mockAssignment);
-
         expect(csvRowsForCourse).toHaveBeenCalledWith(mockCourse, mockAssignment);
         expect(mockSaveData).toHaveBeenCalledWith(mockCsvRows, 'Rubric Scores Assignment 1.csv');
     });

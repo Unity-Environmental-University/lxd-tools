@@ -11,6 +11,7 @@ import { storage} from "webextension-polyfill";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {GetCourseOptions} from "@/canvas/course/courseTypes";
 export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
 
 
@@ -108,10 +109,10 @@ export async function* copyToNewCourseGenerator(
     newCode: string,
     pollDelay: number = 500,
     newName?: string,
-    courseConfig?: ICanvasCallConfig,
+    courseConfig?: ICanvasCallConfig<GetCourseOptions>,
     migrationConfig?: ICanvasCallConfig,
     pollConfig?: ICanvasCallConfig,
-    returnCourseConfig?: ICanvasCallConfig,
+    returnCourseConfig?: ICanvasCallConfig<GetCourseOptions>,
 ) {
     if (!newName && sourceCourse.parsedCourseCode) {
         newName = sourceCourse.name.replace(sourceCourse.parsedCourseCode, newCode);

@@ -1,7 +1,7 @@
 import {deepObjectMerge, formDataify, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
 import {overrideConfig} from "../index";
 
-import {GetCoursesFromAccountOptions, IGradingStandardData} from "./courseTypes";
+import {GetCourseOptions, GetCoursesFromAccountOptions, IGradingStandardData} from "./courseTypes";
 import {Course} from "./Course";
 import {Term} from "@/canvas/Term";
 
@@ -19,7 +19,7 @@ export async function getGradingStandards(contextId: number, contextType: 'accou
 
 
 
-export function getCourseData(id:number, config?: ICanvasCallConfig) {
+export function getCourseData(id:number, config?: ICanvasCallConfig<GetCourseOptions>) {
     const url = `/api/v1/courses/${id}`;
     return fetchJson(url, config) as Promise<ICourseData>;
 }

@@ -8,6 +8,7 @@ import {
     ModuleItemType
 } from "../canvasDataDefs";
 import {
+    GetCourseOptions,
     IContentHaver,
     ICourseCodeHaver,
     ICourseDataHaver,
@@ -84,7 +85,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
 
-    static async getCourseById(courseId: number, config: ICanvasCallConfig | undefined = undefined) {
+    static async getCourseById(courseId: number, config: ICanvasCallConfig<GetCourseOptions> | undefined = undefined) {
         const data = await getCourseData(courseId, config);
         return new Course(data);
     }
@@ -334,7 +335,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return urls;
     }
 
-    async getSyllabus(config: ICanvasCallConfig = {queryParams: {}}): Promise<string> {
+    async getSyllabus(config: ICanvasCallConfig<GetCourseOptions> = {queryParams: {}}): Promise<string> {
         if (!this.canvasData.syllabus_body) {
 
             config.queryParams = {...config.queryParams, include: ['syllabus_body']};

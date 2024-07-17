@@ -19,7 +19,7 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHav
     beforeAndAfters: [['off the final grade', 'off the grade'], ['final exam', 'final exam']],
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
-        const syllabus = await course.getSyllabus(config);
+        const syllabus = await course.getSyllabus();
         const match = /off the final grade/gi.test(syllabus);
         return testResult(!match, {
                 failureMessage: ["'off the final grade' found in syllabus"],
@@ -52,7 +52,7 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     description: 'Credits displayed in summary box of syllabus',
 
     run: async (course: ISyllabusHaver, config) => {
-        const syllabus = await course.getSyllabus(config);
+        const syllabus = await course.getSyllabus();
         const el = document.createElement('div');
         el.innerHTML = syllabus;
         let strongs = el.querySelectorAll('strong');
@@ -68,7 +68,7 @@ export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "AI Policy in Syllabus Test",
     description: "The AI policy is present in the syllabus",
     run: async (course: ISyllabusHaver, config) => {
-        const text = await course.getSyllabus(config);
+        const text = await course.getSyllabus();
         const success = text.includes('Generative Artificial Intelligence');
         const links = [`/courses/${course.id}/assignments/syllabus`];
         const failureMessage = `Can't find AI boilerplate in syllabus`
@@ -81,7 +81,7 @@ export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
     name: "Bottom-of-Syllabus Test",
     description: "Replace language at the bottom of the syllabus with: \"Learning materials for Weeks 2 forward are organized with the rest of the class in your weekly modules. The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
     run: async (course, config) => {
-        const text = getPlainTextFromHtml(await course.getSyllabus(config));
+        const text = getPlainTextFromHtml(await course.getSyllabus());
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
         const links = [`/courses/${course.id}/assignments/syllabus`];
         const failureMessage = "Text at the bottom of the syllabus looks incorrect."
@@ -137,8 +137,8 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, { el: 
     name: "Second discussion expectation paragraph",
     description: 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" ' +
         '(for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".',
-    async run(course, config) {
-        const el = htmlDiv(await course.getSyllabus(config));
+    async run(course) {
+        const el = htmlDiv(await course.getSyllabus());
         const secondPara = findSecondParaOfDiscExpect(el);
         const userData = { el, secondPara};
         if(!secondPara) return testResult('not run', {

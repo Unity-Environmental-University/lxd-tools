@@ -7,6 +7,7 @@ import {getSections} from "@/canvas/course/blueprint";
 import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
+import mock = jest.mock;
 
 
 jest.mock('@/canvas/course/blueprint');
@@ -30,6 +31,8 @@ describe('exportSectionsInTerm', () => {
         {...mockCourseData, id: 101},
         {...mockCourseData, id: 102},
     ].map(a => new Course(a));
+    const getTermByIdSpy = jest.spyOn(Term, 'getTermById')
+    getTermByIdSpy.mockResolvedValue(mockTerm);
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -50,16 +53,16 @@ describe('exportSectionsInTerm', () => {
         expect(getCourseIdFromUrl as jest.Mock).toHaveBeenCalled();
         expect(rows).toEqual(mockRows)
     })
-    it("Does not get course from Url if course is provided", async() => {
-        const rows = await exportSectionsInTerm(mockCourseData);
+    it("Does not get course from Url if course with term is provided", async() => {
+        const rows = await exportSectionsInTerm({...mockCourseData, term: mockTermData});
         expect(getCourseIdFromUrl as jest.Mock).not.toHaveBeenCalled();
         expect(rows).toEqual(mockRows)
     })
 
     it("Works if term is provided in various forms", async() => {
-        expect(await exportSectionsInTerm(mockCourseData)).toEqual(mockRows);
-        expect(await exportSectionsInTerm(mockCourseData, 1)).toEqual(mockRows);
-        expect(await exportSectionsInTerm(mockCourseData, mockTerm)).toEqual(mockRows);
+        expect(await exportSectionsInTerm({...mockCourseData, term: mockTermData})).toEqual(mockRows);
+        expect(await exportSectionsInTerm({...mockCourseData, term: mockTermData}, 1)).toEqual(mockRows);
+        expect(await exportSectionsInTerm({...mockCourseData, term: mockTermData}, mockTerm)).toEqual(mockRows);
     })
 
 })

@@ -24,7 +24,7 @@ export interface ICourseCodeHaver {
 }
 
 export interface ISyllabusHaver extends IIdHaver {
-    getSyllabus: (config?: ICanvasCallConfig) => Promise<string>,
+    getSyllabus: (config?: ICanvasCallConfig<GetCourseOptions>) => Promise<string>,
     changeSyllabus: (newHtml: string, config?: ICanvasCallConfig) => any
 }
 
@@ -87,7 +87,7 @@ export interface IGradingSchemeEntry {
 export interface IContentHaver extends IAssignmentsHaver, IPagesHaver, IDiscussionsHaver, ISyllabusHaver, IQuizzesHaver {
     name: string,
 
-    getContent(config?: ICanvasCallConfig, refresh?: boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
+    getContent(config?: ICanvasCallConfig<Record<string, any>>, refresh?: boolean): Promise<(Discussion | Assignment | Page | Quiz)[]>,
 
 }
 

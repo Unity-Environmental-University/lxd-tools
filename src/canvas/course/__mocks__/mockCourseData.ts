@@ -1,4 +1,5 @@
 import {ICourseData} from "@/canvas/courseTypes";
+import {mockTermData} from "@/canvas/__mocks__/mockTermData";
 
 export const mockCourseData: ICourseData = {
     account_id: 0,
@@ -40,6 +41,7 @@ export const mockCourseData: ICourseData = {
     storage_quota_mb: 0,
     storage_quota_used_mb: 0,
     template: false,
+    term: mockTermData,
     time_zone: "",
     uuid: "",
     workflow_state: 'available'

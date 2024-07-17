@@ -1,5 +1,5 @@
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {IContentHaver, ISyllabusHaver} from "@/canvas/course/courseTypes";
+import {GetCourseOptions, IContentHaver, ISyllabusHaver} from "@/canvas/course/courseTypes";
 import {Course} from "@/canvas/course/Course";
 import {overrideConfig} from "@/canvas";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
@@ -165,12 +165,12 @@ export function badContentRunFunc<
     contentFunc?:CustomContentGetter<CourseType, ContentType>
 ) {
     return async (course: CourseType, config?: ICanvasCallConfig) => {
-        const defaultConfig = {queryParams: {include: ['body'], per_page: 50}};
+        const defaultConfig:ICanvasCallConfig = {queryParams: {include: ['body'], per_page: 50}};
         let content = await (contentFunc ? contentFunc(course) :
             course.getContent(overrideConfig(config, defaultConfig)));
 
         const badContent = content.filter(item => item.body && badTest.test(item.body))
-        const syllabus = await course.getSyllabus(config);
+        const syllabus = await course.getSyllabus();
         let syllabusTest = badTest.test(syllabus);
         const success = badContent.length === 0 && !syllabusTest;
         let links: string[] = [];
