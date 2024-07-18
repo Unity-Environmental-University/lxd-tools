@@ -8,7 +8,6 @@ import DatePicker from "react-datepicker";
 
 import {
     getStartDateAssignments,
-    SyllabusUpdateError,
     updatedDateSyllabusHtml
 } from "../../canvas/course/changeStartDate";
 import {changeModuleLockDate} from "../../canvas/course/modules";

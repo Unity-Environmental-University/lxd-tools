@@ -10,8 +10,8 @@ const DEFAULT_LOCALE = 'en-US';
 export function getCurrentStartDate(modules: IModuleData[]) {
     if (modules.length == 0) throw new NoOverviewModuleFoundError();
     const overviewModule = modules[0];
-    const lockDateString = overviewModule.unlock_at;
-    const oldDate = new Date(lockDateString);
+    const unlockDateString = overviewModule.unlock_at;
+    const oldDate = new Date(unlockDateString);
     return oldDateToPlainDate(oldDate);
 }
 
@@ -35,7 +35,7 @@ export function getStartDateAssignments(assignments:Assignment[]) {
     const sorted = sortAssignmentsByDueDate(assignments).filter(a => a.dueAt);
     if (sorted.length == 0) throw new NoAssignmentsWithDueDatesError();
     const firstAssignmentDue = sorted[0].dueAt;
-    assert(firstAssignmentDue, "It should be literally impossible for this to happen with current type checking.")
+    assert(firstAssignmentDue, "It should be literally impossible for this to happen as we just filtered out all assignments where dueAt returns false")
 
     //Set to monday of that week.
     const plainDateDue = oldDateToPlainDate(firstAssignmentDue);
@@ -121,9 +121,6 @@ function syllabusHeaderName(el:HTMLElement) {
     return html.replace(/:$/, '')
 }
 
-export class SyllabusUpdateError extends Error {
-    public name = "SyllabusUpdateError";
-}
 export class NoOverviewModuleFoundError extends Error {
     public name = "NoOverviewModuleFoundError"
 }

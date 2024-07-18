@@ -1,4 +1,9 @@
-import {NoAssignmentsWithDueDatesError, sortAssignmentsByDueDate, updatedDateSyllabusHtml} from '../changeStartDate'
+import {
+    getCurrentStartDate, getNewTermName, getOldUgTermName, getStartDateAssignments, MalformedSyllabusError,
+    NoAssignmentsWithDueDatesError, NoOverviewModuleFoundError,
+    sortAssignmentsByDueDate,
+    updatedDateSyllabusHtml
+} from '../changeStartDate'
 import fs from "fs";
 import {Temporal} from "temporal-polyfill";
 import {oldDateToPlainDate} from "../../../date";
@@ -6,6 +11,7 @@ import assert from "assert";
 import {mockAssignmentData} from "../../content/__mocks__/mockContentData";
 import {range} from "../../canvasUtils";
 import {Assignment} from "@/canvas/content/Assignment";
+import mockModuleData from "@/canvas/course/__mocks__/mockModuleData";
 
 
 describe('Syllabus date changes', () => {
@@ -81,4 +87,61 @@ describe('sortAssignmentsByDate', () => {
         expect(dates[sorted.length - 2]).toBeNull();
     })
 
+})
+
+describe('getCurrentStartDate', () => {
+    it('returns a temporal plainDate if there\'s a module lock date', () => {
+        const mockModules = [
+            { ...mockModuleData, unlock_at: '2022-12-24T00:00:00Z'},
+        ]
+        expect(getCurrentStartDate(mockModules)).toEqual(new Temporal.PlainDate(
+        2022, 12, 24));
+    })
+    it("throws an error if it can't find overview module", () => {
+        expect(() => getCurrentStartDate([])).toThrowError(NoOverviewModuleFoundError)
+    })
+})
+
+describe ('getStartDateAssignments', () => {
+    function datesToAssignment([year, month, day]:[string,string,string]) {
+        return new Assignment({
+            ...mockAssignmentData,
+            due_at: `${year}-${month}-${day}T00:00:00Z`}, 0)
+    }
+    it('gets the first assignment due and returns the monday of that week', () => {
+        const assignments = ([
+            ['2024', '07', '19'],
+            ['2024', '08', '19'],
+            ['2024', '07', '18'],
+            ['2024', '09', '19'],
+        ] as [string,string,string][]).map(datesToAssignment);
+
+        expect(getStartDateAssignments(assignments)).toEqual(new Temporal.PlainDate(2024, 7, 15))
+    })
+
+    it('throws an error if there are no assignments with due dates', () => {
+        const assignments = ([new Assignment({...mockAssignmentData, due_at: null}, 0)])
+        expect(() => getStartDateAssignments(assignments)).toThrow(NoAssignmentsWithDueDatesError)
+    })
+
+    describe('getNewTermName', () => {
+        const newTermStart = new Temporal.PlainDate(2024, 12, 1);
+        it('throws an error with a bad term name', ()=> {
+            expect(() => getNewTermName('ABCDEFGX', newTermStart)).toThrow(MalformedSyllabusError)
+        })
+
+        it('returns a new style grad term name from old style grad term name', () => {
+            expect(getNewTermName('DE8W05.07.22', newTermStart)).toEqual('DE8W12.01.24')
+        })
+        it('returns a new style undergrad term name from old style undergrad term name', () => {
+            expect(getNewTermName('DE/HL-22-Dec', newTermStart)).toEqual('DE5W12.01.24')
+        })
+
+    })
+
+    describe('getOldUgTermName', () => {
+      it('returns a legacy old styl ug term name', () => {
+          expect(getOldUgTermName(new Temporal.PlainDate(2024, 12, 24))).toEqual('DE-24-Dec')
+      })
+    })
 })
