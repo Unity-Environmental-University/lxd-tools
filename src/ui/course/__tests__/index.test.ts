@@ -18,7 +18,6 @@ import {
 import assert from "assert";
 import {Course} from "@/canvas/course/Course";
 import {getContentClassFromUrl} from "@/canvas/content/contentFromUrl";
-import {getSingleCourse} from "@/canvas/course";
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('../addButtons')
@@ -28,6 +27,9 @@ jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
 
 
+import * as courseApi from '@/canvas/course';
+import {getSingleCourse} from "@/canvas/course";
+const getSingleCourseSpy = jest.spyOn(courseApi, 'getSingleCourse');
 describe('Base level async call', () => {
     let header: HTMLElement;
     let homeTileHost: HTMLElement;
@@ -56,6 +58,7 @@ describe('Base level async call', () => {
     test('Base level async call workflow', async () => {
         Object.defineProperty(document, 'documentURI', { value:'https://example.com/courses/123/assignments/321'});
         Object.defineProperty(document, 'URL', { value: 'https://example.com/courses/123/assignments/321'})
+        getSingleCourseSpy.mockResolvedValue(new Course({...mockCourseData, blueprint: true}));
 
         await act(async () => await main());
         await waitFor(() => {

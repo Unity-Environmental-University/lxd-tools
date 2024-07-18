@@ -8,6 +8,7 @@ import {genBlueprintDataForCode} from "@/canvas/course/blueprint";
 import {renderAsyncGen} from "@/canvas/fetch";
 import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {mockAsyncGen} from "@/__mocks__/utils";
 
 // Mock dependencies
 jest.mock('@/canvas/course/blueprint', () => ({
@@ -29,7 +30,7 @@ describe('BpButton', () => {
         } as Course;
         currentBp = {
             id: 2,
-            courseCode: 'CS102',
+            courseCode: 'BP_CS101',
             accountId: 1,
             rootAccountId: 1
         } as Course;
@@ -70,8 +71,7 @@ describe('BpButton', () => {
             {...mockCourseData, id: 3, course_code: 'CS103'}
         ];
 
-        (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce([]);
-        (renderAsyncGen as jest.Mock).mockResolvedValueOnce(blueprintData);
+        (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce(mockAsyncGen(blueprintData));
 
         const {getByText, getByTitle} = await act(async () => render(<BpButton
             course={course}
@@ -83,9 +83,9 @@ describe('BpButton', () => {
         await act(async () => fireEvent.click(getByTitle('Open the blueprint version of this course')));
 
         await waitFor(() => {
-            expect(getByText('Archived BPs')).toBeInTheDocument();
+            expect(getByText('BPs')).toBeInTheDocument();
         });
-        await act(async () => fireEvent.click(getByText('Archived BPs')));
+        await act(async () => fireEvent.click(getByText('BPs')));
 
         await waitFor(() => {
             expect(getByText('CS102')).toBeInTheDocument();

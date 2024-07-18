@@ -39,13 +39,15 @@ export function BpButton({course, currentBp}: BpButtonProps) {
         await openThisContentInTarget(course.id, currentBp.id);
     }
     if (!currentBp && bps.length === 0) return <Button disabled={true}>No BPs Found</Button>;
+
     return <>
         <Col>
         <Button
             title={"Open the blueprint version of this course"}
             onClick={openMainBp}
+            disabled={currentBp?.id === course.id}
         >BP</Button>
-            {bps.length > 1 && <>
+            {!currentBp && bps.length == 1 || bps.length > 1 && <>
         <Button
             onClick={e => setOpen(true)}
             title={"Show archived BPs"}

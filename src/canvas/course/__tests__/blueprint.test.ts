@@ -280,7 +280,7 @@ describe("genBlueprintsForCode", () => {
 
         expect(result).toBe(mockCourseDataGenerator);
         expect(getCourseDataGenerator).toHaveBeenCalledWith(
-            courseCode,
+            baseCourseCode(courseCode),
             accountIds,
             undefined,
             {blueprint: true}

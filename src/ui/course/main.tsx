@@ -24,16 +24,15 @@ export async function main() {
     if (!header) return;
     let bp: Course | undefined;
 
-    if (currentCourse.isBlueprint()) {
-        await addDevButton(header, currentCourse);
-        await addSectionsButton(header, currentCourse);
-    } else {
-        bp = await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+
+    await addDevButton(header, currentCourse);
+    bp = currentCourse.isBlueprint()? currentCourse : await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+    if (bp) {
         await addBpButton(header, currentCourse, bp);
-        if (bp) {
-            await addSectionsButton(header, bp, currentCourse);
-        }
+        await addSectionsButton(header, bp, currentCourse);
     }
+
+
     if (currentContentItem) {
         await addOpenAllLinksButton(header, currentContentItem);
         addHighlightBigImageResizer(currentContentItem);
