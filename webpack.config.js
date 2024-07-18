@@ -17,60 +17,71 @@ module.exports = {
     },
     optimization: {
         minimize: false,
+
     },
     cache: {
         type: 'filesystem',
         allowCollectingMemory: true,
     },
     entry: {
-        'popup': './src/popup',
-
-        'js/background': './src/background',
-        'js/content': './src/content',
-        'js/publish': './src/publish',
-        'js/pageFixes': './src/content/pageFixes.js',
-        'js/speedGrader': './src/ui/speedGrader',
-        'js/ui/course': './src/ui/course',
-        'js/ui/account': './src/ui/account',
-        'js/ui/module': './src/ui/module',
+        ...Object.entries({
+            'popup': './src/popup',
+            'js/background': './src/background',
+            'js/content': './src/content',
+            'js/publish': './src/publish',
+            'js/pageFixes': './src/content/pageFixes.js',
+            'js/speedGrader': './src/ui/speedGrader',
+            'js/ui/course': './src/ui/course',
+            'js/ui/account': './src/ui/account',
+            'js/ui/module': './src/ui/module',
+        }).reduce((aggregator, [key, value]) => {
+            return {
+                ...aggregator,
+                [key]: {
+                    import: value,
+                }
+            }
+        }, {})
     },
     devtool: 'source-map',
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                use: [
-                    {
-                        loader: "ts-loader",
-                        options: {
-                            compilerOptions: {noEmit: false},
-                        }
-                    }],
-                exclude: /node_modules|dist|__test__/,
-            },
-            {
-                test: /\.(css|scss)$/i,
-                use: [
-                    "style-loader",
-                    "css-loader",
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            postcssOptions: {
-                                plugins: function () {
-                                    return [
-                                        require('precss'),
-                                        require('autoprefixer')
-                                    ];
-                                }
+    module:
+        {
+            rules: [
+                {
+                    test: /\.tsx?$/,
+                    use: [
+                        {
+                            loader: "ts-loader",
+                            options: {
+                                compilerOptions: {noEmit: false},
                             }
+                        }],
+                    exclude: /node_modules|dist|__test__/,
+                },
+                {
+                    test: /\.(css|scss)$/i,
+                    use: [
+                        "style-loader",
+                        "css-loader",
+                        {
+                            loader: "postcss-loader",
+                            options: {
+                                postcssOptions: {
+                                    plugins: function () {
+                                        return [
+                                            require('precss'),
+                                            require('autoprefixer')
+                                        ];
+                                    }
+                                }
+                            },
                         },
-                    },
-                    "sass-loader"
-                ]
-            },
-        ],
-    },
+                        "sass-loader"
+                    ]
+                },
+            ],
+        }
+    ,
     plugins: [
         new webpack.ProvidePlugin({
             process: 'process/browser',
@@ -83,17 +94,17 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {from: "./README.dist.md", to: "README.md"},
-                // {
-                //     from: path.resolve(__dirname, 'manifest.json'),
-                //     to: "manifest.json",
-                //     transform: (content, path) => {
-                //         let packageJson = require('./package.json');
-                //         console.log(JSON.stringify(packageJson));
-                //         let manifest = JSON.parse(content.toString());
-                //         manifest.version = packageJson.version;
-                //         return JSON.stringify(manifest, null, 2);
-                //     }
-                // },
+                {
+                    from: path.resolve(__dirname, 'manifest.json'),
+                    to: "manifest.json",
+                    transform: (content, path) => {
+                        let packageJson = require('./package.json');
+                        console.log(JSON.stringify(packageJson));
+                        let manifest = JSON.parse(content.toString());
+                        manifest.version = packageJson.version;
+                        return JSON.stringify(manifest, null, 2);
+                    }
+                },
                 {from: "./img/*", to: 'img/[name][ext]'}
             ]
         }),
@@ -107,16 +118,20 @@ module.exports = {
         }),
         ...getHtmlPlugins(["popup"]),
     ],
-    resolve: {
-        extensions: [".tsx", ".ts", ".js"],
-        alias: {
-            config: path.resolve(__dirname, process.env.NODE_ENV),
-        },
-        plugins: [
-            new TsconfigPathsPlugin({}),
+    resolve:
+        {
+            extensions: [".tsx", ".ts", ".js"],
+            alias:
+                {
+                    config: path.resolve(__dirname, process.env.NODE_ENV),
+                }
+            ,
+            plugins: [
+                new TsconfigPathsPlugin({}),
 
-        ]
-    },
+            ]
+        }
+    ,
     stats: {
         errorDetails: true,
     }
@@ -127,7 +142,8 @@ module.exports = {
             '[name].js',
         chunkFilename:
             '[name]/.js'
-    },
+    }
+    ,
 }
 
 function getHtmlPlugins(chunks) {

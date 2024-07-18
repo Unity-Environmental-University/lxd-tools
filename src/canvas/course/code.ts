@@ -20,3 +20,13 @@ export function baseCourseCode(code: string) {
 export function stringIsCourseCode(code: string) {
     return COURSE_CODE_REGEX.exec(code);
 }
+
+export class MalformedCourseCodeError extends Error {
+    name = "MalformedCourseCodeError";
+    courseCode:string|null;
+    constructor(courseCode:string|null, message?: string, options?:ErrorOptions) {
+        if(!message) message = `${courseCode} is not a valid course code`;
+        super(message, options);
+        this.courseCode = courseCode;
+    }
+}

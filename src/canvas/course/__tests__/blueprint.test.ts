@@ -7,7 +7,7 @@ import {
     getTermNameFromSections,
     IBlueprintCourse,
     retireBlueprint,
-    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint, genBlueprintDataForCode
+    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint, genBlueprintDataForCode, NotABlueprintError
 } from "../blueprint";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
@@ -23,7 +23,7 @@ import * as fetchApi from '@/canvas/fetch'
 import {ICourseData} from "@/canvas/courseTypes";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {mockAsyncGen, returnMockAsyncGen} from "@/__mocks__/utils";
-import {baseCourseCode} from "@/canvas/course/code";
+import {baseCourseCode, MalformedCourseCodeError} from "@/canvas/course/code";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
@@ -62,52 +62,66 @@ test("Testing get associated courses logic", async () => {
 })
 
 
-test("Testing blueprint retirement", async () => {
-    const termName = 'DE8W03.11.24';
-    const mockBpData = {
-        ...mockCourseData,
-        id: 0,
-        blueprint: true,
-        course_code: 'BP_TEST000',
-        name: 'BP_TEST000: Testing with Tests'
-    };
-    const notBpMockBpData = {...mockBpData, blueprint: false};
-    const badNameMockBpData = {...mockBpData, course_code: `BP-${termName}_TEST000`}
-    const mockBlueprint = new Course(mockBpData);
-    const notBpMockBlueprint: Course = new Course(notBpMockBpData);
-    const badNameMockBlueprint: Course = new Course(badNameMockBpData);
-    await expect(retireBlueprint(badNameMockBlueprint, termName)).rejects.toThrow("This blueprint is not named BP_")
+describe("Testing blueprint retirement", () => {
+    it('throws an error when course is not named as the base blueprint', async () => {
+        const course = new Course({...mockCourseData, course_code:"BP-xxx-TEST104" , blueprint: false});
+        await expect(async () => await retireBlueprint(course, 'XXXXXXX')).rejects.toThrow(NotABlueprintError)
+    })
+    it('throws an error when course code is malformed', async () => {
+        const course = new Course({...mockCourseData, course_code: "X12375"});
+        await expect(async () => await retireBlueprint(course, 'XXXXXXX')).rejects.toThrow(MalformedCourseCodeError)
+    })
+    it('goes successfully through process',  async() => {
+        const termName = 'DE8W03.11.24';
+        const mockBpData = {
+            ...mockCourseData,
+            id: 0,
+            blueprint: true,
+            course_code: 'BP_TEST000',
+            name: 'BP_TEST000: Testing with Tests'
+        };
+        const notBpMockBpData = {...mockBpData, blueprint: false};
+        const badNameMockBpData = {...mockBpData, course_code: `BP-${termName}_TEST000`}
+        const mockBlueprint = new Course(mockBpData);
+        const notBpMockBlueprint: Course = new Course(notBpMockBpData);
+        const badNameMockBlueprint: Course = new Course(badNameMockBpData);
+        await expect(retireBlueprint(badNameMockBlueprint, termName)).rejects.toThrow("This blueprint is not named BP_")
 
-    const mockAssociatedCourseData: ICourseData[] = [{
-        ...mockCourseData,
-        id: 1,
-        course_code: `${termName}_TEST000-01`,
-        enrollment_term_id: [10]
-    }];
+        const mockAssociatedCourseData: ICourseData[] = [{
+            ...mockCourseData,
+            id: 1,
+            course_code: `${termName}_TEST000-01`,
+            enrollment_term_id: [10]
+        }];
 
-    (getPagedDataGenerator as jest.Mock).mockImplementationOnce(returnMockAsyncGen(mockAssociatedCourseData))
-    const sections = await mockBlueprint.getAssociatedCourses();
-    (getPagedDataGenerator as jest.Mock).mockImplementationOnce(returnMockAsyncGen([{
-        ...mockAccountData,
-        id: 2,
-        root_account_id: null
-    }]));
-    sections.forEach(section => section.getTerm = jest.fn(async () => (new Term({...mockTermData, id: 10, name: termName}))))
-    let derivedTermName = await getTermNameFromSections(sections);
-    expect(derivedTermName).toBe(termName);
+        (getPagedDataGenerator as jest.Mock).mockImplementationOnce(returnMockAsyncGen(mockAssociatedCourseData))
+        const sections = await mockBlueprint.getAssociatedCourses();
+        (getPagedDataGenerator as jest.Mock).mockImplementationOnce(returnMockAsyncGen([{
+            ...mockAccountData,
+            id: 2,
+            root_account_id: null
+        }]));
+        sections.forEach(section => section.getTerm = jest.fn(async () => (new Term({
+            ...mockTermData,
+            id: 10,
+            name: termName
+        }))))
+        let derivedTermName = await getTermNameFromSections(sections);
+        expect(derivedTermName).toBe(termName);
 
 
-    mockBlueprint.saveData = jest.fn();
-    const config:ICanvasCallConfig = {};
-    await retireBlueprint(mockBlueprint, derivedTermName, config);
+        mockBlueprint.saveData = jest.fn();
+        const config: ICanvasCallConfig = {};
+        await retireBlueprint(mockBlueprint, derivedTermName, config);
 
 
-    expect( mockBlueprint.saveData).toHaveBeenCalledWith({
-        course: {
-            course_code: `BP-${termName}_TEST000`,
-            name: `BP-${termName}_TEST000: Testing with Tests`
-        }
-    }, config)
+        expect(mockBlueprint.saveData).toHaveBeenCalledWith({
+            course: {
+                course_code: `BP-${termName}_TEST000`,
+                name: `BP-${termName}_TEST000: Testing with Tests`
+            }
+        }, config)
+    })
 })
 
 describe('getBlueprintFromCode', () => {

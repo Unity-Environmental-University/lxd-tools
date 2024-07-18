@@ -5,7 +5,7 @@ import {apiWriteConfig} from "../index";
 import {GetCourseOptions, GetCoursesFromAccountOptions, ICourseCodeHaver, IIdHaver} from "./courseTypes";
 import {Course} from "./Course";
 import {config} from "dotenv";
-import {baseCourseCode} from "@/canvas/course/code";
+import {baseCourseCode, MalformedCourseCodeError} from "@/canvas/course/code";
 
 import {ICourseData} from "@/canvas/courseTypes";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
@@ -69,12 +69,12 @@ export async function getTermNameFromSections(sections: Course[]) {
 
 export async function retireBlueprint(course: Course, termName: string | null, config?: ICanvasCallConfig) {
 
+    if (!course.parsedCourseCode) throw new MalformedCourseCodeError(course.courseCode);
     const isCurrentBlueprint = course.parsedCourseCode?.match('BP_');
-    if (!isCurrentBlueprint) throw new Error("This blueprint is not named BP_; are you trying to retire a retired blueprint?")
+    if (!isCurrentBlueprint) throw new NotABlueprintError("This blueprint is not named BP_; are you trying to retire a retired blueprint?")
 
     const newCode = `BP-${termName}_${course.baseCode}`;
     const saveData: Record<string, any> = {};
-    if (!course.parsedCourseCode) throw new Error("Course does not have a code");
 
     saveData[Course.nameProperty] = course.name.replace(course.parsedCourseCode, newCode);
     saveData['course_code'] = newCode
@@ -146,3 +146,6 @@ export async function unSetAsBlueprint(courseId: number, config?: ICanvasCallCon
 }
 
 
+export class NotABlueprintError extends Error {
+    name = "NotABlueprintError"
+}

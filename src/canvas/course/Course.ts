@@ -23,18 +23,18 @@ import {filterUniqueFunc, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {overrideConfig} from "../index";
 import assert from "assert";
 import {getCurrentStartDate} from "./changeStartDate";
-import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber} from "./modules";
+import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfileWithUser} from "../profile";
-import {getCourseData, getCourseGenerator, getGradingStandards, getSingleCourse} from "./index";
+import {getCourseById, getCourseData, getCourseGenerator, getGradingStandards, getSingleCourse} from "./index";
 import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
 import {Term} from "@/canvas/Term";
 
 import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
-import {renderAsyncGen} from "@/canvas/fetch";
+import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {IAssignmentGroup, IPageData} from "@/canvas/content/types";
 import {BaseContentItem, getBannerImage} from "@/canvas/content/BaseContentItem";
@@ -79,7 +79,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
             const id = getCourseIdFromUrl(url);
             if (!id) return null;
-            return await this.getCourseById(id);
+            return getCourseById(id);
         }
         return null;
     }
@@ -90,42 +90,32 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return new Course(data);
     }
 
-    // static async getAllByCode(code: string | undefined | null, accountIds: number[], term: Term | null = null, config: ICanvasCallConfig | undefined = undefined) {
-    //     return await renderAsyncGen(getCourseGenerator(code, accountIds))
-    // }
-    //
-    // static async getByCode(code: string, accountIds: number[], term: Term | null = null, config: ICanvasCallConfig | undefined = undefined) {
-    //     return  ( await (getCourseGenerator(code, accountIds).next()) ).value ?? undefined;
-    // }
 
-    static async getAccountIdsByName(): Promise<Record<string, any>> {
-        let course = await Course.getFromUrl();
-        if (!course) {
-            console.warn("You must be on a canvas page to get accounts");
-            return {};
-        }
-        return {
-            'root': course.canvasData.root_account_id,
-            'current': course.canvasData.account_id
-        }
-    }
+    static async publishAll(courses: number[] | Course[], accountId: number) {
 
+        if (courses.length == 0) return false;
+        const courseIds = courses.map((course) => {
+            if (course instanceof Course) {
+                return course.id;
+            }
+            return course;
+        })
 
-    static async courseEvent(courses: Course[], event: string, accountId: number) {
         const url = `/api/v1/accounts/${accountId}/courses`;
         const data = {
-            'event': event,
-            'course_ids[]': courses.map(course => course.id)
-        };
-        return await fetchJson<CanvasData>(url, {
+            'event': 'offer',
+            'course_ids': courseIds,
+        }
+        return await fetchJson(url, {
             fetchInit: {
                 method: 'PUT',
-                body: JSON.stringify(data)
-
+                body: formDataify(data),
             }
-        });
-
+        })
     }
+
+
+
     get contentUrlPath() {
         return `/api/v1/courses/${this.id}`;
     }
@@ -156,7 +146,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         else return id[0];
     }
 
-    //comment for no reason for publish
     async getTerm(): Promise<Term | null> {
         assert(typeof this.termId === 'number')
 
@@ -178,14 +167,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return this.canvasData.workflow_state
     }
 
-
-    get start() {
-        return new Date(this.getItem<string>('start_at'));
-    }
-
     get isDev() {
         return !!this.name.match(/^DEV/);
-
     }
 
 
@@ -197,16 +180,16 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return this.canvasData.account_id;
     }
 
+
     async getModules(config?: ICanvasCallConfig): Promise<IModuleData[]> {
         if (this._modules) {
             return this._modules;
         }
-        config = overrideConfig(config, {
+        const modules = await renderAsyncGen(moduleGenerator(this.id, {
             queryParams: {
                 include: ['items', 'content_details']
             }
-        })
-        let modules = <IModuleData[]>await getPagedData(`${this.contentUrlPath}/modules`, config);
+        }));
         this._modules = modules;
         return modules;
     }
@@ -265,7 +248,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         }
 
         const standards = (await this.getAvailableGradingStandards(config)).filter(standard => standard.id === grading_standard_id)
-        if(standards.length  == 0) return null;
+        if (standards.length == 0) return null;
         return standards[0];
     }
 
@@ -336,13 +319,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async getSyllabus(config: ICanvasCallConfig<GetCourseOptions> = {queryParams: {}}): Promise<string> {
-        if (!this.canvasData.syllabus_body) {
-
-            config.queryParams = {...config.queryParams, include: ['syllabus_body']};
-            const data = await Course.getCourseById(this.id, config);
-            assert(data.canvasData.syllabus_body)
-            this.canvasData.syllabus_body = data.canvasData.syllabus_body;
-        }
+        if(this.canvasData.syllabus_body) return this.canvasData.syllabus_body;
+        const data = await getCourseData(this.id, fetchGetConfig({include: ['syllabus_body']}, config));
+        assert(data.syllabus_body)
+        this.canvasData.syllabus_body = data.syllabus_body;
         return this.canvasData.syllabus_body;
     }
 
@@ -421,15 +401,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         this.canvasData = reloaded.rawData;
     }
 
-    async setNavigationTabHidden(label: string, value: boolean) {
-        const tab = this.getTab(label);
-        if (!tab) return null;
-
-        return await fetchJson(`/api/v1/courses/${this.id}/tabs/${tab.id}`, {
-            queryParams: {'hidden': value}
-        });
-    }
-
     async changeSyllabus(newHtml: string) {
         this.canvasData['syllabus_body'] = newHtml;
         return await fetchJson(`/api/v1/courses/${this.id}`, {
@@ -444,32 +415,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         });
     }
 
-    static async publishAll(courses: number[] | Course[], accountId: number) {
-
-        if (courses.length == 0) return false;
-        const courseIds = courses.map((course) => {
-            if (course instanceof Course) {
-                return course.id;
-            }
-            return course;
-        })
-
-        const url = `/api/v1/accounts/${accountId}/courses`;
-        const data = {
-            'event': 'offer',
-            'course_ids': courseIds,
-        }
-        return await fetchJson(url, {
-            fetchInit: {
-                method: 'PUT',
-                body: formDataify(data),
-            }
-        })
-    }
-
     async updateDueDates(offset: number, config?: ICanvasCallConfig) {
         const promises: Promise<any>[] = [];
-        const returnAssignments:Assignment[] = [];
+        const returnAssignments: Assignment[] = [];
 
         const assignments = assignmentDataGen(this.id, config)
         if (offset === 0 || offset) {
@@ -494,30 +442,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         this.canvasData = courseData;
     }
 
-    async unpublish() {
-        const url = `/api/v1/courses/${this.id}`;
-        await fetchJson(url, {
-            fetchInit: {
-                method: 'PUT',
-                body: JSON.stringify({'course[event]': 'claim'})
-            }
-        });
-        this.canvasData = {...(await Course.getCourseById(this.id)).canvasData};
-    }
-
-    async reset(prompt = true) {
-        if (prompt && !confirm(`Are you sure you want to reset ${this.parsedCourseCode}?`)) {
-            return false;
-        }
-
-        const url = `/api/v1/courses/${this.id}/reset_content`;
-        const data = await fetchJson(url, {fetchInit: {method: 'POST'}});
-        this.canvasData['id'] = data.id;
-
-        return false;
-    }
-
-     get devCode() {
+    get devCode() {
         return 'DEV_' + this.baseCode;
     }
 
@@ -529,7 +454,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
             console.log('no migrations found');
             if (return_dev_search) {
                 return getSingleCourse(parentCode, this.getAccountIds())
-             } else return;
+            } else return;
         }
         migrations.sort((a, b) => b.id - a.id);
 
@@ -547,6 +472,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     getAccountIds() {
         return [this.accountId, this.rootAccountId].filter(a => typeof a !== 'undefined' && a !== null);
     }
+
     async regenerateHomeTiles() {
         const modules = await this.getModules();
         let urls = await Promise.all(modules.map(async (module) => {

@@ -1,5 +1,4 @@
 import fetchMock, {FetchMock} from "jest-fetch-mock";
-import {IUserData} from "../../canvasDataDefs";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import {
     copyToNewCourseGenerator,
@@ -7,19 +6,14 @@ import {
     IMigrationData,
     IProgressData
 } from "../migration";
-import {createNewCourse} from "../index";
 import {mockProgressData} from "../__mocks__/mockProgressData";
 import {ICanvasCallConfig, range} from "../../canvasUtils";
 import {mockMigrationData} from "../__mocks__/mockMigrationData";
-import * as canvasUtils from "../../canvasUtils";
-import * as CourseModule from "../index";
+
 import {Course} from "../Course";
 import {config} from "dotenv";
-
 import {ICourseData} from "@/canvas/courseTypes";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
 beforeEach(() => {
@@ -56,6 +50,12 @@ describe('Getting migrations', ()=> {
             config.fetchInit
         );
         expect(migration).toEqual(mockMigrationData);
+    })
+
+    it('returns null if no migrations are found', async () => {
+        fetchMock.once('null');
+        const migration = await getMigration(1, 2, {});
+        expect(migration).toBeNull()
 
     })
 })

@@ -17,13 +17,6 @@ export function loadCachedCourseMigrations(courseId: number | string) {
     return loadCachedMigrations()[key] ?? [];
 }
 
-export function cacheMigrations(migrations: Map<number, SavedMigration[]>) {
-    let cachedMigrations: ReturnType<typeof loadCachedMigrations> = {};
-    for(let [key, value] of migrations.entries()) {
-        cachedMigrations = cacheCourseMigrations(key, value, {cachedMigrations});
-    }
-    return cachedMigrations;
-}
 
 export type CacheCourseMigrationOptions = {
     cachedMigrations?: ReturnType<typeof loadCachedMigrations>,
