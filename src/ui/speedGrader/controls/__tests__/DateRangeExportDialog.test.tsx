@@ -4,6 +4,9 @@ import '@testing-library/jest-dom/extend-expect';
 import DateRangeExportDialog, { IDateRangeExportProps } from '../DateRangeExportDialog';
 import { Course } from "@/canvas/course/Course";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {mockAsyncGen} from "@/__mocks__/utils";
+import {getCourseDataGenerator} from "@/canvas/course";
 
 // Mocking the dependencies
 jest.mock('@/ui/speedGrader/saveDataGenFunc', () => ({
@@ -12,6 +15,10 @@ jest.mock('@/ui/speedGrader/saveDataGenFunc', () => ({
 
 jest.mock('@/ui/speedGrader/getData/getRowsForSections', () => ({
   getRowsForSections: jest.fn(() => Promise.resolve([])),
+}));
+jest.mock('@/canvas/fetch/getPagedDataGenerator');
+jest.mock('@/canvas/course/index', () => ({
+  getCourseDataGenerator: jest.fn(),
 }));
 
 jest.mock('@/canvas/course/blueprint');
@@ -60,6 +67,7 @@ describe('DateRangeExportDialog', () => {
   });
 
   it('handles export button click', async () => {
+    (getCourseDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen([mockCourseData]))
     render(<DateRangeExportDialog {...defaultProps} />);
 
     const exportButton = screen.getByText('Export Date Range');

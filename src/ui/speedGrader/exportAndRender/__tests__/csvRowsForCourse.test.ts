@@ -9,7 +9,6 @@ import {Account} from "@/canvas/Account";
 
 import * as assignmentsApi from "@/canvas/content/Assignment";
 
-jest.mock('@/ui/speedGrader/getAllPagesAsync');
 jest.mock('@/canvas/fetch');
 jest.mock('@/ui/speedGrader/getData/getRows');
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
