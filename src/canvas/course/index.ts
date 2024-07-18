@@ -18,8 +18,7 @@ export async function getGradingStandards(contextId: number, contextType: 'accou
 }
 
 
-
-export function getCourseData(id:number, config?: ICanvasCallConfig<GetCourseOptions>) {
+export function getCourseData(id: number, config?: ICanvasCallConfig<GetCourseOptions>) {
     const url = `/api/v1/courses/${id}`;
     return fetchJson(url, config) as Promise<ICourseData>;
 }
@@ -29,10 +28,6 @@ export function getCourseDataGenerator(
     queryString: string | undefined | null, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>
 ) {
     if (!Array.isArray(accountIds)) accountIds = [accountIds];
-
-    interface IGetCourseQueryParams extends IQueryParams {
-        enrollment_term_id?: number,
-    }
 
     const defaultConfig: ICanvasCallConfig<GetCoursesFromAccountOptions> = queryString ? {
         queryParams: {
@@ -54,23 +49,23 @@ export function getCourseGenerator(
     return generatorMap(getCourseDataGenerator(queryString, accountIds, term, config), courseData => new Course(courseData));
 }
 
-export async function getSingleCourse(queryString:string, accountIds:number[], term?:Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+export async function getSingleCourse(queryString: string, accountIds: number[], term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     for (let accountId of accountIds) {
         const courseDatas = await fetchJson<ICourseData[]>(
             `/api/v1/accounts/${accountId}/courses`,
-            overrideConfig({ queryParams: { search_term: queryString } },config)
+            overrideConfig({queryParams: {search_term: queryString}}, config)
         )
 
-        if(courseDatas.length > 0) return new Course(courseDatas[0]);
+        if (courseDatas.length > 0) return new Course(courseDatas[0]);
     }
     return undefined;
 }
 
-export async function getCourseById(id:number, config?:ICanvasCallConfig<GetCoursesFromAccountOptions>) {
+export async function getCourseById(id: number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     return new Course(await fetchJson(`/api/v1/courses/${id}`, config));
 }
 
-export async function createNewCourse(courseCode: string, accountId:number, name?: string, config?: ICanvasCallConfig) {
+export async function createNewCourse(courseCode: string, accountId: number, name?: string, config?: ICanvasCallConfig) {
     name ??= courseCode;
     const createUrl = `/api/v1/accounts/${accountId}/courses/`
     let createConfig: ICanvasCallConfig = {
@@ -87,7 +82,8 @@ export async function createNewCourse(courseCode: string, accountId:number, name
     return await fetchJson(createUrl, deepObjectMerge(createConfig, config, true)) as ICourseData;
 }
 
-export class CourseNotFoundException extends Error {}
+export class CourseNotFoundException extends Error {
+}
 
 export async function saveCourseData(courseId: number, data: Partial<ICourseData>, config?: ICanvasCallConfig) {
     const url = `/api/v1/courses/${courseId}`

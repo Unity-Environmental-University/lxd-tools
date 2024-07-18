@@ -262,6 +262,8 @@ describe("genBlueprintsForCode", () => {
 
     let consoleWarnSpy = jest.spyOn(console, 'warn');
 
+
+
     it("should return null for invalid course code", async () => {
         (getCourseDataGenerator as jest.Mock).mockReturnValue(mockCourseDataGenerator);
         const courseCode = 'BP_ST123'

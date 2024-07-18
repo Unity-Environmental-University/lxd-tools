@@ -29,13 +29,13 @@ export function genBlueprintDataForCode(courseCode:string | null, accountIds:num
         console.warn("Course code not present")
         return null;
     }
-    const code = baseCourseCode(courseCode);
-    if(!code) {
+    const baseCode = baseCourseCode(courseCode);
+    if(!baseCode) {
         console.warn(`Code ${courseCode} invalid`);
         return null;
     }
 
-    const courseGen = getCourseDataGenerator(courseCode, accountIds, undefined, fetchGetConfig<GetCoursesFromAccountOptions>({
+    const courseGen = getCourseDataGenerator(baseCode, accountIds, undefined, fetchGetConfig<GetCoursesFromAccountOptions>({
         blueprint: true,
         include: ['concluded'],
     }, { queryParams }))
