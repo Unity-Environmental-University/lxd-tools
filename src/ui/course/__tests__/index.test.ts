@@ -17,19 +17,22 @@ import {
 } from "../addButtons"
 import assert from "assert";
 import {Course} from "@/canvas/course/Course";
+
+
+import * as courseApi from '@/canvas/course';
+import {getSingleCourse} from "@/canvas/course";
+
+import * as determineContent from "@/canvas/content/determineContent";
 import {getContentClassFromUrl} from "@/canvas/content/determineContent";
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('../addButtons')
 
-jest.mock('@/canvas/content/determineContent');
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
 
-
-import * as courseApi from '@/canvas/course';
-import {getSingleCourse} from "@/canvas/course";
 const getSingleCourseSpy = jest.spyOn(courseApi, 'getSingleCourse');
+const getContentClassFromUrlSpy = jest.spyOn(determineContent, 'getContentClassFromUrl')
 describe('Base level async call', () => {
     let header: HTMLElement;
     let homeTileHost: HTMLElement;
@@ -42,7 +45,6 @@ describe('Base level async call', () => {
         homeTileHost = document.createElement('div');
         homeTileHost.id = 'Modules-anchor';
         document.body.appendChild(homeTileHost);
-        Course.getFromUrl = jest.fn().mockResolvedValue(new Course(mockCourseData));
         Course.getFromUrl = jest.fn().mockResolvedValue(new Course(mockCourseData));
         ReactDOM.createRoot = jest.fn().mockReturnValue({
             render: jest.fn(),

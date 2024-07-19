@@ -1,4 +1,3 @@
-import {AssignmentKind} from "@/canvas/content/assignments";
 import {
     getContentClassFromUrl,
     getContentItemFromUrl,
@@ -17,6 +16,7 @@ import {Quiz, QuizKind} from "@/canvas/content/Quiz";
 import {Page, PageKind} from "@/canvas/content/Page";
 import {Discussion, DiscussionKind} from "@/canvas/content/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),

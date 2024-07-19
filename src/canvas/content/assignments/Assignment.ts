@@ -2,8 +2,8 @@ import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
-import {AssignmentKind} from "@/canvas/content/assignments/index";
 import {IAssignmentData} from "@/canvas/content/assignments/types";
+import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 
 export class Assignment extends BaseContentItem {
     static kind = AssignmentKind;

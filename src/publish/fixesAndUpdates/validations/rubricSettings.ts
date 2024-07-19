@@ -6,9 +6,10 @@ import {
     updateRubricAssociation
 } from "@/canvas/rubrics";
 import {IIdHaver} from "@/canvas/course/courseTypes";
-import {AssignmentKind, updateAssignmentData} from "@/canvas/content/assignments";
+import {updateAssignmentData} from "@/canvas/content/assignments";
 import {callAll} from "@/canvas/canvasUtils";
 import {assignmentDataGen, getAssignmentData} from "@/canvas/content/assignments";
+import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});

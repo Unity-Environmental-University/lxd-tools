@@ -1,10 +1,10 @@
-import {AssignmentKind} from "@/canvas/content/assignments";
 import {Quiz, QuizKind} from "@/canvas/content/Quiz";
 import {Page, PageKind} from "@/canvas/content/Page";
 import {Discussion, DiscussionKind} from "@/canvas/content/Discussion";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {ContentData} from "@/canvas/content/types";
+import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 
 
 export const CONTENT_KINDS = [

@@ -87,7 +87,7 @@ export type ContentKind<
     getBody: (data: DataType) => string | undefined,
     get: (courseId: number, contentId: number, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>
     dataGenerator: (courseId: number, config?: ICanvasCallConfig<GetQueryOptions>) => AsyncGenerator<DataType>
-    put?: (courseId: number, contentId: number, data: PutDataType) => Promise<DataType>,
+    put: (courseId: number, contentId: number, data: PutDataType) => Promise<DataType>,
 } & ReturnType<typeof contentUrlFuncs>
 export type ContentFuncsOptions<
     GetOptionsType extends IQueryParams,

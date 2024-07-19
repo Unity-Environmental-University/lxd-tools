@@ -1,7 +1,7 @@
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {ContentKind, IPageData} from "@/canvas/content/types";
-import {contentUrlFuncs} from "@/canvas/content/getContentFuncs";
+import {contentUrlFuncs, putContentFunc} from "@/canvas/content/getContentFuncs";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
@@ -20,7 +20,9 @@ export const PageKind:ContentKind<IPageData, GetPageOptions, SavePageOptions> = 
     get: (id, courseId, config) =>
         fetchJson(PageUrlFuncs.getApiUrl(courseId, id), config),
     dataGenerator: (courseId, config) =>
-        getPagedDataGenerator(PageUrlFuncs.getAllApiUrl(courseId), config)
+        getPagedDataGenerator(PageUrlFuncs.getAllApiUrl(courseId), config),
+    put: putContentFunc(PageUrlFuncs.getApiUrl),
+
 }
 
 export class Page extends BaseContentItem {

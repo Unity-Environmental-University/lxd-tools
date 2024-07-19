@@ -4,7 +4,6 @@ import React, {useEffect, useState} from "react";
 import assert from "assert";
 
 import {Course} from "@/canvas/course/Course";
-import {AssignmentKind} from "@/canvas/content/assignments";
 import SpeedGraderModalDialog from "@/ui/speedGrader/controls/SpeedGraderModalDialog";
 import DateRangeExportDialog from "@/ui/speedGrader/controls/DateRangeExportDialog";
 
@@ -17,6 +16,7 @@ import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {ICourseData} from "@/canvas/courseTypes";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentData} from "@/canvas/content/assignments/types";
+import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 
 
 export type ExportAppProps = {
