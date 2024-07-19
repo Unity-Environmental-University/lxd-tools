@@ -17,7 +17,7 @@ import {
     SavedMigration,
     cacheCourseMigrations,
     loadCachedMigrations
-} from "@/canvas/course/migrationCache";
+} from "@/canvas/course/migration/migrationCache";
 import {MigrationBar} from "./MigrationBar";
 import assert from "assert";
 

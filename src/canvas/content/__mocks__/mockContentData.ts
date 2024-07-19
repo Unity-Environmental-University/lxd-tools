@@ -1,5 +1,6 @@
-import {IAssignmentData, IDiscussionData, IPageData} from "@/canvas/content/types";
+import {IDiscussionData, IPageData} from "@/canvas/content/types";
 import {IQuizData} from "@/canvas/content/Quiz";
+import {IAssignmentData} from "@/canvas/content/assignments/types";
 
 
 export const mockPageData: IPageData = {
@@ -73,6 +74,23 @@ export const mockAssignmentData: IAssignmentData = {
 }
 
 export const mockDiscussionData: IDiscussionData = {
+    allow_rating: false,
+    assignment_id: 1,
+    discussion_subentry_count: 0,
+    discussion_type: 'threaded',
+    locked: false,
+    locked_for_user: false,
+    only_graders_can_rate: false,
+    permissions: {},
+    pinned: false,
+    published: false,
+    read_state: 'unread',
+    sort_by_grading: false,
+    subscribed: false,
+    topic_children: [],
+    unread_count: 0,
+    user_can_see_posts: false,
+    user_name: "",
     html_url: "", id: 0, last_reply_at: "", message: "", posted_at: "", require_initial_post: false, title: "",
     delayed_post_at: ""
 

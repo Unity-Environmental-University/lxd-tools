@@ -3,7 +3,7 @@ import {Course} from "../../canvas/course/Course";
 import {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {Button, Col, Row} from "react-bootstrap";
-import {SavedMigration} from "../../canvas/course/migrationCache";
+import {SavedMigration} from "../../canvas/course/migration/migrationCache";
 
 type MigrationBarProps = {
     migration: SavedMigration,

@@ -1,17 +1,18 @@
 import {Course} from "@/canvas/course/Course";
-import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
+import {assignmentDataGen} from "@/canvas/content/assignments";
 import {ICourseData} from "@/canvas/courseTypes";
 import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
-import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/types";
 import {Account} from "@/canvas/Account";
 import {render} from "@testing-library/react";
 import { fetchJson } from "@/canvas/fetch/fetchJson";
 import {ITermData} from "@/canvas/Term";
 import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {moduleGenerator} from "@/canvas/course/modules";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/assignments/types";
 
 export async function csvRowsForCourse(course: ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];

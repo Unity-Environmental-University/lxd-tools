@@ -1,16 +1,16 @@
 import fetchMock, {FetchMock} from "jest-fetch-mock";
-import {mockCourseData} from "../__mocks__/mockCourseData";
+import {mockCourseData} from "../../__mocks__/mockCourseData";
 import {
     copyToNewCourseGenerator,
     courseMigrationGenerator, getMigration, getMigrationsForCourse,
     IMigrationData,
     IProgressData
-} from "../migration";
-import {mockProgressData} from "../__mocks__/mockProgressData";
-import {ICanvasCallConfig, range} from "../../canvasUtils";
-import {mockMigrationData} from "../__mocks__/mockMigrationData";
+} from "../index";
+import {mockProgressData} from "../../__mocks__/mockProgressData";
+import {ICanvasCallConfig, range} from "../../../canvasUtils";
+import {mockMigrationData} from "@/canvas/course/migration/__mocks__/mockMigrationData";
 
-import {Course} from "../Course";
+import {Course} from "../../Course";
 import {config} from "dotenv";
 import {ICourseData} from "@/canvas/courseTypes";
 

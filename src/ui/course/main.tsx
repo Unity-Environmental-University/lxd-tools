@@ -1,5 +1,5 @@
 import {Course} from "@/canvas/course/Course";
-import {getContentClassFromUrl} from "@/canvas/content/contentFromUrl";
+import {getContentClassFromUrl} from "@/canvas/content/determineContent";
 import {
     addBpButton,
     addDevButton,

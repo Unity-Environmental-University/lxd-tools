@@ -14,7 +14,7 @@ import {changeModuleLockDate} from "../../canvas/course/modules";
 import {oldDateToPlainDate} from "../../date";
 
 import {Course} from "../../canvas/course/Course";
-import {assignmentDataGen} from "@/canvas/content/Assignment";
+import {assignmentDataGen} from "@/canvas/content/assignments";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";

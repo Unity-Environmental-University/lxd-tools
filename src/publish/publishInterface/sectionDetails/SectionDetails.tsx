@@ -8,7 +8,7 @@ import {Col, Row} from "react-bootstrap";
 import {Course} from "../../../canvas/course/Course";
 
 
-import {IAssignmentGroup} from "@/canvas/content/types";
+import {IAssignmentGroup} from "@/canvas/content/assignments/types";
 
 type SectionDetailsProps = {
     section?: Course | null,

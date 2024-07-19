@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import assert from "assert";
 
 import {Course} from "@/canvas/course/Course";
-import {Assignment, AssignmentKindInfo} from "@/canvas/content/Assignment";
+import {AssignmentKind} from "@/canvas/content/assignments";
 import SpeedGraderModalDialog from "@/ui/speedGrader/controls/SpeedGraderModalDialog";
 import DateRangeExportDialog from "@/ui/speedGrader/controls/DateRangeExportDialog";
 
@@ -13,9 +13,10 @@ import ExportAllButton from "@/ui/speedGrader/controls/ExportAllButton";
 import {getCourseById, getCourseData, getSingleCourse} from "@/canvas/course";
 import {useEffectAsync} from "@/ui/utils";
 import * as url from "url";
-import {IAssignmentData} from "@/canvas/content/types";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {ICourseData} from "@/canvas/courseTypes";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {IAssignmentData} from "@/canvas/content/assignments/types";
 
 
 export type ExportAppProps = {
@@ -52,8 +53,8 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
         const stringId = urlParams.get('assignment_id');
         const assignmentId = stringId? parseInt(stringId) : undefined;
         if (assignmentId && !assignment) {
-            const data = await AssignmentKindInfo.get(course.id, assignmentId)
-            const assignment = assignmentId ? await AssignmentKindInfo.get(course?.id, assignmentId) : undefined;
+            const data = await AssignmentKind.get(course.id, assignmentId)
+            const assignment = assignmentId ? await AssignmentKind.get(course?.id, assignmentId) : undefined;
             setAssignment(assignment);
         }
     }, [course])

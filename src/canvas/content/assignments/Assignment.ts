@@ -1,39 +1,12 @@
+import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/contentGenFuncs";
-import {canvasDataFetchGenFunc} from "@/canvas/fetch/canvasDataFetchGenFunc";
-import {IAssignmentData, UpdateAssignmentDataOptions} from "@/canvas/content/types";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {overrideConfig} from "@/canvas";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {CanvasData} from "@/canvas/canvasDataDefs";
-
-
-
-
-const AssignmentUrlFuncs = contentUrlFuncs('assignments');
-
-export const AssignmentKindInfo:ContentKind<
-    IAssignmentData,
-    CanvasData,
-    UpdateAssignmentDataOptions
-> = {
-    getId: (data) => data.id,
-    getName: (data) => data.name,
-    getBody: (data) => data.description,
-    async get(courseId:number, contentId: number, config?:ICanvasCallConfig<Record<string, any>>) {
-        const data = await fetchJson(this.getApiUrl(courseId, contentId), config) as IAssignmentData;
-        return data;
-    },
-    ...AssignmentUrlFuncs,
-    dataGenerator: (courseId, config) => getPagedDataGenerator<IAssignmentData>(AssignmentUrlFuncs.getAllApiUrl(courseId), config),
-    put: putContentFunc<UpdateAssignmentDataOptions, IAssignmentData>(AssignmentUrlFuncs.getApiUrl),
-}
+import {AssignmentKind} from "@/canvas/content/assignments/index";
+import {IAssignmentData} from "@/canvas/content/assignments/types";
 
 export class Assignment extends BaseContentItem {
-    static kind = AssignmentKindInfo;
+    static kind = AssignmentKind;
     static nameProperty = 'name';
     static bodyProperty = 'description';
     static contentUrlTemplate = "/api/v1/courses/{course_id}/assignments/{content_id}";
@@ -95,9 +68,3 @@ export class Assignment extends BaseContentItem {
         }, config)
     }
 }
-
-export const assignmentDataGen = AssignmentKindInfo.dataGenerator;
-export const updateAssignmentData = AssignmentKindInfo.put!;
-export const getAssignmentData = AssignmentKindInfo.get;
-
-

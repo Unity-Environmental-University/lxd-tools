@@ -28,7 +28,7 @@ import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfileWithUser} from "../profile";
 import {getCourseById, getCourseData, getCourseGenerator, getGradingStandards, getSingleCourse} from "./index";
-import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
+import {assignmentDataGen} from "@/canvas/content/assignments";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
 import {Term} from "@/canvas/Term";
 
@@ -36,12 +36,14 @@ import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {IAssignmentGroup, IPageData} from "@/canvas/content/types";
+import {IPageData} from "@/canvas/content/types";
 import {BaseContentItem, getBannerImage} from "@/canvas/content/BaseContentItem";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {Quiz} from "@/canvas/content/Quiz";
 import {Page} from "@/canvas/content/Page";
 import {Discussion} from "@/canvas/content/Discussion";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {IAssignmentGroup} from "@/canvas/content/assignments/types";
 
 const HOMETILE_WIDTH = 500;
 

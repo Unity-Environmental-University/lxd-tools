@@ -1,11 +1,22 @@
-import {Assignment, AssignmentKindInfo} from "@/canvas/content/Assignment";
-import {getContentClassFromUrl, getContentItemFromUrl, getContentKindFromUrl} from "@/canvas/content/contentFromUrl";
+import {AssignmentKind} from "@/canvas/content/assignments";
+import {
+    getContentClassFromUrl,
+    getContentItemFromUrl,
+    getContentKindFromContent,
+    getContentKindFromUrl
+} from "@/canvas/content/determineContent";
 import assert from "assert";
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
+import {
+    mockAssignmentData,
+    mockDiscussionData,
+    mockPageData,
+    mockQuizData
+} from "@/canvas/content/__mocks__/mockContentData";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Quiz, QuizKindInfo} from "@/canvas/content/Quiz";
-import {Page, PageKindInfo} from "@/canvas/content/Page";
-import {Discussion, DiscussionKindInfo} from "@/canvas/content/Discussion";
+import {Quiz, QuizKind} from "@/canvas/content/Quiz";
+import {Page, PageKind} from "@/canvas/content/Page";
+import {Discussion, DiscussionKind} from "@/canvas/content/Discussion";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
@@ -38,7 +49,7 @@ describe('getContentClassFromUrl', () => {
 });
 
 describe('getContentItemFromUrl', () => {
-    const getContentApi = require('../contentFromUrl');
+    const getContentApi = require('../determineContent');
     const getContentClassFromUrlSpy = jest.spyOn(getContentApi, 'getContentClassFromUrl');
 
     it('should return null if getContentClassFromUrl returns null', async () => {
@@ -63,16 +74,23 @@ describe('getContentItemFromUrl', () => {
 describe('getContentKindFromUrl', () => {
     it('Finds Assignments', () => {
         console.log(getContentKindFromUrl('/api/v1/courses/1/assignments/5'));
-        expect(getContentKindFromUrl('/api/v1/courses/1/assignments/5')).toEqual(AssignmentKindInfo)
+        expect(getContentKindFromUrl('/api/v1/courses/1/assignments/5')).toEqual(AssignmentKind)
     })
     it('Finds Discussions', () => {
-        expect(getContentKindFromUrl('/api/v1/courses/1/discussion_topics/5')).toEqual(DiscussionKindInfo)
+        expect(getContentKindFromUrl('/api/v1/courses/1/discussion_topics/5')).toEqual(DiscussionKind)
     })
     it('Finds Quizzes', () => {
-        expect(getContentKindFromUrl('/api/v1/courses/1/quizzes/5')).toEqual(QuizKindInfo)
+        expect(getContentKindFromUrl('/api/v1/courses/1/quizzes/5')).toEqual(QuizKind)
     })
     it('Finds Pages', () => {
-        expect(getContentKindFromUrl('/api/v1/courses/1/pages/5')).toEqual(PageKindInfo)
+        expect(getContentKindFromUrl('/api/v1/courses/1/pages/5')).toEqual(PageKind)
     })
 
+})
+
+describe('getContentKindFromContent', () => {
+    it('works for pages', () => expect(getContentKindFromContent(mockPageData)).toBe(PageKind))
+    it('works for discussions', () => expect(getContentKindFromContent(mockDiscussionData)).toBe(DiscussionKind))
+    it('works for assignments', () => expect(getContentKindFromContent(mockAssignmentData)).toBe(AssignmentKind))
+    it('works for quizzes', () => expect(getContentKindFromContent(mockQuizData)).toBe(QuizKind))
 })

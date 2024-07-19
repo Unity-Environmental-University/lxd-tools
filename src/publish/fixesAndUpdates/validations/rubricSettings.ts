@@ -6,9 +6,9 @@ import {
     updateRubricAssociation
 } from "@/canvas/rubrics";
 import {IIdHaver} from "@/canvas/course/courseTypes";
-import {AssignmentKindInfo, updateAssignmentData} from "@/canvas/content/Assignment";
+import {AssignmentKind, updateAssignmentData} from "@/canvas/content/assignments";
 import {callAll} from "@/canvas/canvasUtils";
-import {assignmentDataGen, getAssignmentData} from "@/canvas/content/Assignment";
+import {assignmentDataGen, getAssignmentData} from "@/canvas/content/assignments";
 
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});
@@ -75,7 +75,7 @@ export const rubricsTiedToGradesTest: CourseValidation<IIdHaver, RubricsTiedToGr
             success = fixedAssociations.length === badAssociations.length;
 
             return testResult(success, {
-                links: fixedAssociations.map(a => AssignmentKindInfo.getHtmlUrl(course.id, a.association_id) as string)
+                links: fixedAssociations.map(a => AssignmentKind.getHtmlUrl(course.id, a.association_id) as string)
             });
         } catch (e) {
             return errorMessageResult(e);

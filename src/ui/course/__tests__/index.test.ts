@@ -17,12 +17,12 @@ import {
 } from "../addButtons"
 import assert from "assert";
 import {Course} from "@/canvas/course/Course";
-import {getContentClassFromUrl} from "@/canvas/content/contentFromUrl";
+import {getContentClassFromUrl} from "@/canvas/content/determineContent";
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('../addButtons')
 
-jest.mock('@/canvas/content/contentFromUrl');
+jest.mock('@/canvas/content/determineContent');
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
 
@@ -59,14 +59,14 @@ describe('Base level async call', () => {
         Object.defineProperty(document, 'documentURI', { value:'https://example.com/courses/123/assignments/321'});
         Object.defineProperty(document, 'URL', { value: 'https://example.com/courses/123/assignments/321'})
         getSingleCourseSpy.mockResolvedValue(new Course({...mockCourseData, blueprint: true}));
+        const course = await Course.getFromUrl(document.documentURI) as Course;
+        const frontPageSpy = jest.spyOn(course, 'getFrontPage')
 
         await act(async () => await main());
         await waitFor(() => {
             expect(Course.getFromUrl).toHaveBeenCalled();
         });
 
-        const course = await Course.getFromUrl(document.documentURI) as Course;
-        const frontPageSpy = jest.spyOn(course, 'getFrontPage')
 
         await waitFor(() => {
             expect(getContentClassFromUrl).toHaveBeenCalled();

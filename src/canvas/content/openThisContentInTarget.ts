@@ -1,5 +1,5 @@
 import {Course} from "@/canvas/course/Course";
-import {getContentItemFromUrl} from "@/canvas/content/contentFromUrl";
+import {getContentItemFromUrl} from "@/canvas/content/determineContent";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 
 function getIdOrCourse(courseOrId: number | Course) {
@@ -35,3 +35,4 @@ export default async function openThisContentInTarget(
         }
     }
 }
+

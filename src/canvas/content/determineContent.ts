@@ -1,16 +1,19 @@
-import {Assignment, AssignmentKindInfo} from "@/canvas/content/Assignment";
-import {Quiz, QuizKindInfo} from "@/canvas/content/Quiz";
-import {Page, PageKindInfo} from "@/canvas/content/Page";
-import {Discussion, DiscussionKindInfo} from "@/canvas/content/Discussion";
+import {AssignmentKind} from "@/canvas/content/assignments";
+import {Quiz, QuizKind} from "@/canvas/content/Quiz";
+import {Page, PageKind} from "@/canvas/content/Page";
+import {Discussion, DiscussionKind} from "@/canvas/content/Discussion";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {ContentData} from "@/canvas/content/types";
 
 
 export const CONTENT_KINDS = [
-    DiscussionKindInfo,
-    AssignmentKindInfo,
-    PageKindInfo,
-    QuizKindInfo,
+    DiscussionKind,
+    AssignmentKind,
+    PageKind,
+    QuizKind,
 ]
+
 
 export function getContentClassFromUrl(url: string | null = null) {
     if (!url) url = document.documentURI;
@@ -28,6 +31,10 @@ export async function getContentItemFromUrl(url: string | null = null) {
 
 export function getContentKindFromUrl(url:string) {
     return CONTENT_KINDS.find(a => a.isValidUrl(url))
+}
+
+export function getContentKindFromContent(contentData:ContentData) {
+    return CONTENT_KINDS.find(a => a.dataIsThisKind(contentData));
 }
 
 export async function getContentDataFromUrl(url:string, config:ICanvasCallConfig) {

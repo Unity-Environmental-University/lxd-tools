@@ -9,17 +9,17 @@ import {IMigrationData, IProgressData} from "@/canvas/course/migration";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Course} from "@/canvas/course/Course";
 import {mockProgressData} from "@/canvas/course/__mocks__/mockProgressData";
-import {mockMigrationData} from "@/canvas/course/__mocks__/mockMigrationData";
+import {mockMigrationData} from "@/canvas/course/migration/__mocks__/mockMigrationData";
 import {bpify} from "@/admin";
 
 import {createNewCourse} from '@/canvas/course';
 import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
 import {
     cacheCourseMigrations,
-} from "@/canvas/course/migrationCache";
-import * as cacheMigrationApi from '@/canvas/course/migrationCache'
+} from "@/canvas/course/migration/migrationCache";
+import * as cacheMigrationApi from '@/canvas/course/migration/migrationCache'
 import {range} from "@/canvas/canvasUtils";
-import {loadCachedCourseMigrations} from "@/canvas/course/migrationCache";
+import {loadCachedCourseMigrations} from "@/canvas/course/migration/migrationCache";
 import assert from "assert";
 
 jest.mock('@/canvas/course/blueprint');

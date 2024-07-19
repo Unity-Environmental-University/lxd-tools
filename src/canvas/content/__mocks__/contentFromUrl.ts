@@ -1,6 +1,6 @@
-import {Assignment} from "@/canvas/content/Assignment";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 export const getContentClassFromUrl = jest.fn((url: string | null = null) => {
     return Assignment;

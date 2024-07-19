@@ -2,10 +2,10 @@ import {
     deepObjectMerge,
     formDataify,
     ICanvasCallConfig
-} from "../canvasUtils";
-import {sleep} from "../../index";
-import {createNewCourse, getCourseData} from "./index";
-import {Course} from "./Course";
+} from "../../canvasUtils";
+import {sleep} from "../../../index";
+import {createNewCourse, getCourseData} from "../index";
+import {Course} from "../Course";
 
 import { storage} from "webextension-polyfill";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";

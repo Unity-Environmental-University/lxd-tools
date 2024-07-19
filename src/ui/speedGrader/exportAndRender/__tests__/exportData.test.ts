@@ -3,12 +3,12 @@ import { csvRowsForCourse } from '@/ui/speedGrader/exportAndRender/csvRowsForCou
 import { saveDataGenFunc } from '@/ui/speedGrader/saveDataGenFunc';
 import { Course } from '@/canvas/course/Course';
 import { UiHandlerProps } from '@/ui/speedGrader/controls/UiHandlerProps';
-import { Assignment } from '@/canvas/content/Assignment';
-import {IAssignmentData} from "@/canvas/content/types";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {ICourseData} from "@/canvas/courseTypes";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Term} from "@/canvas/Term";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {IAssignmentData} from "@/canvas/content/assignments/types";
 
 jest.mock('@/ui/speedGrader/exportAndRender/csvRowsForCourse');
 jest.mock('@/ui/speedGrader/saveDataGenFunc');

@@ -1,13 +1,13 @@
 import {csvRowsForCourse, csvEncode} from "../csvRowsForCourse";
 import {Course} from "@/canvas/course/Course";
-import {Assignment, assignmentDataGen} from "@/canvas/content/Assignment";
+import {assignmentDataGen} from "@/canvas/content/assignments";
 import fetchMock from 'jest-fetch-mock';
 import {getRows} from "@/ui/speedGrader/getData/getRows";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {Account} from "@/canvas/Account";
 
-import * as assignmentsApi from "@/canvas/content/Assignment";
+import * as assignmentsApi from "@/canvas/content/assignments";
 
 jest.mock('@/canvas/fetch');
 jest.mock('@/ui/speedGrader/getData/getRows');
@@ -20,6 +20,7 @@ import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGe
 
 import mockModuleData from "@/canvas/course/__mocks__/mockModuleData";
 import {mockUserData} from "@/canvas/__mocks__/mockUserData";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 const generateModulesSpy = jest.spyOn(moduleApi, 'moduleGenerator')
 const getAccountByIdSpy = jest.spyOn(Account, 'getDataById');

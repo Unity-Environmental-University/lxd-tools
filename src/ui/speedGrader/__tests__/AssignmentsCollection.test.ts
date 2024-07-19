@@ -1,8 +1,8 @@
 import { AssignmentsCollection } from '../AssignmentsCollection';
-import { IAssignmentData } from '@/canvas/content/types';
 import {CanvasData, IModuleData, IModuleItemData} from '@/canvas/canvasDataDefs';
 import {mockAssignmentData, mockDiscussionData} from "@/canvas/content/__mocks__/mockContentData";
 import {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";
+import {IAssignmentData} from "@/canvas/content/assignments/types";
 
 describe('AssignmentsCollection', () => {
     const mockAssignments = [

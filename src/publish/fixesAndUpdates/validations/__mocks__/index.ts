@@ -18,11 +18,11 @@ import {
 import {ILatePolicyUpdate} from "@/canvas/canvasDataDefs";
 import mockLatePolicy from "@/canvas/course/__mocks__/mockLatePolicy";
 import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
-import {Assignment} from "@/canvas/content/Assignment";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Quiz} from "@/canvas/content/Quiz";
 import {Page} from "@/canvas/content/Page";
 import {Discussion} from "@/canvas/content/Discussion";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {
 

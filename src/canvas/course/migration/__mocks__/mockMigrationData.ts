@@ -1,4 +1,4 @@
-import {IMigrationData} from "../migration";
+import {IMigrationData} from "../index";
 
 /**
  * From canvas api docs

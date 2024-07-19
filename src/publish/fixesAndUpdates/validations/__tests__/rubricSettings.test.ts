@@ -8,11 +8,11 @@ import {returnMockAsyncGen} from "@/__mocks__/utils";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 
 import * as rubricApi from "@/canvas/rubrics";
-import * as assignmentApi from "@/canvas/content/Assignment";
+import * as assignmentApi from "@/canvas/content/assignments";
 import {IRubricData} from "@/canvas/rubrics";
 import assert from "assert";
 import requireActual = jest.requireActual;
-import {updateAssignmentData} from "@/canvas/content/Assignment";
+import {updateAssignmentData} from "@/canvas/content/assignments";
 
 
 jest.mock('@/canvas/rubrics', () => {
@@ -24,10 +24,10 @@ jest.mock('@/canvas/rubrics', () => {
     }
 })
 
-jest.mock('@/canvas/content/Assignment', () => {
+jest.mock('@/canvas/content/assignments', () => {
     return {
         __esModule: true,
-        ...jest.requireActual('@/canvas/content/Assignment'),
+        ...jest.requireActual('@/canvas/content/assignments'),
         assignmentDataGen: jest.fn(),
         getAssignmentData: jest.fn(),
         updateAssignmentData: jest.fn(),

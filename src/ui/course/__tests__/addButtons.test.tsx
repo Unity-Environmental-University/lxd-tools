@@ -3,7 +3,6 @@ import { fireEvent, waitFor } from '@testing-library/dom';
 import { Course } from '@/canvas/course/Course';
 import ReactDOM from 'react-dom/client';
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Assignment} from "@/canvas/content/Assignment";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/ui/course/addButtons";
 import {act} from "react";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');

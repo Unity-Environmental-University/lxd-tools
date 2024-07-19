@@ -1,16 +1,16 @@
-import {mockCourseData} from "../../course/__mocks__/mockCourseData";
-import {formDataify, ICanvasCallConfig, range} from "../../canvasUtils";
-import {AssignmentKindInfo, updateAssignmentData} from "../Assignment";
-import {mockAssignmentData} from "../__mocks__/mockContentData";
+import {mockCourseData} from "../../../course/__mocks__/mockCourseData";
+import {formDataify, ICanvasCallConfig, range} from "../../../canvasUtils";
+import {AssignmentKind, updateAssignmentData} from "../index";
+import {mockAssignmentData} from "../../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";
-import {assignmentDataGen} from "@/canvas/content/Assignment";
+import {assignmentDataGen} from "@/canvas/content/assignments";
 import {returnMockAsyncGen} from "@/__mocks__/utils";
 
 import * as canvasUtils from '@/canvas/canvasUtils';
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {UpdateAssignmentDataOptions} from "@/canvas/content/types";
 import {putContentConfig} from "@/canvas/content/BaseContentItem";
+import {UpdateAssignmentDataOptions} from "@/canvas/content/assignments/types";
 
 fetchMock.enableMocks();
 
@@ -43,7 +43,7 @@ it('gets assignments from course id', async () => {
 })
 
 it('gets assignment HTML url', () => {
-    expect(AssignmentKindInfo.getHtmlUrl(1, 2)).toEqual('/courses/1/assignments/2');
+    expect(AssignmentKind.getHtmlUrl(1, 2)).toEqual('/courses/1/assignments/2');
 })
 
 it('updates assignment data', async () => {

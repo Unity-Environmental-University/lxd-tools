@@ -1,6 +1,6 @@
 import {loadCachedCourseMigrations, cacheCourseMigrations, loadCachedMigrations} from "../migrationCache";
-import {mockMigrationData} from "../__mocks__/mockMigrationData";
-import {range} from "../../canvasUtils";
+import {mockMigrationData} from "@/canvas/course/migration/__mocks__/mockMigrationData";
+import {range} from "../../../canvasUtils";
 
 describe('Saving and loading migration states', () => {
     beforeEach(() => {
