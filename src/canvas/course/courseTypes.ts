@@ -3,9 +3,9 @@ import {ICanvasCallConfig} from "../canvasUtils";
 import {ILatePolicyData, IModuleData} from "../canvasDataDefs";
 
 import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
-import {Quiz} from "@/canvas/content/Quiz";
-import {Page} from "@/canvas/content/Page";
-import {Discussion} from "@/canvas/content/Discussion";
+import {Quiz} from "@/canvas/content/quizzes/Quiz";
+import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 export interface IIdHaver<IdType = number> {

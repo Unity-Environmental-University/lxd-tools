@@ -22,7 +22,7 @@ import assert from "assert";
 
 import {ICourseData, ITabData} from "@/canvas/courseTypes";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Page} from "@/canvas/content/Page";
+import {Page} from "@/canvas/content/assignments/pages/Page";
 
 jest.mock('@/canvas/fetch/fetchJson')
 

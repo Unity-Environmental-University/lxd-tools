@@ -5,34 +5,41 @@ import assert from "assert";
 import local = chrome.storage.local;
 
 import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {IAssignmentData} from "@/canvas/content/assignments/types";
+import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 
 const DEFAULT_LOCALE = 'en-US';
 
-export function getCurrentStartDate(modules: IModuleData[]) {
+export function getModuleUnlockStartDate(modules: IModuleData[]) {
     if (modules.length == 0) throw new NoOverviewModuleFoundError();
     const overviewModule = modules[0];
     const unlockDateString = overviewModule.unlock_at;
+    if(!unlockDateString) return null;
     const oldDate = new Date(unlockDateString);
     return oldDateToPlainDate(oldDate);
 }
 
-export function sortAssignmentsByDueDate(assignments:Assignment[]) {
+export function sortAssignmentsByDueDate(assignments:Assignment[]|IAssignmentData[]) {
     return assignments
         .toSorted((a, b) =>
         {
+            a = a instanceof Assignment ? a.rawData : a;
+            b = b instanceof Assignment ? b.rawData : b;
 
-            if(a.dueAt && b.dueAt) {
-                return oldDateToPlainDate(b.dueAt).until(oldDateToPlainDate(a.dueAt)).days;
+
+            if(a.due_at && b.due_at) {
+
+                return oldDateToPlainDate(new Date(b.due_at)).until(oldDateToPlainDate(new Date(a.due_at))).days;
             }
-            if(a.dueAt) return -1;
-            if(b.dueAt) return 1;
+            if(a.due_at) return -1;
+            if(b.due_at) return 1;
             return 0;
         }
     );
 
 }
 
-export function getStartDateAssignments(assignments:Assignment[]) {
+export function getStartDateAssignments(assignments:Assignment[]|IAssignmentData[]) {
     const sorted = sortAssignmentsByDueDate(assignments).filter(a => a.dueAt);
     if (sorted.length == 0) throw new NoAssignmentsWithDueDatesError();
     const firstAssignmentDue = sorted[0].dueAt;

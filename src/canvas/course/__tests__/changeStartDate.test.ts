@@ -1,5 +1,5 @@
 import {
-    getCurrentStartDate, getNewTermName, getOldUgTermName, getStartDateAssignments, MalformedSyllabusError,
+    getModuleUnlockStartDate, getNewTermName, getOldUgTermName, getStartDateAssignments, MalformedSyllabusError,
     NoAssignmentsWithDueDatesError, NoOverviewModuleFoundError,
     sortAssignmentsByDueDate,
     updatedDateSyllabusHtml
@@ -44,10 +44,10 @@ describe('Syllabus date changes', () => {
     })
 })
 
-function shuffle<T>(list:T[]) {
+function shuffle<T>(list: T[]) {
     const source = [...list];
-    const dest:T[] = [];
-    while(source.length > 0) {
+    const dest: T[] = [];
+    while (source.length > 0) {
         const index = Math.floor(Math.random() * source.length);
         dest.push(...source.splice(index, 1))
     }
@@ -56,7 +56,7 @@ function shuffle<T>(list:T[]) {
 
 describe('sortAssignmentsByDate', () => {
     const now = Temporal.Now;
-    const mockAssignments:Assignment[] = shuffle([...range(0, 10)].map(i => {
+    const mockAssignments: Assignment[] = shuffle([...range(0, 10)].map(i => {
         return new Assignment({
             ...mockAssignmentData,
             id: i,
@@ -65,11 +65,10 @@ describe('sortAssignmentsByDate', () => {
     }));
 
 
-
     it('sorts assignment by date', () => {
 
         const sorted = sortAssignmentsByDueDate(mockAssignments);
-        for(let i = 1; i < sorted.length; i++) {
+        for (let i = 1; i < sorted.length; i++) {
             const prev = sorted[i - 1];
             const current = sorted[i];
             expect(prev.dueAt?.getTime()).toBeLessThan(current.dueAt!.getTime())
@@ -78,8 +77,8 @@ describe('sortAssignmentsByDate', () => {
 
     it('sorts non-due-date assignments to the end', () => {
         const toSort = shuffle([...mockAssignments,
-            new Assignment({ ...mockAssignmentData, due_at: null}, -98),
-            new Assignment({ ...mockAssignmentData, due_at: null}, -99)
+            new Assignment({...mockAssignmentData, due_at: null}, -98),
+            new Assignment({...mockAssignmentData, due_at: null}, -99)
         ])
         const sorted = sortAssignmentsByDueDate(toSort);
         const dates = sorted.map(value => value.dueAt);
@@ -92,29 +91,37 @@ describe('sortAssignmentsByDate', () => {
 describe('getCurrentStartDate', () => {
     it('returns a temporal plainDate if there\'s a module lock date', () => {
         const mockModules = [
-            { ...mockModuleData, unlock_at: '2022-12-24T00:00:00Z'},
+            {...mockModuleData, unlock_at: '2022-12-24T00:00:00Z'},
         ]
-        expect(getCurrentStartDate(mockModules)).toEqual(new Temporal.PlainDate(
-        2022, 12, 24));
+        expect(getModuleUnlockStartDate(mockModules)).toEqual(new Temporal.PlainDate(
+            2022, 12, 24));
     })
     it("throws an error if it can't find overview module", () => {
-        expect(() => getCurrentStartDate([])).toThrowError(NoOverviewModuleFoundError)
+        expect(() => getModuleUnlockStartDate([])).toThrowError(NoOverviewModuleFoundError)
+    })
+    it("returns null if there's no lock date in the first module", () => {
+        const mockModules = [
+            {...mockModuleData, unlock_at: null}
+        ]
+        expect(getModuleUnlockStartDate(mockModules)).toBeNull()
     })
 })
 
-describe ('getStartDateAssignments', () => {
-    function datesToAssignment([year, month, day]:[string,string,string]) {
+describe('getStartDateAssignments', () => {
+    function datesToAssignment([year, month, day]: [string, string, string]) {
         return new Assignment({
             ...mockAssignmentData,
-            due_at: `${year}-${month}-${day}T00:00:00Z`}, 0)
+            due_at: `${year}-${month}-${day}T00:00:00Z`
+        }, 0)
     }
+
     it('gets the first assignment due and returns the monday of that week', () => {
         const assignments = ([
             ['2024', '07', '19'],
             ['2024', '08', '19'],
             ['2024', '07', '18'],
             ['2024', '09', '19'],
-        ] as [string,string,string][]).map(datesToAssignment);
+        ] as [string, string, string][]).map(datesToAssignment);
 
         expect(getStartDateAssignments(assignments)).toEqual(new Temporal.PlainDate(2024, 7, 15))
     })
@@ -126,7 +133,7 @@ describe ('getStartDateAssignments', () => {
 
     describe('getNewTermName', () => {
         const newTermStart = new Temporal.PlainDate(2024, 12, 1);
-        it('throws an error with a bad term name', ()=> {
+        it('throws an error with a bad term name', () => {
             expect(() => getNewTermName('ABCDEFGX', newTermStart)).toThrow(MalformedSyllabusError)
         })
 
@@ -140,8 +147,8 @@ describe ('getStartDateAssignments', () => {
     })
 
     describe('getOldUgTermName', () => {
-      it('returns a legacy old styl ug term name', () => {
-          expect(getOldUgTermName(new Temporal.PlainDate(2024, 12, 24))).toEqual('DE-24-Dec')
-      })
+        it('returns a legacy old styl ug term name', () => {
+            expect(getOldUgTermName(new Temporal.PlainDate(2024, 12, 24))).toEqual('DE-24-Dec')
+        })
     })
 })

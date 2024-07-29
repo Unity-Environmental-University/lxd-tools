@@ -22,7 +22,7 @@ import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./b
 import {filterUniqueFunc, formDataify, ICanvasCallConfig} from "../canvasUtils";
 import {overrideConfig} from "../index";
 import assert from "assert";
-import {getCurrentStartDate} from "./changeStartDate";
+import {getModuleUnlockStartDate} from "./changeStartDate";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
@@ -36,14 +36,14 @@ import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {IPageData} from "@/canvas/content/types";
 import {BaseContentItem, getBannerImage} from "@/canvas/content/BaseContentItem";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
-import {Quiz} from "@/canvas/content/Quiz";
-import {Page} from "@/canvas/content/Page";
-import {Discussion} from "@/canvas/content/Discussion";
+import {Quiz} from "@/canvas/content/quizzes/Quiz";
+import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentGroup} from "@/canvas/content/assignments/types";
+import {IPageData} from "@/canvas/content/pages/types";
 
 const HOMETILE_WIDTH = 500;
 
@@ -197,7 +197,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async getStartDateFromModules() {
-        return getCurrentStartDate(await this.getModules());
+        return getModuleUnlockStartDate(await this.getModules());
     }
 
     async getInstructors(): Promise<IUserData[] | null> {
@@ -417,20 +417,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         });
     }
 
-    async updateDueDates(offset: number, config?: ICanvasCallConfig) {
-        const promises: Promise<any>[] = [];
-        const returnAssignments: Assignment[] = [];
-
-        const assignments = assignmentDataGen(this.id, config)
-        if (offset === 0 || offset) {
-            for await (let assignmentData of assignments) {
-                const assignment = new Assignment(assignmentData, this.id);
-                returnAssignments.push(assignment);
-                promises.push(assignment.dueAtTimeDelta(Number(offset)));
-            }
-        }
-        return returnAssignments;
-    }
 
     async publish() {
         const url = `/api/v1/courses/${this.id}`;

@@ -8,12 +8,15 @@ import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
 import {NotImplementedException} from "@/canvas";
 import {getResizedBlob} from "@/canvas/image";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
+import {ContentKind} from "@/canvas/content/ContentKind";
+import {SAFE_MAX_BANNER_WIDTH} from "@/consts";
 
-const SAFE_MAX_BANNER_WIDTH = 1400;
+
 
 export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     static bodyProperty: string;
     static nameProperty: string = 'name';
+    kind: ContentKind<any, any, any>|undefined = undefined;
 
     _courseId: number;
 

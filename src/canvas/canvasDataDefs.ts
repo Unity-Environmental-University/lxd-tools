@@ -21,7 +21,7 @@ export interface IModuleData extends CanvasData {
     id: number,
     name: string,
     position: number,
-    unlock_at: string,
+    unlock_at?: string | null,
     require_sequential_progress: boolean,
     prerequisite_module_ids: number[],
     items_count: number,

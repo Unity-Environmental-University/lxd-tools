@@ -5,28 +5,29 @@ import {Button} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 
-
 import {
-    getStartDateAssignments,
+    getStartDateAssignments, MalformedSyllabusError,
     updatedDateSyllabusHtml
 } from "../../canvas/course/changeStartDate";
-import {changeModuleLockDate} from "../../canvas/course/modules";
+import {changeModuleLockDate, moduleGenerator} from "../../canvas/course/modules";
 import {oldDateToPlainDate} from "../../date";
 
 import {Course} from "../../canvas/course/Course";
-import {assignmentDataGen} from "@/canvas/content/assignments";
+import {assignmentDataGen, updateAssignmentDueDates} from "@/canvas/content/assignments";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {Discussion} from "@/canvas/content/Discussion";
-import {IDiscussionData} from "@/canvas/content/types";
+import {Discussion} from "@/canvas/content/discussions/Discussion";
+
+import {IDiscussionData} from "@/canvas/content/discussions/types";
+import {IModuleData} from "@/canvas/canvasDataDefs";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,
     setUnaffectedItems?: (elements: React.ReactElement[]) => any,
     setFailedItems?: (elements: React.ReactElement[]) => any,
     course: Course,
-    refreshCourse: (force?:boolean) => Promise<void>,
+    refreshCourse: (force?: boolean) => Promise<void>,
     isDisabled: boolean,
     startLoading: () => void,
     endLoading: () => void
@@ -47,7 +48,9 @@ export function UpdateStartDate(
     const [startDate, setStartDate] = useState<Temporal.PlainDate | null>();
     const [workingStartDate, setWorkingStartDate] = useState<Temporal.PlainDate | null>();
     useEffectAsync(async () => {
-        const date = await course.getStartDateFromModules();
+        let date = await course.getStartDateFromModules();
+        if (!date) date = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(course.id)))
+
         setStartDate(date);
         setWorkingStartDate(date);
     }, [course]);
@@ -60,46 +63,34 @@ export function UpdateStartDate(
         let affectedItems: React.ReactElement[] = [];
 
         try {
+            if (!startDate) throw new StartDateNotSetError();
+            const modules = await renderAsyncGen(moduleGenerator(course.id))
+            await changeModuleLockDate(course.id, modules[0], workingStartDate);
 
-            if (syllabusText) {
-                if (!startDate) throw new StartDateNotSetError();
 
-                const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate);
-                if (syllabusChanges) affectedItems.concat(syllabusChanges);
-                const assignments = await renderAsyncGen(assignmentDataGen(course.id))
-                let startOfFirstWeek = getStartDateAssignments(await course.getAssignments());
-                console.log(startOfFirstWeek.toString());
-                let contentDateOffset = startDate.until(workingStartDate).days;
-                let startOfFirstWeekOffset = startOfFirstWeek.until(workingStartDate).days;
-                console.log(startOfFirstWeekOffset)
-                if (contentDateOffset != startOfFirstWeekOffset) {
-                    affectedItems.push(<div>Note: start date mismatch. Using first week from assignments to determine
-                        content dates.</div>)
-                    contentDateOffset = startOfFirstWeekOffset;
+            const affectedAssignments = await updateAssignmentDates(course.id, startDate, workingStartDate);
+            affectedItems = [...affectedItems, ...affectedAssignments.map(ContentAffectedRow)]
+            const contentDateOffset = startDate.until(workingStartDate).days;
+
+            const announcementGenerator = getPagedDataGenerator<IDiscussionData>(`/api/v1/courses/${course.id}/discussion_topics`, {
+                queryParams: {
+                    only_announcements: true
                 }
-                const affectedContent = await course.updateDueDates(contentDateOffset);
-                for (let contentItem of affectedContent) {
-                    affectedItems.push(getContentAffectedItemRow(contentItem));
-                }
+            });
 
-
-                const announcementGenerator = getPagedDataGenerator<IDiscussionData>(`/api/v1/courses/${course.id}/discussion_topics`, {
-                    queryParams: {
-                        only_announcements: true
-                    }
-                });
-
-                for await (let value of announcementGenerator) {
-                    let discussion = new Discussion(value, course.id);
-                    console.log(contentDateOffset);
-                    await discussion.offsetPublishDelay(contentDateOffset);
-                    affectedItems.push(getContentAffectedItemRow(discussion))
-                }
-
-                setAffectedItems && setAffectedItems(affectedItems)
-            } else {
-                setUnaffectedItems && setUnaffectedItems([])
+            for await (let value of announcementGenerator) {
+                let discussion = new Discussion(value, course.id);
+                console.log(contentDateOffset);
+                await discussion.offsetPublishDelay(contentDateOffset);
+                affectedItems.push(ContentAffectedRow(discussion))
             }
+
+            if (!syllabusText) throw new MalformedSyllabusError();
+            const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, startDate, modules);
+            if (syllabusChanges) affectedItems.concat(syllabusChanges);
+
+
+            setAffectedItems && setAffectedItems(affectedItems)
             await refreshCourse(true);
             setStartDate(workingStartDate);
 
@@ -113,42 +104,6 @@ export function UpdateStartDate(
         endLoading();
     }
 
-    async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate) {
-        const affectedItems: React.ReactElement[] = [];
-        const results = updatedDateSyllabusHtml(syllabusText, updateStartDate);
-        if (syllabusText !== results.html) {
-            await course.changeSyllabus(results.html);
-            const modules = await course.getModules();
-            await changeModuleLockDate(course.id, modules[0], updateStartDate);
-            if (updateStartDate != startDate) {
-                affectedItems.push(<>
-                    <div className={'col-sm-6'}>Changed Lock Date</div>
-                    <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/modules'}>Modules Page</a></div>
-                </>)
-            }
-            return affectedItems;
-
-        }
-    }
-
-    function getContentAffectedItemRow(item: BaseContentItem) {
-        return <>
-            <div className={'col-sm-6'}><a href={item.htmlContentUrl} target={"_blank"}>{item.name}</a></div>
-            <div className={'col-sm-6'}>{item.dueAt?.toString()}</div>
-        </>
-
-
-    }
-
-
-    function getSyllabusAffectedItemsRows(results: { html: string; changedText: string[] }) {
-        return results.changedText.map((changedText) => <>
-                <div className={'col-sm-6'}><strong>Change:</strong>{changedText}</div>
-                <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/assignments/syllabus'}
-                                               target={"_blank"}>Syllabus</a></div>
-            </>
-        );
-    }
 
     function updateStartDateValue(inDate: Date) {
         setWorkingStartDate(oldDateToPlainDate(inDate));
@@ -185,4 +140,53 @@ export function UpdateStartDate(
 
 class StartDateNotSetError extends Error {
     name = "StartDateNotSetError"
+}
+
+async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate, course: Course, startDate: Temporal.PlainDate | null, modules: IModuleData[]) {
+    const affectedItems: React.ReactElement[] = [];
+    const results = updatedDateSyllabusHtml(syllabusText, updateStartDate);
+    if (syllabusText !== results.html) {
+        await course.changeSyllabus(results.html);
+        if (updateStartDate != startDate) {
+            affectedItems.push(<>
+                <div className={'col-sm-6'}>Changed Lock Date</div>
+                <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/modules'}>Modules Page</a></div>
+            </>)
+        }
+        return affectedItems;
+    }
+}
+
+type PlainDate = Temporal.PlainDate;
+
+async function updateAssignmentDates(courseId: number, startDate: PlainDate, workingStartDate: PlainDate) {
+    const assignments = await renderAsyncGen(assignmentDataGen(courseId))
+    const affectedItems = [];
+    let startOfFirstWeek = getStartDateAssignments(assignments);
+    let contentDateOffset = startDate.until(workingStartDate).days;
+    let startOfFirstWeekOffset = startOfFirstWeek.until(workingStartDate).days;
+
+    if (contentDateOffset != startOfFirstWeekOffset) {
+        affectedItems.push(<div>Note: start date mismatch. Offsetting content based on </div>)
+        contentDateOffset = startDate.until(startOfFirstWeek).days;
+    }
+    return await updateAssignmentDueDates(contentDateOffset, assignments, {courseId});
+}
+
+export function SyllabusAffectedItemsRows(courseId: number, results: { html: string; changedText: string[] }) {
+    return results.changedText.map((changedText) => <>
+            <div className={'col-sm-6'}><strong>Change:</strong>{changedText}</div>
+            <div className={'col-sm-6'}><a href={`/api/v1/courses/${courseId}/assignments/syllabus`}
+                                           target={"_blank"}>Syllabus</a></div>
+        </>
+    );
+}
+
+export function ContentAffectedRow(item: BaseContentItem) {
+    return <>
+        <div className={'col-sm-6'}><a href={item.htmlContentUrl} target={"_blank"}>{item.name}</a></div>
+        <div className={'col-sm-6'}>{item.dueAt?.toString()}</div>
+    </>
+
+
 }

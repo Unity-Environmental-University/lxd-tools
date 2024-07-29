@@ -8,7 +8,8 @@ import {ICourseData} from "@/canvas/courseTypes";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 
-import {IPageData} from "@/canvas/content/types";
+
+import {IPageData} from "@/canvas/content/pages/types";
 
 
 type FuncType<T> = FuncObject<T> | WithoutParamsFuncType<T> | WithParamsFuncType<T>

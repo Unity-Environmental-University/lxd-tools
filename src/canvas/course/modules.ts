@@ -4,9 +4,9 @@ import {formDataify, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
 
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Page} from "@/canvas/content/Page";
-import {IPageData} from "@/canvas/content/types";
+import {Page} from "@/canvas/content/assignments/pages/Page";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {IPageData} from "@/canvas/content/pages/types";
 
 export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],

@@ -3,6 +3,8 @@ import assert from "assert";
 
 import {lockBlueprint} from "../../canvas/course/blueprint";
 import {Course} from "../../canvas/course/Course";
+import {assignmentDataGen, updateAssignmentDueDates} from "@/canvas/content/assignments";
+import {renderAsyncGen} from "@/canvas/fetch";
 
 (async () => {
     const course = await Course.getFromUrl(document.documentURI);
@@ -33,7 +35,8 @@ import {Course} from "../../canvas/course/Course";
             let offset = prompt("Days to offset by?")
             assert(course);
             assert(offset);
-            await course.updateDueDates(parseInt(offset));
+            const assignments = await renderAsyncGen(assignmentDataGen(course.id));
+            await updateAssignmentDueDates(parseInt(offset), assignments);
             location.reload();
         })
     }

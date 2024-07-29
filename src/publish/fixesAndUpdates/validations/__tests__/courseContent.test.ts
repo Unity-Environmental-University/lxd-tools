@@ -16,7 +16,7 @@ import {
 import * as fetchApi from "../../../../canvas/fetch";
 import {badContentRunFunc, ContentTextReplaceFix} from "../index";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {Page} from "@/canvas/content/Page";
+import {Page} from "@/canvas/content/assignments/pages/Page";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
