@@ -2,6 +2,9 @@ import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
 import {CanvasData} from "@/canvas/canvasDataDefs";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import assert from "assert";
+import {renderAsyncGen} from "@/canvas/fetch";
+import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 /**
  *  A base class for objects that interact with the Canvas API
@@ -25,19 +28,22 @@ export class Account extends BaseCanvasObject<CanvasData> {
     }
 
     static async getAccountById(accountId: number, config: ICanvasCallConfig | undefined = undefined): Promise<Account> {
-        const data = await this.getDataById(accountId, null, config)
+        const data = await fetchJson(`/api/v1/accounts/${accountId}`, config)
         return new Account(data);
     }
 
+
     static async getRootAccount(resetCache = false) {
-        let accounts: Account[] = <Account[]>await this.getAll();
         if (!resetCache && this.hasOwnProperty('account') && this.account) {
             return this.account;
         }
-        let root = accounts.find((a) => a.rootAccountId === null);
-        assert(root);
-        this.account = root;
-        return root;
+        let accountGen = getPagedDataGenerator('/api/v1/accounts')
+        for await (let account of accountGen) {
+            if(account.root_account_id) continue; //if there is a root_account_id, this is not the root account
+            const root = new Account(account);
+            this.account = root;
+            return root;
+        }
     }
 
 
@@ -45,4 +51,8 @@ export class Account extends BaseCanvasObject<CanvasData> {
         return this.canvasData['root_account_id']
     }
 
+}
+
+export class RootAccountNotFoundError extends Error {
+    name = 'RootAccountNotFoundError';
 }

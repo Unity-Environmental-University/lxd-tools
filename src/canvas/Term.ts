@@ -1,6 +1,6 @@
 import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {Account} from "@/canvas/Account";
+import {Account, RootAccountNotFoundError} from "@/canvas/Account";
 import assert from "assert";
 import {CanvasData} from "@/canvas/canvasDataDefs";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
@@ -30,6 +30,7 @@ export class Term extends BaseCanvasObject<ITermData> {
 
     static async getTermById(termId: number, config: ICanvasCallConfig | null = null) {
         let account = await Account.getRootAccount();
+        if(!account) throw new RootAccountNotFoundError();
         let url = `/api/v1/accounts/${account.id}/terms/${termId}`;
         let termData = await fetchJson(url, config) as ITermData | null;
         if (termData) return new Term(termData);

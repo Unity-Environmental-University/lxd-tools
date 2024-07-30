@@ -4,7 +4,7 @@ import React, {FormEventHandler, useEffect, useState} from "react";
 import {bpify} from "./index";
 import {Form} from "react-bootstrap";
 import {Course} from "../canvas/course/Course";
-import {Account} from "@/canvas/Account";
+import {Account, RootAccountNotFoundError} from "@/canvas/Account";
 
 interface ISearchCoursesProps {
     onlySearchBlueprints: boolean,
@@ -32,8 +32,9 @@ export function SearchCourses({
         e.preventDefault();
         if (isSearching) return;
         updateCourseSearchString();
-
-        const accountIds = [(await Account.getRootAccount()).id];
+        const rootAccount = await Account.getRootAccount();
+        if(typeof rootAccount === 'undefined') throw new RootAccountNotFoundError();
+        const accountIds = [rootAccount.id];
         setIsSearching(true)
         let courses: (Course & IMultiSelectOption)[] = [];
         for (let code of seekCourseCodes) {
