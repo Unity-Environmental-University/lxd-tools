@@ -91,7 +91,7 @@ describe("Testing blueprint retirement", () => {
             ...mockCourseData,
             id: 1,
             course_code: `${termName}_TEST000-01`,
-            enrollment_term_id: [10]
+            enrollment_term_id: [10],
         }];
 
         (getPagedDataGenerator as jest.Mock).mockImplementationOnce(returnMockAsyncGen(mockAssociatedCourseData))

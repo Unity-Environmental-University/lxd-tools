@@ -40,10 +40,9 @@ export function sortAssignmentsByDueDate(assignments:Assignment[]|IAssignmentDat
 }
 
 export function getStartDateAssignments(assignments:Assignment[]|IAssignmentData[]) {
-    const sorted = sortAssignmentsByDueDate(assignments).filter(a => a.dueAt);
+    const sorted = sortAssignmentsByDueDate(assignments).map(a => a.rawData ?? a).filter(a => a.due_at);
     if (sorted.length == 0) throw new NoAssignmentsWithDueDatesError();
-    const firstAssignmentDue = sorted[0].dueAt;
-    assert(firstAssignmentDue, "It should be literally impossible for this to happen as we just filtered out all assignments where dueAt returns false")
+    const firstAssignmentDue = new Date(sorted[0].due_at);
 
     //Set to monday of that week.
     const plainDateDue = oldDateToPlainDate(firstAssignmentDue);
