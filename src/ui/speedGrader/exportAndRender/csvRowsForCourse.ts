@@ -1,6 +1,6 @@
 import {Course} from "@/canvas/course/Course";
 import {assignmentDataGen} from "@/canvas/content/assignments";
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
@@ -14,7 +14,7 @@ import {moduleGenerator} from "@/canvas/course/modules";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/assignments/types";
 
-export async function csvRowsForCourse(course: ICourseData, assignment: IAssignmentData | null = null) {
+export async function csvRowsForCourse(course: SectionData | ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];
     const courseId = course.id;
     const rootAccountId = course.root_account_id;
@@ -48,7 +48,7 @@ export async function csvRowsForCourse(course: ICourseData, assignment: IAssignm
             modules,
             userSubmissions,
             term,
-            course: course,
+            course,
             instructors,
             assignmentsCollection,
         });

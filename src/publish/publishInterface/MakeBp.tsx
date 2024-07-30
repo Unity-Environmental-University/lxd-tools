@@ -6,7 +6,7 @@ import {
     getBlueprintsFromCode,
     getSections,
     getTermNameFromSections, lockBlueprint,
-    retireBlueprint, setAsBlueprint
+    retireBlueprint, sectionDataGenerator, setAsBlueprint
 } from "@/canvas/course/blueprint";
 import {bpify} from "@/admin";
 import {getMigrationsForCourse, IMigrationData, startMigration} from "@/canvas/course/migration";
@@ -20,6 +20,7 @@ import {
 } from "@/canvas/course/migration/migrationCache";
 import {MigrationBar} from "./MigrationBar";
 import assert from "assert";
+import {SectionData} from "@/canvas/courseTypes";
 
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
@@ -34,7 +35,7 @@ export interface IMakeBpProps {
     onEndMigration?: () => void,
     onBpSet?: (bp: Course | null | undefined) => void,
     onTermNameSet?: (termName: string | null) => void,
-    onSectionsSet?: (sections: Course[]) => void,
+    onSectionsSet?: (sections: SectionData[]) => void,
     onActiveImports?: (migrations: IMigrationData[]) => void,
 }
 
@@ -47,7 +48,7 @@ export function MakeBp({
     const [isDev, setIsDev] = useState(devCourse.isDev);
     const [currentBp, setCurrentBp] = useState<Course | null>();
     const [isLoading, setIsLoading] = useState(false);
-    const [sections, setSections] = useState<Course[]>([])
+    const [sections, setSections] = useState<SectionData[]>([])
     const [termName, setTermName] = useState<string>('');
     const [allMigrations, allMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
     const [activeMigrations, activeMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
@@ -115,14 +116,13 @@ export function MakeBp({
 
     useEffectAsync(async () => {
         if (currentBp && currentBp.isBlueprint()) {
-            const sections = await getSections(currentBp.id);
-            setSections(sections);
-            try {
-                setTermName(await getTermNameFromSections(sections))
-            } catch (e) {
-                console.warn(e);
-                setTermName('')
+            let sections:SectionData[] = [];
+            const sectionGen = sectionDataGenerator(currentBp.id);
+            for await (let sectionData of sectionGen ) {
+                sections.push(sectionData);
+                if(sectionData.term_name) setTermName(sectionData.term_name)
             }
+            setSections(sections);
         }
     }, [currentBp])
 

@@ -7,7 +7,7 @@ import {Course} from "./Course";
 import {config} from "dotenv";
 import {baseCourseCode, MalformedCourseCodeError} from "@/canvas/course/code";
 
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
@@ -24,6 +24,7 @@ export function isBlueprint({blueprint}: { blueprint?: boolean | undefined }) {
     return !!blueprint;
 }
 
+//W
 export function genBlueprintDataForCode(courseCode:string | null, accountIds:number[], queryParams?: GetCoursesFromAccountOptions) {
     if(!courseCode) {
         console.warn("Course code not present")
@@ -43,12 +44,12 @@ export function genBlueprintDataForCode(courseCode:string | null, accountIds:num
 }
 
 export async function getSections(courseId: number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
-    return (await renderAsyncGen(sectionDataGenerator(courseId, config))).map(section => new Course(section));
+    return (await renderAsyncGen(sectionDataGenerator(courseId, config))).map(section => new Course(section as ICourseData));
 }
 
 export function sectionDataGenerator(courseId:number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const url = `/api/v1/courses/${courseId}/blueprint_templates/default/associated_courses`;
-    return getPagedDataGenerator<ICourseData>(url, fetchGetConfig({per_page: 50}, config));
+    return getPagedDataGenerator<SectionData>(url, fetchGetConfig({per_page: 50}, config));
 }
 export function cachedGetAssociatedCoursesFunc(course: IBlueprintCourse) {
     let cache: Course[] | null = null;

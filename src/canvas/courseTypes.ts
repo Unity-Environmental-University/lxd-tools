@@ -1,4 +1,4 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
+import {CanvasData, IUserData} from "@/canvas/canvasDataDefs";
 import {ITermData} from "@/canvas/Term";
 
 export interface ICourseData extends CanvasData {
@@ -90,4 +90,22 @@ export interface IBlueprintContentRestrictions {
     points: boolean,
     due_dates: boolean,
     availability_dates: boolean
+}
+
+export type SectionData = Partial<ICourseData>
+    & Pick<ICourseData, 'id'
+    | 'name'
+    | 'course_code'
+    | 'sis_course_id'
+>
+    & {
+    term_name: string,
+    teachers: {
+        id: number,
+        display_name:string,
+        anonymous_id: string,
+        avatar_image_url: string,
+        html_url: string,
+        pronouns: string
+    }
 }

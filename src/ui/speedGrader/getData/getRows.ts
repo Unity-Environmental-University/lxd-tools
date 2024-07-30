@@ -1,4 +1,4 @@
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {CanvasData, IEnrollmentData, IModuleData, IUserData, LookUpTable} from "@/canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {ITermData} from "@/canvas/Term";
@@ -20,7 +20,7 @@ export type CriteriaAssessment = {
 
 
 export interface IGetRowsConfig {
-    course: ICourseData,
+    course: SectionData | ICourseData,
     enrollment: IEnrollmentData,
     modules: IModuleData[],
     userSubmissions: IAssignmentSubmission[],

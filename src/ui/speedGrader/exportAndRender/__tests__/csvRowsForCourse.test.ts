@@ -21,6 +21,7 @@ import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGe
 import mockModuleData from "@/canvas/course/__mocks__/mockModuleData";
 import {mockUserData} from "@/canvas/__mocks__/mockUserData";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {SectionData} from "@/canvas/courseTypes";
 
 const generateModulesSpy = jest.spyOn(moduleApi, 'moduleGenerator')
 const getAccountByIdSpy = jest.spyOn(Account, 'getDataById');
@@ -31,6 +32,7 @@ fetchMock.enableMocks();
 
 describe('csvRowsForCourse', () => {
     const mockCourse = {...mockCourseData, id: 1, account_id: 1, enrollment_term_id: 1};
+    const mockSection = {...mockCourseData, term_name: 'XXXXXXX', id: 1, account_id: 1, enrollment_term_id: 1};
     const mockAssignment = {...mockAssignmentData, id: 1};
     const mockAccount = {root_account_id: 1};
     const mockUserSubmissions = [{id: 1}];
@@ -62,7 +64,7 @@ describe('csvRowsForCourse', () => {
         mockResponses();
         (getRows as jest.Mock).mockResolvedValue(mockRows);
 
-        const csvRows = await csvRowsForCourse(mockCourse, mockAssignment);
+        const csvRows = await csvRowsForCourse(mockCourse as SectionData, mockAssignment);
         expect(csvRows).toEqual(expect.arrayContaining(mockRows));
     });
 

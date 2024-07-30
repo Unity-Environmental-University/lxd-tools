@@ -1,4 +1,4 @@
-import {ICourseData} from '@/canvas/courseTypes';
+import {ICourseData, SectionData} from '@/canvas/courseTypes';
 import {AssignmentsCollection} from '@/ui/speedGrader/AssignmentsCollection';
 
 import {IRubricCriterionData, RubricAssessment} from '@/canvas/rubrics';
@@ -166,7 +166,7 @@ describe('getRows', () => {
     ]
     it('should generate rows correctly', async () => {
         const args: IGetRowsConfig = {
-            course: mockCourse,
+            course: mockCourse as SectionData,
             enrollment: mockEnrollment,
             modules: mockModules,
             userSubmissions: mockUserSubmissions,
@@ -182,7 +182,7 @@ describe('getRows', () => {
 
     it('should handle missing assignments', async () => {
         const args: IGetRowsConfig = {
-            course: mockCourse,
+            course: mockCourse as SectionData,
             enrollment: mockEnrollment,
             modules: mockModules,
             userSubmissions: [{
@@ -201,7 +201,7 @@ describe('getRows', () => {
 
     it('should handle missing rubric settings', async () => {
         const args: IGetRowsConfig = {
-            course: mockCourse,
+            course: mockCourse as SectionData,
             enrollment: mockEnrollment,
             modules: mockModules,
             userSubmissions: [{

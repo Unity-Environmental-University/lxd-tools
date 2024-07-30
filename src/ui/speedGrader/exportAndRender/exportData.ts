@@ -2,7 +2,7 @@ import {Course} from "@/canvas/course/Course";
 import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
 import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentData} from "@/canvas/content/assignments/types";
 
@@ -13,7 +13,7 @@ export async function exportData(course: ICourseData, {
 }: UiHandlerProps, assignment: IAssignmentData | null = null) {
     try {
         window.addEventListener("error", showError);
-        let csvRows = await csvRowsForCourse(course, assignment)
+        let csvRows = await csvRowsForCourse(course as SectionData, assignment)
         let filename = assignment ? assignment.name : course.courseCode;
         filename ??= "COURSE CODE NOT FOUND"
         saveDataGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
