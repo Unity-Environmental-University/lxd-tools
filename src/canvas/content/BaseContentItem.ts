@@ -153,8 +153,8 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         for (let link of anchors) urls.push(link.href);
         return urls;
 
-
     }
+
 
     get bodyAsElement() {
         assert(this.body, "This content item has no body property")

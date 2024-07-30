@@ -6,6 +6,8 @@ import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
 import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {getExternalLinks, getFileLinks} from "@/canvas/content/getContentFuncs";
+import {ContentKinds} from "@/canvas/content/determineContent";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
@@ -58,14 +60,25 @@ export async function addOpenAllLinksButton(
     btn.title = "Open all links in the content of this page into their own tabs."
     header.append(btn);
     if (!currentContentItem) return;
-    btn.addEventListener('click', () => openAllLinksInContent(currentContentItem))
+    btn.addEventListener('click', () => {
+        openContentFiles(currentContentItem);
+        openContentExternalLinks(currentContentItem);
+    })
     return btn;
 }
 
-export function openAllLinksInContent(contentItem: BaseContentItem) {
-    const urls = new Set(contentItem.getAllLinks());
+export function openContentFiles(contentItem: BaseContentItem) {
+    if(!contentItem.body) return;
+    const urls = new Set(getFileLinks(contentItem.body, contentItem.courseId));
     for (let url of urls) window.open(url, "_blank");
 }
+
+export function openContentExternalLinks(contentItem: BaseContentItem) {
+    if(!contentItem.body) return;
+    const urls = new Set(getExternalLinks(contentItem.body, contentItem.courseId));
+    for (let url of urls) window.open(url, "_blank");
+}
+
 
 export function addHighlightBigImageResizer(currentContentItem: BaseContentItem) {
     const bannerImageContainer = document.querySelector<HTMLDivElement>('div.cbt-banner-image');

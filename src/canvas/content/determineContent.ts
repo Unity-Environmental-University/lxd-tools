@@ -8,6 +8,7 @@ import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 import {QuizKind} from "@/canvas/content/quizzes/QuizKind";
 import {PageKind} from "@/canvas/content/assignments/pages/PageKind";
 import {DiscussionKind} from "@/canvas/content/discussions/DiscussionKind";
+import {ContentKind} from "@/canvas/content/ContentKind";
 
 
 export const CONTENT_KINDS = [
@@ -38,7 +39,18 @@ export function getContentKindFromUrl(url:string) {
 
 export function getContentKindFromContent(contentData:ContentData) {
     return CONTENT_KINDS.find(a => a.dataIsThisKind(contentData));
+
 }
+
+export const ContentKinds = {
+    fromUrl: getContentKindFromUrl,
+    fromContent: getContentKindFromContent,
+    getBody<Type extends ContentData>(contentData:Type) {
+        const kind = getContentKindFromContent(contentData);
+        return (kind?.getBody as (a:any) => string)(contentData);
+    }
+}
+
 
 export async function getContentDataFromUrl(url:string, config:ICanvasCallConfig) {
     const kind = getContentKindFromUrl(url);
