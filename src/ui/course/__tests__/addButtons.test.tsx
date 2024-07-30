@@ -10,16 +10,18 @@ import {
     addDevButton,
     addHighlightBigImageResizer,
     addOpenAllLinksButton,
-    addSectionsButton
+    addSectionsButton, openContentFiles
 } from "@/ui/course/addButtons";
 import {act} from "react";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 
+import * as getContentFuncs from '@/canvas/content/getContentFuncs';
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
+
 describe('Button Functions', () => {
     let header: HTMLElement;
     let course: Course;
@@ -78,9 +80,9 @@ describe('Button Functions', () => {
         expect(button).toHaveTextContent('Links');
         global.open = jest.fn();
         contentItem.getAllLinks = jest.fn();
+        const getExternalLinks = jest.spyOn(getContentFuncs, 'getExternalLinks')
         await act( async () => fireEvent.click(addedButton!));
-
-        await waitFor(() => expect(contentItem.getAllLinks).toHaveBeenCalled());
+        await waitFor(() => expect(getExternalLinks).toHaveBeenCalled());
     });
 
 });
