@@ -1,7 +1,7 @@
 import {
     getModuleUnlockStartDate, getNewTermName, getOldUgTermName, getStartDateAssignments, MalformedSyllabusError,
     NoAssignmentsWithDueDatesError, NoOverviewModuleFoundError,
-    sortAssignmentsByDueDate,
+    sortAssignmentsByDueDate, syllabusHeaderName,
     updatedDateSyllabusHtml
 } from '../changeStartDate'
 import fs from "fs";
@@ -152,3 +152,31 @@ describe('getStartDateAssignments', () => {
         })
     })
 })
+
+describe('syllabusHeaderName', () => {
+    function fakeHeader(text: string) {
+        const el = document.createElement('p');
+        el.innerHTML = text;
+        return el
+    }
+
+    it('works', () => {
+        expect(syllabusHeaderName(fakeHeader('<strong>Credits:</strong> 3'))).toEqual('Credits')
+    })
+
+    it('handles multiple strong tags', () => {
+        expect(syllabusHeaderName(fakeHeader('<strong>Course</strong> <strong>Inclusive Dates:</strong>'))).toEqual('Course Inclusive Dates')
+    })
+    it('handles outside the tags colon', () => {
+        expect(syllabusHeaderName(fakeHeader('<strong>Course</strong> <strong>Inclusive Dates</strong>:'))).toEqual('Course Inclusive Dates')
+       expect(syllabusHeaderName(fakeHeader('<strong>Credits</strong>:'))).toEqual('Credits')
+
+    })
+    it('return undefined when : not found', () => {
+        expect(syllabusHeaderName(fakeHeader('<strong>Course</strong> <strong>Inclusive Dates</strong>'))).toBeUndefined();
+
+    })
+
+})
+
+

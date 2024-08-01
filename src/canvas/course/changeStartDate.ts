@@ -121,11 +121,11 @@ function dateToSyllabusString(date:Temporal.PlainDate) {
     return `${date.toLocaleString(DEFAULT_LOCALE, { month: 'long', day: 'numeric' })}`;
 }
 
-function syllabusHeaderName(el:HTMLElement) {
-    const header = el.querySelector('strong');
-    if(!header) return null;
-    const html = header.innerHTML;
-    return html.replace(/:$/, '')
+export function syllabusHeaderName(el:HTMLElement) {
+
+    let [_, head] =  /([^:]*):/.exec(el.innerHTML) ?? [];
+    head = head?.replaceAll(/<[^>]*>/g, '')
+    return head;
 }
 
 export class NoOverviewModuleFoundError extends Error {
