@@ -139,7 +139,7 @@ describe('UpdateStartDate', () => {
     });
 
     test('disables button when isDisabled is true', async () => {
-        render(
+        await act(()=> render(
             <UpdateStartDate
                 course={course}
                 isDisabled={true}
@@ -150,7 +150,7 @@ describe('UpdateStartDate', () => {
                 setUnaffectedItems={jest.fn()}
                 setFailedItems={jest.fn()}
             />
-        );
+        ));
 
         expect(screen.getByText('Change Start Date')).toBeDisabled();
     });

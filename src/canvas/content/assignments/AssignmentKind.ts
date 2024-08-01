@@ -5,7 +5,7 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/ContentKind";
 
-export const AssignmentUrlFuncs = contentUrlFuncs('assignments');
+export const assignmentUrlFuncs = contentUrlFuncs('assignments');
 export const AssignmentKind: ContentKind<
     IAssignmentData,
     CanvasData,
@@ -18,10 +18,10 @@ export const AssignmentKind: ContentKind<
     getName: (data) => data.name,
     getBody: (data) => data.description,
     async get(courseId: number, contentId: number, config?: ICanvasCallConfig<Record<string, any>>) {
-        const data = await fetchJson(this.getApiUrl(courseId, contentId), config) as IAssignmentData;
+        const data = await fetchJson(assignmentUrlFuncs.getApiUrl(courseId, contentId), config) as IAssignmentData;
         return data;
     },
-    ...AssignmentUrlFuncs,
-    dataGenerator: (courseId, config) => getPagedDataGenerator<IAssignmentData>(AssignmentUrlFuncs.getAllApiUrl(courseId), config),
-    put: putContentFunc<UpdateAssignmentDataOptions, IAssignmentData>(AssignmentUrlFuncs.getApiUrl),
+    ...assignmentUrlFuncs,
+    dataGenerator: (courseId, config) => getPagedDataGenerator<IAssignmentData>(assignmentUrlFuncs.getAllApiUrl(courseId), config),
+    put: putContentFunc<UpdateAssignmentDataOptions, IAssignmentData>(assignmentUrlFuncs.getApiUrl),
 }

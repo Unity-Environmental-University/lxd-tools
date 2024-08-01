@@ -10,6 +10,7 @@ import {getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "@/c
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {generatorMap} from "@/canvas/fetch";
+import {baseCourseCode} from "@/canvas/course/code";
 
 
 export async function getGradingStandards(contextId: number, contextType: 'account' | 'course', config?: ICanvasCallConfig) {
@@ -97,4 +98,11 @@ export async function saveCourseData(courseId: number, data: Partial<ICourseData
 
 export async function setGradingStandardForCourse(courseId: number, standardId: number, config?: ICanvasCallConfig) {
     return await saveCourseData(courseId, {grading_standard_id: standardId})
+}
+
+export function getCourseName(data:ICourseData) {
+    const [full, withoutCode] = /[^:]*:\s*(.*)/.exec(data.name) ?? [];
+    if(withoutCode) return withoutCode;
+    return data.name;
+
 }

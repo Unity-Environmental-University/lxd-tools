@@ -1,5 +1,5 @@
 import {formDataify, ICanvasCallConfig, range} from "../../canvasUtils";
-import {createNewCourse, getCourseGenerator, setGradingStandardForCourse} from "../index";
+import {createNewCourse, getCourseGenerator, getCourseName, setGradingStandardForCourse} from "../index";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import assert from "assert";
 import fetchMock from "jest-fetch-mock";
@@ -89,3 +89,16 @@ describe('saving data tests', () => {
     )
 })
 
+
+
+describe('getCourseName', () => {
+    it('works for BP and various term codes', () => {
+        expect(getCourseName({...mockCourseData, name: 'BP_BIOL203: The Biology of Today'})).toEqual('The Biology of Today')
+        expect(getCourseName({...mockCourseData, name: 'DEV_BIOL203: The Biology of Today'})).toEqual('The Biology of Today')
+        expect(getCourseName({...mockCourseData, name: 'DE08W01.01.24_BIOL203: The Biology of Today-01'})).toEqual('The Biology of Today-01')
+    })
+    it('returns full name if there are no colons', () => {
+        expect(getCourseName({...mockCourseData, name: 'The Biology of Today'})).toEqual('The Biology of Today')
+        expect(getCourseName({...mockCourseData, name: 'DEV_BIOL203'})).toEqual('DEV_BIOL203')
+    })
+})

@@ -1,4 +1,4 @@
-import {AssignmentKind, AssignmentUrlFuncs} from "@/canvas/content/assignments/AssignmentKind";
+import {AssignmentKind, assignmentUrlFuncs} from "@/canvas/content/assignments/AssignmentKind";
 import {mockAssignmentData, mockDiscussionData} from "@/canvas/content/__mocks__/mockContentData";
 import {getDataTests, kindUrlTests} from "@/canvas/content/__testingUtils__/utils";
 import {DiscussionKind, discussionUrlFuncs} from "@/canvas/content/discussions/DiscussionKind";

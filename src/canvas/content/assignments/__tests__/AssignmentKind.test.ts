@@ -1,5 +1,5 @@
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import {AssignmentKind, AssignmentUrlFuncs} from "@/canvas/content/assignments/AssignmentKind";
+import {AssignmentKind, assignmentUrlFuncs} from "@/canvas/content/assignments/AssignmentKind";
 import {getDataTests, kindUrlTests} from "@/canvas/content/__testingUtils__/utils";
 
 
@@ -22,7 +22,7 @@ describe('AssignmentKind', () => {
 
 })
 
-describe('AssignmentUrlFuncs', kindUrlTests(AssignmentUrlFuncs,
+describe('AssignmentUrlFuncs', kindUrlTests(assignmentUrlFuncs,
     1, 3,
     '/api/v1/courses/1/assignments/3',
     '/courses/1/assignments/3',

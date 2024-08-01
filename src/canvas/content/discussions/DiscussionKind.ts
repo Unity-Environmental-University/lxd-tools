@@ -20,7 +20,7 @@ export const DiscussionKind: ContentKind<
     getName: (data) => data.title,
     getBody: (data) => data.message,
     async get(courseId: number, contentId: number, config?: ICanvasCallConfig<GetDiscussionOptions>) {
-        const data = await fetchJson(this.getApiUrl(courseId, contentId), config) as IDiscussionData;
+        const data = await fetchJson(discussionUrlFuncs.getApiUrl(courseId, contentId), config) as IDiscussionData;
         return data;
     },
     dataGenerator: (courseId, config) => getPagedDataGenerator<IDiscussionData>(discussionUrlFuncs.getAllApiUrl(courseId), config),

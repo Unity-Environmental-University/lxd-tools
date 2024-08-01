@@ -14,7 +14,7 @@ export const QuizKind: ContentKind<IQuizData, GetQuizOptions, SaveQuizOptions> =
     dataIsThisKind: (data): data is IQuizData => 'quiz_type' in data,
     getBody: (data) => data.description,
     async get(courseId: number, contentId: number, config?: ICanvasCallConfig<Record<string, any>>) {
-        const data = await fetchJson(this.getApiUrl(courseId, contentId), config) as IQuizData;
+        const data = await fetchJson(quizUrlFuncs.getApiUrl(courseId, contentId), config) as IQuizData;
         return data;
     },
     ...quizUrlFuncs,

@@ -24,21 +24,27 @@ import assert from "assert";
 
 jest.mock('@/canvas/course/blueprint');
 
-const mockCourse: Course = new Course({...mockCourseData, blueprint: false, course_code: "DEV_TEST000", name: 'DEV_TEST000: The Testening'})
+const mockCourse: Course = new Course({
+    ...mockCourseData,
+    blueprint: false,
+    course_code: "DEV_TEST000",
+    name: 'DEV_TEST000: The Testening'
+})
 const mockBlueprintCourse: Course = new Course({...mockCourseData, blueprint: true})
 
-async function renderComponent (props: Partial<IMakeBpProps> = {}) {
+async function renderComponent(props: Partial<IMakeBpProps> = {}) {
     const defaultProps: IMakeBpProps = {
         devCourse: mockCourse,
         ...props,
     };
 
-    return await act( async () =>  render(<MakeBp {...defaultProps} />));
+    return await act(async () => render(<MakeBp {...defaultProps} />));
 }
 
 
 jest.mock('@/canvas/course', () => ({
     Course: jest.requireActual('@/canvas/course').Course,
+    getCourseName: jest.requireActual('@/canvas/course').getCourseName,
     createNewCourse: jest.fn(async (code: string, accountId: number) => {
         return {
             ...mockCourseData,
@@ -59,7 +65,7 @@ jest.mock('../../../canvas/course/migration', () => {
         }),
         startMigration: jest.fn((id: number, _: number) => ({
             ...mockMigrationData,
-                id,
+            id,
         })),
         getMigrationProgressGen: jest.fn(function* (_: IMigrationData) {
             for (let i = 0; i < 10; i++) {
@@ -69,8 +75,6 @@ jest.mock('../../../canvas/course/migration', () => {
         }),
     }
 })
-
-
 
 
 describe('MakeBp Component', () => {
@@ -138,7 +142,7 @@ describe('Retirement and updates', () => {
             devCourse: mockCourse
         })
         await waitFor(() => expect(screen.getByLabelText(/New BP/)).toBeInTheDocument());
-        fireEvent.click(screen.getByLabelText(/New BP/));
+        await act(() => fireEvent.click(screen.getByLabelText(/New BP/)));
         await waitFor(() => expect(createNewCourse).toHaveBeenCalled());
         assert(mockCourse.parsedCourseCode)
         const code = bpify(mockCourse.parsedCourseCode);
@@ -200,7 +204,7 @@ describe('Migrations', () => {
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled())
-        await waitFor( () => expect(screen.queryAllByText(/Status/)).toHaveLength(2));
+        await waitFor(() => expect(screen.queryAllByText(/Status/)).toHaveLength(2));
         expect(screen.queryAllByText(/Status/)).toHaveLength(2);
     })
 })

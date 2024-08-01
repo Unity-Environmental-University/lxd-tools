@@ -1,4 +1,4 @@
-import {createNewCourse} from "@/canvas/course";
+import {createNewCourse, getCourseName} from "@/canvas/course";
 import {Button, Col, FormControl, FormText, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
@@ -150,7 +150,7 @@ export function MakeBp({
         }
         const accountId = devCourse.accountId;
         const bpCode = bpify(devCourse.parsedCourseCode);
-        let bpName = bpCode;
+        let bpName = `${bpCode}: ${getCourseName(devCourse.rawData)}`;
         if(devCourse.courseCode && devCourse.name.match(devCourse.courseCode)) {
             bpName = devCourse.name.replace(devCourse.courseCode, bpCode)
         }
