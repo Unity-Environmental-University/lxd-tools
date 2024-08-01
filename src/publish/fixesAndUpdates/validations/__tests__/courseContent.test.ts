@@ -17,6 +17,9 @@ import * as fetchApi from "../../../../canvas/fetch";
 import {badContentRunFunc, ContentTextReplaceFix} from "../index";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Page} from "@/canvas/content/assignments/pages/Page";
+import {classInclusiveNoDateHeaderTest} from "@/publish/fixesAndUpdates/validations/syllabusTests";
+import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {Course} from "@/canvas/course/Course";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
@@ -126,7 +129,6 @@ test('Course project outline header not "Project outline" test works', async () 
 describe("Code of code of conduct", () => {
     for (let [bad, good] of codeAndCodeOfCodeTest.beforeAndAfters) {
         test(`Text works ${bad}, ${good}`, badContentTextValidationTest(codeAndCodeOfCodeTest, bad, good));
-
     }
 
     test('Fix Works', badContentTextValidationFixTest(
@@ -141,10 +143,10 @@ describe("Code of code of conduct", () => {
     ))
 })
 
-;
 
 
-function badContentTest(test:ContentTextReplaceFix<IContentHaver, BaseContentItem>) {
+
+export function badContentTest(test: ContentTextReplaceFix<IContentHaver, BaseContentItem>) {
     describe(test.name, () => {
         it("Works", badContentTextValidationFixTest(test))
     })

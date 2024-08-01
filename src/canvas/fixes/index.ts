@@ -37,10 +37,6 @@ const failedFixes: ContentFix<T>[]= [];
 export function findReplaceFunc(find:string|RegExp, replace:string) {
     return (source: string) => {
         const output = source.replace(find, replace);
-
-
-
-
         return output;
     };
 }

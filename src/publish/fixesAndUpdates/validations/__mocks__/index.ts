@@ -24,14 +24,14 @@ import {Page} from "@/canvas/content/assignments/pages/Page";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 
-export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string) {
-
+export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string, badContentItems?:IContentHaver[]) {
     return async () => {
-        const goofuses: IContentHaver[] = contentGoofuses(badHtml, goodHtml);
+
+        let goofuses: IContentHaver[] = badContentItems ?? contentGoofuses(badHtml, goodHtml);
 
         for (let goofus of goofuses) {
             const result = await test.run(goofus);
-            expect(result.success).toBe(false);
+            assert(!result.success, badHtml)
         }
 
 
