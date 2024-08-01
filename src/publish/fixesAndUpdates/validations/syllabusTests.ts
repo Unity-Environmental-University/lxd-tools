@@ -1,22 +1,19 @@
 import {getPlainTextFromHtml} from "../../../canvas/canvasUtils";
 import {
-    badSyllabusFixFunc, CourseFixValidation,
-    CourseValidation, errorMessageResult,
+    badSyllabusFixFunc, badSyllabusRunFunc,
+    CourseFixValidation,
+    CourseValidation,
+    errorMessageResult,
     testResult,
-    TextReplaceValidation, ValidationResult
+    TextReplaceValidation
 } from "./index";
 import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
-import {isBooleanObject} from "node:util/types";
-import {setMaxIdleHTTPParsers} from "node:http";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-
-const justSyllabusContentFunc = () => [] as BaseContentItem[];
-
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
     name: "Remove Final",
-    beforeAndAfters: [['off the final grade', 'off the grade'], ['final exam', 'final exam']],
+    beforeAndAfters: [['off the final grade', 'off the grade']],
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
         const syllabus = await course.getSyllabus();
@@ -64,6 +61,27 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     }
 }
 
+
+const badTest = /<p>\s*<strong>\s*Class Inclusive[\s:]*<\/strong>[\s:]*(.*)<\/p>/ig;
+export const classInclusiveNoDateHeaderTest: TextReplaceValidation<ISyllabusHaver> = {
+    name: "Class Inclusive -> Class Inclusive Dates",
+    beforeAndAfters: [
+        ['<p><strong>Class Inclusive:</strong> Aug 12 - Sept 12</p>', '<p><strong>Class Inclusive Dates:</strong> Aug 12 - Sept 12</p>'],
+        ['<p><strong>Class Inclusive:</strong> Aug 12 - Sept 12</p>', '<p><strong>Class Inclusive Dates:</strong> Aug 12 - Sept 12</p>'],
+        ['<p><strong>Class Inclusive</strong> : Aug 12 - Sept 12</p>', '<p><strong>Class Inclusive Dates:</strong> Aug 12 - Sept 12</p>'],
+        ['<p><strong>Class Inclusive: </strong> Aug 12 - Sept 12</p>', '<p><strong>Class Inclusive Dates:</strong> Aug 12 - Sept 12</p>'],
+        ['<p> <strong> Class Inclusive: </strong> Aug 12 - Sept 12</p>', '<p><strong>Class Inclusive Dates:</strong> Aug 12 - Sept 12</p>'],
+        ['<p><strong>Class Inclusive : </strong><span> Aug 12 - Sept 12</span></p>', '<p><strong>Class Inclusive Dates:</strong> Aug 12 - Sept 12</p>'],
+    ],
+    description: 'Syllabus lists date range for course as "Class Inclusive Dates:" NOT as "Class Inclusive:"',
+    run: badSyllabusRunFunc(badTest),
+    fix: badSyllabusFixFunc(badTest, (badText:string) => {
+        badText = badText.replaceAll(/<\/?span>/ig, '');
+        return badText.replaceAll(badTest, '<p><strong>Class Inclusive Dates:</strong> $1</p>')
+    })
+}
+
+
 export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "AI Policy in Syllabus Test",
     description: "The AI policy is present in the syllabus",
@@ -105,7 +123,6 @@ export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
         return testResult(success, {links, failureMessage})
     }
 
-
 }
 
 
@@ -133,22 +150,25 @@ function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
 const correctSecondPara = 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" (for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".'
 
 
-export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, { el: HTMLElement, secondPara?: HTMLElement }|undefined> = {
+export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
+    el: HTMLElement,
+    secondPara?: HTMLElement
+} | undefined> = {
     name: "Second discussion expectation paragraph",
     description: 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" ' +
         '(for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".',
     async run(course) {
         const el = htmlDiv(await course.getSyllabus());
         const secondPara = findSecondParaOfDiscExpect(el);
-        const userData = { el, secondPara};
-        if(!secondPara) return testResult('not run', {
+        const userData = {el, secondPara};
+        if (!secondPara) return testResult('not run', {
             notFailureMessage: "Second paragraph of discussion expectations not found",
             userData,
         })
 
         const secondParaText = secondPara.textContent ?? secondPara.innerText ?? '';
         const success =
-            secondParaText.toLowerCase().replace(/\W*/,'')
+            secondParaText.toLowerCase().replace(/\W*/, '')
             === correctSecondPara.toLowerCase().replace(/\W*/, '');
         return testResult(success, {
             failureMessage: `Second paragraph does not match ${correctSecondPara}`,
@@ -156,17 +176,17 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, { el: 
         })
     },
     async fix(course) {
-        let { success, userData } = await this.run(course);
-        if(success) return testResult('not run', {notFailureMessage: "No need to run fix"});
+        let {success, userData} = await this.run(course);
+        if (success) return testResult('not run', {notFailureMessage: "No need to run fix"});
 
-        if(!userData?.secondPara) return testResult(false, { failureMessage: "There was a problem accessing the syllabus."})
-        const { el, secondPara } = userData;
+        if (!userData?.secondPara) return testResult(false, {failureMessage: "There was a problem accessing the syllabus."})
+        const {el, secondPara} = userData;
 
         secondPara.innerHTML = correctSecondPara;
         try {
             await course.changeSyllabus(el.innerHTML)
             return testResult(true);
-        } catch(e) {
+        } catch (e) {
             return errorMessageResult(e);
         }
     }
@@ -174,11 +194,12 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, { el: 
 
 
 export default [
+    classInclusiveNoDateHeaderTest,
     courseCreditsInSyllabusTest,
     finalNotInGradingPolicyParaTest,
     communication24HoursTest,
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
-    gradeTableHeadersCorrectTest
+    gradeTableHeadersCorrectTest,
 ]
 

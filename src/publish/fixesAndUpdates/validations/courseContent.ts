@@ -102,9 +102,8 @@ export const codeAndCodeOfCodeTest: ContentTextReplaceFix<IContentHaver, Page> =
     beforeAndAfters: [
         ['<p>Honor Code and Code of Code of Conduct</p>', '<p>Honor Code and Code of Conduct</p>']
     ],
-    getContent: getOverview,
     description: 'First bullet of course overview should read ... Unity DE Honor Code and Code of Conduct ..., not ',
-    ...badContentReplaceFuncs(/Code and Code of Code of Conduct/ig, 'Code and Code of Conduct', getOverview)
+    ...badContentReplaceFuncs(/Code and Code of Code of Conduct/ig, 'Code and Code of Conduct')
 }
 
 
@@ -114,11 +113,11 @@ function badContentReplaceFuncs<
 >(
     badTest: RegExp,
     replace: string,
-    getContentFunc: (course:CourseType) => Promise<ContentType[]>
+    getContentFunc?: (course:CourseType) => Promise<ContentType[]>
 ) {
 
     return {
-        run: badContentRunFunc<CourseType, ContentType>(badTest),
+        run: badContentRunFunc<CourseType, ContentType>(badTest, getContentFunc),
         fix: badContentFixFunc<CourseType, ContentType>(badTest, replace, getContentFunc)
     }
 }

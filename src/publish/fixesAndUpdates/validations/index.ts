@@ -3,6 +3,7 @@ import {GetCourseOptions, IContentHaver, ISyllabusHaver} from "@/canvas/course/c
 import {Course} from "@/canvas/course/Course";
 import {overrideConfig} from "@/canvas";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {isNotNullOrUndefined} from "@/index";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -61,7 +62,6 @@ export type ContentTextReplaceFix<
     ContentType extends BaseContentItem,
     UserData = unknown
 > = {
-    beforeAndAfters: [string, string][],
     getContent?: (course: T) => Promise<ContentType[]>,
 } & TextReplaceValidation<T, UserData>
 
@@ -203,6 +203,21 @@ export function badContentRunFunc<
 
 }
 
+
+export function badSyllabusRunFunc(
+        badTest: RegExp,
+) {
+    return async (course:ISyllabusHaver) => {
+        const syllabus = await course.getSyllabus();
+        const match = syllabus.match(badTest);
+        const success = match === null;
+        return testResult(success, {
+            failureMessage: matchHighlights(syllabus, badTest),
+            links: [`/courses/${course.id}/assignments/syllabus`]
+        })
+    }
+
+}
 
 
 
