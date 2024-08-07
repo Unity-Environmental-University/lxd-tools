@@ -1,12 +1,13 @@
 {
   "name": "lxd-tools-react",
-  "version": "2.6",
+  "version": "2.6.1",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^16.18.82",
     "@types/react-dom": "^18.2.20",
+    "@xmldom/xmldom": "^0.8.10",
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.18",
     "bootstrap": "^5.3.3",
@@ -16,6 +17,7 @@
     "jest-extended": "^4.0.2",
     "less-loader": "^12.2.0",
     "madge": "^7.0.0",
+    "postcss": "^8.4.41",
     "postcss-loader": "^8.1.1",
     "precss": "^4.0.0",
     "react-bootstrap": "^2.10.2",
@@ -26,6 +28,9 @@
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "webextension-polyfill": "^0.10.0",
     "webpack": "^5.90.3"
+  },
+  "overrides": {
+    "postcss": "^8.4.41"
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
