@@ -1,13 +1,12 @@
 import {IUserData} from "../../canvas/canvasDataDefs";
 import {Temporal} from "temporal-polyfill";
-import {renderToString} from "react-dom/server";
 import React, {useState} from "react";
 import {Course} from "../../canvas/course/Course";
 import {useEffectAsync} from "@/ui/utils";
 import {DOCUMENTATION_TOC_URL, DOCUMENTATION_TOPICS_URL, PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/consts";
 import {Alert} from "react-bootstrap";
 import {ITermData} from "@/canvas/Term";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {baseCourseCode} from "@/canvas/course/code";
 
 type EmailLinkProps = {
     user: IUserData,
@@ -60,6 +59,12 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             setErrorMessages([`Can't find template email to fill at ` + PUBLISH_FORM_EMAIL_TEMPLATE_URL]);
             return;
         }
+
+        const additionsTemplates = [] as string[];
+        if (course.baseCode) {
+            const courseSpecificTemplate = await getAdditionsTemplate(course.baseCode);
+            if (courseSpecificTemplate) additionsTemplates.push(courseSpecificTemplate)
+        }
         const body = renderEmailTemplate(emailTemplate, {
             userName: user.name,
             userTitle: "Learning Experience Designer",
@@ -67,12 +72,13 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             termName: termData ? termData.name : '[[TERM NAME]]',
             courseStart: getCourseStart(),
             publishDate: getPublishDate(),
-        })
+        }, additionsTemplates)
         await navigator.clipboard.write([
             new ClipboardItem({
                 'text/html': new Blob([body], {type: 'text/html'})
             })
         ])
+        console.log(body);
     }
 
     function getCourseStart() {
@@ -118,48 +124,56 @@ export function renderEmailTemplate(emailTemplate: string, props: EmailTextProps
     return Object.entries(props).reduce((accumulator, [key, value]) => accumulator.replaceAll(`{{${key}}}`, value), renderedTemplate)
 }
 
+let topicCache: string[] | undefined;
 
 async function getSpecificTemplates() {
 
-    const tocResponse = await fetch(DOCUMENTATION_TOPICS_URL + '/lxd.tree');
+    if (topicCache) return topicCache;
+    const tocResponse = await fetch(DOCUMENTATION_TOC_URL);
     if (!tocResponse.ok) {
-        console.log(`Documentation not found as ${DOCUMENTATION_TOPICS_URL}`)
+        console.log(`Documentation not found at ${DOCUMENTATION_TOPICS_URL}`)
         return [] as string[];
     }
     const text = await tocResponse.text();
     const tocXml = new DOMParser().parseFromString(text, 'text/xml') as XMLDocument;
 
-    const child = tocXml.firstChild;
-    if (!child) return;
-    console.log([...tocXml.childNodes.entries()]);
-
-    const result = tocXml.evaluate('//toc-element', tocXml, null, XPathResult.FIRST_ORDERED_NODE_TYPE);
-    const formEmailNode = result.singleNodeValue as Element;
-    const children = formEmailNode?.getElementsByTagName('toc-element');
-    if (children) return [...children]
-        .map(a => a.getAttribute('topic'))
-        .filter(b => b !== null) as string[];
-    return [] as string[];
+    const tocItems = [...tocXml.getElementsByTagName('toc-element')];
+    const tocTopics = tocItems.map(a => a.getAttribute('topic'))
+    console.log(tocTopics);
+    const formEmailTemplate = tocItems.find(a => a.getAttribute('topic') == ('Form-Email-Template.md'))
+    let children = formEmailTemplate?.getElementsByTagName('toc-element') ?? [];
+    let topics: string[] = [];
+    for (let node of children) {
+        console.log(node.childNodes);
+        const topic = node.getAttribute('topic');
+        if (topic) topics.push(topic);
+    }
+    topicCache = topics;
+    return topics;
 }
-
 
 
 export async function getAdditionsTemplate(courseCode: string) {
     const templates = await getSpecificTemplates();
-    const topic = templates && templates.find(topic => topic.toLocaleLowerCase().includes(courseCode.toLocaleLowerCase()))
+    const baseCode = baseCourseCode(courseCode);
+    if (!templates) return;
+    if (!baseCode) return;
+    const topic = templates && baseCode && templates.find(topic =>
+        topic.toLocaleLowerCase().includes(baseCode.toLocaleLowerCase()));
     const url = `${DOCUMENTATION_TOPICS_URL}/${topic}`
-    if(!topic || !url) return;
+    if (!topic || !url) return;
     const response = await fetch(url);
-    if(!response.ok) throw new TemplateNotFoundError(courseCode);
+    if (!response.ok) throw new TemplateNotFoundError(courseCode);
     const additionsTemplate = await response.text();
-    let renderedTemplate = additionsTemplate.split('\n').slice(1).join('\n')
-    return renderedTemplate;
+    return additionsTemplate.split('\n').slice(1).join('\n')
+
 }
 
 export class TemplateNotFoundError extends Error {
     name = 'TemplateNotFoundError'
-    code:string
-    constructor(code:string, message?: string) {
+    code: string
+
+    constructor(code: string, message?: string) {
         super(message ?? code);
         this.code = code;
     }

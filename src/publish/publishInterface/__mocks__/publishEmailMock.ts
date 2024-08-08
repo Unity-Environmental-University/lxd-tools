@@ -39,7 +39,8 @@ the official start of the term.</p>
 
 
 export const mockTocXml = `<?xml version="1.0" encoding="UTF-8"?>
-
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
 <instance-profile id="lxd"
                  name="LXD Documentation"
                  start-page="LXD-Team-Goals.md">
@@ -112,7 +113,7 @@ export const mockTocXml = `<?xml version="1.0" encoding="UTF-8"?>
         <toc-element topic="Refresh-and-Redesign-Process.md"/>
         <toc-element topic="Update-Process.md">
             <toc-element topic="Form-Email-Template.md">
-                <toc-element topic="TEST000.md">
+                <toc-element topic="TEST000.md"/>
             </toc-element>
             <toc-element topic="LXD-Chrome-Extension.md">
                 <toc-element topic="Finding-an-Instructor-s-Photo-and-BIo.md"/>

@@ -53,9 +53,11 @@ export function BpButton({course, currentBp}: BpButtonProps) {
             title={"Show archived BPs"}
         >BPs</Button>
         <Modal isOpen={open} requestClose={() => setOpen(false)}>
-            {bps.toSorted(bMinusASortFn((a) => a.id)).map(bp =>
-                <Row><Button
-                    key={bp.id}
+            {bps.toSorted(bMinusASortFn((a) => a.id)).map((bp, i) =>
+                <Row
+                    key={`${bp.id}-${i}`}
+                ><Button
+
                     onClick={e => openThisContentInTarget(course, bp.id)}
                 >{bp.course_code}</Button></Row>)}
         </Modal></>}

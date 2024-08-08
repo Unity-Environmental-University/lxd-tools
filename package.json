@@ -1,13 +1,12 @@
 {
   "name": "lxd-tools-react",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^16.18.82",
     "@types/react-dom": "^18.2.20",
-    "@xmldom/xmldom": "^0.8.10",
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.18",
     "bootstrap": "^5.3.3",
