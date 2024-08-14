@@ -5,11 +5,11 @@ import {CanvasData} from "@/canvas/canvasDataDefs";
 import assert from "assert";
 import {deepObjectMerge, formDataify, ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
-import {NotImplementedException} from "@/canvas";
 import {getResizedBlob} from "@/canvas/image";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {ContentKind} from "@/canvas/content/ContentKind";
 import {SAFE_MAX_BANNER_WIDTH} from "@/consts";
+import {NotImplementedException} from "@/canvas/NotImplementedException";
 
 
 
