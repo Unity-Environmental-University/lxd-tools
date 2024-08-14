@@ -28,7 +28,7 @@ type EmailLinkProps = {
 export function EmailLink({user, emails, course, termData, sectionStart}: EmailLinkProps) {
 
 
-    const bcc = emails.join(',');
+    const bcc = emails.join(';');
     const subject = encodeURIComponent(course.name?.replace('BP_', '') + ' Section(s) Ready Notification');
     const [emailTemplate, setEmailTemplate] = useState<string | undefined>();
     const [additionsTemplate, setAdditionsTemplate] = useState<string | undefined>();
@@ -59,7 +59,6 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             setErrorMessages([`Can't find template email to fill at ` + PUBLISH_FORM_EMAIL_TEMPLATE_URL]);
             return;
         }
-
         const additionsTemplates = [] as string[];
         if (course.baseCode) {
             const courseSpecificTemplate = await getAdditionsTemplate(course.baseCode);
@@ -100,7 +99,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
     }
 
     return <>
-        <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join(', ')}</a>
+        <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join(';')}</a>
         {termData && <button onClick={copyToClipboard}>Copy Form Email to Clipboard</button>}
         {errorMessages.map(msg => <Alert>{msg}</Alert>)}
     </>
