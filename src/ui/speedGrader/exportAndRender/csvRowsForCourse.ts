@@ -8,7 +8,7 @@ import {getRows} from "@/ui/speedGrader/getData/getRows";
 import {Account} from "@/canvas/Account";
 import {render} from "@testing-library/react";
 import { fetchJson } from "@/canvas/fetch/fetchJson";
-import {ITermData} from "@/canvas/Term";
+import {ITermData} from "@/canvas/term/Term";
 import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {moduleGenerator} from "@/canvas/course/modules";
 import {Assignment} from "@/canvas/content/assignments/Assignment";

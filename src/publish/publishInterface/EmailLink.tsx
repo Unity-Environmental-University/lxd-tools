@@ -5,7 +5,7 @@ import {Course} from "../../canvas/course/Course";
 import {useEffectAsync} from "@/ui/utils";
 import {DOCUMENTATION_TOC_URL, DOCUMENTATION_TOPICS_URL, PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/consts";
 import {Alert} from "react-bootstrap";
-import {ITermData} from "@/canvas/Term";
+import {ITermData} from "@/canvas/term/Term";
 import {baseCourseCode} from "@/canvas/course/code";
 
 type EmailLinkProps = {

@@ -3,7 +3,7 @@ import {overrideConfig} from "../index";
 
 import {GetCourseOptions, GetCoursesFromAccountOptions, IGradingStandardData} from "./courseTypes";
 import {Course} from "./Course";
-import {Term} from "@/canvas/Term";
+import {Term} from "@/canvas/term/Term";
 
 import {ICourseData} from "@/canvas/courseTypes";
 import {getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "@/canvas/fetch/getPagedDataGenerator";

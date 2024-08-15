@@ -1,5 +1,5 @@
 import {createNewCourse, getCourseName} from "@/canvas/course";
-import {Button, Col, FormControl, FormText, Row} from "react-bootstrap";
+import {Alert, Button, Col, FormControl, FormText, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
 import {
@@ -21,7 +21,11 @@ import {
 import {MigrationBar} from "./MigrationBar";
 import assert from "assert";
 import {SectionData} from "@/canvas/courseTypes";
+import dateFromTermName from "@/canvas/term/dateFromTermName";
+import {Temporal} from "temporal-polyfill";
 
+
+export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
         onChange && onChange(value);
@@ -131,6 +135,12 @@ export function MakeBp({
         if (!devCourse.parsedCourseCode) throw Error("Trying to archive without a valid course code");
         if (!currentBp) return false;
         if (termName.length === 0) return false;
+        const termDate = dateFromTermName(termName);
+        if(termDate && termDate.until(Temporal.Now.plainDateISO()).days > 10) {
+            const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`)
+            if (!confirmFinish) return;
+        }
+
         setIsLoading(true);
         await retireBlueprint(currentBp, termName);
         await updateBpInfo(devCourse, devCourse.parsedCourseCode);
@@ -212,12 +222,13 @@ export function MakeBp({
                     value={termName}
                     disabled={sections?.length > 0}
                     onChange={e => setTermName(e.target.value)}
-                    placeholder={'DE8W.12.31.99'}
+                    placeholder={TERM_NAME_PLACEHOLDER}
                 />
 
             </Col>
             <Col>
-                <FormText>Term Name autofills if there is a BP with sections</FormText>
+                {!termName && <Alert>Term name not found in BP sections.</Alert>}
+
             </Col>
         </Row>}
         <hr/>

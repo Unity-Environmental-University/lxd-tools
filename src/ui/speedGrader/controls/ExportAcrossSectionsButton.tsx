@@ -3,7 +3,7 @@ import {Course} from "@/canvas/course/Course";
 import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
 import React from "react";
 import {ICourseData} from "@/canvas/courseTypes";
-import {ITermData} from "@/canvas/Term";
+import {ITermData} from "@/canvas/term/Term";
 
 export type ExportSectionsButtonProps = UiHandlerProps & {
     course: ICourseData &{ term: ITermData},

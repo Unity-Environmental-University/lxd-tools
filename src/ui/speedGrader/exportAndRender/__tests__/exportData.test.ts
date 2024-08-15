@@ -6,7 +6,7 @@ import { UiHandlerProps } from '@/ui/speedGrader/controls/UiHandlerProps';
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {ICourseData} from "@/canvas/courseTypes";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Term} from "@/canvas/Term";
+import {Term} from "@/canvas/term/Term";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentData} from "@/canvas/content/assignments/types";
 

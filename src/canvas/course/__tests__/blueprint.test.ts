@@ -246,7 +246,7 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
 }
 
 
-import {ITermData, Term} from "@/canvas/Term";
+import {ITermData, Term} from "@/canvas/term/Term";
 import {apiWriteConfig} from "@/canvas";
 
 

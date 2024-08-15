@@ -1,7 +1,7 @@
 import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {CanvasData, IEnrollmentData, IModuleData, IUserData, LookUpTable} from "@/canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
-import {ITermData} from "@/canvas/Term";
+import {ITermData} from "@/canvas/term/Term";
 import {IRubricAssessmentData, IRubricCriterionData, RubricAssessment} from "@/canvas/rubrics";
 import {getModuleInfo} from "@/ui/speedGrader/modules";
 import assert from "assert";

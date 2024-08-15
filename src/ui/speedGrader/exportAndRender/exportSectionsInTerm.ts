@@ -1,5 +1,5 @@
 import {Course} from "@/canvas/course/Course";
-import {ITermData, Term} from "@/canvas/Term";
+import {ITermData, Term} from "@/canvas/term/Term";
 import assert from "assert";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";

@@ -1,7 +1,7 @@
 import * as chrome from "webextension-polyfill";
 import assert from "assert";
 import {Account} from "@/canvas/Account";
-import {Term} from "@/canvas/Term";
+import {Term} from "@/canvas/term/Term";
 
 (async() => {
     //const account = await Account.getFromUrl()

@@ -5,10 +5,11 @@ import {IDiscussionData} from "@/canvas/content/discussions/types";
 
 
 export const mockPageData: IPageData = {
+    created_at: "", front_page: false, updated_at: "",
     page_id: 0,
     url: 'http://localhost',
     title: 'X',
-    body: '<div></div>',
+    body: '<div></div>'
 }
 
 

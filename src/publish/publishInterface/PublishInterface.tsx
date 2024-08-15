@@ -10,7 +10,7 @@ import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
 import {MakeBp} from "./MakeBp";
 import {Course} from "../../canvas/course/Course";
-import {Term} from "@/canvas/Term";
+import {Term} from "@/canvas/term/Term";
 import {getStartDateAssignments} from "@/canvas/course/changeStartDate";
 import {renderAsyncGen} from "@/canvas/fetch";
 import {assignmentDataGen} from "@/canvas/content/assignments";

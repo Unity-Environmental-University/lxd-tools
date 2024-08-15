@@ -21,6 +21,7 @@ import { runtime } from "webextension-polyfill";
 import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/consts";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import biol103Overwrite, {biol103OverwriteCheck} from "@/publish/fixesAndUpdates/validations/courseSpecific/biol103Overwrite";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
@@ -52,6 +53,7 @@ function PublishApp() {
         ...courseContentTests,
         rubricsTiedToGradesTest,
         proxyServerLinkValidation,
+        //...biol103Overwrite,
     ]
 
 

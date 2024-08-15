@@ -30,7 +30,7 @@ import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfileWithU
 import {getCourseById, getCourseData, getCourseGenerator, getGradingStandards, getSingleCourse} from "./index";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
-import {Term} from "@/canvas/Term";
+import {Term} from "@/canvas/term/Term";
 
 import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";

@@ -4,7 +4,7 @@ import {AssignmentsCollection} from '@/ui/speedGrader/AssignmentsCollection';
 import {IRubricCriterionData, RubricAssessment} from '@/canvas/rubrics';
 
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {ITermData} from "@/canvas/Term";
+import {ITermData} from "@/canvas/term/Term";
 import {IModuleData, IUserData} from "@/canvas/canvasDataDefs";
 import {mockTermData} from "@/canvas/__mocks__/mockTermData";
 import mockModuleData, {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";

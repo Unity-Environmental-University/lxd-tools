@@ -3,7 +3,7 @@
 import React, {act} from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {MakeBp, IMakeBpProps} from '../MakeBp';
+import {MakeBp, IMakeBpProps, TERM_NAME_PLACEHOLDER} from '../MakeBp';
 import * as blueprintApi from '../../../canvas/course/blueprint';
 import {IMigrationData, IProgressData} from "@/canvas/course/migration";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
@@ -104,7 +104,7 @@ describe('MakeBp Component', () => {
         (blueprintApi.getSections as jest.Mock).mockResolvedValue([]);
         await renderComponent();
         await waitFor(() => screen.getByText(/Archive/));
-        expect(screen.getByPlaceholderText(/DE8W/)).toHaveValue('');
+        expect(screen.getByPlaceholderText(TERM_NAME_PLACEHOLDER)).toHaveValue('');
         expect(screen.getByText(/Archive/)).toBeDisabled();
     });
 
@@ -119,7 +119,7 @@ describe('Retirement and updates', () => {
         await renderComponent();
 
         await waitFor(() => screen.getByText(/Archive/));
-        fireEvent.change(screen.getByPlaceholderText(/DE8W/),
+        fireEvent.change(screen.getByPlaceholderText(TERM_NAME_PLACEHOLDER),
             {target: {value: 'Spring 2024'}});
 
         await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())
@@ -178,7 +178,7 @@ describe('Migrations', () => {
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         (createNewCourse as jest.Mock).mockResolvedValue(mockBlueprintCourse);
 
-        screen.getByLabelText(/New BP/).click();
+        await act(async () =>        screen.getByLabelText(/New BP/).click());
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
         await waitFor(() => expect(screen.getByText(/Archive/)).toBeInTheDocument());
         await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled());
