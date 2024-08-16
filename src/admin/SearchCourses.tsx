@@ -8,6 +8,7 @@ import {Account, RootAccountNotFoundError} from "@/canvas/Account";
 
 interface ISearchCoursesProps {
     onlySearchBlueprints: boolean,
+    includeLegacyBps: boolean,
     setIsSearching: (value: boolean) => void,
     setFoundCourses: (value: (Course & IMultiSelectOption)[]) => void,
 }
@@ -15,6 +16,7 @@ interface ISearchCoursesProps {
 export function SearchCourses({
     setFoundCourses,
     onlySearchBlueprints,
+    includeLegacyBps,
 }: ISearchCoursesProps) {
 
     const [courseSearchString, setCourseSearchString] = useState('');
@@ -33,13 +35,16 @@ export function SearchCourses({
         if (isSearching) return;
         updateCourseSearchString();
         const rootAccount = await Account.getRootAccount();
-        if(typeof rootAccount === 'undefined') throw new RootAccountNotFoundError();
+        if (typeof rootAccount === 'undefined') throw new RootAccountNotFoundError();
         const accountIds = [rootAccount.id];
         setIsSearching(true)
         let courses: (Course & IMultiSelectOption)[] = [];
         for (let code of seekCourseCodes) {
 
-            const generator = getCourseGenerator(code, accountIds);
+            const config = onlySearchBlueprints ? {
+                queryParams: {blueprint: true,}
+            } : undefined;
+            const generator = getCourseGenerator(code, accountIds, undefined,config);
 
             for await (let course of generator) {
                 const [optionCourse] = optionize(
@@ -61,7 +66,9 @@ export function SearchCourses({
         const strings = courseSearchString.split(',').map(string => string.trimEnd());
         //Filter out dupes
         let courseCodes = strings.filter((value, index, array) => array.indexOf(value) === index);
-        if (onlySearchBlueprints) courseCodes = courseCodes.map(bpify)
+        if (onlySearchBlueprints && !includeLegacyBps) {
+            courseCodes = courseCodes.map(bpify)
+        }
         setSeekCourseCodes(courseCodes)
     }, [courseSearchString]);
 

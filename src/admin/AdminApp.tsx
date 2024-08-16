@@ -34,6 +34,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
         dispatchValidationResultsLut
     ] = useReducer(listLutDispatcher<number, IIncludesTestAndCourseId>, {});
 
+    const [includeLegacyBps, setIncludeLegacyBps] = useState(false);
     const [includeDev, setIncludeDev] = useState(false);
     const [includeSections, setIncludeSections] = useState(false);
 
@@ -229,21 +230,26 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
                                     onChange={(e) => setOnlySearchBlueprints(e.target.checked)}
                                 />
                             </Col>
-                            {onlySearchBlueprints && <Col sm={4}>
+                            {includeLegacyBps && <Col sm={2}>
+                                <Form.Label>Legacy BPs</Form.Label>
+                                <Form.Check checked={includeLegacyBps} onChange={(e) => setIncludeLegacyBps(e.target.checked)}/>
+                            </Col>}
+                            {onlySearchBlueprints && <Col sm={3}>
                                 <Form.Label>Include Dev</Form.Label>
                                 <Form.Check checked={includeDev} onChange={(e) => setIncludeDev(e.target.checked)}/>
                             </Col>}
-                            {onlySearchBlueprints && <Col sm={4}>
+                            {onlySearchBlueprints && <Col sm={3}>
                                 <Form.Label>Include Sections</Form.Label>
                                 <Form.Check checked={includeSections}
                                             onChange={(e) => setIncludeSections(e.target.checked)}/>
                             </Col>}
                         </Row>
-                        <Row>p
+                        <Row>
                             <Col>
                                 <SearchCourses
                                     setFoundCourses={setFoundCourses}
                                     onlySearchBlueprints={onlySearchBlueprints}
+                                    includeLegacyBps = {includeLegacyBps}
                                     setIsSearching={() => null}
                                 />
                             </Col>{coursesToRunOn.length > 0 && <Col>

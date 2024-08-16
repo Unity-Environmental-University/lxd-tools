@@ -16,7 +16,7 @@ export const discussionThreadingValidation: CourseFixValidation<Course, IDiscuss
         const discussionGen = DiscussionKind.dataGenerator(course.id);
         const affectedDiscussions = [] as IDiscussionData[];
         for await (let discussionData of discussionGen) {
-            if (discussionData.discussion_type === 'not_threaded') {
+            if (['not_threaded', 'side_comment'].includes(discussionData.discussion_type)) {
                 affectedDiscussions.push(discussionData);
             }
         }
@@ -39,12 +39,12 @@ export const discussionThreadingValidation: CourseFixValidation<Course, IDiscuss
                 discussion_type: 'threaded'
             })
         }));
-        return testResult(!results.find(a => a.discussion_type == 'not_threaded'), {
+        return testResult(!results.find(a => a.discussion_type != 'threaded'), {
             failureMessage: {
                 bodyLines: [
                     "Failed to fix",
                     ...results
-                        .filter(a => a.discussion_type === 'not_threaded')
+                        .filter(a => a.discussion_type !== 'threaded')
                         .map(a => a.title)
                 ]
             }

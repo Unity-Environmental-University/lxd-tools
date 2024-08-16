@@ -14,9 +14,10 @@ jest.mock("@/canvas/content/discussions/DiscussionKind", () => ({
     }
 }));
 
-describe("discussionThreadingValidaton", () => {
+describe("discussionThreadingValidation", () => {
     const mockCourse = {id: 1} as Course;
     const mockDiscussions: IDiscussionData[] = [
+        {id: 3, title: "Discussion 0", discussion_type: "side_comment"} as IDiscussionData,
         {id: 1, title: "Discussion 1", discussion_type: "not_threaded"} as IDiscussionData,
         {id: 2, title: "Discussion 2", discussion_type: "threaded"} as IDiscussionData,
     ];
@@ -34,9 +35,10 @@ describe("discussionThreadingValidaton", () => {
             return [...previousValue, ...currentValue.bodyLines]
         }, [] as string[])]
         expect(result.success).toBe(false);
-        expect(result.userData).toEqual([mockDiscussions[0]]);
+        expect(result.userData).toEqual([mockDiscussions[0], mockDiscussions[1]]);
         expect(resultLines).toContain("Non Threaded Discussions Found: ");
         expect(resultLines).toContain("Discussion 1");
+        expect(resultLines).toContain("Discussion 0");
     });
 
     test("fix method should convert non-threaded discussions to threaded", async () => {
@@ -76,7 +78,7 @@ describe("discussionThreadingValidaton", () => {
 
         const result = await discussionThreadingValidation.run(mockCourse);
 
-        expect(result.links).toEqual([`url/${mockCourse.id}/1`]);
+        expect(result.links).toEqual([`url/${mockCourse.id}/3`, `url/${mockCourse.id}/1`]);
     });
 
     test("fix method should handle failure to fix non-threaded discussions", async () => {
