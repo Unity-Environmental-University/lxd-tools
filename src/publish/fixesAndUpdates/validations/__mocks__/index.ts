@@ -7,7 +7,7 @@ import {
     IPagesHaver,
     IQuizzesHaver,
     ISyllabusHaver
-} from "../../../../canvas/course/courseTypes";
+} from "@/canvas/course/courseTypes";
 import assert from "assert";
 import {
     mockAssignmentData,
@@ -17,7 +17,7 @@ import {
 } from "@/canvas/content/__mocks__/mockContentData";
 import {ILatePolicyUpdate} from "@/canvas/canvasDataDefs";
 import mockLatePolicy from "@/canvas/course/__mocks__/mockLatePolicy";
-import {mockCourseData} from "../../../../canvas/course/__mocks__/mockCourseData";
+
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Quiz} from "@/canvas/content/quizzes/Quiz";
 import {Page} from "@/canvas/content/assignments/pages/Page";
@@ -62,7 +62,7 @@ export function badContentTextValidationFixTest<
                 expect(testResult.success).toBe(false);
                 const fixResult = await test.fix(goofus);
                 if(!fixResult.success) console.warn(fixResult.messages.map(a => a.bodyLines))
-                expect(fixResult.success).toBe(true);
+                expect(fixResult.success).toBeTruthy();
                 testResult = await test.run(goofus);
                 if(!testResult.success) console.warn(testResult.messages.map(a => a.bodyLines), goofus)
                 expect(testResult.success).toBe(true);

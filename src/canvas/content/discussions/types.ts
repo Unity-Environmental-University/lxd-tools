@@ -1,5 +1,8 @@
 import {CanvasData} from "@/canvas/canvasDataDefs";
 import {DateString} from "@/canvas/content/types";
+import {IAssignmentData} from "@/canvas/content/assignments/types";
+
+type DiscussionType = 'side_comment' | 'threaded' | 'not_threaded';
 
 export interface IDiscussionData extends CanvasData {
     id: number,
@@ -29,7 +32,7 @@ export interface IDiscussionData extends CanvasData {
     group_topic_children?: { id: number, group_id: number }[],
     root_topic_id?: number | null,
     podcast_url?: string,
-    discussion_type: 'side_comment' | 'threaded',
+    discussion_type: DiscussionType,
     group_category_id?: number | null,
     attachments?: FileAttachment[] | null,
     permissions: TopicPermissions,
@@ -37,6 +40,28 @@ export interface IDiscussionData extends CanvasData {
     only_graders_can_rate: boolean,
     sort_by_grading: boolean,
 
+}
+
+
+export interface SaveDiscussionData {
+  title?: string;
+  message?: string;
+  discussion_type?: DiscussionType;
+  published?: boolean;
+  delayed_post_at?: Date;
+  lock_at?: Date;
+  podcast_enabled?: boolean;
+  podcast_has_student_posts?: boolean;
+  require_initial_post?: boolean;
+  assignment?: IAssignmentData;
+  is_announcement?: boolean;
+  pinned?: boolean;
+  position_after?: string;
+  group_category_id?: number;
+  allow_rating?: boolean;
+  only_graders_can_rate?: boolean;
+  sort_by_rating?: boolean;
+  specific_sections?: string;
 }
 
 export type TopicPermissions = Record<string, any>

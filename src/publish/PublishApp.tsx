@@ -22,6 +22,7 @@ import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/consts";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import biol103Overwrite, {biol103OverwriteCheck} from "@/publish/fixesAndUpdates/validations/courseSpecific/biol103Overwrite";
+import {discussionThreadingValidation} from "@/publish/fixesAndUpdates/validations/discussionThreading";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
@@ -53,6 +54,7 @@ function PublishApp() {
         ...courseContentTests,
         rubricsTiedToGradesTest,
         proxyServerLinkValidation,
+        discussionThreadingValidation,
         //...biol103Overwrite,
     ]
 

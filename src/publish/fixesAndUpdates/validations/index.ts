@@ -98,15 +98,17 @@ const testResultDefaults = {
 
 export function testResult<UserData>(
     success: boolean | "unknown" | "not run" | undefined, options?: TestResultOptions<UserData> ): ValidationResult<UserData> {
-    success = success === 'unknown' ? success : !!success;
+
+    const displayMessage = success === 'unknown' ? success : !!success;
+    const reportedSuccess = success === undefined? 'unknown' : success;
     let { failureMessage, notFailureMessage, links, userData} = {...testResultDefaults, ...options };
 
     failureMessage = ensureMessageResults(failureMessage);
     notFailureMessage = ensureMessageResults(notFailureMessage)
 
     const response: ValidationResult<UserData> = {
-        success,
-        messages: success ? notFailureMessage : failureMessage,
+        success: reportedSuccess,
+        messages: displayMessage ? notFailureMessage : failureMessage,
         userData
 
     }
