@@ -66,9 +66,9 @@ export function SearchCourses({
         const strings = courseSearchString.split(',').map(string => string.trimEnd());
         //Filter out dupes
         let courseCodes = strings.filter((value, index, array) => array.indexOf(value) === index);
-        if (onlySearchBlueprints && !includeLegacyBps) {
-            courseCodes = courseCodes.map(bpify)
-        }
+        // if (onlySearchBlueprints && !includeLegacyBps) {
+        //     courseCodes = courseCodes.map(bpify)
+        // }
         setSeekCourseCodes(courseCodes)
     }, [courseSearchString]);
 

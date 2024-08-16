@@ -136,34 +136,37 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
 
 
     function ResultsDisplay() {
-        return <><Row>
-            {coursesToRunOn.map(course => <ResultsDisplayRow
-                course={course}
-                key={course.id}
-                parentCourse={parentCourseLut[course.id]}
-                sections={sectionLut[course.id]}
-            />)}
-        </Row>
-            <Row>
-                {validationResults
-                    .filter(a => a.success !== true)
-                    .map(result => {
-                        const course = coursesToRunOn.find(a => a.id === result.courseId);
+        return <Row>
+            <Col>
+                <Row>
+                    {coursesToRunOn.map(course => <ResultsDisplayRow
+                        course={course}
+                        key={course.id}
+                        parentCourse={parentCourseLut[course.id]}
+                        sections={sectionLut[course.id]}
+                    />)}
+                </Row>
+                <Row>
+                    {validationResults
+                        .filter(a => a.success !== true)
+                        .map(result => {
+                            const course = coursesToRunOn.find(a => a.id === result.courseId);
 
-                        return course && <Row>
-                            <Col sm={4}>
-                                {course?.courseCode}
-                            </Col>
-                            <Col sm={4}>
-                                {course.courseCode}
-                            </Col>
-                            <Col sm={4}>
-                                <CourseLink course={course} label={course.htmlContentUrl}/>
-                            </Col>
-                        </Row>
-                    })}
-            </Row>
-        </>
+                            return course && <Row>
+                                <Col sm={4}>
+                                    {course?.courseCode}
+                                </Col>
+                                <Col sm={4}>
+                                    {course.courseCode}
+                                </Col>
+                                <Col sm={4}>
+                                    <CourseLink course={course} label={course.htmlContentUrl}/>
+                                </Col>
+                            </Row>
+                        })}
+                </Row>
+            </Col>
+        </Row>
     }
 
     interface IResultsDisplayRowProps {
@@ -172,26 +175,28 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
         sections?: Course[] | null
     }
 
-    function ResultsDisplayRow({course, parentCourse, sections}: IResultsDisplayRowProps) {
+    function ResultsDisplayRow({
+        course, parentCourse, sections
+    }: IResultsDisplayRowProps) {
         return <Row>
-        <ValidationResultsForCourse
-            key={course.id}
-            slim={false}
-            results={validationResultsLut[course.id]}
-            course={course}/>
+            <ValidationResultsForCourse
+                key={course.id}
+                slim={false}
+                results={validationResultsLut[course.id]}
+                course={course}/>
 
-        {includeDev && parentCourse && <ValidationResultsForCourse
-            key={course.id}
-            slim={true}
-            course={parentCourse}
-            results={validationResultsLut[parentCourse.id]}
-        />}
-        {includeSections && sections?.map(section => <ValidationResultsForCourse
-            key={section.id}
-            slim={true}
-            course={section}
-            results={validationResultsLut[section.id]}
-        />)}
+            {includeDev && parentCourse && <ValidationResultsForCourse
+                key={course.id}
+                slim={true}
+                course={parentCourse}
+                results={validationResultsLut[parentCourse.id]}
+            />}
+            {includeSections && sections?.map(section => <ValidationResultsForCourse
+                key={section.id}
+                slim={true}
+                course={section}
+                results={validationResultsLut[section.id]}
+            />)}
 
 
         </Row>
@@ -230,9 +235,10 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
                                     onChange={(e) => setOnlySearchBlueprints(e.target.checked)}
                                 />
                             </Col>
-                            {includeLegacyBps && <Col sm={2}>
+                            {onlySearchBlueprints && <Col sm={2}>
                                 <Form.Label>Legacy BPs</Form.Label>
-                                <Form.Check checked={includeLegacyBps} onChange={(e) => setIncludeLegacyBps(e.target.checked)}/>
+                                <Form.Check checked={includeLegacyBps}
+                                            onChange={(e) => setIncludeLegacyBps(e.target.checked)}/>
                             </Col>}
                             {onlySearchBlueprints && <Col sm={3}>
                                 <Form.Label>Include Dev</Form.Label>
@@ -249,7 +255,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
                                 <SearchCourses
                                     setFoundCourses={setFoundCourses}
                                     onlySearchBlueprints={onlySearchBlueprints}
-                                    includeLegacyBps = {includeLegacyBps}
+                                    includeLegacyBps={includeLegacyBps}
                                     setIsSearching={() => null}
                                 />
                             </Col>{coursesToRunOn.length > 0 && <Col>
@@ -265,7 +271,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
 
                         <Row>
                             <Col>
-
+                                Reulsts
                                 <ResultsDisplay/>
                             </Col>
                         </Row>
@@ -292,7 +298,7 @@ interface IValidationResultsForCourseProps {
 function ValidationResultsForCourse({
     course, results, slim
 }: IValidationResultsForCourseProps) {
-    return <Container>
+    return <>
 
         <Row><Col>
             <h3 style={{fontSize: slim ? '0.5em' : '1em'}}>
@@ -301,7 +307,7 @@ function ValidationResultsForCourse({
         </Col></Row>
         {
             results && results.map((result, i) => <ValidationRow
-                key={result.test.name + course.id + "_" + i }
+                key={result.test.name + course.id + "_" + i}
                 course={course}
                 slim={slim}
                 initialResult={result}
@@ -310,13 +316,17 @@ function ValidationResultsForCourse({
                 refreshCourse={async () => undefined}
             />)
         }
-    </Container>
+    </>
 }
 
 
-export type CourseLinkProps = { course: Course, label?: string }
+export type CourseLinkProps = {
+    course: Course, label?: string
+}
 
-function CourseLink({course, label}: CourseLinkProps) {
+function CourseLink({
+    course, label
+}: CourseLinkProps) {
 
     return <a href={course.htmlContentUrl} target={"_blank"}>{label ?? course.name}</a>
 }
