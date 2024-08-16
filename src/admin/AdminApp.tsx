@@ -2,7 +2,7 @@ import React, {useReducer, useState} from "react";
 import {CourseValidation} from "@/publish/fixesAndUpdates/validations";
 import {IMultiSelectOption, optionize, optionizeOne} from "@/ui/widgets/MuliSelect";
 import Modal from "@/ui/widgets/Modal/index";
-import {Col, Container, Form, Row} from "react-bootstrap";
+import {Button, Col, Container, Form, Row} from "react-bootstrap";
 import {batchify, filterUniqueFunc} from "@/canvas/canvasUtils";
 import {ValidationRow} from "@/publish/fixesAndUpdates/ValidationRow";
 import {listLutDispatcher, lutDispatcher} from "@/ui/reducerDispatchers";
@@ -10,6 +10,7 @@ import {IIncludesTestAndCourseId} from "./index";
 import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";
 import {Course} from "@/canvas/course/Course";
+import {beginBpSync} from "@/canvas/course/blueprint";
 
 
 interface IAdminAppProps {
@@ -298,11 +299,20 @@ interface IValidationResultsForCourseProps {
 function ValidationResultsForCourse({
     course, results, slim
 }: IValidationResultsForCourseProps) {
+    async function sync() {
+        await beginBpSync(course.id, {
+            message: `Syncing from fix ${results?.map(a => a.test.name).join(',')}`
+        })
+    }
+
     return <>
+
 
         <Row><Col>
             <h3 style={{fontSize: slim ? '0.5em' : '1em'}}>
                 <a href={course.htmlContentUrl} target={'_blank'}>{course.parsedCourseCode ?? course.name}</a>
+                {course.isBlueprint() && <Button onClick={sync}>Sync</Button>}
+
             </h3>
         </Col></Row>
         {

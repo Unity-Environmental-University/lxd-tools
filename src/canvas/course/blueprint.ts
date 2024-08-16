@@ -85,6 +85,21 @@ export async function retireBlueprint(course: Course, termName: string | null, c
 }
 
 
+type BeginSyncOptions = {
+    config?: ICanvasCallConfig,
+    copy_settings?: boolean,
+    message?: string,
+}
+export async function beginBpSync(courseId:number, {message, copy_settings, config
+}:BeginSyncOptions) {
+    const url = `/api/v1/courses/${courseId}/blueprint_templates/default/migrations`;
+    if(typeof  copy_settings === 'undefined') copy_settings = true;
+    const result = await fetchJson(url, apiWriteConfig('POST', {
+        message,
+        copy_settings
+    }, config))
+}
+
 export async function getBlueprintsFromCode(code: string, accountIds: number[], config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const [_, baseCode] = code.match(/_(\w{4}\d{3})$/) || [];
     if (!baseCode) return null;
