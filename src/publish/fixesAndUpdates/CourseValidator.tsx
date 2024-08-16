@@ -3,6 +3,7 @@ import './CourseValidTest.scss'
 import {ValidationRow} from "./ValidationRow";
 import {CourseValidation} from "./validations";
 import {Course} from "../../canvas/course/Course";
+import {Col} from "react-bootstrap";
 
 export type CourseValidatorProps<T = Course> = {
     course: T,
@@ -12,7 +13,7 @@ export type CourseValidatorProps<T = Course> = {
 }
 
 export function CourseValidator({course, tests, refreshCourse, showOnlyFailures=false}: CourseValidatorProps) {
-    return <div className={'container'}>
+    return <Col>
         {showOnlyFailures || <h2 data-testid="header">Course Settings and Content Tests</h2>}
         {tests.map((test, i) => <ValidationRow
             key={`${course.id}${test.name}${i}`}
@@ -21,6 +22,6 @@ export function CourseValidator({course, tests, refreshCourse, showOnlyFailures=
             showOnlyFailures={showOnlyFailures}
             refreshCourse={refreshCourse}
         />)}
-    </div>
+    </Col>
 }
 

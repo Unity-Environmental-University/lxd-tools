@@ -263,7 +263,12 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
                         </Col>}
                         </Row>
 
-                        <ResultsDisplay/>
+                        <Row>
+                            <Col>
+
+                                <ResultsDisplay/>
+                            </Col>
+                        </Row>
                     </Col>
                     <Col sm={3}>
                         <FoundCoursesDisplay/>
@@ -295,8 +300,8 @@ function ValidationResultsForCourse({
             </h3>
         </Col></Row>
         {
-            results && results.map(result => <ValidationRow
-                key={result.test.name + course.id}
+            results && results.map((result, i) => <ValidationRow
+                key={result.test.name + course.id + "_" + i }
                 course={course}
                 slim={slim}
                 initialResult={result}
