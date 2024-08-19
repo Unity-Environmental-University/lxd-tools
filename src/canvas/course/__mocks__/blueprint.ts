@@ -1,4 +1,4 @@
-import {returnMockAsyncGen} from "@/__mocks__/utils";
+import {mockAsyncGen, returnMockAsyncGen} from "@/__mocks__/utils";
 import {ICourseData} from "@/canvas/courseTypes";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 
@@ -14,7 +14,7 @@ const isBlueprint = jest.fn();
  const setAsBlueprint = jest.fn();
  const unSetAsBlueprint = jest.fn();
 
- const sectionDataGenerator = returnMockAsyncGen<ICourseData>([mockCourseData]);
+ const sectionDataGenerator = jest.fn( () => mockAsyncGen<ICourseData>([mockCourseData]));
 
  export {
      isBlueprint,

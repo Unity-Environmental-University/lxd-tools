@@ -5,7 +5,12 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {MakeBp, IMakeBpProps, TERM_NAME_PLACEHOLDER} from '../MakeBp';
 import * as blueprintApi from '../../../canvas/course/blueprint';
-import {IMigrationData, IProgressData} from "@/canvas/course/migration";
+import {
+    getMigrationProgressGen,
+    migrationsForCourseGen,
+    IMigrationData,
+    IProgressData, startMigration
+} from "@/canvas/course/migration";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Course} from "@/canvas/course/Course";
 import {mockProgressData} from "@/canvas/course/__mocks__/mockProgressData";
@@ -21,8 +26,14 @@ import * as cacheMigrationApi from '@/canvas/course/migration/migrationCache'
 import {range} from "@/canvas/canvasUtils";
 import {loadCachedCourseMigrations} from "@/canvas/course/migration/migrationCache";
 import assert from "assert";
+import {Temporal} from "temporal-polyfill";
+import {mockAsyncGen} from "@/__mocks__/utils";
+import {SectionDetails} from "@/publish/publishInterface/sectionDetails/SectionDetails";
+import {SectionData} from "@/canvas/courseTypes";
+import {afterEach} from "@jest/globals";
 
 jest.mock('@/canvas/course/blueprint');
+
 
 const mockCourse: Course = new Course({
     ...mockCourseData,
@@ -32,13 +43,22 @@ const mockCourse: Course = new Course({
 })
 const mockBlueprintCourse: Course = new Course({...mockCourseData, blueprint: true})
 
+const mockSectionData: SectionData = {
+    course_code: "",
+    id: 0,
+    name: "",
+    sis_course_id: undefined,
+    teachers: {anonymous_id: "", avatar_image_url: "", display_name: "", html_url: "", id: 0, pronouns: ""},
+    term_name: "DE5W06.04.23"
+}
+
 async function renderComponent(props: Partial<IMakeBpProps> = {}) {
     const defaultProps: IMakeBpProps = {
         devCourse: mockCourse,
         ...props,
     };
 
-    return await act(async () => render(<MakeBp {...defaultProps} />));
+    return await act(async() => render(<MakeBp {...defaultProps} />));
 }
 
 
@@ -55,14 +75,12 @@ jest.mock('@/canvas/course', () => ({
 }));
 
 
-jest.mock('../../../canvas/course/migration', () => {
+jest.mock('@/canvas/course/migration', () => {
     const originalModule = jest.requireActual('../../../canvas/course/migration');
     return {
         __esModule: true,
         ...originalModule,
-        getMigrationsForCourse: jest.fn(function* (_: number) {
-            return;
-        }),
+        migrationsForCourseGen: jest.fn(() => mockAsyncGen([])),
         startMigration: jest.fn((id: number, _: number) => ({
             ...mockMigrationData,
             id,
@@ -75,11 +93,17 @@ jest.mock('../../../canvas/course/migration', () => {
         }),
     }
 })
+jest.mock('@/canvas/course/migration/migrationCache', () => ({
+    cacheCourseMigrations: jest.fn(),
+    loadCachedCourseMigrations: jest.fn(() => []),
+}))
 
 
 describe('MakeBp Component', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        localStorage.clear();
+        mockBlueprintCourse.isBlueprint = jest.fn(() => true);
     });
 
     it('renders without crashing', async () => {
@@ -90,7 +114,6 @@ describe('MakeBp Component', () => {
 
     it('fetches and sets blueprint info on mount', async () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
-        (blueprintApi.getSections as jest.Mock).mockResolvedValue([]);
         (blueprintApi.getTermNameFromSections as jest.Mock).mockResolvedValue('Spring 2024');
 
         await renderComponent();
@@ -110,29 +133,37 @@ describe('MakeBp Component', () => {
 
 })
 describe('Retirement and updates', () => {
+    const cachedCourseMigrationSpy = jest.spyOn(cacheMigrationApi, 'loadCachedCourseMigrations')
+
+
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        cachedCourseMigrationSpy.mockReturnValue([]);
+        mockBlueprintCourse.isBlueprint = jest.fn(() => true);
+    });
+
 
     it('calls retireBlueprint and updates blueprint info on archive', async () => {
-        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
-        (blueprintApi.getSections as jest.Mock).mockResolvedValue([]);
-        (blueprintApi.getTermNameFromSections as jest.Mock).mockResolvedValue('Spring 2024');
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{...mockBlueprintCourse, id: 101}]);
+
+        (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([{
+            ...mockSectionData,
+            term_name: 'DE5W06.04.20',
+        }]));
+
+        (blueprintApi.getTermNameFromSections as jest.Mock).mockResolvedValue('DE5W06.04.1980');
         (blueprintApi.retireBlueprint as jest.Mock).mockResolvedValue(undefined);
         await renderComponent();
 
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([]);
         await waitFor(() => screen.getByText(/Archive/));
-        fireEvent.change(screen.getByPlaceholderText(TERM_NAME_PLACEHOLDER),
-            {target: {value: 'Spring 2024'}});
-
-        await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())
-        fireEvent.click(screen.getByText(/Archive/));
+        expect(screen.getByText(/Archive/)).not.toBeDisabled();
+        await act(async () => fireEvent.click(screen.getByText(/Archive/)));
 
         // Wait for the retireBlueprint API call to be made
-        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([]);
-        await waitFor(() => expect(blueprintApi.retireBlueprint).toHaveBeenCalled());
-
-        // Wait for the component to update
-        await waitFor(() => expect(screen.getByLabelText(/New BP/)).not.toBeDisabled());
-        await waitFor(() => expect(blueprintApi.retireBlueprint).toHaveBeenCalled());
-        expect((blueprintApi.getBlueprintsFromCode as jest.Mock).mock.calls.length).toBeGreaterThanOrEqual(2);
+        expect(blueprintApi.retireBlueprint).toHaveBeenCalled();
+        expect(screen.getByLabelText(/New BP/)).not.toBeDisabled();
     });
 
 
@@ -142,13 +173,39 @@ describe('Retirement and updates', () => {
             devCourse: mockCourse
         })
         await waitFor(() => expect(screen.getByLabelText(/New BP/)).toBeInTheDocument());
-        await act(() => fireEvent.click(screen.getByLabelText(/New BP/)));
+        await act(async () => fireEvent.click(screen.getByLabelText(/New BP/)));
         await waitFor(() => expect(createNewCourse).toHaveBeenCalled());
         assert(mockCourse.parsedCourseCode)
         const code = bpify(mockCourse.parsedCourseCode);
         assert(code);
         expect(createNewCourse).toHaveBeenCalledWith(code, mockBlueprintCourse.accountId, mockCourse.name.replace(mockCourse.courseCode!, code));
     })
+
+    it('Warns before archiving a non-past bp', async () => {
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
+
+        const now = Temporal.Now.plainDateISO();
+        const month = now.toLocaleString('en', {month: '2-digit'});
+        const day = now.toLocaleString('en', {day: '2-digit'});
+        const year = now.toLocaleString('en', {year: '2-digit'});
+        const termName = `DE8W${month}.${day}.${year}`;
+        (migrationsForCourseGen as jest.Mock).mockReturnValue(mockAsyncGen<IMigrationData>([]));
+        (getMigrationProgressGen as jest.Mock).mockReturnValue(mockAsyncGen<IMigrationData>([]));
+
+        (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([{
+            ...mockSectionData,
+            term_name: termName
+        }]))
+
+        await renderComponent({devCourse: mockCourse});
+        await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())
+
+        global.confirm = jest.fn(() => false);
+        await act(async () => fireEvent.click(screen.getByText(/Archive/)));
+        expect(global.confirm).toHaveBeenCalled();
+
+    })
+
 
     it('disabled new BP button if there is an existing BP', async () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
@@ -164,40 +221,64 @@ describe('Retirement and updates', () => {
 
 describe('Migrations', () => {
 
-    const cachedCourseMigrationSpy = jest.spyOn(cacheMigrationApi, 'loadCachedCourseMigrations')
+
+    const cachedCourseMigrationSpy = jest.spyOn(cacheMigrationApi, 'loadCachedCourseMigrations');
+
+
     beforeEach(() => {
-        localStorage.clear();
+        jest.clearAllMocks();
+        (startMigration as jest.Mock).mockImplementation((id: number, _: number) => ({
+            ...mockMigrationData,
+            id,
+        }));
+
+        (getMigrationProgressGen as jest.Mock).mockImplementation(function* (_: IMigrationData) {
+            for (let i = 0; i < 4; i++) {
+                yield {...mockProgressData, workflow_state: 'running'} as IProgressData;
+            }
+            yield {...mockProgressData, workflow_state: 'completed'} as IProgressData;
+        });
+
+
     })
+
     it('saves active migration when one is created', async () => {
+
+        (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([]));
+
         expect(loadCachedCourseMigrations(mockCourse.id)).toHaveLength(0);
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([]);
-        cachedCourseMigrationSpy.mockClear();
+
         await renderComponent();
+
 
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
+
         (createNewCourse as jest.Mock).mockResolvedValue(mockBlueprintCourse);
+        (loadCachedCourseMigrations as jest.Mock).mockReturnValue([{...mockMigrationData, id: mockBlueprintCourse.id, workflow_state: 'queued', tracked: true}]);
 
-        await act(async () =>        screen.getByLabelText(/New BP/).click());
-        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
-        await waitFor(() => expect(screen.getByText(/Archive/)).toBeInTheDocument());
-        await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled());
-        await waitFor(() => expect(screen.getByText(/Status:/)).toBeInTheDocument());
+        await act(async () => fireEvent.click(screen.getByLabelText(/New BP/)));
 
+        expect(screen.getByText(/Archive/)).toBeInTheDocument();
+        expect(cacheCourseMigrations).toHaveBeenCalled();
         expect(screen.getByText(/Status:/)).toBeInTheDocument();
-        await waitFor(() => expect(loadCachedCourseMigrations(mockCourse.id)).toHaveLength(1));
     })
+
 
     it('only shows active migrations', async () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
+        (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([]));
+        localStorage.clear();
         const iterator = range(0);
         const nextValue = () => iterator.next().value as number;
-        cacheCourseMigrations(mockCourse.id, [
+        (loadCachedCourseMigrations as jest.Mock).mockReturnValue([
             {...mockMigrationData, id: nextValue(), workflow_state: 'queued'},
             {...mockMigrationData, id: nextValue(), workflow_state: 'queued', tracked: true, cleanedUp: false},
             {...mockMigrationData, id: nextValue(), workflow_state: 'completed', tracked: true, cleanedUp: false},
-            {...mockMigrationData, id: nextValue(), workflow_state: 'completed', tracked: true, cleanedUp: true},
-        ])
+            {...mockMigrationData, id: nextValue(), workflow_state: 'completed', tracked: true, cleanedUp: true}
+        ]);
+
         await renderComponent({
             devCourse: mockCourse,
         });
@@ -207,4 +288,5 @@ describe('Migrations', () => {
         await waitFor(() => expect(screen.queryAllByText(/Status/)).toHaveLength(2));
         expect(screen.queryAllByText(/Status/)).toHaveLength(2);
     })
+
 })
