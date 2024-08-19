@@ -45,7 +45,7 @@ export interface IProgressData {
 }
 
 
-export function getMigrationsForCourse(courseId:number, config?:ICanvasCallConfig) {
+export function migrationsForCourseGen(courseId:number, config?:ICanvasCallConfig) {
     const url = `/api/v1/courses/${courseId}/content_migrations`
     return getPagedDataGenerator<IMigrationData>(url, config);
 

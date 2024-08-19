@@ -100,6 +100,7 @@ export async function beginBpSync(courseId:number, {message, copy_settings, conf
     }, config))
 }
 
+
 export async function getBlueprintsFromCode(code: string, accountIds: number[], config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const [_, baseCode] = code.match(/_(\w{4}\d{3})$/) || [];
     if (!baseCode) return null;

@@ -9,7 +9,7 @@ import {
     retireBlueprint, sectionDataGenerator, setAsBlueprint
 } from "@/canvas/course/blueprint";
 import {bpify} from "@/admin";
-import {getMigrationsForCourse, IMigrationData, startMigration} from "@/canvas/course/migration";
+import {migrationsForCourseGen, IMigrationData, startMigration} from "@/canvas/course/migration";
 import {Course} from "@/canvas/course/Course";
 import {listDispatcher} from "@/ui/reducerDispatchers";
 import {
@@ -23,6 +23,7 @@ import assert from "assert";
 import {SectionData} from "@/canvas/courseTypes";
 import dateFromTermName from "@/canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
+import {jsonRegex} from "ts-loader/dist/constants";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
@@ -57,10 +58,12 @@ export function MakeBp({
     const [allMigrations, allMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
     const [activeMigrations, activeMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
     const [isLocking, setIsLocking] = useState(false);
-
+    const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
+    const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
+
 
     useEffect(() => {
         const migrationData = loadCachedCourseMigrations(devCourse.id);
@@ -87,12 +90,28 @@ export function MakeBp({
         await updateMigrations();
     }, [currentBp]);
 
+
+    useEffect(() => {
+        const isDisabled = isLoading || !currentBp || !termName || termName.length === 0 || activeMigrations.length > 0;
+        setIsArchiveDisabled(isDisabled);
+    }, [isLoading, currentBp, termName, activeMigrations])
+
+
+    useEffect( () => {
+        const isDisabled = isLoading ||
+                        !!currentBp ||
+                        !devCourse.parsedCourseCode ||
+                        devCourse.parsedCourseCode.length == 0
+        setIsNewBpDisabled(isDisabled);
+    }, [isLoading, currentBp, devCourse])
+
+
     async function updateMigrations() {
         if (!currentBp) return;
         allMigrationDispatcher({
             clear: true,
         })
-        const migrationsForCourse = getMigrationsForCourse(currentBp.id);
+        const migrationsForCourse = migrationsForCourseGen(currentBp.id);
         for await (let migration of migrationsForCourse) {
             cacheCourseMigrations(currentBp.id, [migration]);
             allMigrationDispatcher({
@@ -115,6 +134,7 @@ export function MakeBp({
             course.rawData.account_id,
             course.rawData.root_account_id
         ]) ?? [];
+
         setCurrentBp(bp)
     }
 
@@ -136,9 +156,15 @@ export function MakeBp({
         if (!currentBp) return false;
         if (termName.length === 0) return false;
         const termDate = dateFromTermName(termName);
-        if(termDate && termDate.until(Temporal.Now.plainDateISO()).days > 10) {
-            const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`)
-            if (!confirmFinish) return;
+        console.log("term", termName, JSON.stringify(termDate));
+        if(termDate) {
+            const daysLeft = termDate.until(Temporal.Now.plainDateISO()).days;
+            console.log(daysLeft)
+            if (daysLeft <= 5) {
+                const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`)
+                if (!confirmFinish) return;
+
+            }
         }
 
         setIsLoading(true);
@@ -195,10 +221,6 @@ export function MakeBp({
     }
 
 
-    function isArchiveDisabled() {
-        return isLoading || !currentBp || !termName || termName.length === 0 || activeMigrations.length > 0;
-
-    }
 
     return <div>
         {!isDev && <Row><Col className={'alert alert-warning'}>This is not a DEV course</Col></Row>}
@@ -207,7 +229,7 @@ export function MakeBp({
                 <Button
                     id={'archiveButton'}
                     onClick={onArchive}
-                    disabled={isArchiveDisabled()}
+                    disabled={isArchiveDisabled}
                 >Archive {currentBp.parsedCourseCode}</Button>
             </Col>
             <Col sm={2}>
@@ -238,11 +260,7 @@ export function MakeBp({
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
                     aria-label={'New BP'}
-                    disabled={isLoading ||
-                        !!currentBp ||
-                        !devCourse.parsedCourseCode ||
-                        devCourse.parsedCourseCode.length == 0
-                    }
+                    disabled={isNewBpDisabled}
                 >Create New BP</Button>
             </Col>
                 <Col sm={6}>

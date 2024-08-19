@@ -2,7 +2,7 @@ import fetchMock, {FetchMock} from "jest-fetch-mock";
 import {mockCourseData} from "../../__mocks__/mockCourseData";
 import {
     copyToNewCourseGenerator,
-    courseMigrationGenerator, getMigration, getMigrationsForCourse,
+    courseMigrationGenerator, getMigration, migrationsForCourseGen,
     IMigrationData,
     IProgressData
 } from "../index";
@@ -27,7 +27,7 @@ describe('Getting migrations', ()=> {
         const id = 123;
         const config = { fetchInit: {}};
         fetchMock.once(JSON.stringify([mockMigrationData, {...mockMigrationData, id: 321}]));
-        const generator = getMigrationsForCourse(id, config);
+        const generator = migrationsForCourseGen(id, config);
         let result = await generator.next();
         let migration = result.done? null : result.value;
         expect(fetchMock).toHaveBeenCalledTimes(1);
