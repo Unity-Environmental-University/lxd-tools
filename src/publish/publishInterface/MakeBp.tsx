@@ -156,10 +156,8 @@ export function MakeBp({
         if (!currentBp) return false;
         if (termName.length === 0) return false;
         const termDate = dateFromTermName(termName);
-        console.log("term", termName, JSON.stringify(termDate));
         if(termDate) {
             const daysLeft = termDate.until(Temporal.Now.plainDateISO()).days;
-            console.log(daysLeft)
             if (daysLeft <= 5) {
                 const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`)
                 if (!confirmFinish) return;

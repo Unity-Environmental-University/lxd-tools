@@ -7,7 +7,7 @@ import {
     stringsToMessageResult,
     testResult, TextReplaceValidation,
     ValidationResult
-} from "./index";
+} from "./validations";
 import {IContentHaver, IPagesHaver} from "../../../canvas/course/courseTypes";
 import {Course} from "../../../canvas/course/Course";
 import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";

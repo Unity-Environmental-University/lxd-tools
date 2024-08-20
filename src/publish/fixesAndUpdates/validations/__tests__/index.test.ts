@@ -1,4 +1,4 @@
-import {capitalize, matchHighlights, preserveCapsReplace, testResult} from "../index";
+import {capitalize, matchHighlights, preserveCapsReplace, testResult} from "../validations";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 
 

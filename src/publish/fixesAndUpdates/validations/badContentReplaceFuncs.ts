@@ -1,6 +1,6 @@
 import {IContentHaver} from "@/canvas/course/courseTypes";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {badContentFixFunc, badContentRunFunc} from "@/publish/fixesAndUpdates/validations/index";
+import {badContentFixFunc, badContentRunFunc} from "@/publish/fixesAndUpdates/validations/validations";
 
 export default function badContentReplaceFuncs<
     CourseType extends IContentHaver,

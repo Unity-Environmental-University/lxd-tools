@@ -54,7 +54,6 @@ export default function DateRangeExportDialog({
         <Modal.Footer>
             <Button onClick={async (e) => {
                 e.stopPropagation();
-                console.log("Exporting courses...")
                 onExporting();
                 handleHide();
                 const by_subaccounts = course.termId? [course.termId] : [];
@@ -76,7 +75,6 @@ export default function DateRangeExportDialog({
                 })
                 const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
 
-                console.log("Writing Final Output Document...")
                 saveDataGenFunc()(allSectionRows,
                     `${course.baseCode}-${exportStart?.toUTCString()}-${exportEnd?.toUTCString()}.csv`);
                 onFinishedExporting();

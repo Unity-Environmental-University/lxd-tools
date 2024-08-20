@@ -9,7 +9,7 @@ import {AdminApp} from "../admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Alert, Button, Row} from "react-bootstrap";
 import {Course} from "../canvas/course/Course";
-import {CourseValidation} from "./fixesAndUpdates/validations";
+import {CourseValidation} from "./fixesAndUpdates/validations/validations";
 import capstoneProjectValidations from "./fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import syllabusTests from "./fixesAndUpdates/validations/syllabusTests";
 import courseSettingsTests from "./fixesAndUpdates/validations/courseSettings";

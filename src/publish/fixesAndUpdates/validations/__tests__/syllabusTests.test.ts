@@ -1,4 +1,4 @@
-import {CourseValidation, TextReplaceValidation} from "../index";
+import {CourseValidation, TextReplaceValidation} from "../validations";
 import {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest, classInclusiveNoDateHeaderTest,
@@ -7,7 +7,7 @@ import {
 } from "../syllabusTests";
 import fs from "fs";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
-import {badContentTextValidationFixTest, badContentTextValidationTest, mockSyllabusHaver} from "../__mocks__";
+import {badContentTextValidationFixTest, badContentTextValidationTest, mockSyllabusHaver} from "../__mocks__/validations";
 import {Course} from "@/canvas/course/Course";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import assert from "assert";
@@ -47,7 +47,6 @@ export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextRe
                 const goofusCourse: ISyllabusHaver = mockSyllabusHaver(goofus);
                 await test.fix(goofusCourse);
                 const syllabus = await goofusCourse.getSyllabus();
-                console.log(goofus, gallant)
                 expect(syllabus).toBe(gallant);
             }
         }

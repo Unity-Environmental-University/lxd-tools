@@ -1,4 +1,4 @@
-import {ContentTextReplaceFix, CourseValidation, TextReplaceValidation} from "../index";
+import {ContentTextReplaceFix, CourseValidation, TextReplaceValidation} from "../validations";
 import {
     IAssignmentsHaver,
     IContentHaver,

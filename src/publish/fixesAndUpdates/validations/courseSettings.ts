@@ -1,5 +1,5 @@
 /// Course Settings
-import {CourseFixValidation, CourseValidation, errorMessageResult, stringsToMessageResult, testResult} from "./index";
+import {CourseFixValidation, CourseValidation, errorMessageResult, stringsToMessageResult, testResult} from "./validations";
 import {config} from "dotenv";
 import {
     ICourseSettingsHaver, IGradingStandardData,

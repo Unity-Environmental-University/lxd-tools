@@ -3,7 +3,7 @@ import {
     badContentRunFunc,
     CourseFixValidation,
     testResult
-} from "@/publish/fixesAndUpdates/validations/index";
+} from "@/publish/fixesAndUpdates/validations/validations";
 import {projectRegex} from "@/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import {Course} from "@/canvas/course/Course";
 import {IDiscussionData} from "@/canvas/content/discussions/types";

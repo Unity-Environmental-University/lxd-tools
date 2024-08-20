@@ -6,7 +6,7 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {CourseValidation} from "./validations";
+import {CourseValidation} from "./validations/validations";
 import {Course} from "../../canvas/course/Course";
 import {Page} from "@/canvas/content/assignments/pages/Page";
 

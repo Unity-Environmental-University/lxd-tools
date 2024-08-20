@@ -1,8 +1,12 @@
-import {badContentFixFunc, badContentRunFunc, ContentTextReplaceFix, CourseValidation, TextReplaceValidation} from "./";
 
-import {IContentHaver} from "../../../canvas/course/courseTypes";
+import {IContentHaver} from "@/canvas/course/courseTypes";
 
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {
+    badContentFixFunc,
+    badContentRunFunc,
+    ContentTextReplaceFix
+} from "@/publish/fixesAndUpdates/validations/validations";
 
 
 const oldProxyRegex = /(proxy1\.unity\.edu|unity.idn.oclc.org)/g;

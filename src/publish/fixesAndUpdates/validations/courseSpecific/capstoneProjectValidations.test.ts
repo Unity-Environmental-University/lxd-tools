@@ -1,6 +1,6 @@
 import capstoneProjectValidations from "./capstoneProjectValidations";
 
-import {badContentTextValidationFixTest, badContentTextValidationTest} from "../__mocks__";
+import {badContentTextValidationFixTest, badContentTextValidationTest} from "../__mocks__/validations";
 jest.mock('@/canvas/fetch/fetchJson')
 
 

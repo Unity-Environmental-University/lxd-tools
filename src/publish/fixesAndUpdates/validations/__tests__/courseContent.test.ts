@@ -12,9 +12,9 @@ import {
     badContentTextValidationTest,
     mockContentHaver,
     mockPagesHaver
-} from "../__mocks__";
+} from "../__mocks__/validations";
 import * as fetchApi from "../../../../canvas/fetch";
-import {badContentRunFunc, ContentTextReplaceFix} from "../index";
+import {badContentRunFunc, ContentTextReplaceFix} from "../validations";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Page} from "@/canvas/content/assignments/pages/Page";
 import {classInclusiveNoDateHeaderTest} from "@/publish/fixesAndUpdates/validations/syllabusTests";

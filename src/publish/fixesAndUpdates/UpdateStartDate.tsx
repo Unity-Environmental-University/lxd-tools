@@ -1,6 +1,6 @@
 import React, {ChangeEvent, useState} from "react";
 import {Temporal} from "temporal-polyfill";
-import {useEffectAsync} from "../../ui/utils";
+import {useEffectAsync} from "@/ui/utils";
 import {Button} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
@@ -8,11 +8,11 @@ import DatePicker from "react-datepicker";
 import {
     getStartDateAssignments, MalformedSyllabusError,
     updatedDateSyllabusHtml
-} from "../../canvas/course/changeStartDate";
-import {changeModuleLockDate, moduleGenerator} from "../../canvas/course/modules";
-import {oldDateToPlainDate} from "../../date";
+} from "@/canvas/course/changeStartDate";
+import {changeModuleLockDate, moduleGenerator} from "@/canvas/course/modules";
+import {oldDateToPlainDate} from "@/date";
 
-import {Course} from "../../canvas/course/Course";
+import {Course} from "@/canvas/course/Course";
 import {assignmentDataGen, updateAssignmentDueDates} from "@/canvas/content/assignments";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {renderAsyncGen} from "@/canvas/fetch";

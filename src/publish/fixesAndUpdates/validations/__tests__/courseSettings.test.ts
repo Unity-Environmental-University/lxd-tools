@@ -17,7 +17,7 @@ import {
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Course} from "@/canvas/course/Course";
 import mockTabData from "@/canvas/__mocks__/mockTabData";
-import {getDummyLatePolicyHaver} from "../__mocks__";
+import {getDummyLatePolicyHaver} from "../__mocks__/validations";
 import assert from "assert";
 
 import {ICourseData, ITabData} from "@/canvas/courseTypes";

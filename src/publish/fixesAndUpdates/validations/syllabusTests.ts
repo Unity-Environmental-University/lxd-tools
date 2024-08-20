@@ -6,7 +6,7 @@ import {
     errorMessageResult,
     testResult,
     TextReplaceValidation
-} from "./index";
+} from "./validations";
 import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 

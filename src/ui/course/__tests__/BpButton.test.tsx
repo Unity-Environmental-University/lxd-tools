@@ -9,6 +9,7 @@ import {renderAsyncGen} from "@/canvas/fetch";
 import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {mockAsyncGen} from "@/__mocks__/utils";
+import getAutoLockDelay = chrome.idle.getAutoLockDelay;
 
 // Mock dependencies
 jest.mock('@/canvas/course/blueprint', () => ({
@@ -52,12 +53,11 @@ describe('BpButton', () => {
     it('displays "BP" button and opens the main BP when clicked', async () => {
         (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce([]);
         (renderAsyncGen as jest.Mock).mockResolvedValueOnce([currentBp]);
-
+        global.open = jest.fn();
         const {getByText} = await act(async () => render(<BpButton course={course} currentBp={currentBp}/>));
         await waitFor(() => {
             expect(getByText('BP')).toBeInTheDocument();
         });
-        console.log(document.body.innerHTML)
         await act(async () => fireEvent.click(screen.getByText('BP')));
         await waitFor(() => {
             expect(openThisContentInTarget).toHaveBeenCalledWith(course.id, currentBp.id);
