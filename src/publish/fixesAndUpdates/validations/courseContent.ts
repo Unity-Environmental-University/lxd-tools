@@ -13,6 +13,9 @@ import {Course} from "../../../canvas/course/Course";
 import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Page} from "@/canvas/content/assignments/pages/Page";
+import {PageKind} from "@/canvas/content/assignments/pages/PageKind";
+import {renderAsyncGen} from "@/canvas/fetch";
+import badContentReplaceFuncs from "@/publish/fixesAndUpdates/validations/badContentReplaceFuncs";
 
 
 function decodeHtml(html:string) {
@@ -106,26 +109,29 @@ export const codeAndCodeOfCodeTest: ContentTextReplaceFix<IContentHaver, Page> =
     ...badContentReplaceFuncs(/Code and Code of Code of Conduct/ig, 'Code and Code of Conduct')
 }
 
-
-function badContentReplaceFuncs<
-    CourseType extends IContentHaver,
-    ContentType extends BaseContentItem,
->(
-    badTest: RegExp,
-    replace: string,
-    getContentFunc?: (course:CourseType) => Promise<ContentType[]>
-) {
-
-    return {
-        run: badContentRunFunc<CourseType, ContentType>(badTest, getContentFunc),
-        fix: badContentFixFunc<CourseType, ContentType>(badTest, replace, getContentFunc)
-    }
+export const overviewDiscMornToNightTest: ContentTextReplaceFix<IContentHaver, Page> = {
+    name: "overview discussion 3AM night -> morning",
+    description: "Overview Discussion times say 3AM Thursday/Monday morning, not 'night'",
+    beforeAndAfters: [
+        ['3AM ET Thursday night 3AM ET Monday night', '3AM ET Thursday morning 3AM ET Monday morning'],
+        ['3AM ET thursday night 3AM ET weds night', '3AM ET Thursday morning 3AM ET weds night'],
+    ],
+    async getContent(course) {
+        const pageGen = PageKind.dataGenerator(course.id, { queryParams: {
+            search_term: 'course overview'
+            }})
+        const pageDatas = await renderAsyncGen(pageGen);
+        return pageDatas.map(a => new Page(a, course.id))
+    },
+    ...badContentReplaceFuncs(/3AM ET (Thursday|Monday) night/ig, "3AM ET $1 morning")
 }
+
 
 
 export default [
     courseProjectOutlineTest,
     weeklyObjectivesTest,
     codeAndCodeOfCodeTest,
+    overviewDiscMornToNightTest,
 ]
 

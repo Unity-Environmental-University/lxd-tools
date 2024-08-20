@@ -1,12 +1,12 @@
-import {range} from "../../../../canvas/canvasUtils";
-import {mockPageData} from "../../../../canvas/content/__mocks__/mockContentData";
+import {range} from "@/canvas/canvasUtils";
+import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";
 import {
     codeAndCodeOfCodeTest,
-    courseProjectOutlineTest,
+    courseProjectOutlineTest, overviewDiscMornToNightTest,
 
     weeklyObjectivesTest
 } from "../courseContent";
-import {IContentHaver, IPagesHaver} from "../../../../canvas/course/courseTypes";
+import {IContentHaver, IPagesHaver} from "@/canvas/course/courseTypes";
 import {
     badContentTextValidationFixTest,
     badContentTextValidationTest,
@@ -133,6 +133,23 @@ describe("Code of code of conduct", () => {
 
     test('Fix Works', badContentTextValidationFixTest(
         codeAndCodeOfCodeTest,
+        (badText: string, goodText: string) => [
+            mockContentHaver(goodText, [new Page({
+                ...mockPageData,
+                name: 'Course Overview',
+                body: badText,
+            }, 0)], 'Course Overview Haver')
+        ]
+    ))
+})
+
+describe("Overview Discussion 3AM night -> morning", () => {
+    for (let [bad, good] of overviewDiscMornToNightTest.beforeAndAfters) {
+        test(`Text works ${bad}, ${good}`, badContentTextValidationTest(overviewDiscMornToNightTest, bad, good));
+    }
+
+    test('Fix Works', badContentTextValidationFixTest(
+        overviewDiscMornToNightTest,
         (badText: string, goodText: string) => [
             mockContentHaver(goodText, [new Page({
                 ...mockPageData,
