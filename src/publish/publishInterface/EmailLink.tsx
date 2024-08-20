@@ -138,12 +138,10 @@ async function getSpecificTemplates() {
 
     const tocItems = [...tocXml.getElementsByTagName('toc-element')];
     const tocTopics = tocItems.map(a => a.getAttribute('topic'))
-    console.log(tocTopics);
     const formEmailTemplate = tocItems.find(a => a.getAttribute('topic') == ('Form-Email-Template.md'))
     let children = formEmailTemplate?.getElementsByTagName('toc-element') ?? [];
     let topics: string[] = [];
     for (let node of children) {
-        console.log(node.childNodes);
         const topic = node.getAttribute('topic');
         if (topic) topics.push(topic);
     }
