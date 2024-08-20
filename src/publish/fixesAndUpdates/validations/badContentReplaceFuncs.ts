@@ -8,7 +8,7 @@ export default function badContentReplaceFuncs<
 >(
     badTest: RegExp,
     replace: string,
-    getContentFunc: (course: CourseType) => Promise<ContentType[]>
+    getContentFunc?: (course:CourseType) => Promise<ContentType[]>
 ) {
 
     return {
@@ -16,3 +16,5 @@ export default function badContentReplaceFuncs<
         fix: badContentFixFunc<CourseType, ContentType>(badTest, replace, getContentFunc)
     }
 }
+
+
