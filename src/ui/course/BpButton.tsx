@@ -2,7 +2,6 @@ import React, {FormEvent, useReducer, useState} from "react";
 import {ICourseData} from "@/canvas/courseTypes";
 import {useEffectAsync} from "@/ui/utils";
 import {genBlueprintDataForCode} from "@/canvas/course/blueprint";
-import {renderAsyncGen} from "@/canvas/fetch";
 import assert from "assert";
 import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
 import {Button, Col, Row} from "react-bootstrap";
@@ -10,6 +9,7 @@ import Modal from "@/ui/widgets/Modal";
 import {Course} from "@/canvas/course/Course";
 import {listDispatcher} from "@/ui/reducerDispatchers";
 import {aMinusBSortFn, bMinusASortFn} from "@/index";
+import {renderAsyncGen} from "@/canvas";
 
 type BpButtonProps = {
     course: Course,

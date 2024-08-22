@@ -19,14 +19,14 @@ import {
     IModulesHaver
 } from "./courseTypes";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
-import {filterUniqueFunc, formDataify, ICanvasCallConfig} from "../canvasUtils";
+import {filterUniqueFunc, formDataify, ICanvasCallConfig, renderAsyncGen} from "../canvasUtils";
 import {overrideConfig} from "../index";
 import assert from "assert";
 import {getModuleUnlockStartDate} from "./changeStartDate";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
-import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfileWithUser} from "../profile";
+import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile, IProfileWithUser} from "../profile";
 import {getCourseById, getCourseData, getCourseGenerator, getGradingStandards, getSingleCourse} from "./index";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
@@ -34,7 +34,7 @@ import {Term} from "@/canvas/term/Term";
 
 import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
+import {fetchGetConfig} from "@/canvas/fetch/utils";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {BaseContentItem, getBannerImage} from "@/canvas/content/BaseContentItem";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
@@ -494,9 +494,18 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     public async getFrontPageProfile() {
         const frontPage = await this.getFrontPage();
         assert(frontPage && frontPage.body, "Course front page not found");
-        const frontPageProfile = getCurioPageFrontPageProfile(frontPage?.body);
-        frontPageProfile.sourcePage = frontPage;
-        return frontPageProfile;
+        try {
+            const frontPageProfile = getCurioPageFrontPageProfile(frontPage?.body);
+            frontPageProfile.sourcePage = frontPage;
+            return frontPageProfile;
+
+        } catch (e) {
+            return {
+
+                bio: 'NOT FOUND',
+                sourcePage: frontPage,
+            } as IProfile;
+        }
     }
 
     public async getPotentialInstructorProfiles() {

@@ -167,18 +167,26 @@ function winnow<T=string>(originalList: T[], winnowFuncs: WinnowFunc<T>[], retur
 function getCurioPageFrontPageProfile(html:string, user?: IUserData):IProfile {
     const el = document.createElement('div');
     el.innerHTML = html;
-    const header = getCurioHeader(el);
-    const match = header.innerHTML.match(/Meet your instructor, ?(.*)!/i);
-    const displayName = match ? match[1] : null;
-    const bio = getCurioBio(el);
-    const image = getCurioProfileImage(el);
-    return {
-        user,
-        displayName,
-        image,
-        imageLink: image ? image.src : null,
-        bio: bio?.innerHTML
-   }
+    try {
+        const header = getCurioHeader(el);
+        const match = header.innerHTML.match(/Meet your instructor, ?(.*)!/i);
+        const displayName = match ? match[1] : null;
+        const bio = getCurioBio(el);
+        const image = getCurioProfileImage(el);
+        return {
+            user,
+            displayName,
+            image,
+            imageLink: image ? image.src : null,
+            bio: bio?.innerHTML
+       }
+    } catch(e) {
+        return {
+            user,
+            displayName: "CANNOT LOCATE PROFILE",
+            bio: (e as Error).toString(),
+        }
+    }
 }
 
 export function frontPageBio(profile:IProfile & {user:IUserData}) {
@@ -222,7 +230,7 @@ export function renderProfileIntoCurioFrontPage(html: string, profile: IProfile 
 function getCurioHeader(el:Element) {
     let h2s = Array.from(el.querySelectorAll('h2'));
     h2s = h2s.filter((h2) => h2.innerHTML.match(/Meet your instructor/i));
-    assert(h2s.length === 1, "Can't find bio section of front page.");
+    if(h2s.length <= 0) throw new Error(`Can't find bio section of front page.\n${h2s.map(a => a.innerHTML)}\n${el.innerHTML}`);
     return h2s[0];
 
 }

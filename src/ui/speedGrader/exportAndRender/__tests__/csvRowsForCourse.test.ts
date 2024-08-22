@@ -9,7 +9,7 @@ import {Account} from "@/canvas/Account";
 
 import * as assignmentsApi from "@/canvas/content/assignments";
 
-jest.mock('@/canvas/fetch');
+jest.mock('@/canvas/fetch/utils');
 jest.mock('@/ui/speedGrader/getData/getRows');
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
 

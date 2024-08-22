@@ -99,7 +99,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
     }
 
     return <>
-        <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join(';')}</a>
+        <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join('; ')}</a>
         {termData && <button onClick={copyToClipboard}>Copy Form Email to Clipboard</button>}
         {errorMessages.map(msg => <Alert>{msg}</Alert>)}
     </>

@@ -5,10 +5,10 @@ import {Course} from "@/canvas/course/Course";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import {getSections, sectionDataGenerator} from "@/canvas/course/blueprint";
-import {renderAsyncGen} from "@/canvas/fetch";
 import {ICourseData} from "@/canvas/courseTypes";
 import {getCourseDataGenerator} from "@/canvas/course";
 import {baseCourseCode} from "@/canvas/course/code";
+import {renderAsyncGen} from "@/canvas";
 
 export interface IDateRangeExportProps {
     course: ICourseData,

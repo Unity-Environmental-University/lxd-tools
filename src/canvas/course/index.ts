@@ -1,4 +1,4 @@
-import {deepObjectMerge, formDataify, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
+import {deepObjectMerge, formDataify, generatorMap, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
 import {overrideConfig} from "../index";
 
 import {GetCourseOptions, GetCoursesFromAccountOptions, IGradingStandardData} from "./courseTypes";
@@ -9,7 +9,6 @@ import {ICourseData} from "@/canvas/courseTypes";
 import {getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "@/canvas/fetch/getPagedDataGenerator";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {generatorMap} from "@/canvas/fetch";
 import {baseCourseCode} from "@/canvas/course/code";
 
 

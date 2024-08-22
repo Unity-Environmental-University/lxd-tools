@@ -15,12 +15,12 @@ import {oldDateToPlainDate} from "@/date";
 import {Course} from "@/canvas/course/Course";
 import {assignmentDataGen, updateAssignmentDueDates} from "@/canvas/content/assignments";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {renderAsyncGen} from "@/canvas/fetch";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 
 import {IDiscussionData} from "@/canvas/content/discussions/types";
 import {IModuleData} from "@/canvas/canvasDataDefs";
+import {renderAsyncGen} from "@/canvas";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,

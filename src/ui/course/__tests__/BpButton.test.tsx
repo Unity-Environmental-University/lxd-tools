@@ -5,17 +5,18 @@ import {BpButton} from '../BpButton';
 import {Course} from "@/canvas/course/Course";
 import {ICourseData} from "@/canvas/courseTypes";
 import {genBlueprintDataForCode} from "@/canvas/course/blueprint";
-import {renderAsyncGen} from "@/canvas/fetch";
 import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import getAutoLockDelay = chrome.idle.getAutoLockDelay;
+import {renderAsyncGen} from "@/canvas/canvasUtils";
 
 // Mock dependencies
 jest.mock('@/canvas/course/blueprint', () => ({
     genBlueprintDataForCode: jest.fn()
 }));
-jest.mock('@/canvas/fetch');
+jest.mock('@/canvas/canvasUtils', () => ({
+    renderAsyncGen: jest.fn(),
+}));
 jest.mock('@/canvas/content/openThisContentInTarget', () => jest.fn());
 
 describe('BpButton', () => {

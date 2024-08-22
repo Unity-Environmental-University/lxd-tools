@@ -37,12 +37,6 @@ export interface ILutAction<KeyType extends RecordKeyType, DataType> {
 type LutSetAction<KeyType extends RecordKeyType, ValueType> = [key:KeyType, value:ValueType] | { [key in KeyType] : ValueType}
 
 
-interface IListAction<DataType> {
-    add?: DataType | DataType[]
-    set?: DataType[],
-    clear?: boolean,
-}
-
 
 /**
  * Actions are resolved in the order clear, set, add
@@ -107,13 +101,20 @@ function handleLutSet<KeyType extends RecordKeyType, DataType>(
     state: Record<KeyType, DataType>,
     set:LutSetAction<RecordKeyType, DataType> | undefined
 ) {
-    if(Array.isArray(set)) {
+    if (Array.isArray(set)) {
         const [key, value] = set;
         return {...state, [key]: value};
     }
 
     return {...state, ...set};
 }
+
+export interface IListAction<DataType> {
+    add?: DataType | DataType[]
+    set?: DataType[],
+    clear?: boolean,
+}
+
 export function listDispatcher<DataType>(
     state: Array<DataType>,
     action: IListAction<DataType>

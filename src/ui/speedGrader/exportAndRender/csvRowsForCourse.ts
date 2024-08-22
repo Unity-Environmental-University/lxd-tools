@@ -2,7 +2,6 @@ import {Course} from "@/canvas/course/Course";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
-import {renderAsyncGen} from "@/canvas/fetch";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
 import {Account} from "@/canvas/Account";
@@ -13,6 +12,7 @@ import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGe
 import {moduleGenerator} from "@/canvas/course/modules";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/assignments/types";
+import {renderAsyncGen} from "@/canvas";
 
 export async function csvRowsForCourse(course: SectionData | ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];

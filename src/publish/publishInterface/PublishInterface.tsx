@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useReducer, useState} from "react";
 import {IProfile, IProfileWithUser, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
 import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
@@ -12,8 +12,12 @@ import {MakeBp} from "./MakeBp";
 import {Course} from "../../canvas/course/Course";
 import {Term} from "@/canvas/term/Term";
 import {getStartDateAssignments} from "@/canvas/course/changeStartDate";
-import {renderAsyncGen} from "@/canvas/fetch";
 import {assignmentDataGen} from "@/canvas/content/assignments";
+import {IListAction, listDispatcher, lutDispatcher} from "@/ui/reducerDispatchers";
+import {sectionDataGenerator} from "@/canvas/course/blueprint";
+import {renderAsyncGen} from "@/canvas";
+import {batchGen} from "@/canvas/canvasUtils";
+import {sleep} from "@/index";
 
 
 export interface IPublishInterfaceProps {
@@ -21,26 +25,40 @@ export interface IPublishInterfaceProps {
     user: IUserData,
 }
 
-//TODO: Break this into multiple components
 export function PublishInterface({course, user}: IPublishInterfaceProps) {
+    type SectionInfo = { section: Course, instructors: IUserData[] | null, frontPageProfile: IProfile | null };
+
     //-----
     // DATA
     //-----
     const [show, setShow] = useState<boolean>(false)
     const [info, setInfo] = useState<string | null | boolean>(null);
-    const [sections, setSections] = useState<Course[]>([])
+    const [coursesLoading, setCoursesLoading] = useState(false);
+    const [sections, dispatchSections] = useReducer(lutDispatcher<number, Course>, {} as Record<number, Course>)
     const [term, setTerm] = useState<Term | null>();
     const [sectionStart, setSectionStart] = useState<Temporal.PlainDateTime>();
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
     const [isDev, setIsDev] = useState<boolean>(false);
     const [workingSection, setWorkingSection] = useState<Course | null>();
+    const [workingCourseId, setWorkingCourseId] = useState<number | undefined>();
+    const [sectionInfoCache, dispatchSectionInfoCache] = useReducer(
+        lutDispatcher<number, SectionInfo | 'loading'>,
+        {} as Record<number, SectionInfo | 'loading'>
+    )
+    const [potentialProfilesByCourseId, dispatchPotentialProfilesByCourseId] = useReducer(
+        lutDispatcher<number, IProfileWithUser[]>,
+        {} as Record<number, IProfileWithUser[]>
+    )
+    useState<Record<number, IProfileWithUser[]>>({})
+    const [frontPageProfilesByCourseId, dispatchFrontPageProfilesByCourseId] = useReducer(
+        lutDispatcher<number, IProfile>,
+        {} as Record<number, IProfile>
+    );
+    const [instructorsByCourseId, dispatchInstructorsByCourseId] = useReducer(
+        lutDispatcher<number, IUserData[]>,
+        {} as Record<number, IUserData[]>
+    );
 
-    const [potentialProfilesByCourseId, setPotentialProfilesByCourseId] =
-        useState<Record<number, IProfileWithUser[]>>({})
-    const [frontPageProfilesByCourseId, setFrontPageProfilesByCourseId] =
-        useState<Record<number, IProfile>>({});
-    const [instructorsByCourseId, setInstructorsByCourseId] =
-        useState<Record<number, IUserData[]>>({});
     const [emails, setEmails] = useState<string[]>([])
 
     const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({})
@@ -50,33 +68,17 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     const [unloadWarning, setUnloadWarning] = useState<string | null | undefined>();
 
 
-
     useEffectAsync(async () => {
         if (!course) return;
         setIsBlueprint(course.isBlueprint)
         setIsDev(course.isDev)
-        await getFullCourses(
-            {
-                course,
-                setEmails,
-                setInstructorsByCourseId,
-                setSections,
-                setSectionStart,
-                setTerm,
-                setFrontPageProfilesByCourseId,
-            }
-        );
+        if (course.id !== workingCourseId) {
+            setWorkingCourseId(course.id);
+            await getFullCourses(course)
+        }
+        ; //ONLY refresh courses if it's a new course being set.
     }, [course]);
 
-
-    useEffectAsync(async () => {
-        const profileSet: Record<number, IProfileWithUser[]> = [];
-
-        for (let course of sections)
-            profileSet[course.id] ??= await course.getPotentialInstructorProfiles();
-
-        setPotentialProfilesByCourseId(profileSet)
-    }, [sections])
 
     useEffect(() => {
         function handleBeforeUnload(e: BeforeUnloadEvent) {
@@ -101,7 +103,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         if (typeof accountId === 'undefined') throw new Error('Course has no account Id');
         inform('Publishing')
         setLoading(true);
-        await Course.publishAll(sections, accountId)
+        await Course.publishAll(Object.values(sections), accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
             let newAssocCourses = await course?.getAssociatedCourses();
@@ -110,14 +112,42 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
             } else {
                 newAssocCourses = [];
             }
-            setSections(newAssocCourses);
+
+            dispatchSections({set: Object.fromEntries(newAssocCourses.map(a => [ a.id, a]))});
             setLoading(false);
             success('Published');
         }, 500);
     }
 
+    async function loadSection(courseId: number) {
+        if (sectionInfoCache[courseId]) {
+            if (sectionInfoCache[courseId] !== 'loading') return sectionInfoCache[courseId];
+            for (let i = 0; i < 10; i++) {
+                await sleep(200);
+                if (sectionInfoCache[courseId] !== 'loading') return sectionInfoCache[courseId];
+            }
+            throw new Error(`Problem loading section ${courseId}`)
+        }
+        dispatchSectionInfoCache({set: [courseId, 'loading']});
+
+        const section = await Course.getCourseById(courseId);
+
+        const frontPageProfile = await section.getFrontPageProfile();
+        const instructors = await section.getInstructors();
+        const out = {section, instructors, frontPageProfile};
+
+        if (!potentialProfilesByCourseId[section.id]) {
+        let profiles = await section.getPotentialInstructorProfiles();
+            dispatchPotentialProfilesByCourseId({set: [section.id, profiles]})
+        }
+        dispatchSectionInfoCache({set: [courseId, out]});
+        console.log(section.name)
+        return out;
+    }
+
+
     function openAll() {
-        for (let course of sections) {
+        for (let course of Object.values(sections)) {
             window.open(course.courseUrl, "_blank");
         }
     }
@@ -135,7 +165,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         inform("Updating section profiles...");
         const currentProfiles = {...frontPageProfilesByCourseId};
         setErrorsByCourseId({});
-        for (let section of sections) {
+        for (let section of Object.values(sections)) {
             const profiles = potentialProfilesByCourseId[section.id];
             const errors = [];
             if (profiles.length < 1) {
@@ -153,8 +183,9 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
             }
             const html = renderProfileIntoCurioFrontPage(frontPage.body, profile);
             await frontPage.updateContent(html);
-            currentProfiles[section.id] = profile;
-            setFrontPageProfilesByCourseId({...currentProfiles});
+            dispatchFrontPageProfilesByCourseId({
+                set: {[section.id]: profile}
+            })
             setInfo(`Updated ${profile.displayName}...`)
         }
         setLoading(false);
@@ -169,6 +200,60 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     function success(message: string) {
         inform(message, 'alert-success');
     }
+
+    async function getFullCourses(course: Course) {
+        if (coursesLoading) return;
+        setCoursesLoading(true);
+        const sectionGen = sectionDataGenerator(course.id, { queryParams: {'per_page': 5}});
+        const allInstructors: Record<number, IUserData[]> = {};
+        const allEmails = new Set<string>();
+        let sectionStartSet = false;
+
+        let tempTerm: Term | null = null;
+
+        let actualStart: Temporal.PlainDate | null;
+        for await (let sectionInfos of batchGen(sectionGen, 6)) {
+            const promises = sectionInfos.map(sectionInfo => (async () => {
+                const result = await loadSection(sectionInfo.id);
+                console.log(result);
+
+                if (result === 'loading') throw new Error(`trouble loading section info`)
+                const {section, instructors, frontPageProfile} = result;
+                if (!sectionStartSet) {
+                    actualStart = await section.getStartDateFromModules();
+                    if (!actualStart) {
+                        actualStart = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(section.id)))
+                    }
+
+                    sectionStartSet = true;
+                    setSectionStart(Temporal.PlainDateTime.from(actualStart));
+                }
+
+                if (!tempTerm) {
+                    tempTerm = await section.getTerm();
+                    setTerm(tempTerm);
+                }
+
+                dispatchSections({set: [section.id, section]});
+                if (frontPageProfile) dispatchFrontPageProfilesByCourseId({
+                    set: [section.id, frontPageProfile]
+                })
+
+
+                if (instructors) {
+                    dispatchInstructorsByCourseId({
+                        set: [section.id, instructors]
+                    })
+                }
+
+                const emails = instructors?.map(a => a.email);
+                emails?.forEach(email => allEmails.add(email));
+                if (emails) setEmails([...allEmails]);
+            }))
+            await Promise.all(promises.map(a => a()));
+        }
+    }
+
 
     //-----
     // RENDER
@@ -206,7 +291,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 </div>
                 <div className='col-xs-12'>
                     {SectionRows({
-                        sections,
+                        sections: Object.values(sections),
                         onOpenAll: openAll,
                         instructorsByCourseId,
                         errorsByCourseId,
@@ -221,9 +306,8 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
             {info && <div className={`alert ${infoClass}`} role={'alert'}>{info}</div>}
             {workingSection && <div>
                 <SectionDetails
-                    onUpdateFrontPageProfile={newProfile => workingSection && setFrontPageProfilesByCourseId({
-                        ...frontPageProfilesByCourseId,
-                        [workingSection.id]: newProfile
+                    onUpdateFrontPageProfile={newProfile => workingSection && dispatchFrontPageProfilesByCourseId({
+                        set: [workingSection.id, frontPageProfilesByCourseId]
                     })}
                     facultyProfileMatches={workingSection && potentialProfilesByCourseId[workingSection.id]}
                     onClose={() => setWorkingSection(null)}
@@ -255,78 +339,15 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     </>)
 }
 
-async function loadSection(course: Course) {
-    const section = await Course.getCourseById(course.id);
-    const frontPageProfile = await section.getFrontPageProfile();
-    const instructors = await section.getInstructors();
-    return {section, instructors, frontPageProfile}
-}
-
 
 export interface IGetFullCoursesProps {
     course: Course,
     setEmails: (emails: string[]) => void,
     setInstructorsByCourseId: (instructorsByCourseId: Record<number, IUserData[]>) => void,
-    setSections: (course: Course[]) => void,
+    dispatchSections: React.Dispatch<IListAction<Course>>,
     setSectionStart: (start: Temporal.PlainDateTime) => void,
     setTerm: (term: Term | null) => void,
     setFrontPageProfilesByCourseId: (profiles: Record<number, IProfile>) => void,
-
-}
-
-export async function getFullCourses({
-    course,
-    setEmails,
-    setInstructorsByCourseId,
-    setSections,
-    setSectionStart,
-    setTerm,
-    setFrontPageProfilesByCourseId,
-}: IGetFullCoursesProps) {
-    const sections: Course[] = [];
-    const fetchedCourses = await course.getAssociatedCourses() ?? [];
-    const frontPageProfiles: Record<number, IProfile> = {};
-    const allInstructors: Record<number, IUserData[]> = {};
-    const allEmails = new Set<string>();
-    const batchLoadSize = 5;
-    let sectionStartSet = false;
-    for (let i = 0; i < fetchedCourses.length; i += batchLoadSize) {
-        const batch = fetchedCourses.slice(i, i + batchLoadSize);
-        const results = await Promise.all(batch.map(loadSection));
-        let tempTerm: Term | null = null;
-
-        for (let {section, instructors, frontPageProfile} of results) {
-            if (!sectionStartSet) {
-                let actualStart = await section.getStartDateFromModules();
-                if(!actualStart) {
-                    actualStart = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(section.id)))
-                }
-
-                 sectionStartSet = true;
-                setSectionStart(Temporal.PlainDateTime.from(actualStart));
-            }
-
-            if (!tempTerm) {
-                tempTerm = await section.getTerm();
-                setTerm(tempTerm);
-            }
-
-            sections.push(section);
-            setSections([...sections]);
-
-            frontPageProfiles[section.id] = frontPageProfile;
-            setFrontPageProfilesByCourseId({...frontPageProfiles});
-
-            if (instructors) {
-                allInstructors[section.id] = instructors;
-                setInstructorsByCourseId({...allInstructors})
-            }
-
-            const emails = instructors?.map(a => a.email);
-            emails?.forEach(email => allEmails.add(email));
-            if (emails) setEmails([...allEmails]);
-        }
-    }
 }
 
 

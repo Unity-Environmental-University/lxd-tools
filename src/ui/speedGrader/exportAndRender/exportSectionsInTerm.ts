@@ -7,7 +7,8 @@ import {getSections, sectionDataGenerator} from "@/canvas/course/blueprint";
 import {ICourseData} from "@/canvas/courseTypes";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {getCourseById, getCourseData} from "@/canvas/course";
-import {renderAsyncGen} from "@/canvas/fetch";
+
+import {renderAsyncGen} from "@/canvas";
 
 export async function exportSectionsInTerm(course: ICourseData & { term: ITermData } | null = null, term: Term | number | null = null) {
     const courseId = course ? course.id : getCourseIdFromUrl(document.documentURI);

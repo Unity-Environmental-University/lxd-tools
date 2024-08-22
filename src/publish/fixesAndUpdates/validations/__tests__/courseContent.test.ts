@@ -13,7 +13,7 @@ import {
     mockContentHaver,
     mockPagesHaver
 } from "../__mocks__/validations";
-import * as fetchApi from "../../../../canvas/fetch";
+import * as fetchApi from "../../../../canvas/fetch/utils";
 import {badContentRunFunc, ContentTextReplaceFix} from "../validations";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Page} from "@/canvas/content/assignments/pages/Page";

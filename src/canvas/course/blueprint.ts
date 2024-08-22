@@ -1,4 +1,4 @@
-import {formDataify, getItemTypeAndId, ICanvasCallConfig} from "../canvasUtils";
+import {formDataify, getItemTypeAndId, ICanvasCallConfig, renderAsyncGen} from "../canvasUtils";
 import {IModuleData, IModuleItemData} from "../canvasDataDefs";
 import {getCourseDataGenerator, getCourseGenerator} from "./index";
 import {apiWriteConfig} from "../index";
@@ -9,7 +9,7 @@ import {baseCourseCode, MalformedCourseCodeError} from "@/canvas/course/code";
 
 import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchGetConfig, renderAsyncGen} from "@/canvas/fetch";
+import {fetchGetConfig} from "@/canvas/fetch/utils";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 
@@ -49,7 +49,7 @@ export async function getSections(courseId: number, config?: ICanvasCallConfig<G
 
 export function sectionDataGenerator(courseId:number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const url = `/api/v1/courses/${courseId}/blueprint_templates/default/associated_courses`;
-    return getPagedDataGenerator<SectionData>(url, fetchGetConfig({per_page: 50}, config));
+    return getPagedDataGenerator<SectionData>(url);
 }
 export function cachedGetAssociatedCoursesFunc(course: IBlueprintCourse) {
     let cache: Course[] | null = null;

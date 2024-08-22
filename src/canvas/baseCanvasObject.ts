@@ -1,9 +1,9 @@
 import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
-import {formDataify, ICanvasCallConfig} from "./canvasUtils";
+import {formDataify, ICanvasCallConfig, renderAsyncGen} from "./canvasUtils";
 import {Course} from "./course/Course";
 import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {overrideConfig, renderAsyncGen} from "@/canvas/fetch";
+import {overrideConfig} from "@/canvas/fetch/utils";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 

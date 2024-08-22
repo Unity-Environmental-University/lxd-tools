@@ -16,7 +16,9 @@ import {Course} from "../../../canvas/course/Course";
 import fetchMock from "jest-fetch-mock";
 import publishEmailMock from "@/publish/publishInterface/__mocks__/publishEmailMock";
 
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData, SectionData} from "@/canvas/courseTypes";
+import {mockAsyncGen} from "@/__mocks__/utils";
+import requireActual = jest.requireActual;
 
 fetchMock.enableMocks();
 const mockCourse: Course = new Course({
@@ -27,18 +29,12 @@ const mockCourse: Course = new Course({
     blueprint: true,
 
 }) as Course;
-mockCourse.getAssociatedCourses = jest.fn().mockResolvedValue([]);
 
+jest.mock('@/canvas/course/blueprint', () => ({
+    ...jest.requireActual('@/canvas/course/blueprint'),
+    sectionDataGenerator: jest.fn(() => mockAsyncGen([] as SectionData[])),
+}))
 
-function getMockCourse(data: Partial<ICourseData>, associatedCourses: Course[] = []) {
-    const course = new Course({
-        ...mockCourseData,
-        ...data,
-    });
-    course.getItem = jest.fn();
-    course.getAssociatedCourses = jest.fn().mockResolvedValue(associatedCourses)
-    return course;
-}
 
 const mockUser: IUserData = {
     id: 1,
@@ -75,6 +71,7 @@ describe('PublishInterface Component', () => {
         await act(async () => {
             fireEvent.click(screen.getByText('Manage Sections'));
         });
+        fetchMock.mockResponse(JSON.stringify(mockCourseData))
         await act(async () => {
             fireEvent.click(screen.getByText('Publish'));
         });

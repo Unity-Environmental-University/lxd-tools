@@ -10,11 +10,10 @@ import {
 } from "./validations";
 import {IContentHaver, IPagesHaver} from "../../../canvas/course/courseTypes";
 import {Course} from "../../../canvas/course/Course";
-import {deepObjectMerge, ICanvasCallConfig} from "../../../canvas/canvasUtils";
+import {deepObjectMerge, ICanvasCallConfig, renderAsyncGen} from "../../../canvas/canvasUtils";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Page} from "@/canvas/content/assignments/pages/Page";
 import {PageKind} from "@/canvas/content/assignments/pages/PageKind";
-import {renderAsyncGen} from "@/canvas/fetch";
 import badContentReplaceFuncs from "@/publish/fixesAndUpdates/validations/badContentReplaceFuncs";
 
 

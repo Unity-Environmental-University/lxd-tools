@@ -19,7 +19,7 @@ import mockModuleData, {mockModuleItemData} from "../__mocks__/mockModuleData";
 import {Course} from "../Course";
 import {GetCoursesFromAccountOptions} from "@/canvas/course/courseTypes";
 import * as courseApi from '@/canvas/course/index';
-import * as fetchApi from '@/canvas/fetch'
+import * as fetchApi from '@/canvas/fetch/utils'
 import {ICourseData} from "@/canvas/courseTypes";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {mockAsyncGen, returnMockAsyncGen} from "@/__mocks__/utils";

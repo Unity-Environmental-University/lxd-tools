@@ -382,3 +382,39 @@ export function filterUniqueFunc<T>(item: T, index: number, array: T[]) {
 }
 
 
+
+export async function* batchGen<T>(generator: AsyncGenerator<T>, batchSize: number) {
+    if(batchSize <= 0) throw new Error("Batch size cannot be 0 or lower")
+    while (true) {
+        const out = [] as T[];
+        for (let i = 0; i < batchSize; i++) {
+            const next = await generator.next();
+            if (next.done) {
+                if (out.length > 0) yield out;
+                return;
+            }
+            out.push(next.value)
+        }
+        yield out;
+    }
+}
+
+export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefined>) {
+    const out = [];
+    for await (let item of generator) {
+        out.push(item);
+    }
+    return out;
+}
+
+export async function* generatorMap<T, MapOutput>(
+    generator: AsyncGenerator<T>,
+    nextMapFunc: (value: T, index: number, generator: AsyncGenerator<T>) => MapOutput,
+) {
+
+    let i = 0;
+    for await(let value of generator) {
+        yield nextMapFunc(value, i, generator);
+        i++;
+    }
+}

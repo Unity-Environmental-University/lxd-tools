@@ -39,7 +39,7 @@ jest.mock('@/canvas/fetch/getPagedDataGenerator', () => ({
     getPagedDataGenerator: jest.fn(),
 }));
 
-jest.mock('@/canvas/fetch', () => ({
+jest.mock('@/canvas/fetch/utils', () => ({
     renderAsyncGen: jest.fn(),
 }));
 

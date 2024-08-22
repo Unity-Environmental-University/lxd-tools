@@ -4,7 +4,8 @@ import assert from "assert";
 import {lockBlueprint} from "../../canvas/course/blueprint";
 import {Course} from "../../canvas/course/Course";
 import {assignmentDataGen, updateAssignmentDueDates} from "@/canvas/content/assignments";
-import {renderAsyncGen} from "@/canvas/fetch";
+
+import {renderAsyncGen} from "@/canvas";
 
 (async () => {
     const course = await Course.getFromUrl(document.documentURI);

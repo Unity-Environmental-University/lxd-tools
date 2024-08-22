@@ -5,7 +5,7 @@ import {
     formDataify,
     queryStringify,
     batchify,
-    deFormDataify, deepObjectMerge
+    deFormDataify, deepObjectMerge, generatorMap, batchGen, renderAsyncGen
 } from '../canvasUtils'
 import {describe, expect} from "@jest/globals";
 import assert from "assert";
@@ -312,3 +312,216 @@ describe("Recursive object merge", () => {
 })
 
 
+
+describe('batchGen', () => {
+    async function* testGenerator() {
+        yield 1;
+        yield 2;
+        yield 3;
+        yield 4;
+        yield 5;
+    }
+
+    it('should yield batches of specified size', async () => {
+        const generator = batchGen(testGenerator(), 2);
+        const result = [];
+
+        for await (let batch of generator) {
+            result.push(batch);
+        }
+
+        expect(result).toEqual([[1, 2], [3, 4], [5]]);
+    });
+
+    it('should yield all items in a single batch if batchSize is greater than total items', async () => {
+        const generator = batchGen(testGenerator(), 10);
+        const result = [];
+
+        for await (let batch of generator) {
+            result.push(batch);
+        }
+
+        expect(result).toEqual([[1, 2, 3, 4, 5]]);
+    });
+
+    it('should handle empty generator', async () => {
+        async function* emptyGenerator() {}
+        const generator = batchGen(emptyGenerator(), 2);
+        const result = [];
+
+        for await (let batch of generator) {
+            result.push(batch);
+        }
+
+        expect(result).toEqual([]);
+    });
+});
+
+describe('renderAsyncGen', () => {
+    async function* testGenerator() {
+        yield 'a';
+        yield 'b';
+        yield 'c';
+    }
+
+    it('should collect all items from the generator', async () => {
+        const generator = testGenerator();
+        const result = await renderAsyncGen(generator);
+
+        expect(result).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should handle an empty generator', async () => {
+        async function* emptyGenerator() {}
+        const generator = emptyGenerator();
+        const result = await renderAsyncGen(generator);
+
+        expect(result).toEqual([]);
+    });
+});
+
+describe('generatorMap', () => {
+    async function* testGenerator() {
+        yield 1;
+        yield 2;
+        yield 3;
+    }
+
+    it('should apply the mapping function to each value', async () => {
+        const mapFunc = (value:any) => value * 2;
+        const generator = generatorMap(testGenerator(), mapFunc);
+        const result = [];
+
+        for await (let item of generator) {
+            result.push(item);
+        }
+
+        expect(result).toEqual([2, 4, 6]);
+    });
+
+    it('should pass the index and generator to the mapping function', async () => {
+        const mapFunc = (value:any, index:number) => `${value}-${index}`;
+        const generator = generatorMap(testGenerator(), mapFunc);
+        const result = [];
+
+        for await (let item of generator) {
+            result.push(item);
+        }
+
+        expect(result).toEqual(['1-0', '2-1', '3-2']);
+    });
+
+    it('should handle an empty generator', async () => {
+        async function* emptyGenerator() {}
+        const generator = generatorMap(emptyGenerator(), (value) => value);
+        const result = [] as Array<any>;
+
+        for await (let item of generator) {
+            result.push(item);
+        }
+
+        expect(result).toEqual([]);
+    });
+});
+
+describe('batchGen additional tests', () => {
+    async function* testGenerator() {
+        yield 1;
+        yield 2;
+    }
+
+    it('should yield single-item batches when batchSize is 1', async () => {
+        const generator = batchGen(testGenerator(), 1);
+        const result = [];
+
+        for await (let batch of generator) {
+            result.push(batch);
+        }
+
+        expect(result).toEqual([[1], [2]]);
+    });
+
+    it('should handle batchSize of 0 by throwing an error', async () => {
+        expect(async() => batchGen(testGenerator(), 0).next()).rejects.toThrow();
+    });
+
+    it('should propagate errors from the input generator', async () => {
+        async function* errorGenerator() {
+            yield 1;
+            throw new Error('Test error');
+        }
+        const generator = batchGen(errorGenerator(), 2);
+        const result = [];
+
+        await expect(async () => {
+            for await (let batch of generator) {
+                result.push(batch);
+            }
+        }).rejects.toThrow('Test error');
+    });
+});
+
+describe('renderAsyncGen additional tests', () => {
+    async function* testGenerator() {
+        yield null;
+        yield undefined;
+        yield 3;
+    }
+
+    it('should handle null and undefined values', async () => {
+        const result = await renderAsyncGen(testGenerator());
+
+        expect(result).toEqual([null, undefined, 3]);
+    });
+
+    it('should propagate errors from the input generator', async () => {
+        async function* errorGenerator() {
+            yield 1;
+            throw new Error('Test error');
+        }
+
+        await expect(renderAsyncGen(errorGenerator())).rejects.toThrow('Test error');
+    });
+});
+
+describe('generatorMap additional tests', () => {
+    async function* testGenerator() {
+        yield 1;
+        yield 2;
+    }
+
+    it('should handle nextMapFunc returning undefined or null', async () => {
+        const mapFunc = (value:any) => value === 1 ? undefined : null;
+        const generator = generatorMap(testGenerator(), mapFunc);
+        const result = [];
+
+        for await (let item of generator) {
+            result.push(item);
+        }
+
+        expect(result).toEqual([undefined, null]);
+    });
+
+    it('should propagate errors from nextMapFunc', async () => {
+        const mapFunc = () => {
+            throw new Error('Map error');
+        };
+        const generator = generatorMap(testGenerator(), mapFunc);
+
+        await expect(async () => {
+            for await (let item of generator) {}
+        }).rejects.toThrow('Map error');
+    });
+
+    it('should handle asynchronous nextMapFunc', async () => {
+        const mapFunc = async (value:any) => value * 2;
+        const generator = generatorMap(testGenerator(), mapFunc);
+        const result = [];
+
+        for await (let item of generator) {
+            result.push(item);
+        }
+
+        expect(result).toEqual([2, 4]);
+    });
+});

@@ -1,8 +1,7 @@
 import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
 import {CanvasData} from "@/canvas/canvasDataDefs";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {ICanvasCallConfig, renderAsyncGen} from "@/canvas/canvasUtils";
 import assert from "assert";
-import {renderAsyncGen} from "@/canvas/fetch";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 

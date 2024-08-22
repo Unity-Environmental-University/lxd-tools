@@ -10,9 +10,8 @@ import {
 import {returnMockAsyncGen} from "../../__mocks__/utils";
 import mockRubric, {mockRubricAssociation, mockRubricsForAssignments} from "../__mocks__/mockRubricData";
 
-import {deepObjectMerge, formDataify} from "../canvasUtils";
+import {deepObjectMerge, formDataify, renderAsyncGen} from "../canvasUtils";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {renderAsyncGen} from "@/canvas/fetch";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 
 

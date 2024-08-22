@@ -76,7 +76,6 @@ describe('getContentItemFromUrl', () => {
 
 describe('getContentKindFromUrl', () => {
     it('Finds Assignments', () => {
-        console.log(getContentKindFromUrl('/api/v1/courses/1/assignments/5'));
         expect(getContentKindFromUrl('/api/v1/courses/1/assignments/5')).toEqual(AssignmentKind)
     })
     it('Finds Discussions', () => {
