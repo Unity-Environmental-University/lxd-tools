@@ -45,6 +45,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     }
 
     static clearAddedContentTags(text: string) {
+        if(!text) return null;
         let out = text.replace(/<\/?link[^>]*>/g, '');
         out = out.replace(/<\/?script[^>]*>/g, '');
         return out;
