@@ -8,9 +8,9 @@ import publishEmailMock, {
     mockFilled, mockFilledSpecific, mockTocXml,
     mockValues
 } from "@/publish/publishInterface/__mocks__/publishEmailMock";
-import {DOCUMENTATION_TOPICS_URL} from "@/consts";
 import * as EmailLinkApi from '../EmailLink';
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {DOCUMENTATION_TOPICS_URL} from "@/publish/consts";
 global.fetch = jest.fn();
 const fetchMock = fetch as jest.Mock;
 

@@ -8,8 +8,8 @@ import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
 import {getResizedBlob} from "@/canvas/image";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {ContentKind} from "@/canvas/content/ContentKind";
-import {SAFE_MAX_BANNER_WIDTH} from "@/consts";
 import {NotImplementedException} from "@/canvas/NotImplementedException";
+import {SAFE_MAX_BANNER_WIDTH} from "@/publish/consts";
 
 
 

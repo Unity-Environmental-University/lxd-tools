@@ -18,11 +18,11 @@ import {rubricsTiedToGradesTest} from "./fixesAndUpdates/validations/rubricSetti
 import proxyServerLinkValidation from "./fixesAndUpdates/validations/proxyServerLinkValidation";
 import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
-import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/consts";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import biol103Overwrite, {biol103OverwriteCheck} from "@/publish/fixesAndUpdates/validations/courseSpecific/biol103Overwrite";
 import {discussionThreadingValidation} from "@/publish/fixesAndUpdates/validations/discussionThreading";
+import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/publish/consts";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 

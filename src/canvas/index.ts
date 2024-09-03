@@ -1,4 +1,4 @@
-import {formDataify, ICanvasCallConfig} from "./canvasUtils";
+import {formDataify, ICanvasCallConfig, IQueryParams} from "./canvasUtils";
 
 import {overrideConfig} from "@/canvas/fetch/utils";
 
@@ -10,6 +10,13 @@ export function apiWriteConfig(method: 'POST' | 'PUT', data: Record<string, any>
             method,
             body,
         }
+    }, baseConfig);
+}
+
+
+export function apiGetConfig(queryParams: IQueryParams, baseConfig?: ICanvasCallConfig) {
+    return overrideConfig({
+        queryParams,
     }, baseConfig);
 }
 

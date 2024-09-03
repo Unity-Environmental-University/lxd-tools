@@ -16,6 +16,7 @@ export type ContentKind<
     getName: (data: DataType) => string,
     getBody: (data: DataType) => string | undefined,
     get: (courseId: number, contentId: number, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>
+    getByString?: (courseId: number, contentId: string, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>
     dataGenerator: (courseId: number, config?: ICanvasCallConfig<GetQueryOptions>) => AsyncGenerator<DataType>
     put: (courseId: number, contentId: number, data: PutDataType) => Promise<DataType>,
 } & ReturnType<typeof contentUrlFuncs>
@@ -35,6 +36,7 @@ export function contentUrlFuncs(contentUrlPart: string) {
 
     const isValidUrl = (url?: string) => typeof url === 'string' && typeof getCourseAndContentIdFromUrl(url)[0] !== 'undefined';
     return {
+        contentUrlPart,
         getApiUrl,
         getAllApiUrl,
         getHtmlUrl,
@@ -43,8 +45,8 @@ export function contentUrlFuncs(contentUrlPart: string) {
     }
 }
 
-function courseContentUrlFunc(url: string) {
-    return (courseId: number, contentId: number) => url
+export function courseContentUrlFunc<T extends number | string = number>(url: string) {
+    return (courseId: number, contentId: T) => url
         .replaceAll('{courseId}', courseId.toString())
         .replaceAll('{contentId}', contentId.toString())
 }
