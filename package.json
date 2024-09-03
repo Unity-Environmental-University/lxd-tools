@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "BETA-1",
+  "version": "2.BETA",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",

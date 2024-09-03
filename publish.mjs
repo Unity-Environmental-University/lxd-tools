@@ -1,102 +1,147 @@
-import {exec, execSync} from "node:child_process";
-import nodePackage from './package.json' with { type: 'json'}
-import manifest from './manifest.json' with {type: 'json'}
-import fs from "node:fs";
-import {workerData} from "node:worker_threads";
+import { exec, execSync } from "node:child_process";
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+import  nodePackage from './package.json' assert { type: 'json'}
+import manifest from './manifest.json' assert {type: 'json'}
 
+// Get the directory name for the current module in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-async function  main() {
-    const packageTag = getPackageTag();
-    const tags = getGitTags('./')
-    console.log(packageTag);
-    updateTag(packageTag, './');
+// Promisify exec to use with async/await
+const execAsync = promisify(exec);
 
-    let distManifest = JSON.parse(fs.readFileSync('../dist/manifest.json').toString())
+// Helper function to log process output
+function logProcessOutput(process) {
+    process.stdout?.on('data', (data) => console.log(data.toString()));
+    process.stderr?.on('data', (data) => console.error(data.toString()));
+}
 
-    if (distManifest.version !== packageTag) {
-        fs.writeFileSync('../dist/manifest.json', JSON.stringify({...manifest, version: packageTag}));
-    }
-
-
-    const distOptions = {
-        cwd: '../dist'
-    };
-
-    console.log(execSync('git add -v .', distOptions).toString());
-
-
-    const commitMessages = [
-        packageTag,
-        ...getCommitMessages(distManifest.version, packageTag).filter(m => m.length > 0)
-    ];
-    console.log(commitMessages)
-    fs.writeFileSync('../dist/commit.tmp', commitMessages.join('\n'));
-    console.log(fs.readFileSync('../dist/commit.tmp').toString());
-    const command = `git commit -F ./commit.tmp`;
-    console.log(command)
+// Main function
+async function main() {
     try {
-        const process = exec(command, distOptions);
-        process.on('message', message => console.log(process.stdout.toString()))
-        process.on('error', message => console.log(process.stderr.toString()))
-        process.on('close', message => {
-            console.log(message);
-            finish(packageTag);
-        });
-    } catch(e) {
-        console.error(e);
-    }
+        const packageTag = getPackageTag();
+        const tags = getGitTags('./');
+        console.log(packageTag);
 
+        // Check if the package tag has already been used
+        const distTags = getGitTags('../dist');
+        if (distTags.includes(packageTag)) {
+            throw new Error(`Version ${packageTag} has already been tagged. Please update the version.`);
+        }
+
+        updateTag(packageTag, './');
+
+        const distManifestPath = path.resolve(__dirname, '../dist/manifest.json');
+        let distManifest = JSON.parse(await readFile(distManifestPath, 'utf-8'));
+
+        if (distManifest.version !== packageTag) {
+            distManifest = { ...manifest, version: packageTag };
+            await writeFile(distManifestPath, JSON.stringify(distManifest, null, 2));
+        }
+
+        const distOptions = { cwd: path.resolve(__dirname, '../dist') };
+
+        console.log(execSync('git add -v .', distOptions).toString());
+
+        const commitMessages = [
+            packageTag,
+            ...getCommitMessages(distManifest.version, packageTag).filter(m => m.length > 0)
+        ];
+
+        console.log(commitMessages);
+        // Filter out lines that begin with tildes
+        const filteredCommitMessages = commitMessages.filter(msg => !msg.trim().startsWith('~'));
+
+        const commitFilePath = path.resolve(distOptions.cwd, 'commit.tmp');
+        await writeFile(commitFilePath, filteredCommitMessages.join('\n'));
+
+        console.log(await readFile(commitFilePath, 'utf-8'));
+
+        const command = `git commit -F ./commit.tmp`;
+        console.log(command);
+
+        const commitProcess = exec(command, distOptions);
+        logProcessOutput(commitProcess);
+        commitProcess.on('close', async (code) => {
+            if (code === 0) {
+                await finish(packageTag);
+            } else {
+                console.error(`Commit process exited with code ${code}`);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in main:', error);
+        process.exit(1);  // Exit with an error code
+    }
 }
 
-
+// Finish function to push the changes
 async function finish(packageTag) {
-    updateTag(packageTag, '../dist');
-
-    const process = exec('git push', {cwd: '../dist'})
-    process.on('message', (message) => {
-        console.log(process.stdout.toString())
-    });
-    process.on('error', (message) => {
-        console.log(process.stderr.toString())
-    });
-    process.on('close', () => console.log('Finished'))
-}
-
-/**
- * the working directory of the repository to tag
- * @param packageTag {string}
- * @param tagRepoWorkingDirectory {string|null}
- */
-function updateTag(packageTag, tagRepoWorkingDirectory) {
-    const gitTags = getGitTags(tagRepoWorkingDirectory);
-    if (!gitTags.includes(packageTag)) {
-        execSync(`git tag ${packageTag}`, {
-            cwd: tagRepoWorkingDirectory
+    try {
+        updateTag(packageTag, '../dist');
+        const distOptions = { cwd: path.resolve(__dirname, '../dist') };
+        const pushProcess = exec('git push', distOptions);
+        logProcessOutput(pushProcess);
+        pushProcess.on('close', (code) => {
+            if (code === 0) {
+                console.log('Finished successfully');
+            } else {
+                console.error(`Push process exited with code ${code}`);
+            }
         });
+    } catch (error) {
+        console.error('Error in finish:', error);
     }
 }
 
-/**
- *
- * @returns {string[]}
- * @param workingDirectory {string} The working directory to execute from
- */
-function getGitTags(workingDirectory= './') {
-    return execSync('git tag', {
-        cwd: workingDirectory
-    }).toString().trimEnd().split('\n')
+// Function to update Git tags
+function updateTag(packageTag, tagRepoWorkingDirectory) {
+    try {
+        const gitTags = getGitTags(tagRepoWorkingDirectory);
+        if (!gitTags.includes(packageTag)) {
+            execSync(`git tag ${packageTag}`, { cwd: path.resolve(__dirname, tagRepoWorkingDirectory) });
+        }
+    } catch (error) {
+        console.error('Error in updateTag:', error);
+    }
 }
 
+// Function to get Git tags
+function getGitTags(workingDirectory = './') {
+    try {
+        return execSync('git tag', { cwd: path.resolve(__dirname, workingDirectory) })
+            .toString()
+            .trimEnd()
+            .split('\n');
+    } catch (error) {
+        console.error('Error in getGitTags:', error);
+        return [];
+    }
+}
+
+// Function to get the package version tag
 function getPackageTag() {
     return nodePackage.version;
-
 }
 
-
-
+// Function to get commit messages between two tags and filter them
 function getCommitMessages(tagOne, tagTwo) {
-    console.log(tagOne)
-    return execSync(`git log --pretty=oneline ${tagOne}...${tagTwo}`).toString().split('\n');
+    try {
+        return execSync(`git log --pretty=oneline ${tagOne}...${tagTwo}`, { cwd: path.resolve(__dirname, '../dist') })
+            .toString()
+            .split('\n');
+    } catch (error) {
+        console.error('Error in getCommitMessages:', error);
+        return [];
+    }
 }
 
-main().then();
+main().then(() => {
+    console.log('Script executed successfully.');
+}).catch((error) => {
+    console.error('Unhandled error:', error);
+});
