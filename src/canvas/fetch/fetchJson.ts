@@ -1,6 +1,6 @@
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 
-export async function fetchJson<T extends Record<string, any>>(
+export async function fetchJson<T = Record<string, any>>(
     url: string, config: ICanvasCallConfig | null = null
 ): Promise<T> {
     const match = url.search(/^(\/|\w+:\/\/)/);
@@ -14,3 +14,5 @@ export async function fetchJson<T extends Record<string, any>>(
     const response = await fetch(url, config.fetchInit);
     return await response.json() as T;
 }
+
+
