@@ -8,7 +8,7 @@ import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
 import {CourseValidation} from "./validations/validations";
 import {Course} from "../../canvas/course/Course";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 
 export type CourseUpdateInterfaceProps = {
     course?: Course,

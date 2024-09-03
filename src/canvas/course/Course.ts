@@ -39,7 +39,7 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {BaseContentItem, getBannerImage} from "@/canvas/content/BaseContentItem";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentGroup} from "@/canvas/content/assignments/types";

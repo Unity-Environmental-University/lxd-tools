@@ -2,13 +2,14 @@ import {ICanvasCallConfig, IQueryParams} from "@/canvas/canvasUtils";
 import {CanvasData} from "@/canvas/canvasDataDefs";
 import {ContentData} from "@/canvas/content/types";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {putContentConfig} from "@/canvas/content/BaseContentItem";
+import {postContentConfig, putContentConfig} from "@/canvas/content/BaseContentItem";
 
 
 export type ContentKind<
     DataType extends ContentData,
     GetQueryOptions extends IQueryParams = Record<string, any>,
     PutDataType extends CanvasData = DataType,
+    PostDataType extends CanvasData = PutDataType,
     IdType = number,
 > = {
     getId: (data: DataType) => IdType,
@@ -16,9 +17,10 @@ export type ContentKind<
     getName: (data: DataType) => string,
     getBody: (data: DataType) => string | undefined,
     get: (courseId: number, contentId: number, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>
-    getByString?: (courseId: number, contentId: string, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>
+    getByString?: (courseId: number, contentId: string, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType|{ message: string}>
     dataGenerator: (courseId: number, config?: ICanvasCallConfig<GetQueryOptions>) => AsyncGenerator<DataType>
     put: (courseId: number, contentId: number, data: PutDataType) => Promise<DataType>,
+    post?: (courseId: number, data: PostDataType) => Promise<DataType>,
 } & ReturnType<typeof contentUrlFuncs>
 
 export function contentUrlFuncs(contentUrlPart: string) {
@@ -63,6 +65,21 @@ export function putContentFunc<
     ) {
         const url = getApiUrl(courseId, contentId);
         return await fetchJson<ResponseDataType>(url, putContentConfig(content, config))
+    }
+}
+
+
+export function postContentFunc<
+    PostOptionsType extends Record<string, any>,
+    ResponseDataType extends Record<string, any>
+>(getApiUrl: (courseId: number) => string) {
+    return async function (
+        courseId: number,
+        content: PostOptionsType,
+        config?: ICanvasCallConfig
+    ) {
+        const url = getApiUrl(courseId);
+        return await fetchJson<ResponseDataType>(url, postContentConfig(content, config))
     }
 }
 

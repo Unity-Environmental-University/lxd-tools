@@ -1,12 +1,12 @@
 import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {ContentData} from "@/canvas/content/types";
 import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
 import {QuizKind} from "@/canvas/content/quizzes/QuizKind";
-import {PageKind} from "@/canvas/content/assignments/pages/PageKind";
+import {PageKind} from "@/canvas/content/pages/PageKind";
 import {DiscussionKind} from "@/canvas/content/discussions/DiscussionKind";
 import {ContentKind} from "@/canvas/content/ContentKind";
 

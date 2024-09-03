@@ -4,7 +4,7 @@ import {ILatePolicyData, IModuleData} from "../canvasDataDefs";
 
 import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
 import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 

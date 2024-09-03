@@ -16,7 +16,7 @@ import {
 import * as fetchApi from "../../../../canvas/fetch/utils";
 import {badContentRunFunc, ContentTextReplaceFix} from "../validations";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 import {classInclusiveNoDateHeaderTest} from "@/publish/fixesAndUpdates/validations/syllabusTests";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Course} from "@/canvas/course/Course";

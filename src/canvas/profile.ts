@@ -5,7 +5,7 @@ import {parentElement} from "./canvasUtils";
 import {Course} from "./course/Course";
 import {Account} from "@/canvas/Account";
 import {getSingleCourse} from "@/canvas/course";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 
 
 let facultyCourseCached: Course;

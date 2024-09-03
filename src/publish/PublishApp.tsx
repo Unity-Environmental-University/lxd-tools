@@ -1,13 +1,13 @@
 
 import "./publish.scss"
-import React, {useEffect, useState, useSyncExternalStore} from 'react';
+import React, {useState} from 'react';
 import {useEffectAsync} from "../ui/utils";
 
 import {CourseUpdateInterface} from "./fixesAndUpdates/CourseUpdateInterface";
 import {IUserData} from "../canvas/canvasDataDefs";
 import {AdminApp} from "../admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
-import {Alert, Button, Row} from "react-bootstrap";
+import {Alert, Row} from "react-bootstrap";
 import {Course} from "../canvas/course/Course";
 import {CourseValidation} from "./fixesAndUpdates/validations/validations";
 import capstoneProjectValidations from "./fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
@@ -16,13 +16,13 @@ import courseSettingsTests from "./fixesAndUpdates/validations/courseSettings";
 import courseContentTests from "./fixesAndUpdates/validations/courseContent";
 import {rubricsTiedToGradesTest} from "./fixesAndUpdates/validations/rubricSettings";
 import proxyServerLinkValidation from "./fixesAndUpdates/validations/proxyServerLinkValidation";
-import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
+import {IMultiSelectOption} from "../ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import biol103Overwrite, {biol103OverwriteCheck} from "@/publish/fixesAndUpdates/validations/courseSpecific/biol103Overwrite";
 import {discussionThreadingValidation} from "@/publish/fixesAndUpdates/validations/discussionThreading";
 import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/publish/consts";
+import {referencesValidations} from "@/publish/fixesAndUpdates/validations/references";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
@@ -55,6 +55,7 @@ function PublishApp() {
         rubricsTiedToGradesTest,
         proxyServerLinkValidation,
         discussionThreadingValidation,
+        ...referencesValidations,
         //...biol103Overwrite,
     ]
 

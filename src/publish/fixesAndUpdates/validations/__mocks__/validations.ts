@@ -20,7 +20,7 @@ import mockLatePolicy from "@/canvas/course/__mocks__/mockLatePolicy";
 
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 

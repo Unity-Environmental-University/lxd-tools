@@ -4,7 +4,7 @@ import {formDataify, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
 
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Page} from "@/canvas/content/assignments/pages/Page";
+import {Page} from "@/canvas/content/pages/Page";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {IPageData} from "@/canvas/content/pages/types";
 

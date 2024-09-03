@@ -208,3 +208,11 @@ export function putContentConfig<T extends Record<string, any>>(data: T, config?
         }
     }, true);
 }
+export function postContentConfig<T extends Record<string, any>>(data: T, config?: ICanvasCallConfig) {
+    return deepObjectMerge(config, {
+        fetchInit: {
+            method: 'POST',
+            body: formDataify(data)
+        }
+    }, true);
+}

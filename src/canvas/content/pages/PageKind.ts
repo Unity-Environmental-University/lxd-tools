@@ -1,7 +1,13 @@
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {IPageData} from "@/canvas/content/pages/types";
-import {ContentKind, contentUrlFuncs, courseContentUrlFunc, putContentFunc} from "@/canvas/content/ContentKind";
+import {
+    ContentKind,
+    contentUrlFuncs,
+    courseContentUrlFunc,
+    postContentFunc,
+    putContentFunc
+} from "@/canvas/content/ContentKind";
 
 export const PageUrlFuncs = contentUrlFuncs('pages')
 export type GetPageOptions = Record<string, any>;
@@ -23,9 +29,9 @@ export const PageKind: Required<
     get: (id, courseId, config) =>
         fetchJson(PageUrlFuncs.getApiUrl(courseId, id), config),
     getByString: (courseId, contentId, config) =>
-        fetchJson(getStringApiUrl(courseId, contentId), config),
+        fetchJson<IPageData|{message: string}>(getStringApiUrl(courseId, contentId), config),
     dataGenerator: (courseId, config) =>
         getPagedDataGenerator(PageUrlFuncs.getAllApiUrl(courseId), config),
     put: putContentFunc(PageUrlFuncs.getApiUrl),
-
+    post: postContentFunc(PageUrlFuncs.getAllApiUrl),
 }

@@ -12,8 +12,8 @@ import {IContentHaver, IPagesHaver} from "../../../canvas/course/courseTypes";
 import {Course} from "../../../canvas/course/Course";
 import {deepObjectMerge, ICanvasCallConfig, renderAsyncGen} from "../../../canvas/canvasUtils";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {Page} from "@/canvas/content/assignments/pages/Page";
-import {PageKind} from "@/canvas/content/assignments/pages/PageKind";
+import {Page} from "@/canvas/content/pages/Page";
+import {PageKind} from "@/canvas/content/pages/PageKind";
 import badContentReplaceFuncs from "@/publish/fixesAndUpdates/validations/badContentReplaceFuncs";
 
 
