@@ -9,8 +9,8 @@ import React, {act} from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {PublishInterface, IPublishInterfaceProps, OpenButton} from '../PublishInterface';
-import {IUserData} from '../../../canvas/canvasDataDefs';
-import {Course} from "../../../canvas/course/Course";
+import {IUserData} from '@/canvas/canvasDataDefs';
+import {Course} from "@/canvas/course/Course";
 
 
 import fetchMock from "jest-fetch-mock";
