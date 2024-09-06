@@ -1,6 +1,7 @@
-import {fetchCourseData, setWorkingCourseData, getWorkingCourseData, initialState, courseDataReducer} from "../courseDataSlice";
+import courseDataReducer, {fetchCourseData, setWorkingCourseData, getWorkingCourseData, initialState} from "../courseDataSlice";
 import { ICourseData } from "@/canvas/courseTypes";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {fetchJson} from "@canvas/fetch/fetchJson";
 
 // Mock the fetchJson function to simulate API calls
 jest.mock('@/canvas/fetch/fetchJson', () => ({
@@ -20,7 +21,7 @@ describe('courseDataSlice reducer', () => {
     });
 
     it('should handle fetchCourseData.pending', () => {
-        const nextState = courseDataReducer(initialState, fetchCourseData.pending('courseId', 'requestId'));
+        const nextState = courseDataReducer(initialState, fetchCourseData.pending('courseId', 157));
         expect(nextState.status).toEqual('loading');
     });
 

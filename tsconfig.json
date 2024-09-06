@@ -10,6 +10,15 @@
     "paths": {
       "@/*": [
         "*"
+      ],
+      "@canvas/*" : [
+        "canvas/*"
+      ],
+      "@citations/*" : [
+        "citations/*"
+      ],
+      "@publish/*" : [
+        "publish/*"
       ]
     },
     "sourceMap": true,
