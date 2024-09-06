@@ -3,6 +3,7 @@
   "version": "7",
   "private": true,
   "dependencies": {
+    "@reduxjs/toolkit": "^2.2.7",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^16.18.82",
@@ -20,6 +21,8 @@
     "precss": "^4.0.0",
     "react-bootstrap": "^2.10.2",
     "react-datepicker": "^6.6.0",
+    "react-redux": "^9.1.2",
+    "redux": "^5.0.1",
     "sass": "^1.72.0",
     "style-loader": "^3.3.4",
     "temporal-polyfill": "^0.2.4",

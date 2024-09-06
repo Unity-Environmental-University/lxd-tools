@@ -13,7 +13,7 @@ import mock = jest.mock;
 jest.mock('@/canvas/course/blueprint');
 jest.mock('@/canvas/course/index', () => ({
     getCourseById: jest.fn(),
-    getCourseData: jest.fn(() => ({
+    getWorkingCourseData: jest.fn(() => ({
         ...mockCourseData,
         term: mockTermData,
     })),
