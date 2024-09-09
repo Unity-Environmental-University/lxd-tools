@@ -1,7 +1,7 @@
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
-import {DiscussionKind} from "@/canvas/content/discussions/DiscussionKind";
+import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 import {IDiscussionData} from "@/canvas/content/discussions/types";
 
 export class Discussion extends BaseContentItem {

@@ -1,7 +1,8 @@
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {CanvasData} from "@/canvas/canvasDataDefs";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {overrideConfig} from "@/canvas";
+import {overrideConfig} from "@canvas/fetch/utils";
+
 
 type UrlFuncType<UrlParams extends Record<string, any>> = (args: UrlParams, config?: ICanvasCallConfig) => string
 

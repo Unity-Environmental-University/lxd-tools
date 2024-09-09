@@ -9,7 +9,7 @@ import Modal from "@/ui/widgets/Modal";
 import {Course} from "@/canvas/course/Course";
 import {listDispatcher} from "@/ui/reducerDispatchers";
 import {aMinusBSortFn, bMinusASortFn} from "@/index";
-import {renderAsyncGen} from "@/canvas";
+
 
 type BpButtonProps = {
     course: Course,

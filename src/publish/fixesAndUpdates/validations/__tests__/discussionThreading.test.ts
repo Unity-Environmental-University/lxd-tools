@@ -2,16 +2,14 @@ import {CourseFixValidation} from "@/publish/fixesAndUpdates/validations/validat
 import {projectRegex} from "@/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import {Course} from "@/canvas/course/Course";
 import {IDiscussionData} from "@/canvas/content/discussions/types";
-import {DiscussionKind} from "@/canvas/content/discussions/DiscussionKind";
+import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 import {discussionThreadingValidation} from "../discussionThreading";
 import {mockAsyncGen} from "@/__mocks__/utils";
 
 jest.mock("@/canvas/content/discussions/DiscussionKind", () => ({
-    DiscussionKind: {
         dataGenerator: jest.fn(),
         put: jest.fn(),
         getHtmlUrl: jest.fn(),
-    }
 }));
 
 describe("discussionThreadingValidation", () => {

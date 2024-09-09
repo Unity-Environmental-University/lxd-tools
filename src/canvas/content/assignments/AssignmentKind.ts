@@ -6,7 +6,7 @@ import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/ContentKind";
 
 export const assignmentUrlFuncs = contentUrlFuncs('assignments');
-export const AssignmentKind: ContentKind<
+const AssignmentKind: ContentKind<
     IAssignmentData,
     CanvasData,
     UpdateAssignmentDataOptions
@@ -25,3 +25,5 @@ export const AssignmentKind: ContentKind<
     dataGenerator: (courseId, config) => getPagedDataGenerator<IAssignmentData>(assignmentUrlFuncs.getAllApiUrl(courseId), config),
     put: putContentFunc<UpdateAssignmentDataOptions, IAssignmentData>(assignmentUrlFuncs.getApiUrl),
 }
+
+export default AssignmentKind;

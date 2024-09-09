@@ -1,5 +1,5 @@
 import {mockQuizData} from "@/canvas/content/__mocks__/mockContentData";
-import {QuizKind, quizUrlFuncs} from "@/canvas/content/quizzes/QuizKind";
+import QuizKind, {quizUrlFuncs} from "@/canvas/content/quizzes/QuizKind";
 import {getDataTests, kindUrlTests} from "@/canvas/content/__testingUtils__/utils";
 
 jest.mock('@/canvas/fetch/fetchJson')

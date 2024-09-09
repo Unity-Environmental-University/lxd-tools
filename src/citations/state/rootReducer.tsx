@@ -1,5 +1,5 @@
 import {combineReducers, Reducer} from "redux";
-import courseDataSlice from "@citations/courseDataSlice";
+import courseDataSlice from "@citations/state/courseDataSlice";
 
 type ActionType = {};
 

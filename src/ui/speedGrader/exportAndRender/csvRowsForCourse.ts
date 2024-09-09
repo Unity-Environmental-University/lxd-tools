@@ -12,7 +12,7 @@ import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGe
 import {moduleGenerator} from "@/canvas/course/modules";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/assignments/types";
-import {renderAsyncGen} from "@/canvas";
+import {renderAsyncGen} from "@canvas/canvasUtils";
 
 export async function csvRowsForCourse(course: SectionData | ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];

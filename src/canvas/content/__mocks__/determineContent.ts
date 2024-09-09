@@ -3,9 +3,8 @@ import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {ContentData} from "@/canvas/content/types";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {CONTENT_KINDS} from "@/canvas/content/determineContent";
 
-import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
+import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 
 export const getContentClassFromUrl = jest.fn((url: string | null = null) => {
     return Assignment;

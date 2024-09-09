@@ -1,10 +1,10 @@
 import courseDataReducer, {fetchCourseData, setWorkingCourseData, getWorkingCourseData, initialState} from "../courseDataSlice";
-import { ICourseData } from "@/canvas/courseTypes";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import { ICourseData } from "@canvas/courseTypes";
+import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
 import {fetchJson} from "@canvas/fetch/fetchJson";
 
 // Mock the fetchJson function to simulate API calls
-jest.mock('@/canvas/fetch/fetchJson', () => ({
+jest.mock('@canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
 }));
 

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import CitationsApp from "@/citations/CitationsApp";
 import {Provider} from "react-redux";
-import {store} from "@/citations/store";
+import {store} from "@citations/state/store";
 
 const root = document.createElement("div")
 

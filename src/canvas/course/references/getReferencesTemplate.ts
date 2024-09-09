@@ -1,7 +1,7 @@
 import {DEV_TEMPLATE_COURSE_ID, REFERENCES_PAGE_URL_NAME} from "@/publish/consts";
 import {IPageData} from "@/canvas/content/pages/types";
 import {Page} from "@/canvas/content/pages/Page";
-import {PageKind} from "@/canvas/content/pages/PageKind";
+import PageKind from "@/canvas/content/pages/PageKind";
 
 
 const url = `/api/v1/courses/${DEV_TEMPLATE_COURSE_ID}/pages/${REFERENCES_PAGE_URL_NAME}`;

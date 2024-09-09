@@ -247,7 +247,8 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
 
 
 import {ITermData, Term} from "@/canvas/term/Term";
-import {apiWriteConfig} from "@/canvas";
+
+import apiWriteConfig from "@/fetch/apiWriteConfig";
 
 
 describe("genBlueprintsForCode", () => {

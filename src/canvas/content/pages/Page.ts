@@ -1,6 +1,6 @@
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {PageKind} from "@/canvas/content/pages/PageKind";
+import PageKind from "@/canvas/content/pages/PageKind";
 import {IPageData} from "@/canvas/content/pages/types";
 
 

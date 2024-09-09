@@ -1,14 +1,13 @@
 import React, {useState} from "react";
 import {Button, Card, Col, Modal, Row} from "react-bootstrap";
 import DatePicker from "react-datepicker";
-import {Course} from "@/canvas/course/Course";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
-import {getSections, sectionDataGenerator} from "@/canvas/course/blueprint";
 import {ICourseData} from "@/canvas/courseTypes";
 import {getCourseDataGenerator} from "@/canvas/course";
 import {baseCourseCode} from "@/canvas/course/code";
-import {renderAsyncGen} from "@/canvas";
+import {renderAsyncGen} from "@canvas/canvasUtils";
+
 
 export interface IDateRangeExportProps {
     course: ICourseData,

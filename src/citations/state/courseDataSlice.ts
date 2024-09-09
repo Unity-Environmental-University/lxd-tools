@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {ICourseData} from "@/canvas/courseTypes";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {ICourseData} from "@canvas/courseTypes";
+import {fetchJson} from "@canvas/fetch/fetchJson";
 
 //OpenAI. (2024). ChatGPT [Large language model]. https://chatgpt.com/c/63b33b66-0ab7-4974-a35e-f6297411628e used for interactive learning on adding fetch behavior
 
@@ -55,7 +55,7 @@ const courseDataSlice = createSlice({
 })
 
 
-// Define the selector outside the slice
+
 export const getWorkingCourseData = (state: ReturnType<typeof courseDataSlice.reducer> ) => state.courseData;
 export const getStatus = (state: ReturnType<typeof courseDataSlice.reducer> ) => state.status;
 export const getError = (state: ReturnType<typeof courseDataSlice.reducer> ) => state.error;

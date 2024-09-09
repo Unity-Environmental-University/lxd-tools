@@ -1,4 +1,4 @@
-import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
+import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 
 
 export const assignmentDataGen = AssignmentKind.dataGenerator;

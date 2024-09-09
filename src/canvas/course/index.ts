@@ -1,5 +1,4 @@
 import {deepObjectMerge, formDataify, generatorMap, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
-import {overrideConfig} from "../index";
 
 import {GetCourseOptions, GetCoursesFromAccountOptions, IGradingStandardData} from "./courseTypes";
 import {Course} from "./Course";
@@ -10,6 +9,7 @@ import {getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "@/c
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {baseCourseCode} from "@/canvas/course/code";
+import {overrideConfig} from "@canvas/fetch/utils";
 
 
 export async function getGradingStandards(contextId: number, contextType: 'account' | 'course', config?: ICanvasCallConfig) {

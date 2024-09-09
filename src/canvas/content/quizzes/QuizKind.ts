@@ -8,7 +8,7 @@ import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/Con
 export type SaveQuizOptions = Record<string, any>
 export type GetQuizOptions = Record<string, any>
 export const quizUrlFuncs = contentUrlFuncs('quizzes');
-export const QuizKind: ContentKind<IQuizData, GetQuizOptions, SaveQuizOptions> = {
+const QuizKind: ContentKind<IQuizData, GetQuizOptions, SaveQuizOptions> = {
     getId: (data) => data.id,
     getName: (data) => data.title,
     dataIsThisKind: (data): data is IQuizData => 'quiz_type' in data,
@@ -21,3 +21,5 @@ export const QuizKind: ContentKind<IQuizData, GetQuizOptions, SaveQuizOptions> =
     dataGenerator: (courseId, config) => getPagedDataGenerator<IQuizData>(quizUrlFuncs.getAllApiUrl(courseId), config),
     put: putContentFunc<SaveQuizOptions, IQuizData>(quizUrlFuncs.getApiUrl),
 }
+
+export default QuizKind;

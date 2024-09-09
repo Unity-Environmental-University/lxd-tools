@@ -20,7 +20,7 @@ import {Discussion} from "@/canvas/content/discussions/Discussion";
 
 import {IDiscussionData} from "@/canvas/content/discussions/types";
 import {IModuleData} from "@/canvas/canvasDataDefs";
-import {renderAsyncGen} from "@/canvas";
+import {renderAsyncGen} from "@canvas/canvasUtils";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,

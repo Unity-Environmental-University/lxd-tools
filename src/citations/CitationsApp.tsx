@@ -1,6 +1,6 @@
 import {useDispatch, useSelector} from "react-redux";
-import {AppDispatch, RootState} from "@/citations/store";
-import reducer, {fetchCourseData, getError, getStatus, getWorkingCourseData} from "@/citations/courseDataSlice";
+import {AppDispatch, RootState} from "@citations/state/store";
+import reducer, {fetchCourseData, getError, getStatus, getWorkingCourseData} from "@citations/state/courseDataSlice";
 import React, {useEffect, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
 import Modal from "@/ui/widgets/Modal";

@@ -8,11 +8,10 @@ import {returnMockAsyncGen} from "@/__mocks__/utils";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 
 import * as rubricApi from "@/canvas/rubrics";
-import * as assignmentApi from "@/canvas/content/assignments";
 import {IRubricData} from "@/canvas/rubrics";
 import assert from "assert";
-import requireActual = jest.requireActual;
 import {updateAssignmentData} from "@/canvas/content/assignments";
+import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
 
 jest.mock('@/canvas/rubrics', () => {
@@ -28,18 +27,21 @@ jest.mock('@/canvas/content/assignments', () => {
     return {
         __esModule: true,
         ...jest.requireActual('@/canvas/content/assignments'),
-        assignmentDataGen: jest.fn(),
-        getAssignmentData: jest.fn(),
         updateAssignmentData: jest.fn(),
     }
 })
 
 
+const assignmentDataGen = AssignmentKind.dataGenerator as jest.Mock;
+const getAssignmentData = AssignmentKind.get as jest.Mock;
+jest.mock('@canvas/content/assignments/AssignmentKind', () => ({
+    get: jest.fn(),
+    dataGenerator: jest.fn(),
+}))
+
 
 const rubricsForCourseGen = jest.spyOn(rubricApi, 'rubricsForCourseGen')
 const updateRubricAssociation = jest.spyOn(rubricApi, 'updateRubricAssociation')
-const assignmentDataGen = jest.spyOn(assignmentApi, 'assignmentDataGen')
-const getAssignmentData = jest.spyOn(assignmentApi, 'getAssignmentData')
 
 describe('rubrics are set to grade assignments', () => {
     let config: ICanvasCallConfig = {};
@@ -77,7 +79,7 @@ describe('rubrics are set to grade assignments', () => {
             }]));
 
         assignmentDataGen.mockImplementation(returnMockAsyncGen([assignmentData]))
-        getAssignmentData.mockResolvedValue(assignmentData)
+       getAssignmentData.mockResolvedValue(assignmentData)
 
         let results = await validation.run(course);
         expect(results.success).toBe(false);

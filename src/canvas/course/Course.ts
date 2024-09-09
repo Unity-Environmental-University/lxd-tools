@@ -20,7 +20,6 @@ import {
 } from "./courseTypes";
 import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
 import {filterUniqueFunc, formDataify, ICanvasCallConfig, renderAsyncGen} from "../canvasUtils";
-import {overrideConfig} from "../index";
 import assert from "assert";
 import {getModuleUnlockStartDate} from "./changeStartDate";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
@@ -34,7 +33,7 @@ import {Term} from "@/canvas/term/Term";
 
 import {ICourseData, ICourseSettings, ITabData} from "@/canvas/courseTypes";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchGetConfig} from "@/canvas/fetch/utils";
+import {fetchGetConfig, overrideConfig} from "@/canvas/fetch/utils";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {BaseContentItem, getBannerImage} from "@/canvas/content/BaseContentItem";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";

@@ -15,8 +15,7 @@ import {getStartDateAssignments} from "@/canvas/course/changeStartDate";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {IListAction, listDispatcher, lutDispatcher} from "@/ui/reducerDispatchers";
 import {sectionDataGenerator} from "@/canvas/course/blueprint";
-import {renderAsyncGen} from "@/canvas";
-import {batchGen} from "@/canvas/canvasUtils";
+import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
 import {sleep} from "@/index";
 
 

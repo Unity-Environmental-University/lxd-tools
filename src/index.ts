@@ -16,3 +16,5 @@ export function aMinusBSortFn<T>(func:(value:T) => number) {
 export function bMinusASortFn<T>(func:(value:T) => number) {
     return (a:T, b:T) => func(b) - func(a);
 }
+
+export {apiWriteConfig} from "@/fetch/apiWriteConfig";

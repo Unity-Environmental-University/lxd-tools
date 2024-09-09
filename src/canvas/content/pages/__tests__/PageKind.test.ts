@@ -3,7 +3,7 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {IPageData} from "@/canvas/content/pages/types";
 import {mockDiscussionData, mockPageData} from "@/canvas/content/__mocks__/mockContentData";
-import {GetPageOptions, PageKind, SavePageOptions} from "@/canvas/content/pages/PageKind";
+import PageKind, {GetPageOptions, SavePageOptions} from "@/canvas/content/pages/PageKind";
 
 // Mock dependencies
 jest.mock("@/canvas/fetch/fetchJson");

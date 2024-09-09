@@ -6,7 +6,7 @@ import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/Con
 
 export type GetDiscussionOptions = Record<string, any>;
 export const discussionUrlFuncs = contentUrlFuncs('discussion_topics');
-export const DiscussionKind: ContentKind<
+const DiscussionKind: ContentKind<
     IDiscussionData,
     GetDiscussionOptions,
     SaveDiscussionData
@@ -24,3 +24,5 @@ export const DiscussionKind: ContentKind<
     dataGenerator: (courseId, config) => getPagedDataGenerator<IDiscussionData>(discussionUrlFuncs.getAllApiUrl(courseId), config),
     put: putContentFunc<SaveDiscussionData, IDiscussionData>(discussionUrlFuncs.getApiUrl),
 }
+
+export default DiscussionKind;

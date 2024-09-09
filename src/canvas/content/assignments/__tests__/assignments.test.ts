@@ -11,7 +11,7 @@ import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {putContentConfig} from "@/canvas/content/BaseContentItem";
 import {UpdateAssignmentDataOptions} from "@/canvas/content/assignments/types";
-import {AssignmentKind} from "@/canvas/content/assignments/AssignmentKind";
+import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 
 fetchMock.enableMocks();
 

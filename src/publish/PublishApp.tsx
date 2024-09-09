@@ -1,14 +1,14 @@
 
 import "./publish.scss"
 import React, {useState} from 'react';
-import {useEffectAsync} from "../ui/utils";
+import {useEffectAsync} from "@/ui/utils";
 
 import {CourseUpdateInterface} from "./fixesAndUpdates/CourseUpdateInterface";
-import {IUserData} from "../canvas/canvasDataDefs";
-import {AdminApp} from "../admin/AdminApp";
+import {IUserData} from "@canvas/canvasDataDefs";
+import {AdminApp} from "@/admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Alert, Row} from "react-bootstrap";
-import {Course} from "../canvas/course/Course";
+import {Course} from "@canvas/course/Course";
 import {CourseValidation} from "./fixesAndUpdates/validations/validations";
 import capstoneProjectValidations from "./fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import syllabusTests from "./fixesAndUpdates/validations/syllabusTests";
@@ -16,7 +16,7 @@ import courseSettingsTests from "./fixesAndUpdates/validations/courseSettings";
 import courseContentTests from "./fixesAndUpdates/validations/courseContent";
 import {rubricsTiedToGradesTest} from "./fixesAndUpdates/validations/rubricSettings";
 import proxyServerLinkValidation from "./fixesAndUpdates/validations/proxyServerLinkValidation";
-import {IMultiSelectOption} from "../ui/widgets/MuliSelect";
+import {IMultiSelectOption} from "@/ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";

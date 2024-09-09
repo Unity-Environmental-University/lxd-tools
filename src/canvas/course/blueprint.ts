@@ -1,7 +1,6 @@
 import {formDataify, getItemTypeAndId, ICanvasCallConfig, renderAsyncGen} from "../canvasUtils";
 import {IModuleData, IModuleItemData} from "../canvasDataDefs";
 import {getCourseDataGenerator, getCourseGenerator} from "./index";
-import {apiWriteConfig} from "../index";
 import {GetCourseOptions, GetCoursesFromAccountOptions, ICourseCodeHaver, IIdHaver} from "./courseTypes";
 import {Course} from "./Course";
 import {config} from "dotenv";
@@ -11,6 +10,7 @@ import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchGetConfig} from "@/canvas/fetch/utils";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {apiWriteConfig} from "@/fetch/apiWriteConfig";
 
 
 

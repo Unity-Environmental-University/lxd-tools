@@ -1,7 +1,7 @@
 import {CourseFixValidation, testResult} from "@/publish/fixesAndUpdates/validations/validations";
 import {Course} from "@/canvas/course/Course";
 import {IPageData} from "@/canvas/content/pages/types";
-import {PageKind} from "@/canvas/content/pages/PageKind";
+import PageKind from "@/canvas/content/pages/PageKind";
 import {REFERENCES_PAGE_URL_NAME} from "@/publish/consts";
 import getReferencesTemplate, {ReferenceExportType} from "@/canvas/course/references/getReferencesTemplate";
 import assert from "assert";

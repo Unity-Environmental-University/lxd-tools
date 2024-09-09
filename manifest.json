@@ -42,6 +42,10 @@
       "js": ["js/publish.js"]
     },
     {
+      "matches" : ["*://*.instructure.com/**/learning-materials-reference-page*"],
+      "js": ["js/citations.js"]
+    },
+    {
       "matches" : ["*://*.instructure.com/courses/*/modules"],
       "js" : ["js/ui/module.js"],
       "run_at" : "document_end"
