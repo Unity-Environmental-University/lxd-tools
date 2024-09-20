@@ -35,8 +35,10 @@ jest.mock('@/canvas/content/assignments', () => {
 const assignmentDataGen = AssignmentKind.dataGenerator as jest.Mock;
 const getAssignmentData = AssignmentKind.get as jest.Mock;
 jest.mock('@canvas/content/assignments/AssignmentKind', () => ({
+    ...jest.requireActual('@canvas/content/assignments/AssignmentKind'),
     get: jest.fn(),
     dataGenerator: jest.fn(),
+    getHtmlUrl: jest.fn(() => 'http://www.google.com')
 }))
 
 
@@ -114,6 +116,7 @@ describe('rubrics are set to grade assignments', () => {
         const updateRubricResolution = {...mockRubricAssociation};
         updateRubricAssociation.mockResolvedValue(updateRubricResolution);
         let fixResult = await validation.fix(course, validationResult);
+
 
         expect(fixResult.success).toBe(true);
 

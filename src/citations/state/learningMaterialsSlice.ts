@@ -1,74 +1,86 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { fetchJson } from "@canvas/fetch/fetchJson";
-import getLearningMaterialsWithModules from "@canvas/content/pages/getLearningMaterialsWithModules";
-import {IModuleData} from "@canvas/canvasDataDefs";
+// learningMaterialsSlice.ts
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { fetchModules } from './modulesSlice';
+import learningMaterialsForModule from "@canvas/content/pages/learningMaterialsForModule";
+import {IModuleData, IModuleItemData} from "@canvas/canvasDataDefs";
 import {IPageData} from "@canvas/content/pages/types";
+import {RootState} from "@citations/state/store";
+import getReferencesTemplate from "@canvas/course/references/getReferencesTemplate";
 
-export type ModuleLearningMaterials = {
-    module: IModuleData,
-    lms: IPageData[],
-};
-
-export type InitialLearningMaterialsState = {
-    moduleLms: ModuleLearningMaterials[] | undefined;
-    status: 'idle' | 'loading' | 'succeeded' | 'failed';
-    error: string | null;
-}
-
-export const initialLearningMaterialsState: InitialLearningMaterialsState = {
-    moduleLms: undefined,
-    status: 'idle',
-    error: null,
-};
-
-
-export type FetchLmsParams = {
+type PayloadParams = {
     courseId: number,
     modules: IModuleData[],
 }
-// Async thunk to fetch learning materials based on week/module
+
+export type LearningMaterial = {
+    module: IModuleData,
+    item: IModuleItemData,
+    page: IPageData,
+}
+
+
+const initialState = {
+    data: [] as LearningMaterial[],
+    loading: false,
+    error: undefined as string | undefined,
+}
+
+type State = typeof initialState;
 export const fetchLearningMaterials = createAsyncThunk(
     'learningMaterials/fetchLearningMaterials',
-    async ({ courseId, modules}:FetchLmsParams, { rejectWithValue }) => {
-        try {
-            return getLearningMaterialsWithModules(courseId, modules);
-        } catch (error) {
-            rejectWithValue(error?.toString() ?? error);
+    async ({ courseId, modules }: PayloadParams, thunkAPI) => {
+        // Fetch modules if not provided
+        if (!modules) {
+            modules = await thunkAPI.dispatch(fetchModules(courseId)).unwrap();
+        }
+
+        // Filter out modules already processed
+        const state = thunkAPI.getState() as RootState;
+        const loadedModuleIds = new Set(state.modules.data.map(m => m.id));
+
+        for (const module of modules) {
+            if (!loadedModuleIds.has(module.id)) {
+                const generator = learningMaterialsForModule(courseId, module);
+                const materials = [] as {
+                    module: IModuleData,
+                    item: IModuleItemData,
+                    page: IPageData
+                }[];
+                for await (const { item, page } of generator) {
+                    thunkAPI.dispatch(updateLearningMaterials({ module, item, materials }));
+                }
+            }
         }
     }
 );
 
 const learningMaterialsSlice = createSlice({
     name: 'learningMaterials',
-    initialState: initialLearningMaterialsState,
+    initialState,
     reducers: {
-        setMaterials(state, action: PayloadAction<ModuleLearningMaterials[] | undefined>) {
-            state.moduleLms = action.payload;
+        updateLearningMaterials: (state, action) => {
+            const { module, item, page } = action.payload;
+            state.data.push({ module, item, page });
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(fetchLearningMaterials.pending, (state) => {
-                state.status = 'loading';
+                state.loading = true;
             })
-            .addCase(fetchLearningMaterials.fulfilled, (state, action: PayloadAction<ModuleLearningMaterials[] | undefined>) => {
-                state.status = 'succeeded';
-                state.moduleLms = action.payload;
-                state.error = null;
+            .addCase(fetchLearningMaterials.fulfilled, (state) => {
+                state.loading = false;
             })
             .addCase(fetchLearningMaterials.rejected, (state, action) => {
-                state.status = 'failed';
-                state.error = action.payload as string;
+                state.loading = false;
+                state.error = action.error.message;
             });
-    }
+    },
 });
 
-export const getLmsWithModules = (state: ReturnType<typeof learningMaterialsSlice.reducer>) => state.moduleLms;
-// Define selectors
-export const getLearningMaterials = (state: ReturnType<typeof learningMaterialsSlice.reducer>) => state.moduleLms?.map(a => a.lms).flat();
-export const getMaterialsStatus = (state: ReturnType<typeof learningMaterialsSlice.reducer>) => state.status;
-export const getMaterialsError = (state: ReturnType<typeof learningMaterialsSlice.reducer>) => state.error;
 
-export const { setMaterials } = learningMaterialsSlice.actions;
-const learningMaterialsReducer = learningMaterialsSlice.reducer;
-export default learningMaterialsReducer;
+export const { updateLearningMaterials } = learningMaterialsSlice.actions;
+export const getLmsData = (state:State) => state.data;
+export const getLmsStatus = (state:State) => state.loading;
+export const getLmsError = (state:State) => state.error;
+export default learningMaterialsSlice.reducer;

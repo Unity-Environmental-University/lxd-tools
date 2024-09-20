@@ -8,6 +8,7 @@ import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSecti
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import mock = jest.mock;
+import {getCourseData} from "@canvas/course";
 
 
 jest.mock('@/canvas/course/blueprint');
@@ -50,6 +51,7 @@ describe('exportSectionsInTerm', () => {
     (getRowsForSections as jest.Mock).mockReturnValue(mockRows);
 
     it("Gets the course from Url if not provided", async() => {
+        (getCourseData as jest.Mock).mockResolvedValue(mockCourseData);
         const rows = await exportSectionsInTerm();
         expect(getCourseIdFromUrl as jest.Mock).toHaveBeenCalled();
         expect(rows).toEqual(mockRows)
