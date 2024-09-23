@@ -187,3 +187,14 @@ export interface IAssignmentSubmission {
     redo_request: boolean;
     rubric_assessment?: RubricAssessment,
 }
+
+export type AssignmentGroup = {
+    id: number,
+    name: string,
+    position: number,
+    group_weight: number,
+    sis_source_id?: string,
+    integration_data?: Record<string, string>,
+    assignments: IAssignmentData[],
+    rules: unknown,
+}

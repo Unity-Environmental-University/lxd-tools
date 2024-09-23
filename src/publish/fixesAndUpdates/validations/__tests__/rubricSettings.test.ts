@@ -1,7 +1,7 @@
 import {Course} from "@/canvas/course/Course";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {CourseValidation, ValidationResult} from "../validations";
+import {CourseValidation, ValidationResult} from "../utils";
 import {rubricsTiedToGradesTest} from "../rubricSettings";
 import mockRubricData, {mockRubricAssociation} from "@/canvas/__mocks__/mockRubricData";
 import {returnMockAsyncGen} from "@/__mocks__/utils";

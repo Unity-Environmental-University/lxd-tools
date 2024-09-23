@@ -3,7 +3,7 @@ import {
     badContentRunFunc,
     preserveCapsReplace,
     TextReplaceValidation
-} from "../validations";
+} from "../utils";
 
 import {IContentHaver} from "../../../../canvas/course/courseTypes";
 

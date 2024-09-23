@@ -1,4 +1,4 @@
-import {badContentRunFunc, CourseValidation} from "../publish/fixesAndUpdates/validations/validations";
+import {badContentRunFunc, CourseValidation} from "@publish/fixesAndUpdates/validations/utils";
 import React, {FormEvent, useEffect, useState} from "react";
 import {Button, Col, Form, Row} from "react-bootstrap";
 

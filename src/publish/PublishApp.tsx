@@ -9,7 +9,7 @@ import {AdminApp} from "@/admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Alert, Row} from "react-bootstrap";
 import {Course} from "@canvas/course/Course";
-import {CourseValidation} from "./fixesAndUpdates/validations/validations";
+import {CourseValidation} from "./fixesAndUpdates/validations/utils";
 import capstoneProjectValidations from "./fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import syllabusTests from "./fixesAndUpdates/validations/syllabusTests";
 import courseSettingsTests from "./fixesAndUpdates/validations/courseSettings";
@@ -23,6 +23,7 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {discussionThreadingValidation} from "@/publish/fixesAndUpdates/validations/discussionThreading";
 import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/publish/consts";
 import {referencesValidations} from "@/publish/fixesAndUpdates/validations/references";
+import assignments from "@publish/fixesAndUpdates/validations/assignments";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
@@ -56,6 +57,7 @@ function PublishApp() {
         proxyServerLinkValidation,
         discussionThreadingValidation,
         ...referencesValidations,
+        ...assignments.allValidations,
         //...biol103Overwrite,
     ]
 

@@ -1,4 +1,4 @@
-import {CourseFixValidation, testResult} from "@/publish/fixesAndUpdates/validations/validations";
+import {CourseFixValidation, testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {Course} from "@/canvas/course/Course";
 import {IPageData} from "@/canvas/content/pages/types";
 import PageKind from "@/canvas/content/pages/PageKind";

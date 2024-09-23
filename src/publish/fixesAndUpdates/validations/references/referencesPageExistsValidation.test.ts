@@ -4,7 +4,7 @@ import PageKind from "@/canvas/content/pages/PageKind";
 import { REFERENCES_PAGE_URL_NAME } from "@/publish/consts";
 import getReferencesTemplate, { ReferenceExportType } from "@/canvas/course/references/getReferencesTemplate";
 import assert from "assert";
-import { testResult } from "@/publish/fixesAndUpdates/validations/validations";
+import { testResult } from "@publish/fixesAndUpdates/validations/utils";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import referencePageExistsValidation from "@/publish/fixesAndUpdates/validations/references/referencesPageExistsValidation";
 import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";

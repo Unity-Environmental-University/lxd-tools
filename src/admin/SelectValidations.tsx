@@ -1,4 +1,4 @@
-import {CourseValidation} from "../publish/fixesAndUpdates/validations/validations";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/utils";
 import MultiSelect, {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
 import React, {FormEvent, useEffect, useState} from "react";
 import {tests} from "./index";

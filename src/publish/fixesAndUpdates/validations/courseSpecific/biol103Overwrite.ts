@@ -3,7 +3,7 @@ import {
     badContentRunFunc, CourseValidation,
     testResult,
     TextReplaceValidation
-} from "@/publish/fixesAndUpdates/validations/validations";
+} from "@publish/fixesAndUpdates/validations/utils";
 import {IContentHaver} from "@/canvas/course/courseTypes";
 import {Course} from "@/canvas/course/Course";
 import {IPageData} from "@/canvas/content/pages/types";

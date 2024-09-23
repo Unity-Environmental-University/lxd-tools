@@ -1,5 +1,5 @@
 import React, {useReducer, useState} from "react";
-import {CourseValidation} from "@/publish/fixesAndUpdates/validations/validations";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/utils";
 import {IMultiSelectOption, optionize, optionizeOne} from "@/ui/widgets/MuliSelect";
 import Modal from "@/ui/widgets/Modal/index";
 import {Button, Col, Container, Form, Row} from "react-bootstrap";

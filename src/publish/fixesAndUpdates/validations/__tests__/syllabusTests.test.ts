@@ -1,4 +1,4 @@
-import {CourseValidation, TextReplaceValidation} from "../validations";
+import {CourseValidation, TextReplaceValidation} from "../utils";
 import {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest, classInclusiveNoDateHeaderTest,

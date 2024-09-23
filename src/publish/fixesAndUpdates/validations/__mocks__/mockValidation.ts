@@ -1,4 +1,4 @@
-import {CourseValidation, ValidationResult} from "../validations";
+import {CourseValidation, ValidationResult} from "../utils";
 
 
 export const mockValidationResult: ValidationResult<any> = {

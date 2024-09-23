@@ -1,4 +1,4 @@
-import {CourseValidation, errorMessageResult, MessageResult, testResult} from "./validations";
+import {CourseValidation, errorMessageResult, MessageResult, testResult} from "./utils";
 import {
     IRubricAssociationData,
     IRubricData,

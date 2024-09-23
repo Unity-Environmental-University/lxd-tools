@@ -6,7 +6,7 @@ import {
     badContentFixFunc,
     badContentRunFunc,
     ContentTextReplaceFix
-} from "@/publish/fixesAndUpdates/validations/validations";
+} from "@publish/fixesAndUpdates/validations/utils";
 
 
 const oldProxyRegex = /(proxy1\.unity\.edu|unity.idn.oclc.org)/g;

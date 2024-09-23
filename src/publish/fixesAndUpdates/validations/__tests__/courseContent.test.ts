@@ -14,7 +14,7 @@ import {
     mockPagesHaver
 } from "../__mocks__/validations";
 import * as fetchApi from "../../../../canvas/fetch/utils";
-import {badContentRunFunc, ContentTextReplaceFix} from "../validations";
+import {badContentRunFunc, ContentTextReplaceFix} from "../utils";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Page} from "@/canvas/content/pages/Page";
 import {classInclusiveNoDateHeaderTest} from "@/publish/fixesAndUpdates/validations/syllabusTests";

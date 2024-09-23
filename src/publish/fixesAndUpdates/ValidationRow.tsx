@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
-import {CourseValidation, errorMessageResult, ValidationResult} from "./validations/validations";
+import {CourseValidation, errorMessageResult, ValidationResult} from "./validations/utils";
 import assert from "assert";
 import {Row} from "react-bootstrap";
 import {Course} from "@/canvas/course/Course";
