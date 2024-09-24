@@ -82,3 +82,7 @@ export const rubricsTiedToGradesTest: CourseValidation<IIdHaver, RubricsTiedToGr
         }
     }
 }
+
+export default [
+    rubricsTiedToGradesTest,
+]

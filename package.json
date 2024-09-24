@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "7.1",
+  "version": "2.7.2",
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",

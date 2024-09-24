@@ -1,7 +1,5 @@
 import emptyAssignmentCategories from "@publish/fixesAndUpdates/validations/assignments/emptyAssignmentCategories";
 
-export default {
-    allValidations: [
-        emptyAssignmentCategories,
-    ]
-}
+export default [
+    emptyAssignmentCategories,
+]

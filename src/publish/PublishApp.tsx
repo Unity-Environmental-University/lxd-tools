@@ -10,20 +10,12 @@ import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Alert, Row} from "react-bootstrap";
 import {Course} from "@canvas/course/Course";
 import {CourseValidation} from "./fixesAndUpdates/validations/utils";
-import capstoneProjectValidations from "./fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
-import syllabusTests from "./fixesAndUpdates/validations/syllabusTests";
-import courseSettingsTests from "./fixesAndUpdates/validations/courseSettings";
-import courseContentTests from "./fixesAndUpdates/validations/courseContent";
-import {rubricsTiedToGradesTest} from "./fixesAndUpdates/validations/rubricSettings";
-import proxyServerLinkValidation from "./fixesAndUpdates/validations/proxyServerLinkValidation";
 import {IMultiSelectOption} from "@/ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {discussionThreadingValidation} from "@/publish/fixesAndUpdates/validations/discussionThreading";
 import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/publish/consts";
-import {referencesValidations} from "@/publish/fixesAndUpdates/validations/references";
-import assignments from "@publish/fixesAndUpdates/validations/assignments";
+import validations from "@publish/fixesAndUpdates/validations";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
@@ -48,18 +40,7 @@ function PublishApp() {
         setUser(user);
     }, []);
 
-    const allValidations = [
-        ...capstoneProjectValidations,
-        ...syllabusTests,
-        ...courseSettingsTests,
-        ...courseContentTests,
-        rubricsTiedToGradesTest,
-        proxyServerLinkValidation,
-        discussionThreadingValidation,
-        ...referencesValidations,
-        ...assignments.allValidations,
-        //...biol103Overwrite,
-    ]
+    const allValidations = validations;
 
 
 

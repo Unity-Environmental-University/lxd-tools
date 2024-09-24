@@ -30,7 +30,7 @@ const PageKind: Required<
         fetchJson(PageUrlFuncs.getApiUrl(courseId, id), config),
     getByString: (courseId, contentId, config) =>
         fetchJson<IPageData|{message: string}>(getStringApiUrl(courseId, contentId), config),
-    dataGenerator: (courseId, config) =>
+    dataGenerator: (courseId, config = { queryParams: {include: ['body']}}) =>
         getPagedDataGenerator(PageUrlFuncs.getAllApiUrl(courseId), config),
     put: putContentFunc(PageUrlFuncs.getApiUrl),
     post: postContentFunc(PageUrlFuncs.getAllApiUrl),

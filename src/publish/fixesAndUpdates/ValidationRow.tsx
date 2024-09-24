@@ -57,6 +57,7 @@ export function ValidationRow({
             await refreshCourse();
             setFixText('Fixed...');
         } catch (e) {
+            console.error(e);
             setFixResult(errorMessageResult(e))
         }
         setLoading(false);

@@ -1,31 +1,31 @@
-import {range} from "@/canvas/canvasUtils";
-import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";
-import {
-    codeAndCodeOfCodeTest,
-    courseProjectOutlineTest, overviewDiscMornToNightTest,
-
-    weeklyObjectivesTest
-} from "../courseContent";
-import {IContentHaver, IPagesHaver} from "@/canvas/course/courseTypes";
+import {range} from "@canvas/canvasUtils";
+import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
+import {IContentHaver, IPagesHaver} from "@canvas/course/courseTypes";
 import {
     badContentTextValidationFixTest,
     badContentTextValidationTest,
     mockContentHaver,
     mockPagesHaver
-} from "../__mocks__/validations";
-import * as fetchApi from "../../../../canvas/fetch/utils";
-import {badContentRunFunc, ContentTextReplaceFix} from "../utils";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {Page} from "@/canvas/content/pages/Page";
-import {classInclusiveNoDateHeaderTest} from "@/publish/fixesAndUpdates/validations/syllabusTests";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Course} from "@/canvas/course/Course";
+} from "../../__mocks__/validations";
+import * as fetchApi from "@canvas/fetch/utils";
+import {badContentRunFunc, ContentTextReplaceFix} from "../../utils";
+import {BaseContentItem} from "@canvas/content/BaseContentItem";
+import {Page} from "@canvas/content/pages/Page";
+import {classInclusiveNoDateHeaderTest} from "@publish/fixesAndUpdates/validations/syllabusTests";
+import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
+import {Course} from "@canvas/course/Course";
+import {weeklyObjectivesTest} from "@publish/fixesAndUpdates/validations/courseContent/weeklyObjectivesTest";
+import {courseProjectOutlineTest} from "@publish/fixesAndUpdates/validations/courseContent/courseProjectOutlineTest";
+import {codeAndCodeOfCodeTest} from "@publish/fixesAndUpdates/validations/courseContent/codeAndCodeOfCodeTest";
+import {
+    overviewDiscMornToNightTest
+} from "@publish/fixesAndUpdates/validations/courseContent/overviewDiscMornToNightTest";
 
-jest.mock('@/canvas/fetch/fetchJson', () => ({
+jest.mock('@canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
 }));
 
-jest.mock('@/canvas/fetch/getPagedDataGenerator', () => ({
+jest.mock('@canvas/fetch/getPagedDataGenerator', () => ({
     getPagedDataGenerator: jest.fn(),
 }));
 
@@ -162,11 +162,5 @@ describe("Overview Discussion 3AM night -> morning", () => {
 
 
 
-
-export function badContentTest(test: ContentTextReplaceFix<IContentHaver, BaseContentItem>) {
-    describe(test.name, () => {
-        it("Works", badContentTextValidationFixTest(test))
-    })
-}
 
 
