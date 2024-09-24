@@ -15,9 +15,12 @@ export interface ICourseRowProps {
 
 export function CourseRow({course, frontPageProfile, instructors, onSelectSection, errors}: ICourseRowProps) {
     return (<div className={'row course-row'}>
-        <div className={'col-xs-6'}>
+        <div className={'col-xs-5'}>
             <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}
                target={"blank_"}>{course.name}</a>
+        </div>
+        <div className={'col-xs-1'}>
+            {course.data.total_students}
         </div>
         <div className={'col-xs-2'}>
             {frontPageProfile && frontPageProfile.displayName}

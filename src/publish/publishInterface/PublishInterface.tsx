@@ -17,6 +17,7 @@ import {IListAction, listDispatcher, lutDispatcher} from "@/ui/reducerDispatcher
 import {sectionDataGenerator} from "@/canvas/course/blueprint";
 import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
 import {sleep} from "@/index";
+import {getCourseData} from "@canvas/course";
 
 
 export interface IPublishInterfaceProps {
@@ -129,7 +130,10 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         }
         dispatchSectionInfoCache({set: [courseId, 'loading']});
 
-        const section = await Course.getCourseById(courseId);
+        const sectionData = await getCourseData(courseId, {
+            queryParams: { include:['total_students']}
+        })
+        const section = new Course(sectionData);
 
         const frontPageProfile = await section.getFrontPageProfile();
         const instructors = await section.getInstructors();

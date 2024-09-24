@@ -32,7 +32,6 @@ type UpdateStartDateProps = {
     startLoading: () => void,
     endLoading: () => void
 }
-
 export function UpdateStartDate(
     {
         course,
