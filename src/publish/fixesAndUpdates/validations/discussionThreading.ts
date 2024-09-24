@@ -57,4 +57,4 @@ export const discussionThreadingValidation: CourseFixValidation<Course, IDiscuss
 }
 
 
-export default [discussionThreadingValidation];
+export default discussionThreadingValidation;
