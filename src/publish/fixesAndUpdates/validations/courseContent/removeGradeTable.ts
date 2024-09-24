@@ -83,20 +83,15 @@ function findActivitySection(body: string | HTMLElement) {
         el = body;
     }
 
-    // Debugging step to check the body content
-    console.log('Body content:', el.innerHTML);
 
     // Look specifically for h2 elements that contain "Graded Activities"
     const h2s = [...el.querySelectorAll('h2')];
     const gradedActivityHeader = h2s.filter((a) => {
 
-        console.log(a.innerText.toLocaleLowerCase(), a.innerText.toLocaleLowerCase().includes('graded activities'));
-        return a.innerText.toLocaleLowerCase().includes('graded activities')
+        return (a.innerText ?? a.textContent).toLocaleLowerCase().includes('graded activities')
     });
     const gradedActivitySection = gradedActivityHeader[0]?.closest('.scaffold-media-box');
 
-    // Debugging step to see what is being removed
-    console.log('Graded activity section:', gradedActivitySection?.outerHTML);
 
     return gradedActivitySection;
 }

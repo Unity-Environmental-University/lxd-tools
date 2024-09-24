@@ -9,22 +9,21 @@ import {Course} from "@canvas/course/Course";
 // Mock data
 const mockCourse = new Course({ ... mockCourseData, id: 1 });
 const mockPageWithSection = {
-  id: 1,
+  page_id: 1,
   body: '<div></div><div class="scaffold-media-box"><h2>Graded Activities</h2></div>',
-  updateContent: jest.fn(),
   htmlContentUrl: "url1",
 } as unknown as IPageData;
 
 const mockPageWithoutSection = {
-  id: 2,
+  page_id: 2,
   body: "<div></div><div class='scaffold-media-box'><h2>Other Activities</h2></div>",
-  updateContent: jest.fn(),
   htmlContentUrl: "url2",
 } as unknown as IPageData;
 
 
 jest.mock("@canvas/content/pages/PageKind", () => ({
   dataGenerator: jest.fn(),
+  put: jest.fn(),
 }));
 
 describe("removeGradeTable", () => {
@@ -60,9 +59,12 @@ describe("removeGradeTable", () => {
       mockAsyncGen([mockPageWithSection])
     );
 
+
     const result = await removeGradeTable.fix(mockCourse);
 
-    expect(mockPageWithSection.updateContent).toHaveBeenCalledWith("<div></div>");
+    expect(PageKind.put as jest.Mock).toHaveBeenCalledWith(1, 1, {wiki_page: {
+                body: "<div></div>",
+            }});
     expect(result.success).toBe(true);
   });
 
@@ -71,7 +73,7 @@ describe("removeGradeTable", () => {
       mockAsyncGen([mockPageWithSection])
     );
 
-    mockPageWithSection.updateContent.mockImplementationOnce(() => {
+    (PageKind.put as jest.Mock).mockImplementationOnce(() => {
       throw new Error("Failed to update content");
     });
 
