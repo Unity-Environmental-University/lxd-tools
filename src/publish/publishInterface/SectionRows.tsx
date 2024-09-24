@@ -30,14 +30,14 @@ export function SectionRows({
 
     return (<div className={'course-table'}>
         <div className={'row'}>
-            <div className={'col-sm-5'}>
+            <div className={'col-sm-6'}>
 
                 <div><strong>Code</strong></div>
                 <a href={'#'} onClick={openAll}>Open All</a>
             </div>
             <div className={'col-sm-1'}><strong>Student Count</strong></div>
             <div className={'col-sm-3'}><strong>Name on Front Page</strong></div>
-            <div className={'col-sm-3'}><strong>Instructor(s)</strong></div>
+            <div className={'col-sm-2'}><strong>Instructor(s)</strong></div>
         </div>
         {sections && sections.toSorted((a, b) => a.name.localeCompare(b.name)).map((course) => (
             <CourseRow

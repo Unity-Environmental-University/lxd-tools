@@ -15,7 +15,7 @@ export interface ICourseRowProps {
 
 export function CourseRow({course, frontPageProfile, instructors, onSelectSection, errors}: ICourseRowProps) {
     return (<div className={'row course-row'}>
-        <div className={'col-xs-5'}>
+        <div className={'col-xs-6'}>
             <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}
                target={"blank_"}>{course.name}</a>
         </div>
@@ -27,6 +27,6 @@ export function CourseRow({course, frontPageProfile, instructors, onSelectSectio
         </div>
         <div className={'col-xs-1'}>{(onSelectSection && course) && (
             <button onClick={() => onSelectSection(course)}>Details</button>)}</div>
-        <div className={'col-xs-3'}>{instructors?.map((instructor) => instructor.name).join(', ')}</div>
+        <div className={'col-xs-2'}>{instructors?.map((instructor) => instructor.name).join(', ')}</div>
     </div>)
 }

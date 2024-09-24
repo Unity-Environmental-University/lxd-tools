@@ -103,7 +103,9 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         if (typeof accountId === 'undefined') throw new Error('Course has no account Id');
         inform('Publishing')
         setLoading(true);
-        await Course.publishAll(Object.values(sections), accountId)
+        const toPublish = Object.values(sections)
+            .filter(a => a.data.total_students && a.data.total_students > 0)
+        await Course.publishAll(toPublish, accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
             let newAssocCourses = await course?.getAssociatedCourses();
@@ -249,9 +251,11 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                     })
                 }
 
-                const emails = instructors?.map(a => a.email);
-                emails?.forEach(email => allEmails.add(email));
-                if (emails) setEmails([...allEmails]);
+                if(section.data.total_students && section.data.total_students > 0) {
+                    const emails = instructors?.map(a => a.email);
+                    emails?.forEach(email => allEmails.add(email));
+                    if (emails) setEmails([...allEmails]);
+                }
             }))
             await Promise.all(promises.map(a => a()));
         }
