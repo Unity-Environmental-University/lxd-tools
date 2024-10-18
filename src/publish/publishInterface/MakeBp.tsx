@@ -18,7 +18,7 @@ import {
     cacheCourseMigrations,
     loadCachedMigrations
 } from "@/canvas/course/migration/migrationCache";
-import {MigrationBar} from "./MigrationBar";
+import {DevToBpMigrationBar} from "./DevToBpMigrationBar";
 import assert from "assert";
 import {SectionData} from "@/canvas/courseTypes";
 import dateFromTermName from "@/canvas/term/dateFromTermName";
@@ -262,7 +262,7 @@ export function MakeBp({
                 >Create New BP</Button>
             </Col>
                 <Col sm={6}>
-                    {currentBp && activeMigrations.map(migration => <MigrationBar
+                    {currentBp && activeMigrations.map(migration => <DevToBpMigrationBar
                         key={migration.id}
                         migration={migration}
                         onFinishMigration={finishMigration}

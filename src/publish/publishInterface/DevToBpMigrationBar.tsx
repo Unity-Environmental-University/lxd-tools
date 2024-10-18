@@ -11,7 +11,7 @@ type MigrationBarProps = {
     course: Course,
 }
 
-export function MigrationBar({migration, course, onFinishMigration}: MigrationBarProps) {
+export function DevToBpMigrationBar({migration, course, onFinishMigration}: MigrationBarProps) {
     const [progress, setProgress] = useState<IProgressData>()
 
     useEffectAsync(async () => {
