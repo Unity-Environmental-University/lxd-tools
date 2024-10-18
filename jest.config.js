@@ -13,7 +13,6 @@ module.exports = {
         ...pathsToModuleNameMapper(compilerOptions.paths, {prefix: '<rootDir>/src/'}),
         "^webextension-polyfill$":
             path.join(process.cwd(), "src", "__mocks__", "runtime.ts"),
-        '\\.(css|scss)$':
-            path.join(process.cwd(), "src", "__mocks__", "styleMock.js"),
+        '\\.(css|scss)$': 'identity-obj-proxy',
     }
 }

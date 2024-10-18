@@ -1,7 +1,7 @@
 import {combineReducers, Reducer} from "redux";
-import courseDataSlice from "@citations/state/courseDataSlice";
-import learningMaterialsSlice from "@citations/state/learningMaterialsSlice";
-import modulesSlice from "@citations/state/modulesSlice";
+import courseDataSlice from "@/canvas-redux/courseDataSlice";
+import learningMaterialsSlice from "@/canvas-redux/learningMaterialsSlice";
+import modulesSlice from "@/canvas-redux/modulesSlice";
 
 export default combineReducers({
     courseData: courseDataSlice,

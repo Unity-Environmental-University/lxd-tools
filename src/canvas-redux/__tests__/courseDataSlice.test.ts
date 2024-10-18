@@ -21,7 +21,7 @@ describe('courseDataSlice reducer', () => {
     });
 
     it('should handle fetchCourseData.pending', () => {
-        const nextState = courseDataReducer(initialState, fetchCourseData.pending('courseId', 157));
+        const nextState = courseDataReducer(initialState, fetchCourseData.pending('courseId', { courseId: 157 }));
         expect(nextState.status).toEqual('loading');
     });
 

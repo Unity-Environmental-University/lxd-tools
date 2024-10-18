@@ -1,16 +1,16 @@
-// learningMaterialsSlice.ts
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchModules } from '@/canvas-redux/modulesSlice';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import {fetchModules} from '@/canvas-redux/modulesSlice';
 import learningMaterialsForModule from "@canvas/content/pages/learningMaterialsForModule";
 import {IModuleData, IModuleItemData} from "@canvas/canvasDataDefs";
 import {IPageData} from "@canvas/content/pages/types";
 import {RootState} from "@citations/state/store";
 import getReferencesTemplate from "@canvas/course/references/getReferencesTemplate";
 import {IAssignmentData} from "@canvas/content/assignments/types";
+import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
 type PayloadParams = {
     courseId: number,
-    modules: IModuleData[],
+
 }
 
 
@@ -21,52 +21,41 @@ const initialState = {
 }
 
 type State = typeof initialState;
+
 export const fetchCourseAssignments = createAsyncThunk(
-    'assignments/fetchCourseAssignments',
-    async ({ courseId, modules }: PayloadParams, thunkAPI) => {
+    'courseAssignments/fetchCourseAssignments',
+    async ({courseId}: PayloadParams, thunkAPI) => {
         // Fetch modules if not provided
-        if (!modules) {
-            modules = await thunkAPI.dispatch(fetchModules(courseId)).unwrap();
-        }
 
         // Filter out modules already processed
+        const assignmentDataGen = AssignmentKind.dataGenerator(courseId)
         const state = thunkAPI.getState() as RootState;
-        const loadedModuleIds = new Set(state.modules.data.map(m => m.id));
 
-        for (const module of modules) {
-            if (!loadedModuleIds.has(module.id)) {
-                const generator = learningMaterialsForModule(courseId, module);
-                const materials = [] as {
-                    module: IModuleData,
-                    item: IModuleItemData,
-                    page: IPageData
-                }[];
-                for await (const { item, page } of generator) {
-                    thunkAPI.dispatch(updateLearningMaterials({ module, item, materials }));
-                }
-            }
+
+        for await (const assignmentData of assignmentDataGen) {
+            thunkAPI.dispatch(updateCourseAssignments({assignmentData}));
         }
     }
-);
+)
 
-const learningMaterialsSlice = createSlice({
-    name: 'learningMaterials',
+const courseAssignmentsSlice = createSlice({
+    name: 'courseAssignments',
     initialState,
     reducers: {
-        updateLearningMaterials: (state, action) => {
-            const { module, item, page } = action.payload;
-            state.data.push({ module, item, page });
+        updateCourseAssignments: (state, action) => {
+            const assignmentData = action.payload;
+            state.data.push(assignmentData);
         },
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchLearningMaterials.pending, (state) => {
+            .addCase(fetchCourseAssignments.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(fetchLearningMaterials.fulfilled, (state) => {
+            .addCase(fetchCourseAssignments.fulfilled, (state) => {
                 state.loading = false;
             })
-            .addCase(fetchLearningMaterials.rejected, (state, action) => {
+            .addCase(fetchCourseAssignments.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             });
@@ -74,8 +63,8 @@ const learningMaterialsSlice = createSlice({
 });
 
 
-export const { updateLearningMaterials } = learningMaterialsSlice.actions;
-export const getLmsData = (state:State) => state.data;
-export const getLmsStatus = (state:State) => state.loading;
-export const getLmsError = (state:State) => state.error;
-export default learningMaterialsSlice.reducer;
+export const {updateCourseAssignments} = courseAssignmentsSlice.actions;
+export const getCourseAssignmentsData = (state: State) => state.data;
+export const getCourseAssignmentsStatus = (state: State) => state.loading;
+export const getCourseAssignmentsError = (state: State) => state.error;
+export default courseAssignmentsSlice.reducer;

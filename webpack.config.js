@@ -44,44 +44,85 @@ module.exports = {
         }, {})
     },
     devtool: 'source-map',
-    module:
-        {
-            rules: [
-                {
-                    test: /\.tsx?$/,
-                    use: [
-                        {
-                            loader: "ts-loader",
-                            options: {
-                                compilerOptions: {noEmit: false},
-                            }
-                        }],
-                    exclude: /node_modules|dist|__test__/,
-                },
-                {
-                    test: /\.(css|scss)$/i,
-                    use: [
-                        "style-loader",
-                        "css-loader",
-                        {
-                            loader: "postcss-loader",
-                            options: {
-                                postcssOptions: {
-                                    plugins: function () {
-                                        return [
-                                            require('precss'),
-                                            require('autoprefixer')
-                                        ];
-                                    }
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: [
+                    {
+                        loader: "ts-loader",
+                        options: {
+                            compilerOptions: {noEmit: false},
+                        }
+                    }],
+                exclude: /node_modules|dist|__test__/,
+            },
+            {
+                test: /\.module\.css$/, // Match CSS modules
+                use: [
+                    "style-loader",
+                    {
+                        loader: "css-loader",
+                    },
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: function () {
+                                    return [
+                                        require('precss'),
+                                        require('autoprefixer')
+                                    ];
                                 }
                             },
                         },
-                        "sass-loader"
-                    ]
-                },
-            ],
-        }
-    ,
+                    },
+                ],
+            },
+            {
+                test: /\.css$/, // Match regular CSS files
+                exclude: /\.module\.css$/, // Exclude CSS modules
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: function () {
+                                    return [
+                                        require('precss'),
+                                        require('autoprefixer')
+                                    ];
+                                }
+                            },
+                        },
+                    },
+                ],
+            },
+            {
+                test: /\.(scss)$/,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: function () {
+                                    return [
+                                        require('precss'),
+                                        require('autoprefixer')
+                                    ];
+                                }
+                            },
+                        },
+                    },
+                    "sass-loader"
+                ],
+            },
+        ],
+    },
     plugins: [
         new webpack.ProvidePlugin({
             process: 'process/browser',

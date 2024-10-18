@@ -3,7 +3,7 @@ import {render, screen, waitFor} from '@testing-library/react';
 import CitationsApp from "@/citations/CitationsApp";
 import {store} from "@citations/state/store";
 import {Provider} from "react-redux";
-import courseDataReducer, {InitialCourseSliceState} from "@citations/state/courseDataSlice";
+import courseDataReducer, {InitialCourseSliceState} from "@/canvas-redux/courseDataSlice";
 import {configureStore} from "@reduxjs/toolkit";
 import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
 import mock = jest.mock;

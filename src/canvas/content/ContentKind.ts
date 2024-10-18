@@ -13,7 +13,7 @@ export type ContentKind<
     IdType = number,
 > = {
     getId: (data: DataType) => IdType,
-    dataIsThisKind: (data: ContentData) => data is DataType,
+    dataIsThisKind: (data: Record<string, any>) => data is DataType,
     getName: (data: DataType) => string,
     getBody: (data: DataType) => string | undefined,
     get: (courseId: number, contentId: number, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>

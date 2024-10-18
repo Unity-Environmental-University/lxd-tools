@@ -1,6 +1,6 @@
 // learningMaterialsSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchModules } from './modulesSlice';
+import { fetchModules } from '@/canvas-redux/modulesSlice';
 import learningMaterialsForModule from "@canvas/content/pages/learningMaterialsForModule";
 import {IModuleData, IModuleItemData} from "@canvas/canvasDataDefs";
 import {IPageData} from "@canvas/content/pages/types";

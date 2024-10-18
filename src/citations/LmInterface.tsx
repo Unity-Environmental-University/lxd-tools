@@ -1,8 +1,8 @@
 import {useSelector} from "react-redux";
-import {getWorkingCourseData} from "@citations/state/courseDataSlice";
+import {getWorkingCourseData} from "@/canvas-redux/courseDataSlice";
 import React, {useEffect, useState} from "react";
 import {Card, Col, Row} from "react-bootstrap";
-import {LearningMaterial} from "@citations/state/learningMaterialsSlice";
+import {LearningMaterial} from "@/canvas-redux/learningMaterialsSlice";
 
 type ModuleLearningMaterialsProps = {
     lm: LearningMaterial,

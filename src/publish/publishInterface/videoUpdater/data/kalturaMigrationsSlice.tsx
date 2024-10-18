@@ -1,93 +1,106 @@
-import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { KalturaMigrationDetails, KalturaMigrationsState } from "@publish/publishInterface/videoUpdater/data/types";
-import {KalturaAppDispatch, RootState} from "@publish/publishInterface/videoUpdater/data/store";
+import { KalturaAppDispatch, RootState } from "@publish/publishInterface/videoUpdater/data/store";
 
+// Define the initial state for migrations
 const initialState: KalturaMigrationsState = {
     error: null,
-    migrations: [],
-    status: 'idle',  // Added overall migration status
+    migrations: {},
+    status: 'idle',
 };
 
+// Create a slice for Kaltura migrations
 const kalturaMigrationsSlice = createSlice({
     name: 'kalturaMigrations',
     initialState,
     reducers: {
         migrationSucceeded(state, action: PayloadAction<KalturaMigrationDetails>) {
-            state.migrations.push(action.payload);
+            state.migrations[action.payload.id] = action.payload; // Store by ID
         },
         migrationFailed(state, action: PayloadAction<{ id: string; error: string }>) {
-            const index = state.migrations.findIndex(m => m.id === action.payload.id);
-            if (index >= 0) {
-                state.migrations[index].status = 'failed';
-                state.migrations[index].error = action.payload.error;
+            if (state.migrations[action.payload.id]) {
+                state.migrations[action.payload.id].status = 'failed';
+                state.migrations[action.payload.id].error = action.payload.error;
             }
         },
         resetKalturaState(state) {
             state.error = null;
-            state.migrations = [];
+            state.migrations = {};
         },
         addMigration(state, action: PayloadAction<KalturaMigrationDetails>) {
-            state.migrations.push(action.payload);
+            state.migrations[action.payload.id] = action.payload; // Store by ID
         },
         updateMigration(state, action: PayloadAction<KalturaMigrationDetails>) {
-            const index = state.migrations.findIndex(m => m.id === action.payload.id);
-            if (index >= 0) {
-                state.migrations[index] = action.payload;
-            }
+            state.migrations[action.payload.id] = action.payload; // Overwrite existing migration
         },
         setMigrationStatus(state, action: PayloadAction<KalturaMigrationsState['status']>) {
             state.status = action.payload;
         },
         resetMigrationStatus(state, action: PayloadAction<string>) {
-            const index = state.migrations.findIndex(m => m.id === action.payload);
-            if (index >= 0) {
-                state.migrations[index].status = 'pending';
-                state.migrations[index].error = null;
+            if (state.migrations[action.payload]) {
+                state.migrations[action.payload].status = 'pending';
+                state.migrations[action.payload].error = undefined;
             }
         },
-        startBatchMigration(state) {
-            state.migrations.forEach(migration => {
-                migration.status = 'migrating';
-            });
+        loadMigrationsFromLocalStorage(state, action: PayloadAction<number>) {
+            const courseId = action.payload;
+            const savedMigrations = localStorage.getItem(`kalturaMigrations_${courseId}`);
+            if (savedMigrations) {
+                const parsedMigrations: KalturaMigrationsState = JSON.parse(savedMigrations);
+                state.migrations = parsedMigrations.migrations;
+                state.error = parsedMigrations.error;
+                state.status = parsedMigrations.status;
+            }
         },
-        finalizeBatchMigration(state) {
-            state.migrations.forEach(migration => {
-                if (migration.status === 'migrating') {
-                    migration.status = 'successful';
-                }
-            });
+        saveMigrationsToLocalStorage(state, action: PayloadAction<number>) {
+            const courseId = action.payload;
+            const migrationsToSave = {
+                migrations: state.migrations,
+                error: state.error,
+                status: state.status,
+            };
+            localStorage.setItem(`kalturaMigrations_${courseId}`, JSON.stringify(migrationsToSave));
         },
         abortMigration(state, action: PayloadAction<string>) {
-            const index = state.migrations.findIndex(m => m.id === action.payload);
-            if (index >= 0) {
-                state.migrations[index].status = 'aborted';
-                state.migrations[index].error = 'Migration aborted by user.';
+            if (state.migrations[action.payload]) {
+                state.migrations[action.payload].status = 'aborted';
+                state.migrations[action.payload].error = 'Migration aborted by user.';
             }
         },
-    }
+    },
 });
 
+// Async thunk to collect migration details
 export const collectMigrationDetails = createAsyncThunk<void, { courseId: number }, {
     state: RootState,
-    dispatch: KalturaAppDispatch;   // Use your defined AppDispatch here
+    dispatch: KalturaAppDispatch;
 }>(
     'kaltura/collectMigrationDetails',
     async ({ courseId }, { dispatch, getState }) => {
+        const state = getState();
+        const existingMigrations = state.kaltura.migrations;
+
         try {
-            const migrationDetails = await getMigrationDetails(courseId); // Your async logic
+            const migrationDetails = await getMigrationDetails(courseId); // Fetch migration details
+
             migrationDetails.forEach(detail => {
-                dispatch(addMigration(detail)); // Assuming addMigration is an action creator.
+                // Update or add migration based on existence
+                dispatch(addMigration(detail)); // This will overwrite existing entries
             });
+
         } catch (error) {
             dispatch(migrationFailed({ id: courseId.toString(), error: (error as Error).message }));
         }
     }
 );
 
-export async function getMigrationDetails(courseId:number) {
-    return [] as KalturaMigrationDetails[]
+// Function to fetch or generate migration details
+export async function getMigrationDetails(courseId: number): Promise<KalturaMigrationDetails[]> {
+    // TODO: Implement your data fetching logic here
+    return []; // Replace with actual fetching logic
 }
 
+// Export actions and reducer
 export const {
     migrationSucceeded,
     migrationFailed,
@@ -96,9 +109,9 @@ export const {
     updateMigration,
     setMigrationStatus,
     resetMigrationStatus,
-    startBatchMigration,
-    finalizeBatchMigration,
     abortMigration,
+    loadMigrationsFromLocalStorage, // Load migrations from local storage
+    saveMigrationsToLocalStorage, // Save migrations to local storage
 } = kalturaMigrationsSlice.actions;
 
 export default kalturaMigrationsSlice.reducer;

@@ -1,15 +1,21 @@
 import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {ICourseData} from "@canvas/courseTypes";
 import {fetchJson} from "@canvas/fetch/fetchJson";
+import {getCourseData} from "@canvas/course";
+import {GetCourseOptions} from "@canvas/course/courseTypes";
 
 //OpenAI. (2024). ChatGPT [Large language model]. https://chatgpt.com/c/63b33b66-0ab7-4974-a35e-f6297411628e used for interactive learning on adding fetch behavior
 
-// Define the async thunk to fetch course data
+type FetchCourseDataParams = {
+    courseId: number,
+    options? : GetCourseOptions,
+}
+
 export const fetchCourseData = createAsyncThunk(
     'courseData/fetchCourseData',
-    async (courseId: number, {rejectWithValue}) => {
+    async ({courseId, options}: FetchCourseDataParams, {rejectWithValue}) => {
         try {
-            return await fetchJson<ICourseData>(`/api/courses/${courseId}`);
+            return await getCourseData(courseId, { queryParams: options })
         } catch (error) {
             const errorText = error ? error.toString() : 'Error';
             return rejectWithValue(errorText);

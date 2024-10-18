@@ -11,16 +11,24 @@
       "@/*": [
         "*"
       ],
-      "@canvas/*" : [
+      "@canvas/*": [
         "canvas/*"
       ],
-      "@citations/*" : [
+      "@citations/*": [
         "citations/*"
       ],
-      "@publish/*" : [
+      "@publish/*": [
         "publish/*"
       ]
     },
+    "plugins": [
+      {
+        "name": "typescript-plugin-css-modules",
+        "options": {
+          "customMatcher": "\\.module\\.css$"
+        }
+      }
+    ],
     "sourceMap": true,
     "allowJs": true,
     "skipLibCheck": true,
@@ -36,9 +44,9 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-
   "include": [
     "src",
-    "tests"
+    "tests",
+    "src/declarations.d.ts"
   ]
 }

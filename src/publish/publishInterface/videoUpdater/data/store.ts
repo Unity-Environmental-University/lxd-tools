@@ -1,5 +1,6 @@
 import {configureStore} from "@reduxjs/toolkit";
-import rootReducer from "@citations/state/rootReducer";
+import rootReducer from "@publish/publishInterface/videoUpdater/data/rootReducer";
+
 
 export const store = configureStore({
     reducer: rootReducer,

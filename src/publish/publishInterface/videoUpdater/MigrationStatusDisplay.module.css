@@ -1,0 +1,39 @@
+/* MigrationStatusDisplay.module.css */
+
+.status-card {
+    margin-bottom: 1rem; /* Space between cards */
+}
+
+.status-box {
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 150px; /* Set a max width for each box */
+    margin: 0 auto; /* Center the boxes */
+    white-space: normal; /* Allow text to wrap */
+    text-align: center; /* Center text */
+}
+
+.status-in-progress {
+    background-color: lightblue; /* example style */
+}
+
+.status-completed {
+    background-color: lightgreen; /* example style */
+}
+
+.status-pending {
+    background-color: lightgray; /* example style */
+}
+
+.arrow {
+    position: absolute; /* or however you want to position the arrows */
+    right: -20px; /* adjust as needed */
+}
+
+.error-alert {
+    margin-top: 1rem; /* Space above the error alert */
+}
+
+.progress-bar {
+    margin-top: 1rem; /* Space above the progress bar */
+}

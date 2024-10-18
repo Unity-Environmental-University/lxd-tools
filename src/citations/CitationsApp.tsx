@@ -1,9 +1,9 @@
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatch} from "@citations/state/store";
-import {fetchCourseData, getError, getStatus, getWorkingCourseData} from "@citations/state/courseDataSlice";
+import {fetchCourseData, getError, getStatus, getWorkingCourseData} from "@/canvas-redux/courseDataSlice";
 import React, {useEffect, useState} from "react";
 import {Alert, Card} from "react-bootstrap";
-import {getLmsData} from "@citations/state/learningMaterialsSlice";
+import {getLmsData} from "@/canvas-redux/learningMaterialsSlice";
 import {LmInterface} from "@citations/LmInterface";
 
 
@@ -22,7 +22,7 @@ export default function CitationsApp({ courseId}:CitationsAppProps) {
 
     useEffect(()  => {
         if (courseId && courseId != courseData?.id) {
-            dispatch(fetchCourseData(courseId));
+            dispatch(fetchCourseData({courseId}));
         }
     }, [dispatch, courseId]);
     return <Card>
