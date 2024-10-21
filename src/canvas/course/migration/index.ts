@@ -70,7 +70,7 @@ export async function* courseMigrationGenerator(
 ) {
 
     const migrationData = await startMigration(sourceCourseId, destCourseId, migrationConfig);
-    for await (let result of getMigrationProgressGen(migrationData, pollDelay, pollConfig)) {
+    for await (let result of genCourseMigrationProgress(migrationData, pollDelay, pollConfig)) {
         yield result;
     }
 }
@@ -91,7 +91,7 @@ export async function startMigration(sourceCourseId:number, destCourseId: number
     return await fetchJson<IMigrationData>(copyUrl, config);
 }
 
-export async function* getMigrationProgressGen(migration:IMigrationData, pollDelay: number = 500, pollConfig?: ICanvasCallConfig) {
+export async function* genCourseMigrationProgress(migration:IMigrationData, pollDelay: number = 500, pollConfig?: ICanvasCallConfig) {
     let {progress_url: progressUrl} = migration;
     while (true) {
         await sleep(pollDelay);

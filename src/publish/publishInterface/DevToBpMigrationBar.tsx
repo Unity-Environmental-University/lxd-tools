@@ -1,4 +1,4 @@
-import {getMigrationProgressGen, IMigrationData, IProgressData} from "../../canvas/course/migration";
+import {genCourseMigrationProgress, IMigrationData, IProgressData} from "../../canvas/course/migration";
 import {Course} from "../../canvas/course/Course";
 import {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
@@ -15,7 +15,7 @@ export function DevToBpMigrationBar({migration, course, onFinishMigration}: Migr
     const [progress, setProgress] = useState<IProgressData>()
 
     useEffectAsync(async () => {
-        let progressGen = getMigrationProgressGen(migration, 2500);
+        let progressGen = genCourseMigrationProgress(migration, 2500);
         for await(let progress of progressGen) {
             setProgress(progress);
         }

@@ -9,6 +9,9 @@ const dotenv = require('dotenv').config({path: __dirname + '/.env'})
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 
+console.log('Base URL:', path.resolve(__dirname, 'src'));
+console.log('Resolved process:', require.resolve('process/browser'));
+
 module.exports = {
     mode: isDevelopment ? 'development' : 'production',
 
@@ -46,6 +49,11 @@ module.exports = {
     devtool: 'source-map',
     module: {
         rules: [
+            {
+                test: /\.mjs$/,
+                include: /node_modules/,
+                type: 'javascript/auto',
+            },
             {
                 test: /\.tsx?$/,
                 use: [
@@ -125,7 +133,7 @@ module.exports = {
     },
     plugins: [
         new webpack.ProvidePlugin({
-            process: 'process/browser',
+            process: require.resolve('process/browser'),
         }),
         new webpack.SourceMapDevToolPlugin({
             exclude: /node_modules|dist/,
@@ -159,20 +167,15 @@ module.exports = {
         }),
         ...getHtmlPlugins(["popup"]),
     ],
-    resolve:
-        {
-            extensions: [".tsx", ".ts", ".js"],
-            alias:
-                {
-                    config: path.resolve(__dirname, process.env.NODE_ENV),
-                }
-            ,
-            plugins: [
-                new TsconfigPathsPlugin({}),
-
-            ]
-        }
-    ,
+    resolve: {
+        extensions: [".tsx", ".ts", ".js", ".mjs"],
+        alias: {
+            config: path.resolve(__dirname, process.env.NODE_ENV),
+        },
+        plugins: [
+            new TsconfigPathsPlugin({}),
+        ],
+    },
     stats: {
         errorDetails: true,
     }

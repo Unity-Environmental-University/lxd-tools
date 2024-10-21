@@ -58,8 +58,8 @@ const MigrationRow: React.FC<MigrationRowProps> = ({ rowData }) => {
                     <a href={migrationData.sourceUrl} target="_blank" rel="noopener noreferrer">{migrationData.sourceUrl}</a>
                 </div>
                 <div className={styles.gridItem}>
-                    <strong>Destination URL:</strong>
-                    <a href={migrationData.destinationUrl} target="_blank" rel="noopener noreferrer">{migrationData.destinationUrl}</a>
+                    {/*<strong>Destination URL:</strong>*/}
+                    {/*<a href={migrationData.destinationUrl} target="_blank" rel="noopener noreferrer">{migrationData.destinationUrl}</a>*/}
                 </div>
                 {migrationData.additionalInfo && (
                     <div className={styles.gridItem}>

@@ -16,7 +16,6 @@ const transformToMigrationRowData = (migration?: TransformableData): MigrationRo
             endTime: undefined,
             error: undefined,
             sourceUrl: "",
-            destinationUrl: "",
             additionalInfo: undefined,
             id: "", // or whatever default ID you need
         };
@@ -28,11 +27,10 @@ const transformToMigrationRowData = (migration?: TransformableData): MigrationRo
             shortName: migration.shortName,
             status: migration.status,
             progress: migration.progress,
-            startTime: migration.startTime ? new Date(migration.startTime) : undefined,
-            endTime: migration.endTime ? new Date(migration.endTime) : undefined,
+            startTime: migration.startTime,
+            endTime: migration.endTime,
             error: migration.error,
             sourceUrl: migration.sourceUrl,
-            destinationUrl: migration.destinationUrl,
             additionalInfo: migration.additionalInfo,
             id: migration.id, // Or whatever unique identifier you need
         };
@@ -45,7 +43,6 @@ const transformToMigrationRowData = (migration?: TransformableData): MigrationRo
             endTime: undefined,
             error: undefined,
             sourceUrl: migration.url,
-            destinationUrl: "", // Not applicable
             additionalInfo: undefined,
             id: migration.page_id.toString(), // Using page_id as the identifier
         };
@@ -58,7 +55,6 @@ const transformToMigrationRowData = (migration?: TransformableData): MigrationRo
             endTime: migration.updated_at ? new Date(migration.updated_at) : undefined,
             error: undefined,
             sourceUrl: migration.html_url,
-            destinationUrl: "", // Not applicable
             additionalInfo: undefined,
             id: migration.id.toString(),
         };
@@ -73,7 +69,6 @@ const transformToMigrationRowData = (migration?: TransformableData): MigrationRo
         endTime: undefined,
         error: undefined,
         sourceUrl: "",
-        destinationUrl: "",
         additionalInfo: undefined,
         id: "",
     };

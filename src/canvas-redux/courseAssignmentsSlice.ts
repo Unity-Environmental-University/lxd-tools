@@ -1,10 +1,4 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {fetchModules} from '@/canvas-redux/modulesSlice';
-import learningMaterialsForModule from "@canvas/content/pages/learningMaterialsForModule";
-import {IModuleData, IModuleItemData} from "@canvas/canvasDataDefs";
-import {IPageData} from "@canvas/content/pages/types";
-import {RootState} from "@citations/state/store";
-import getReferencesTemplate from "@canvas/course/references/getReferencesTemplate";
 import {IAssignmentData} from "@canvas/content/assignments/types";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
@@ -29,8 +23,6 @@ export const fetchCourseAssignments = createAsyncThunk(
 
         // Filter out modules already processed
         const assignmentDataGen = AssignmentKind.dataGenerator(courseId)
-        const state = thunkAPI.getState() as RootState;
-
 
         for await (const assignmentData of assignmentDataGen) {
             thunkAPI.dispatch(updateCourseAssignments({assignmentData}));
@@ -43,7 +35,7 @@ const courseAssignmentsSlice = createSlice({
     initialState,
     reducers: {
         updateCourseAssignments: (state, action) => {
-            const assignmentData = action.payload;
+            const {assignmentData} = action.payload;
             state.data.push(assignmentData);
         },
     },
@@ -64,7 +56,7 @@ const courseAssignmentsSlice = createSlice({
 
 
 export const {updateCourseAssignments} = courseAssignmentsSlice.actions;
-export const getCourseAssignmentsData = (state: State) => state.data;
-export const getCourseAssignmentsStatus = (state: State) => state.loading;
-export const getCourseAssignmentsError = (state: State) => state.error;
+export const getSliceCourseAssignmentsData = (state: State) => state.data;
+export const getSliceCourseAssignmentsStatus = (state: State) => state.loading;
+export const getSliceCourseAssignmentsError = (state: State) => state.error;
 export default courseAssignmentsSlice.reducer;

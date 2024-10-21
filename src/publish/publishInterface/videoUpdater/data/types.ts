@@ -1,22 +1,36 @@
 export interface KalturaMigrationDetails {
-    id: string; // Unique identifier for the migration
-    courseId: number; // ID of the course being migrated
-    shortName: string,
-    status: 'pending' | 'migrating' | 'successful' | 'failed' | 'aborted'; // Current migration status
-    error?: string; // Error message, if any
-    progress: number; // Percentage of completion (0-100)
-    startTime: Date; // Migration start time
-    endTime?: Date; // Migration end time, if completed
-    sourceUrl: string; // URL of the source video
-    destinationUrl: string; // URL of the destination video
-    contentId: number,
-    contentType: 'Assignment' | 'Page',
-    linksToProcess: string[],
-    processedLinks: string[],
-    additionalInfo?: string; // Any additional information related to the migration
+    id: string;
+    courseId: number;
+    shortName: string;
+    status: 'pending' | 'migrating' | 'successful' | 'failed' | 'aborted' | 'not needed'; // Added 'not needed' status
+    error?: string;
+    progress: number;
+    startTime: string;
+    endTime?: string;
+    sourceUrl: string;
+    contentId: number;
+    contentType: 'Assignment' | 'Page';
+    videosToProcess: MigrationVideo[]; // Renamed linksToProcess to videosToProcess
+    processedVideos: MigrationVideo[]; // Updated processed links to processedVideos
+    additionalInfo?: string;
 }
+
+export interface MigrationVideo {
+    id: string,
+    canvasStudioId: string,
+    contentId: number,
+    courseId: number,
+    contentType: KalturaMigrationDetails['contentType'],
+    elementHtml: string,
+    title: string,
+    description: string,
+    transcript?: string,
+    srt?: string
+}
+
 export interface KalturaMigrationsState {
-    error: string | null;
+    error: string | undefined;
+    courseId?: number;
     migrations: Record<string, KalturaMigrationDetails>;
     status: 'idle' | 'initial_scan' | 'scanning' | 'scan_succeeded' | 'pending_individual_migrations' | 'migrations_finished' | 'failed' | 'error';
 }

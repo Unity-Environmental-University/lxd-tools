@@ -15,6 +15,7 @@ export const fetchCourseData = createAsyncThunk(
     'courseData/fetchCourseData',
     async ({courseId, options}: FetchCourseDataParams, {rejectWithValue}) => {
         try {
+
             return await getCourseData(courseId, { queryParams: options })
         } catch (error) {
             const errorText = error ? error.toString() : 'Error';

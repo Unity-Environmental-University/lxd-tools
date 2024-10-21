@@ -16,6 +16,10 @@ import { runtime } from "webextension-polyfill";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/publish/consts";
 import validations from "@publish/fixesAndUpdates/validations";
+// import VideoUpdateInterface from "@publish/publishInterface/videoUpdater/VideoUpdateInterface";
+import {Provider} from "react-redux";
+import {store} from "@publish/publishInterface/videoUpdater/data/store";
+import VideoUpdateInterface from "@publish/publishInterface/videoUpdater/VideoUpdateInterface";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 
@@ -45,17 +49,20 @@ function PublishApp() {
 
 
     return(user && <div>
-        <CourseUpdateInterface
-            course={course}
-            parentCourse={parentCourse}
-            allValidations={allValidations}
-            refreshCourse={() => getCourse(true)
-        }/>
-        <PublishInterface course={course} user={user}/>
-        <AdminApp course={course} allValidations={allValidations}/>
-        <Row>
-            <UpdateNeeded/>
-        </Row>
+        <Provider store={store}>
+            <CourseUpdateInterface
+                course={course}
+                parentCourse={parentCourse}
+                allValidations={allValidations}
+                refreshCourse={() => getCourse(true)
+            }/>
+            <PublishInterface course={course} user={user}/>
+            {/*{course && <VideoUpdateInterface courseId={course?.id}/>}*/}
+            <AdminApp course={course} allValidations={allValidations}/>
+            <Row>
+                <UpdateNeeded/>
+            </Row>
+        </Provider>
     </div>)
 }
 

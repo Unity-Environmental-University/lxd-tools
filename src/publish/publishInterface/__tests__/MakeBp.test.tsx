@@ -6,7 +6,7 @@ import '@testing-library/jest-dom';
 import {MakeBp, IMakeBpProps, TERM_NAME_PLACEHOLDER} from '../MakeBp';
 import * as blueprintApi from '../../../canvas/course/blueprint';
 import {
-    getMigrationProgressGen,
+    genCourseMigrationProgress,
     migrationsForCourseGen,
     IMigrationData,
     IProgressData, startMigration
@@ -28,9 +28,7 @@ import {loadCachedCourseMigrations} from "@/canvas/course/migration/migrationCac
 import assert from "assert";
 import {Temporal} from "temporal-polyfill";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {SectionDetails} from "@/publish/publishInterface/sectionDetails/SectionDetails";
 import {SectionData} from "@/canvas/courseTypes";
-import {afterEach} from "@jest/globals";
 
 jest.mock('@/canvas/course/blueprint');
 
@@ -85,7 +83,7 @@ jest.mock('@/canvas/course/migration', () => {
             ...mockMigrationData,
             id,
         })),
-        getMigrationProgressGen: jest.fn(function* (_: IMigrationData) {
+        genCourseMigrationProgress: jest.fn(function* (_: IMigrationData) {
             for (let i = 0; i < 10; i++) {
                 yield {...mockProgressData, workflow_state: 'running'} as IProgressData;
             }
@@ -190,7 +188,7 @@ describe('Retirement and updates', () => {
         const year = now.toLocaleString('en', {year: '2-digit'});
         const termName = `DE8W${month}.${day}.${year}`;
         (migrationsForCourseGen as jest.Mock).mockReturnValue(mockAsyncGen<IMigrationData>([]));
-        (getMigrationProgressGen as jest.Mock).mockReturnValue(mockAsyncGen<IMigrationData>([]));
+        (genCourseMigrationProgress as jest.Mock).mockReturnValue(mockAsyncGen<IMigrationData>([]));
 
         (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([{
             ...mockSectionData,
@@ -232,7 +230,7 @@ describe('Migrations', () => {
             id,
         }));
 
-        (getMigrationProgressGen as jest.Mock).mockImplementation(function* (_: IMigrationData) {
+        (genCourseMigrationProgress as jest.Mock).mockImplementation(function* (_: IMigrationData) {
             for (let i = 0; i < 4; i++) {
                 yield {...mockProgressData, workflow_state: 'running'} as IProgressData;
             }

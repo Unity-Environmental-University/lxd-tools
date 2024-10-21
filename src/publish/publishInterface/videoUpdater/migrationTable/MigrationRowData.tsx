@@ -7,7 +7,6 @@ export interface MigrationRowData {
     endTime?: Date;
     error?: string;
     sourceUrl: string;
-    destinationUrl: string;
     additionalInfo?: string;
     // Add any other relevant fields for rendering the row
 }

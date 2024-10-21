@@ -3,18 +3,18 @@ import React from 'react';
 import {useSelector} from 'react-redux';
 import MigrationRow from './MigrationRow';
 import {RootState} from "@publish/publishInterface/videoUpdater/data/store";
-
-
-interface MigrationTableProps {
-    coursePages: any[]; // Replace with the actual type
-    courseAssignments: any[]; // Replace with the actual type
-}
+import {getSliceCourseAssignmentsData} from "@/canvas-redux/courseAssignmentsSlice";
+import {getSliceCoursePagesData} from "@/canvas-redux/coursePagesSlice";
 
 
 
-const MigrationTable: React.FC<MigrationTableProps> = ({ coursePages, courseAssignments }) => {
+type MigrationTableProps = {}
+
+const MigrationTable: React.FC<MigrationTableProps> = () => {
     const courseId = useSelector((state: RootState) => state.courseData.courseData?.courseId);
     const migrations = useSelector((state: RootState) => state.kaltura.migrations);
+    const coursePages = useSelector(getSliceCoursePagesData);
+    const courseAssignments = useSelector(getSliceCourseAssignmentsData);
     return (
         <div>
             {coursePages.map((page) => {

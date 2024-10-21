@@ -2,9 +2,10 @@ import { RootState } from "../store";
 import {KalturaAppDispatch} from "@publish/publishInterface/videoUpdater/data/store";
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {migrationFailed, updateMigration} from "@publish/publishInterface/videoUpdater/data/kalturaMigrationsSlice";
+import {MigrationVideo} from "@publish/publishInterface/videoUpdater/data/types";
 
 // Mock function to apply the modified links to the relevant pages and assignments
-export async function applyModifiedLinksToPages(modifiedLinks: string[]): Promise<void> {
+export async function applyModifiedLinksToPages(modifiedVideos: MigrationVideo[]): Promise<void> {
     // Stub: Replace with actual logic to apply links to the pages/assignments
 }
 
@@ -24,7 +25,7 @@ const finalizeMigration = createAsyncThunk<void, { id: string }, {
 
         try {
             // Apply the modified links from the migration details to the pages and assignments
-            await applyModifiedLinksToPages(migration.processedLinks);
+            await applyModifiedLinksToPages(migration.processedVideos);
 
             // Update migration status to 'successful' if the application is successful
             dispatch(updateMigration({ ...migration, status: 'successful' }));
