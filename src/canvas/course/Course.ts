@@ -492,8 +492,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     public async getFrontPageProfile() {
         const frontPage = await this.getFrontPage();
-        assert(frontPage && frontPage.body, "Course front page not found");
         try {
+            assert(frontPage && frontPage.body, "Course front page not found");
             const frontPageProfile = getCurioPageFrontPageProfile(frontPage?.body);
             frontPageProfile.sourcePage = frontPage;
             return frontPageProfile;
