@@ -212,7 +212,7 @@ describe('getPagedDataGenerator', () => {
         const result = await generator.next();
 
         expect(result.value).toEqual([]);
-        expect(consoleWarnSpy).toHaveBeenCalledWith(`no data for ${mockUrl}`);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(`no data found for ${mockUrl}`);
 
         consoleWarnSpy.mockRestore();
     });

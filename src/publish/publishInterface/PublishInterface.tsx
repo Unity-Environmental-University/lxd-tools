@@ -146,7 +146,6 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
             dispatchPotentialProfilesByCourseId({set: [section.id, profiles]})
         }
         dispatchSectionInfoCache({set: [courseId, out]});
-        console.log(section.name)
         return out;
     }
 
@@ -222,7 +221,6 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 const result = await loadSection(sectionInfo.id);
                 console.log(result);
 
-                if (result === 'loading') throw new Error(`trouble loading section info`)
                 const {section, instructors, frontPageProfile} = result;
                 if (!sectionStartSet) {
                     actualStart = await section.getStartDateFromModules();

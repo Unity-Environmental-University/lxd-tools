@@ -36,12 +36,6 @@ jest.mock('webextension-polyfill', () => ({
 
 fetchMock.enableMocks();
 
-jest.mock('isomorphic-git', () => ({
-    getRemoteInfo: jest.fn(() => ({
-        tags: ['1', '2', '3']
-    }))
-}));
-
 const mockCourse: Course = {
     getParentCourse: jest.fn().mockResolvedValue({}),
 } as any;

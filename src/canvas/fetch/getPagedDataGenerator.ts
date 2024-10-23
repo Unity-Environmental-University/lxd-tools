@@ -20,32 +20,101 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
 }
 
 /**
- * returns a single pagedDataGenerator that returns generator results from each, looping through results for each
- * @param generators
+ * Merges multiple asynchronous paginated data generators into a single generator.
+ *
+ * This function combines the results of multiple paginated data generators into a unified stream. Each generator
+ * is processed sequentially, and its results are yielded one by one as they become available. This allows for
+ * easy handling of multiple paginated API requests or data sources in parallel without needing to collect all
+ * results in memory at once.
+ *
+ * The function is particularly useful when dealing with multiple sources of paginated data (e.g., multiple API
+ * endpoints) that need to be processed as one continuous stream of results, without waiting for all pages from one
+ * source to finish before beginning to process the next.
+ *
+ * @template T - A type parameter that extends `CanvasData`, ensuring that the data being yielded is in a format consistent
+ *               with Canvas API data structures.
+ * @param {AsyncGenerator<T, T[], void>[]} generators - An array of asynchronous generators, each of which yields paginated
+ *               results of type `T`. These could represent different paginated data sources that are combined into a single stream.
+ *
+ * @yields {T} - The function yields items of type `T` as they are retrieved from each generator in sequence.
+ *
+ * @example
+ * // Example usage combining two paginated API responses into a single data stream
+ * const generator1 = fetchPagedDataFromSource1();
+ * const generator2 = fetchPagedDataFromSource2();
+ *
+ * for await (const data of mergePagedDataGenerators([generator1, generator2])) {
+ *     console.log(data); // Process each item from both generators as a single stream
+ * }
+ *
+ * @remarks
+ * This function uses `for await...of` loops to asynchronously iterate over the provided generators and their results,
+ * making it a great tool for consuming paginated data without needing to manage manual pagination or buffering.
  */
 export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData>(generators: AsyncGenerator<T, T[], void>[]) {
     for (let generator of generators) {
-        for await(let result of generator) {
+        for await (let result of generator) {
             yield result;
         }
     }
 }
 
-function handleResponseData<T extends CanvasData>(data: T, url: string) {
-    if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
+
+
+/**
+ * Handles the response data from a Canvas API call, normalizing it into an array of `CanvasData` objects.
+ *
+ * This function accepts various formats of the data (single object, array of objects, or a keyed object containing arrays of objects),
+ * and ensures the result is always an array. If no valid array is found, it returns an empty array and logs a warning.
+ *
+ * @template T - A type that extends `CanvasData`.
+ * @param {T | T[] | { [key: string]: T[] }} data - The response data to process. This can be a single object, an array of objects,
+ *        or a keyed object where the values are arrays of objects.
+ * @param {string} url - The URL from which the data was retrieved, used for logging purposes if no valid data is found.
+ * @returns {T[]} An array of `CanvasData` objects, or an empty array if no valid array of data is present.
+ */
+function handleResponseData<T extends CanvasData>(data: undefined | null | T | T[] | { [key: string]: T[] }, url: string): T[] {
+    if(typeof data === 'undefined' || data == null) {
+        console.warn(`no data found for ${url}`)
+        return [] as T[]
+    }
+    if (typeof data === 'object' && !Array.isArray(data)) {
         let values = Array.from(Object.values(data));
         if (values) {
-            data = values.find((a) => Array.isArray(a));
+            data = values.find((a) => Array.isArray(a)) as T[];
         }
     }
     if (!Array.isArray(data)) {
-        console.warn(`no data for ${url}`)
-        return [];
+        console.warn(`No valid data found for ${url}`);
+        return [] as T[];
     }
     return data;
-
 }
 
+
+/**
+ * Async generator function that retrieves paged data from a Canvas API endpoint.
+ * It sends HTTP GET requests to the provided URL, processes the results, and iterates
+ * through all pages of data, yielding each individual item.
+ *
+ * The generator automatically handles pagination by examining the 'Link' header
+ * returned in each response and fetching the next page as long as a 'next' link is available.
+ *
+ * @template T - A generic type parameter extending CanvasData to represent the structure of the data.
+ * @param {string} url - The full URL for the API request. If the `queryParams` option is provided in the config, it appends the query parameters to the URL.
+ * @param {ICanvasCallConfig | null} [config=null] - Optional configuration object for the request, including query parameters and additional fetch options like headers.
+ * @yields {T} - Yields individual items of the retrieved data from each page, one at a time.
+ *
+ * @throws {Error} - If the request fails or the URL contains "undefined", a warning is logged to the console.
+ *
+ * @example
+ * ```
+ * const generator = getPagedDataGenerator<MyDataType>('https://canvas.example.com/api/data', config);
+ * for await (const item of generator) {
+ *     console.log(item);  // Handle each item individually
+ * }
+ * ```
+ */
 export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
     url: string, config: ICanvasCallConfig | null = null
 ): AsyncGenerator<T> {
@@ -61,7 +130,7 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
 
     /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
     let response = await fetch(url, config?.fetchInit);
-    let data = handleResponseData(await response.json(), url);
+    let data = handleResponseData<T>(await response.json(), url);
     if (data.length === 0) return data;
     for (let value of data) yield value;
 
@@ -74,7 +143,6 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
         next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
         response = await fetch(next_page_link, config?.fetchInit);
         let responseData = handleResponseData<T>(await response.json(), url);
-        data = [data, ...responseData];
 
         for (let value of responseData) {
             yield value;
