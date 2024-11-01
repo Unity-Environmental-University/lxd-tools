@@ -52,7 +52,7 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
         const syllabus = await course.getSyllabus();
         const el = document.createElement('div');
         el.innerHTML = syllabus;
-        let strongs = el.querySelectorAll('strong');
+        const strongs = el.querySelectorAll('strong');
         const creditList = Array.from(strongs).filter((strong) => /credits/i.test(strong.textContent || ""));
         const links = [`/courses/${course.id}/assignments/syllabus`];
         const failureMessage = "Can't find credits in syllabus";
@@ -176,7 +176,7 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
         })
     },
     async fix(course) {
-        let {success, userData} = await this.run(course);
+        const {success, userData} = await this.run(course);
         if (success) return testResult('not run', {notFailureMessage: "No need to run fix"});
 
         if (!userData?.secondPara) return testResult(false, {failureMessage: "There was a problem accessing the syllabus."})

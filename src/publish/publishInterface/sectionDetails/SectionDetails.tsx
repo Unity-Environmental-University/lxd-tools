@@ -83,7 +83,7 @@ export function SectionDetails({
 
     async function applyProfile(profile: IProfile & {user: IUserData}) {
         if (!section) return;
-        let frontPage = await section.getFrontPage();
+        const frontPage = await section.getFrontPage();
         if (!frontPage) return;
         message('Applying new profile')
         const newText = renderProfileIntoCurioFrontPage(frontPage.body, profile);

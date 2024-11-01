@@ -21,14 +21,14 @@ export const CONTENT_KINDS = [
 
 export function getContentClassFromUrl(url: string | null = null) {
     if (!url) url = document.documentURI;
-    for (let class_ of [Assignment, Quiz, Page, Discussion]) {
+    for (const class_ of [Assignment, Quiz, Page, Discussion]) {
         if (class_.contentUrlPart && url.includes(class_.contentUrlPart)) return class_;
     }
     return null;
 }
 
 export async function getContentItemFromUrl(url: string | null = null) {
-    let ContentClass = getContentClassFromUrl(url);
+    const ContentClass = getContentClassFromUrl(url);
     if (!ContentClass) return null;
     return await ContentClass.getFromUrl(url);
 }

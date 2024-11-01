@@ -75,7 +75,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (url === null) {
             url = document.documentURI;
         }
-        let match = /courses\/(\d+)/.exec(url);
+        const match = /courses\/(\d+)/.exec(url);
         if (match) {
 
             const id = getCourseIdFromUrl(url);
@@ -160,7 +160,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     get codePrefix() {
-        let match = COURSE_CODE_REGEX.exec(this.rawData.course_code);
+        const match = COURSE_CODE_REGEX.exec(this.rawData.course_code);
         return match ? match[1] : '';
     }
 
@@ -255,7 +255,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async getModulesByWeekNumber(config?: ICanvasCallConfig) {
         if (this.modulesByWeekNumber) return this.modulesByWeekNumber;
-        let modules = await this.getModules(config);
+        const modules = await this.getModules(config);
         this.modulesByWeekNumber = await getModulesByWeekNumber(modules);
         return (this.modulesByWeekNumber);
     }
@@ -276,13 +276,13 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         index?: number | null,
     }): Promise<string[]> {
         assert(target.hasOwnProperty('type'));
-        let targetType: ModuleItemType = target.type;
-        let contentSearchString = target.hasOwnProperty('search') ? target.search : null;
+        const targetType: ModuleItemType = target.type;
+        const contentSearchString = target.hasOwnProperty('search') ? target.search : null;
         let targetIndex = isNaN(target.index) ? null : target.index;
         let targetModuleWeekNumber;
         let targetModule;
         if (typeof moduleOrWeekNumber === 'number') {
-            let modules = await this.getModulesByWeekNumber();
+            const modules = await this.getModulesByWeekNumber();
             assert(modules.hasOwnProperty(moduleOrWeekNumber));
             targetModuleWeekNumber = moduleOrWeekNumber;
             targetModule = modules[targetModuleWeekNumber];
@@ -295,7 +295,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (targetModule && typeof targetType !== 'undefined') {
             //If it's a page, just search for the parameter string
             if (targetType === 'Page' && contentSearchString) {
-                let pages = await this.getPages({
+                const pages = await this.getPages({
                     queryParams: {search_term: contentSearchString}
                 })
                 pages.forEach((page) => urls.push(page.htmlContentUrl));
@@ -312,7 +312,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
                     const targetItem = matchingTypeItems[targetIndex - 1];
                     urls.push(targetItem.html_url);
                 } else if (!targetIndex) {
-                    for (let item of matchingTypeItems) urls.push(item.html_url)
+                    for (const item of matchingTypeItems) urls.push(item.html_url)
                 }
             }
         }
@@ -344,10 +344,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async getContent(config?: ICanvasCallConfig, refresh = false) {
         if (refresh || this.cachedContent.length == 0) {
-            let discussions = await this.getDiscussions(config);
-            let assignments = await renderAsyncGen(assignmentDataGen(this.id, config))
-            let quizzes = await this.getQuizzes(config);
-            let pages = await this.getPages(config);
+            const discussions = await this.getDiscussions(config);
+            const assignments = await renderAsyncGen(assignmentDataGen(this.id, config))
+            const quizzes = await this.getQuizzes(config);
+            const pages = await this.getPages(config);
             this.cachedContent = [
                 ...discussions,
                 ...assignments.map(a => new Assignment(a, this.id)),
@@ -434,7 +434,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async getParentCourse(return_dev_search = false) {
-        let migrations = await getPagedData(`/api/v1/courses/${this.id}/content_migrations`);
+        const migrations = await getPagedData(`/api/v1/courses/${this.id}/content_migrations`);
         const parentCode = this.devCode;
 
         if (migrations.length < 1) {
@@ -446,8 +446,8 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         migrations.sort((a, b) => b.id - a.id);
 
         try {
-            for (let migration of migrations) {
-                let course = await Course.getCourseById(migration['settings']['source_course_id'])
+            for (const migration of migrations) {
+                const course = await Course.getCourseById(migration['settings']['source_course_id'])
                 if (course && course.codePrefix.includes("DEV")) return course;
             }
         } catch (e) {
@@ -462,9 +462,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     async regenerateHomeTiles() {
         const modules = await this.getModules();
-        let urls = await Promise.all(modules.map(async (module) => {
+        const urls = await Promise.all(modules.map(async (module) => {
             try {
-                let dataUrl = await this.generateHomeTile(module)
+                const dataUrl = await this.generateHomeTile(module)
 
             } catch (e) {
                 console.log(e);
@@ -479,10 +479,10 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         if (!overviewPage) throw new Error("Module does not have an overview");
         const bannerImg = getBannerImage(overviewPage);
         if (!bannerImg) throw new Error("No banner image on page");
-        let resizedImageBlob = await getResizedBlob(bannerImg.src, HOMETILE_WIDTH);
-        let fileName = `hometile${module.position}.png`;
+        const resizedImageBlob = await getResizedBlob(bannerImg.src, HOMETILE_WIDTH);
+        const fileName = `hometile${module.position}.png`;
         assert(resizedImageBlob);
-        let file = new File([resizedImageBlob], fileName)
+        const file = new File([resizedImageBlob], fileName)
         return await uploadFile(file, 'Images/hometile', this.fileUploadUrl);
     }
 
@@ -511,7 +511,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         const instructors = await this.getInstructors();
         let profiles: IProfileWithUser[] = [];
         if (!instructors) return profiles;
-        for (let instructor of instructors) {
+        for (const instructor of instructors) {
             profiles = profiles.concat(await getPotentialFacultyProfiles(instructor))
         }
         return profiles;

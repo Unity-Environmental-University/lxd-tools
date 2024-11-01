@@ -70,7 +70,7 @@ export async function* courseMigrationGenerator(
 ) {
 
     const migrationData = await startMigration(sourceCourseId, destCourseId, migrationConfig);
-    for await (let result of genCourseMigrationProgress(migrationData, pollDelay, pollConfig)) {
+    for await (const result of genCourseMigrationProgress(migrationData, pollDelay, pollConfig)) {
         yield result;
     }
 }
@@ -92,7 +92,7 @@ export async function startMigration(sourceCourseId:number, destCourseId: number
 }
 
 export async function* genCourseMigrationProgress(migration:IMigrationData, pollDelay: number = 500, pollConfig?: ICanvasCallConfig) {
-    let {progress_url: progressUrl} = migration;
+    const {progress_url: progressUrl} = migration;
     while (true) {
         await sleep(pollDelay);
         const progress = await fetchJson<IProgressData>(progressUrl, pollConfig);
@@ -123,7 +123,7 @@ export async function* copyToNewCourseGenerator(
     const {destId} = await createNewCourse(newCode, sourceCourse.accountId, newName, courseConfig);
     const migration = courseMigrationGenerator(sourceCourse.id, destId, pollDelay, migrationConfig, pollConfig);
 
-    for await (let progress of migration) {
+    for await (const progress of migration) {
         yield progress;
     }
     return await getCourseData(destId, returnCourseConfig);

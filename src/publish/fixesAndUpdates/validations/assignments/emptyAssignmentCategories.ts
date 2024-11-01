@@ -11,7 +11,7 @@ export const emptyAssignmentCategories: CourseFixValidation<Course, AssignmentGr
     async run(course) {
         const groupGen = genAssignmentGroups(course.id);
         const emptyGroups:AssignmentGroup[] = [];
-        for await(let assignmentGroup of groupGen) {
+        for await(const assignmentGroup of groupGen) {
             if(assignmentGroup.assignments.length === 0) emptyGroups.push(assignmentGroup)
         }
         return testResult(emptyGroups.length === 0, {
@@ -25,14 +25,14 @@ export const emptyAssignmentCategories: CourseFixValidation<Course, AssignmentGr
         if(!result.userData) return testResult(false, { failureMessage: "Unable to find bad groups. Failed to fix."})
         const deletedIds = [] as number[];
         try {
-            for (let assignmentGroup of result.userData) {
+            for (const assignmentGroup of result.userData) {
                 await deleteAssignmentGroup(course.id, assignmentGroup.id);
                 deletedIds.push(assignmentGroup.id);
             }
             return await this.run(course);
 
         } catch(e) {
-            let failureMessage = e instanceof Error? e.message : "Failed due to unknown error."
+            const failureMessage = e instanceof Error? e.message : "Failed due to unknown error."
             return testResult(false, {
                 failureMessage,
                 userData: [] as AssignmentGroup[],

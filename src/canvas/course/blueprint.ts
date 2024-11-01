@@ -114,9 +114,9 @@ export async function lockBlueprint(courseId:number, modules: IModuleData[]) {
     items = items.concat(...modules.map(a => (<IModuleItemData[]>[]).concat(...a.items)));
     const promises = items.map(async (item) => {
         const url = `/api/v1/courses/${courseId}/blueprint_templates/default/restrict_item`;
-        let {type, id} = await getItemTypeAndId(item);
+        const {type, id} = await getItemTypeAndId(item);
         if ( typeof id === 'undefined') return;
-        let body = {
+        const body = {
             "content_type": type,
             "content_id": id,
             "restricted": true,

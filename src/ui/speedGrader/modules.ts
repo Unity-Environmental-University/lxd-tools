@@ -4,22 +4,22 @@ import {IModuleInfo} from "@/ui/speedGrader/types";
 
 export function getModuleInfo(contentItem: CanvasData, modules: IModuleData[], assignmentsCollection: AssignmentsCollection): IModuleInfo {
     const regex = /(week|module) (\d+)/i;
-    for (let module of modules) {
-        let moduleNameMatch = module.name.match(regex);
+    for (const module of modules) {
+        const moduleNameMatch = module.name.match(regex);
         let [fullMatch, weekOrModule, weekNumber] = moduleNameMatch ?? [];
         if (!weekNumber) {
-            for (let moduleItem of module.items) {
+            for (const moduleItem of module.items) {
                 if (!moduleItem.hasOwnProperty('title')) {
                     continue;
                 }
-                let [fullMatch, weekOrModule, itemWeekNumber] =  moduleItem.title.match(regex) ?? [];
+                const [fullMatch, weekOrModule, itemWeekNumber] =  moduleItem.title.match(regex) ?? [];
                 if (itemWeekNumber) {
                     weekNumber = itemWeekNumber;
                 }
             }
         }
 
-        let moduleItem = getItemInModule(contentItem, module, assignmentsCollection);
+        const moduleItem = getItemInModule(contentItem, module, assignmentsCollection);
         if (!moduleItem) {
             continue;
         }
@@ -48,13 +48,13 @@ export function getContentItemId(contentItem:CanvasData, type:ModuleItemType) {
 
 export function getItemInModule(contentItem: CanvasData, module: IModuleData, assignmentsCollection: AssignmentsCollection) {
 
-    let type: ModuleItemType = assignmentsCollection.getAssignmentContentType(contentItem);
-    let contentId = getContentItemId(contentItem, type)
+    const type: ModuleItemType = assignmentsCollection.getAssignmentContentType(contentItem);
+    const contentId = getContentItemId(contentItem, type)
 
     let count = 1;
-    for (let moduleItem of module.items) {
+    for (const moduleItem of module.items) {
 
-        let moduleItemAssignment = assignmentsCollection.getContentById(moduleItem.content_id);
+        const moduleItemAssignment = assignmentsCollection.getContentById(moduleItem.content_id);
         if (assignmentsCollection.getModuleItemType(moduleItem) !== type) {
             continue;
         }

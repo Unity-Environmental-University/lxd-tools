@@ -13,7 +13,7 @@ export function loadCachedMigrations() {
 }
 
 export function loadCachedCourseMigrations(courseId: number | string) {
-    let key = courseId.toString();
+    const key = courseId.toString();
     return loadCachedMigrations()[key] ?? [];
 }
 

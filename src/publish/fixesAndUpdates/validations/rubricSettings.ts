@@ -13,7 +13,7 @@ import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});
     const returnPairs: [IRubricData, IRubricAssociationData][] = [];
-    for await (let rubric of rubricGen) {
+    for await (const rubric of rubricGen) {
         const associations = rubric.associations;
         const badAssociations = associations && associations
             .filter(assoc => !assoc.use_for_grading)
@@ -55,10 +55,10 @@ export const rubricsTiedToGradesTest: CourseValidation<IIdHaver, RubricsTiedToGr
             if(!result) result = await this.run(course);
             const fixedAssociations: IRubricAssociationData[] = [];
             let success = false;
-            let { badAssociations } = result?.userData ?? {};
+            const { badAssociations } = result?.userData ?? {};
             if(result.success) return testResult('not run', { notFailureMessage: "Validation passed, no need to run."});
             if(!badAssociations) return testResult(false, {failureMessage: "Can't find rubric associations."})
-            for (let [ rubric, association ] of badAssociations) {
+            for (const [ rubric, association ] of badAssociations) {
                 if(!association.use_for_grading) {
                     await updateRubricAssociation(course.id, association.id, {
                         id: association.id,

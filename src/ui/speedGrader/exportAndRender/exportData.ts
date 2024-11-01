@@ -13,7 +13,7 @@ export async function exportData(course: ICourseData, {
 }: UiHandlerProps, assignment: IAssignmentData | null = null) {
     try {
         window.addEventListener("error", showError);
-        let csvRows = await csvRowsForCourse(course as SectionData, assignment)
+        const csvRows = await csvRowsForCourse(course as SectionData, assignment)
         let filename = assignment ? assignment.name : course.courseCode;
         filename ??= "COURSE CODE NOT FOUND"
         saveDataGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);

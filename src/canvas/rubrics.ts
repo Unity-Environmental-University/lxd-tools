@@ -99,10 +99,10 @@ export function rubricApiUrl(courseId:number, rubricId:number) { return `/api/v1
 
 export function rubricsForCourseGen(courseId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {
     const url = getRubricsFetchUrl(courseId);
-    let dataGenerator = getPagedDataGenerator<IRubricData>(url, config);
+    const dataGenerator = getPagedDataGenerator<IRubricData>(url, config);
     if (options?.include) {
         return async function* () {
-            for await(let rubric of dataGenerator) {
+            for await(const rubric of dataGenerator) {
 
                 yield await getRubric(rubric.context_id, rubric.id, options, config)
             }

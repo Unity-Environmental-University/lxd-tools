@@ -14,7 +14,7 @@ export async function updateAssignmentDueDates(offset: number, assignments: IAss
         courseId = assignments[0].course_id;
     }
     if (offset === 0 || offset) {
-        for await (let data of assignments) {
+        for await (const data of assignments) {
             const assignment = new Assignment(data, courseId);
             returnAssignments.push(assignment);
             promises.push(assignment.dueAtTimeDelta(Number(offset)));

@@ -15,7 +15,7 @@ export const discussionThreadingValidation: CourseFixValidation<Course, IDiscuss
     async run(course) {
         const discussionGen = DiscussionKind.dataGenerator(course.id);
         const affectedDiscussions = [] as IDiscussionData[];
-        for await (let discussionData of discussionGen) {
+        for await (const discussionData of discussionGen) {
             if (['not_threaded', 'side_comment'].includes(discussionData.discussion_type)) {
                 affectedDiscussions.push(discussionData);
             }

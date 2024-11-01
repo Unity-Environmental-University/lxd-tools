@@ -134,10 +134,10 @@ export function matchHighlights(content: string, search: RegExp, maxHighlightLen
 
 
     search.lastIndex = 0;
-    let matches = search.global ? Array.from(content.matchAll(search)) : [];
+    const matches = search.global ? Array.from(content.matchAll(search)) : [];
     search.lastIndex = 0;
     if (!search.global) {
-        let match = search.exec(content);
+        const match = search.exec(content);
         if (match) matches.push(match);
     }
     return matches.map(match => {
@@ -167,18 +167,18 @@ export function badContentRunFunc<
 ) {
     return async (course: CourseType, config?: ICanvasCallConfig) => {
         const defaultConfig:ICanvasCallConfig = {queryParams: {include: ['body'], per_page: 50}};
-        let content = await (contentFunc ? contentFunc(course) :
+        const content = await (contentFunc ? contentFunc(course) :
             course.getContent(overrideConfig(config, defaultConfig)));
 
         const badContent = content.filter(item => item.body && badTest.test(item.body))
         const syllabus = await course.getSyllabus();
-        let syllabusTest = badTest.test(syllabus);
+        const syllabusTest = badTest.test(syllabus);
         const success = badContent.length === 0 && !syllabusTest;
-        let links: string[] = [];
-        let failureMessage: MessageResult[] = []
+        const links: string[] = [];
+        const failureMessage: MessageResult[] = []
 
         if (badContent.length > 0) {
-            let messageSets = badContent.map(a => {
+            const messageSets = badContent.map(a => {
 
                 if (!a.body?.length) return {bodyLines: [a.name], links: [a.htmlContentUrl]};
 
@@ -247,7 +247,7 @@ export function badContentFixFunc<CourseType extends IContentHaver, ContentType 
     ) {
     return async (course: CourseType): Promise<ValidationResult<never>> => {
         let success = false;
-        let messages: MessageResult[] = [];
+        const messages: MessageResult[] = [];
 
         const testRegex = new RegExp(badContentRegex.source, badContentRegex.flags.replace('g',''))
         const includeBody = {queryParams: {include: ['body']}};
@@ -264,7 +264,7 @@ export function badContentFixFunc<CourseType extends IContentHaver, ContentType 
             })
         }
         success = true;
-        for (let item of content) {
+        for (const item of content) {
             if (!item.body) continue;
             if (!badContentRegex.test(item.body)) continue;
             const newText = replaceText(item.body)

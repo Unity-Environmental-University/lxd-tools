@@ -84,7 +84,7 @@ export function findDateRange(textToSearch: string, locale = 'en-US') {
     if (!matchRange) return null; //No date range found in syllabus
 
     let start, end;
-    for(let separator of ['-', 'to']) {
+    for(const separator of ['-', 'to']) {
         [start, end] = matchRange[0].split(separator)
         if(start && end) break;
     }

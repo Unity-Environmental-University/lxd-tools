@@ -47,7 +47,7 @@ async function openTargetCourse(queryString: string) {
         p: "Page"
     }
 
-    for (let param of params) {
+    for (const param of params) {
         //Test for assignment matching
         let match = /w(\d+)([adq])(\d+)?$/.exec(param);
         if (match) {
@@ -80,7 +80,7 @@ async function openTargetCourse(queryString: string) {
     }
 
     if (potentialUrls.length > 0) {
-        for(let url of potentialUrls) window.open(url, "_blank")
+        for(const url of potentialUrls) window.open(url, "_blank")
     } else {
         window.open(url, "_blank");
     }
@@ -100,8 +100,8 @@ function getCourseToNavTo(searchCode: string, courses: ICourseData[], maxMatches
     } else if (courses.length === 1) {
         return new Course(courses[0]);
     } else {
-        let exact_code_search = /[A-Za-z-_.]+_?[a-zA-Z]{3}\d{4}/
-        for (let course of courses) {
+        const exact_code_search = /[A-Za-z-_.]+_?[a-zA-Z]{3}\d{4}/
+        for (const course of courses) {
             const match = course.course_code.match(exact_code_search);
             const matchCode = match && match[0];
             console.log(matchCode);

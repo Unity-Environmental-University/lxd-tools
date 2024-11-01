@@ -106,7 +106,7 @@ describe("Testing blueprint retirement", () => {
             id: 10,
             name: termName
         }))))
-        let derivedTermName = await getTermNameFromSections(sections);
+        const derivedTermName = await getTermNameFromSections(sections);
         expect(derivedTermName).toBe(termName);
 
 
@@ -228,7 +228,7 @@ test('lock blueprint', async () => {
     const contentIds: number[] = [];
     modules.forEach(module => module.items.forEach(item => contentIds.push(item.content_id)))
 
-    for (let call of (fetchJson as jest.Mock).mock.calls) {
+    for (const call of (fetchJson as jest.Mock).mock.calls) {
         expect(call[0]).toBe('/api/v1/courses/0/blueprint_templates/default/restrict_item')
     }
     expect(fetchJson).toHaveBeenCalledTimes(itemCount * moduleCount);
@@ -261,7 +261,7 @@ describe("genBlueprintsForCode", () => {
         jest.clearAllMocks();
     });
 
-    let consoleWarnSpy = jest.spyOn(console, 'warn');
+    const consoleWarnSpy = jest.spyOn(console, 'warn');
 
 
 

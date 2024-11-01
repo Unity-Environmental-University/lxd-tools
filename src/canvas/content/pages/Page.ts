@@ -21,7 +21,7 @@ export class Page extends BaseContentItem {
     }
 
     async updateContent(text?: string | null, name?: string | null, config?: ICanvasCallConfig) {
-        let data: Record<string, any> = {};
+        const data: Record<string, any> = {};
         if (text) {
             this.canvasData[this.bodyKey] = text;
             data['wiki_page[body]'] = text;

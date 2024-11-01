@@ -36,14 +36,14 @@ async function renderBody(store: ReturnType<typeof createMockStore>, courseId = 
 describe('CitationsApp', () => {
     it('runs without error', async () => {
         await expect(renderBody(createMockStore({
-            courseData: mockCourseData,
+            data: mockCourseData,
             status: 'succeeded',
             error: null,
         }))).resolves.not.toThrow();
     })
     it('displays course data when loaded', async () => {
         const mockStore = createMockStore({
-            courseData: {
+            data: {
                 ...mockCourseData,
                 name: 'Test Course',
             },
@@ -58,7 +58,7 @@ describe('CitationsApp', () => {
     });
     it('displays loading status when course data is being fetched', async () => {
         const mockStore = createMockStore({
-            courseData: undefined,
+            data: undefined,
             status: 'loading',
             error: null,
         });

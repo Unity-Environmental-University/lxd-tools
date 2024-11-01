@@ -8,10 +8,10 @@ import {Term} from "@/canvas/term/Term";
     const activeTerms = await Term.getAllActiveTerms();
     assert(activeTerms);
 
-    let gradTerm: Term | undefined = activeTerms.find((term) => term.name.search(/DE8W/));
-    let ugTerm: Term | undefined = activeTerms.find((term) => term.name.search(/DE(\/?HL)?-\s{3}-\d+-\d+/));
+    const gradTerm: Term | undefined = activeTerms.find((term) => term.name.search(/DE8W/));
+    const ugTerm: Term | undefined = activeTerms.find((term) => term.name.search(/DE(\/?HL)?-\s{3}-\d+-\d+/));
 
-    let termEl = document.getElementById('termFilter');
+    const termEl = document.getElementById('termFilter');
 
 
 })()

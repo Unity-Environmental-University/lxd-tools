@@ -41,7 +41,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             setErrorMessages([emailResponse.statusText, await emailResponse.text()])
             return;
         }
-        let template = await emailResponse.text();
+        const template = await emailResponse.text();
 
         setEmailTemplate(template);
     }, [])
@@ -139,9 +139,9 @@ async function getSpecificTemplates() {
     const tocItems = [...tocXml.getElementsByTagName('toc-element')];
     const tocTopics = tocItems.map(a => a.getAttribute('topic'))
     const formEmailTemplate = tocItems.find(a => a.getAttribute('topic') == ('Form-Email-Template.md'))
-    let children = formEmailTemplate?.getElementsByTagName('toc-element') ?? [];
-    let topics: string[] = [];
-    for (let node of children) {
+    const children = formEmailTemplate?.getElementsByTagName('toc-element') ?? [];
+    const topics: string[] = [];
+    for (const node of children) {
         const topic = node.getAttribute('topic');
         if (topic) topics.push(topic);
     }

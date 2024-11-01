@@ -41,7 +41,7 @@ function callAll<T, ParamType>(funcs: ((params: ParamType) => T)[], params: Para
 function callAll<T>(funcs: FuncType<T>[] | WithParamsFuncType<T>[], params?: PassedInParamsType<T>) {
     const output: T[] = [];
 
-    for (let func of funcs) {
+    for (const func of funcs) {
         if ((typeof func === 'object')) {
             output.push(func.func(func.params))
             continue;
@@ -98,8 +98,8 @@ const type_lut: Record<ModuleItemType, RestrictModuleItemType | null> = {
 }
 
 export function formDataify(data: Record<string, any>) {
-    let formData = new FormData();
-    for (let key in data) {
+    const formData = new FormData();
+    for (const key in data) {
         addToFormData(formData, key, data[key]);
     }
 
@@ -132,14 +132,14 @@ export function deepObjectCopy<T extends ReturnType<typeof deepObjectMerge> & ({
 
 
 export function deepObjectMerge<
-    Return extends string | number | Object | Record<string, any> | null | undefined | []
+    Return extends string | number | object | Record<string, any> | null | undefined | []
 >(
     a: Return,
     b: Return,
     overrideWithA: boolean = false,
     complexObjectsTracker: Array<unknown> = [],
 ): Return {
-    for (let value of [a, b]) {
+    for (const value of [a, b]) {
         if (typeof value == "object" &&
             complexObjectsTracker.includes(value)) throw new Error(`Infinite Loop: Element ${value} contains itself`);
     }
@@ -158,7 +158,7 @@ export function deepObjectMerge<
     if (Array.isArray(a)) {
         if (!b) return deepObjectCopy(a, complexObjectsTracker);
         assert(Array.isArray(b), "We should not get here if b is not an array")
-        let mergedArray = [...a, ...b];
+        const mergedArray = [...a, ...b];
         const outputArray = mergedArray.map(value => {
             if (!value) return value;
             if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
@@ -239,7 +239,7 @@ function getCookies() {
     const cookieString = document.cookie;
     const cookies = cookieString.split('; ')
     const out: Record<string, string> = {};
-    for (let cookie of cookies) {
+    for (const cookie of cookies) {
         const [key, value] = cookie.split('=')
         out[key] = value;
     }
@@ -254,11 +254,11 @@ function getCookies() {
  */
 function addToFormData(formData: FormData, key: string, value: any | Record<string, any> | []) {
     if (Array.isArray(value)) {
-        for (let item of value) {
+        for (const item of value) {
             addToFormData(formData, `${key}[]`, item);
         }
     } else if (typeof value === 'object') {
-        for (let itemKey in value) {
+        for (const itemKey in value) {
             const itemValue = value[itemKey];
             addToFormData(formData, key.length > 0 ? `${key}[${itemKey}]` : itemKey, itemValue);
         }
@@ -269,8 +269,8 @@ function addToFormData(formData: FormData, key: string, value: any | Record<stri
 
 
 export function queryStringify(data: Record<string, any>) {
-    let searchParams = new URLSearchParams();
-    for (let key in data) {
+    const searchParams = new URLSearchParams();
+    for (const key in data) {
         addToQuery(searchParams, key, data[key])
     }
 
@@ -279,11 +279,11 @@ export function queryStringify(data: Record<string, any>) {
 
 function addToQuery(searchParams: URLSearchParams, key: string, value: any | Record<string, any> | []) {
     if (Array.isArray(value)) {
-        for (let item of value) {
+        for (const item of value) {
             addToQuery(searchParams, `${key}[]`, item);
         }
     } else if (typeof value === 'object') {
-        for (let itemKey in value) {
+        for (const itemKey in value) {
             const itemValue = value[itemKey];
             addToQuery(searchParams, key.length > 0 ? `${key}[${itemKey}]` : itemKey, itemValue);
         }
@@ -401,7 +401,7 @@ export async function* batchGen<T>(generator: AsyncGenerator<T>, batchSize: numb
 
 export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefined>) {
     const out = [];
-    for await (let item of generator) {
+    for await (const item of generator) {
         out.push(item);
     }
     return out;
@@ -413,7 +413,7 @@ export async function* generatorMap<T, MapOutput>(
 ) {
 
     let i = 0;
-    for await(let value of generator) {
+    for await(const value of generator) {
         yield nextMapFunc(value, i, generator);
         i++;
     }

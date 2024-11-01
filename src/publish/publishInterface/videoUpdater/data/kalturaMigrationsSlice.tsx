@@ -1,5 +1,7 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { KalturaMigrationDetails, KalturaMigrationsState } from "@publish/publishInterface/videoUpdater/data/types";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {KalturaMigrationDetails, KalturaMigrationsState} from "@publish/publishInterface/videoUpdater/data/types";
+import {SLICE_NAME} from "@/canvas-redux/courseAssignmentsSlice";
+import {useSelector} from "react-redux";
 
 // Define the initial state for migrations
 const initialState: KalturaMigrationsState = {
@@ -30,7 +32,7 @@ export const kalturaMigrationsSlice = createSlice({
             state.status = 'idle'; // Reset status as well
         },
         addMigration(state, action: PayloadAction<KalturaMigrationDetails>) {
-            const { id, status } = action.payload;
+            const {id, status} = action.payload;
             // Check if migration already exists or is not in an idle state
             if (!state.migrations[id] && status === 'pending') {
                 state.migrations[id] = action.payload; // Store by ID
@@ -80,6 +82,26 @@ export const kalturaMigrationsSlice = createSlice({
         },
     },
 });
+
+
+type PartialRootState = {
+    kaltura: KalturaMigrationsState
+}
+
+// Base selector for accessing the courseAssignments slice
+const selectKalturaState = (state: PartialRootState) => state.kaltura;
+
+
+export const selectKalturaStatus = useSelector(
+    selectKalturaState,
+    (state: { kaltura: KalturaMigrationsState }) => {
+        return {
+            status: state.kaltura.status,
+            error: state.kaltura.error,
+            migrations: state.kaltura.migrations
+        };
+    }
+)
 
 // Export actions and reducer
 export const {

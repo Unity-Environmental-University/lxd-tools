@@ -46,12 +46,12 @@ const rubricsForCourseGen = jest.spyOn(rubricApi, 'rubricsForCourseGen')
 const updateRubricAssociation = jest.spyOn(rubricApi, 'updateRubricAssociation')
 
 describe('rubrics are set to grade assignments', () => {
-    let config: ICanvasCallConfig = {};
+    const config: ICanvasCallConfig = {};
 
     it('passes when all rubrics are linked to grade their assignments', async () => {
-        let validation = rubricsTiedToGradesTest;
+        const validation = rubricsTiedToGradesTest;
 
-        let course = new Course({...mockCourseData});
+        const course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
             returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
@@ -63,14 +63,14 @@ describe('rubrics are set to grade assignments', () => {
 
         assignmentDataGen.mockImplementation(returnMockAsyncGen([mockAssignmentData]))
 
-        let results = await validation.run(course);
+        const results = await validation.run(course);
         expect(results.success).toBe(true);
     })
     it('fails when at least one association is not used for grading', async () => {
-        let validation = rubricsTiedToGradesTest;
+        const validation = rubricsTiedToGradesTest;
         const assignmentData = {...mockAssignmentData, html_url: 'localhost:1234'}
 
-        let course = new Course({...mockCourseData});
+        const course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
             returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
@@ -83,7 +83,7 @@ describe('rubrics are set to grade assignments', () => {
         assignmentDataGen.mockImplementation(returnMockAsyncGen([assignmentData]))
        getAssignmentData.mockResolvedValue(assignmentData)
 
-        let results = await validation.run(course);
+        const results = await validation.run(course);
         expect(results.success).toBe(false);
         const links = results.messages.reduce((links, message) => [...links, ...message.links ?? []], [] as string[])
         expect(links).toContain(assignmentData.html_url);
@@ -105,9 +105,9 @@ describe('rubrics are set to grade assignments', () => {
     }
 
     it('attempts fix', async () => {
-        let validation = rubricsTiedToGradesTest;
-        let course = new Course({...mockCourseData});
-        let validationResult = await runMockValidation(course, validation);
+        const validation = rubricsTiedToGradesTest;
+        const course = new Course({...mockCourseData});
+        const validationResult = await runMockValidation(course, validation);
         expect(validationResult.success).toBe(false);
         const {badAssociations} = validationResult.userData ?? {};
         expect(badAssociations).toHaveLength(1);
@@ -115,7 +115,7 @@ describe('rubrics are set to grade assignments', () => {
         assert(validation.fix);
         const updateRubricResolution = {...mockRubricAssociation};
         updateRubricAssociation.mockResolvedValue(updateRubricResolution);
-        let fixResult = await validation.fix(course, validationResult);
+        const fixResult = await validation.fix(course, validationResult);
 
 
         expect(fixResult.success).toBe(true);

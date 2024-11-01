@@ -79,7 +79,7 @@ function handleCollectionLutAdd<TKey extends RecordKeyType, TItem>(
     }
 
 
-    for(let key in additions)  {
+    for(const key in additions)  {
         returnValue = updateState(returnValue, key, additions[key])
     }
 

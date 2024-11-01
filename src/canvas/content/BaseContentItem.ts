@@ -39,8 +39,8 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     }
 
     static async getAllInCourse<T extends BaseContentItem>(courseId: number, config: ICanvasCallConfig | null = null) {
-        let url = this.getAllUrl(courseId);
-        let data = await getPagedData(url, config);
+        const url = this.getAllUrl(courseId);
+        const data = await getPagedData(url, config);
         return data.map(item => new this(item, courseId)) as T[];
     }
 
@@ -57,7 +57,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         }
 
         url = url.replace(/\.com/, '.com/api/v1')
-        let data = await fetchJson(url);
+        const data = await fetchJson(url);
         if (!courseId) {
             courseId = getCourseIdFromUrl(url)
             if (!courseId) return null;
@@ -99,7 +99,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
 
     async dueAtTimeDelta(timeDelta: number) {
         if (!this.dueAt) return null;
-        let result = new Date(this.dueAt);
+        const result = new Date(this.dueAt);
         result.setDate(result.getDate() + timeDelta)
 
         return await this.setDueAt(result);
@@ -139,8 +139,8 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     }
 
     async getMeInAnotherCourse(targetCourseId: number) {
-        let ContentClass = this.constructor as typeof BaseContentItem
-        let targets = await ContentClass.getAllInCourse(
+        const ContentClass = this.constructor as typeof BaseContentItem
+        const targets = await ContentClass.getAllInCourse(
             targetCourseId,
             {queryParams: {search_term: this.name}}
         )
@@ -151,7 +151,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         const el = this.bodyAsElement;
         const anchors = el.querySelectorAll('a');
         const urls: string[] = [];
-        for (let link of anchors) urls.push(link.href);
+        for (const link of anchors) urls.push(link.href);
         return urls;
 
     }
@@ -159,7 +159,7 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
 
     get bodyAsElement() {
         assert(this.body, "This content item has no body property")
-        let el = document.createElement('div');
+        const el = document.createElement('div');
         el.innerHTML = this.body;
         return el;
     }
@@ -167,14 +167,14 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
     async resizeBanner(maxWidth = SAFE_MAX_BANNER_WIDTH) {
         const bannerImg = getBannerImage(this);
         if (!bannerImg) throw new Error("No banner");
-        let fileData = await getFileDataFromUrl(bannerImg.src, this.courseId)
+        const fileData = await getFileDataFromUrl(bannerImg.src, this.courseId)
         if (!fileData) throw new Error("File not found");
         if (bannerImg.naturalWidth < maxWidth) return; //Dont resize image unless we're shrinking it
-        let resizedImageBlob = await getResizedBlob(bannerImg.src, maxWidth);
-        let fileName = fileData.filename;
-        let fileUploadUrl = `/api/v1/courses/${this.courseId}/files`
+        const resizedImageBlob = await getResizedBlob(bannerImg.src, maxWidth);
+        const fileName = fileData.filename;
+        const fileUploadUrl = `/api/v1/courses/${this.courseId}/files`
         assert(resizedImageBlob);
-        let file = new File([resizedImageBlob], fileName)
+        const file = new File([resizedImageBlob], fileName)
         return await uploadFile(file, fileData.folder_id, fileUploadUrl);
     }
 }

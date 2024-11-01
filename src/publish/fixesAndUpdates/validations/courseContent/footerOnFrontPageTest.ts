@@ -38,7 +38,7 @@ export const footerOnFrontPageFix: OverviewFix = {
    async fix(course, result?) {
     let success = false;
     result ??= await this.run(course);
-    let brokenPage = result.userData;
+    const brokenPage = result.userData;
 
     if (result.success || !brokenPage ) {
          return testResult('not run', { notFailureMessage: "Test not run; no broken pages" });
@@ -50,7 +50,7 @@ export const footerOnFrontPageFix: OverviewFix = {
     const footer = findFooter(body);
     footer?.remove();
 
-    let footerCheck = findFooter(body);
+    const footerCheck = findFooter(body);
     if(footerCheck) return testResult(false, {
        failureMessage: "Failed to remove footer from front page"
     });

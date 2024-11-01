@@ -38,7 +38,7 @@ export function getCourseDataGenerator(
     if (term && defaultConfig.queryParams) defaultConfig.queryParams.enrollment_term_id = term.id;
     config = overrideConfig(defaultConfig, config);
     const generators = accountIds.map(accountId => {
-        let url = `/api/v1/accounts/${accountId}/courses`;
+        const url = `/api/v1/accounts/${accountId}/courses`;
         return getPagedDataGenerator<ICourseData>(url, config);
     })
     return mergePagedDataGenerators(generators);
@@ -50,7 +50,7 @@ export function getCourseGenerator(
 }
 
 export async function getSingleCourse(queryString: string, accountIds: number[], term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
-    for (let accountId of accountIds) {
+    for (const accountId of accountIds) {
         const courseDatas = await fetchJson<ICourseData[]>(
             `/api/v1/accounts/${accountId}/courses`,
             overrideConfig({queryParams: {search_term: queryString}}, config)
@@ -68,7 +68,7 @@ export async function getCourseById(id: number, config?: ICanvasCallConfig<GetCo
 export async function createNewCourse(courseCode: string, accountId: number, name?: string, config?: ICanvasCallConfig) {
     name ??= courseCode;
     const createUrl = `/api/v1/accounts/${accountId}/courses/`
-    let createConfig: ICanvasCallConfig = {
+    const createConfig: ICanvasCallConfig = {
         fetchInit: {
             method: 'POST',
             body: formDataify({

@@ -59,7 +59,7 @@ export function CourseUpdateInterface({
 
         setValidations(allValidations.filter(validation => {
             if(!validation.courseCodes) return true;
-            for(let code of validation.courseCodes) {
+            for(const code of validation.courseCodes) {
                 if ( course.parsedCourseCode?.toUpperCase().includes(code.toLocaleUpperCase('en-US'))) {
                     return true;
                 }

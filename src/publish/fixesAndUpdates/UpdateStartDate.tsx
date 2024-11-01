@@ -77,8 +77,8 @@ export function UpdateStartDate(
                 }
             });
 
-            for await (let value of announcementGenerator) {
-                let discussion = new Discussion(value, course.id);
+            for await (const value of announcementGenerator) {
+                const discussion = new Discussion(value, course.id);
                 console.log(contentDateOffset);
                 await discussion.offsetPublishDelay(contentDateOffset);
                 affectedItems.push(ContentAffectedRow(discussion))
@@ -161,9 +161,9 @@ type PlainDate = Temporal.PlainDate;
 async function updateAssignmentDates(courseId: number, startDate: PlainDate, workingStartDate: PlainDate) {
     const assignments = await renderAsyncGen(assignmentDataGen(courseId))
     const affectedItems = [];
-    let startOfFirstWeek = getStartDateAssignments(assignments);
+    const startOfFirstWeek = getStartDateAssignments(assignments);
     let contentDateOffset = startDate.until(workingStartDate).days;
-    let startOfFirstWeekOffset = startOfFirstWeek.until(workingStartDate).days;
+    const startOfFirstWeekOffset = startOfFirstWeek.until(workingStartDate).days;
 
     if (contentDateOffset != startOfFirstWeekOffset) {
         affectedItems.push(<div>Note: start date mismatch. Offsetting content based on </div>)

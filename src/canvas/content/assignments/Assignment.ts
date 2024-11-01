@@ -38,7 +38,7 @@ export class Assignment extends BaseContentItem {
 
         }
 
-        let data = await this.saveData(payload, config);
+        const data = await this.saveData(payload, config);
 
 
         this.canvasData['due_at'] = dueAt.toISOString();

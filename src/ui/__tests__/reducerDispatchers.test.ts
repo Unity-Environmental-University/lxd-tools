@@ -11,7 +11,7 @@ describe('collection lookuptable dispatcher', () => {
 
 
     test('add', () => {
-        let state = listLutDispatcher(initialState, {
+        const state = listLutDispatcher(initialState, {
             add: ['dogs', ['steve']]
         });
         expect(state).toEqual({
@@ -20,7 +20,7 @@ describe('collection lookuptable dispatcher', () => {
         })
     });
     test('clear', () => {
-        let state = listLutDispatcher(initialState, {
+        const state = listLutDispatcher(initialState, {
             clear: true,
         })
         expect(state).toEqual({})
@@ -40,7 +40,7 @@ describe('collection lookuptable dispatcher', () => {
     });
 
     test ('set', () => {
-        let state = listLutDispatcher({
+        const state = listLutDispatcher({
                 cats: ['charlene'],
                 dogs: ['spike'],
                 people: ['tom', 'dick', 'harry']
@@ -73,14 +73,14 @@ describe('Lookup Table Dispatcher', () => {
     };
 
     it('adds elements on set', () => {
-        let state = lutDispatcher(initialState, {
+        const state = lutDispatcher(initialState, {
             set: ['jon','human']
         })
-        for(let key in initialState) expect(state[key]).toEqual(initialState[key])
+        for(const key in initialState) expect(state[key]).toEqual(initialState[key])
         expect(state.jon).toEqual('human');
     })
     it('accepts an object literal as input', () => {
-        let state = lutDispatcher(initialState, {
+        const state = lutDispatcher(initialState, {
             set: {
                 jon: 'human',
                 nermal: 'cat'
@@ -90,7 +90,7 @@ describe('Lookup Table Dispatcher', () => {
         expect(state).toEqual({...initialState, jon: 'human', nermal: 'cat'})
     })
     it('clears out properly', () => {
-        let state = lutDispatcher(initialState, {
+        const state = lutDispatcher(initialState, {
             clear: true,
         })
         expect(state).toEqual({});
@@ -102,17 +102,17 @@ describe('List Dispatcher', () => {
     const initialSate = ['odie', 'garfield'];
 
     it('adds elements', () => {
-        let state = listDispatcher(initialSate, {add: ['jon']});
+        const state = listDispatcher(initialSate, {add: ['jon']});
         expect(state).toEqual([...initialSate, 'jon'])
     })
 
     it('sets properly', () => {
-        let state = listDispatcher(initialSate, {set: ['jon']});
+        const state = listDispatcher(initialSate, {set: ['jon']});
         expect(state).toEqual(['jon'])
     })
 
     it('clears properly', () => {
-        let state = listDispatcher(initialSate, {clear: true});
+        const state = listDispatcher(initialSate, {clear: true});
         expect(state).toEqual([])
     })
 

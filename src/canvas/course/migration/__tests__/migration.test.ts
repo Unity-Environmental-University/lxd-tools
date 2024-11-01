@@ -79,13 +79,13 @@ describe('Course migration', () => {
         }))
         const migrationGenerator = courseMigrationGenerator(0, 1, 20);
 
-        for (let state of workflowStates) {
+        for (const state of workflowStates) {
             fetchMock.mockResponseOnce(JSON.stringify(<IProgressData>{
                 ...mockProgressData, workflow_state: state
             }))
         }
         const workflowIterator = workflowStates.values();
-        for await (let progress of migrationGenerator) {
+        for await (const progress of migrationGenerator) {
             expect(progress.workflow_state).toBe(workflowIterator.next().value)
         }
     })
@@ -100,7 +100,7 @@ describe('Course migration', () => {
         fetchMock.mockResponseOnce(JSON.stringify(<IMigrationData>{
             ...mockMigrationData, workflow_state: 'queued'
         }))
-        for (let state of workflowStates) {
+        for (const state of workflowStates) {
             fetchMock.mockResponseOnce(JSON.stringify(<IProgressData>{
                 ...mockProgressData, workflow_state: state
             }))
@@ -108,7 +108,7 @@ describe('Course migration', () => {
         const migrationGenerator = courseMigrationGenerator(0, 1, 0);
 
         await expect(async () => {
-            for await (let progress of migrationGenerator) {
+            for await (const progress of migrationGenerator) {
                 expect(progress.id).toBe(mockProgressData.id)
             }
         }).rejects.toThrow(/Migration Error/)

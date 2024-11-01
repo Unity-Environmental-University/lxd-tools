@@ -155,7 +155,7 @@ describe('getContentItemId', () => {
         expect(getContentItemId({id: 10, quiz_id: 99}, "Quiz")).toEqual(99);
     })
     it('should return id for anything else', () => {
-        for (let type of <ModuleItemType[]>["ExternalTool", "ExternalUrl", "Page", "File", "Subheader"]) {
+        for (const type of <ModuleItemType[]>["ExternalTool", "ExternalUrl", "Page", "File", "Subheader"]) {
             expect(getContentItemId({id: 12}, type)).toEqual(12);
 
         }

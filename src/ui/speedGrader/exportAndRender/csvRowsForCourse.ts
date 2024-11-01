@@ -42,8 +42,8 @@ export async function csvRowsForCourse(course: SectionData | ICourseData, assign
     const assignmentsCollection = new AssignmentsCollection(assignments);
 
 
-    for await (let enrollment of enrollments) {
-        let out_rows = await getRows({
+    for await (const enrollment of enrollments) {
+        const out_rows = await getRows({
             enrollment,
             modules,
             userSubmissions,

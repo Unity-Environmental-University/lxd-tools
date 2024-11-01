@@ -15,8 +15,8 @@ export async function getRowsForSections(sections: SectionData[] | ICourseData[]
             saveDataGenFunc()(sectionRows, `Rubric Scores ${section.course_code}.csv`);
             return sectionRows;
         }))
-        for (let rowSet of rowsOfRows) {
-            for (let row of rowSet) {
+        for (const rowSet of rowsOfRows) {
+            for (const row of rowSet) {
                 allSectionRows.push(row);
             }
         }

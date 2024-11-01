@@ -25,7 +25,7 @@ export function BpButton({course, currentBp}: BpButtonProps) {
         if(!bpGen) return;
         const loadBps:ICourseData[] = [];
         let i = 0;
-        for await (let bp of bpGen) {
+        for await (const bp of bpGen) {
             loadBps.push(bp);
             dispatchBps({ set: loadBps})
 

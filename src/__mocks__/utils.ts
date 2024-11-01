@@ -1,6 +1,6 @@
 export function returnMockAsyncGen<T>(dataSet: T[]) {
     return async function* () {
-        for (let value of dataSet) yield value;
+        for (const value of dataSet) yield value;
     }
 }
 

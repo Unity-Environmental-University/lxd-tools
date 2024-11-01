@@ -31,7 +31,7 @@ export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextRe
 
         const beforeAndAfters = 'beforeAndAfters' in test? test.beforeAndAfters : [[goofusSyllabusHtml, gallantSyllabusHtml]];
 
-        for (let [goofusHtml, gallantHtml] of beforeAndAfters) {
+        for (const [goofusHtml, gallantHtml] of beforeAndAfters) {
             const gallantCourse: ISyllabusHaver = mockSyllabusHaver(gallantHtml);
             const gallantResult = await test.run(gallantCourse)
             expect(gallantResult).toHaveProperty('success', true);
@@ -43,7 +43,7 @@ export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextRe
         }
 
         if ('beforeAndAfters' in test && test.fix) {
-            for (let [goofus, gallant] of test.beforeAndAfters) {
+            for (const [goofus, gallant] of test.beforeAndAfters) {
                 const goofusCourse: ISyllabusHaver = mockSyllabusHaver(goofus);
                 await test.fix(goofusCourse);
                 const syllabus = await goofusCourse.getSyllabus();

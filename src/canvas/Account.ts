@@ -18,7 +18,7 @@ export class Account extends BaseCanvasObject<CanvasData> {
         if (url === null) {
             url = document.documentURI;
         }
-        let match = /accounts\/(\d+)/.exec(url);
+        const match = /accounts\/(\d+)/.exec(url);
         if (match) {
             console.log(match);
             return await this.getAccountById(parseInt(match[1]));
@@ -36,8 +36,8 @@ export class Account extends BaseCanvasObject<CanvasData> {
         if (!resetCache && this.hasOwnProperty('account') && this.account) {
             return this.account;
         }
-        let accountGen = getPagedDataGenerator('/api/v1/accounts')
-        for await (let account of accountGen) {
+        const accountGen = getPagedDataGenerator('/api/v1/accounts')
+        for await (const account of accountGen) {
             if(account.root_account_id) continue; //if there is a root_account_id, this is not the root account
             const root = new Account(account);
             this.account = root;

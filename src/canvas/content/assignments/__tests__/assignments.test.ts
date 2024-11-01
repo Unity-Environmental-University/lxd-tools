@@ -37,8 +37,8 @@ it('gets assignments from course id', async () => {
 
     const responseDatas = [...range(0, 10)].map(id => ({...mockAssignmentData, id}));
     (getPagedDataGenerator as jest.Mock).mockImplementation(returnMockAsyncGen(responseDatas));
-    let i = range(0, 10);
-    for await (let assignment of assignmentDataGen(id, config)) {
+    const i = range(0, 10);
+    for await (const assignment of assignmentDataGen(id, config)) {
         expect(assignment.id).toEqual(i.next().value);
     }
 })
@@ -58,7 +58,7 @@ it('updates assignment data', async () => {
         data: "FormData"
     }
     const config = {};
-    let formDataify = jest.spyOn(canvasUtils, 'formDataify');
+    const formDataify = jest.spyOn(canvasUtils, 'formDataify');
     (fetchJson as jest.Mock).mockResolvedValue(mockData);
     (formDataify as jest.Mock).mockReturnValue(formData)
     const result = await updateAssignmentData(0, 0, updateData);

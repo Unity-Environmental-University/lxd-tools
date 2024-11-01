@@ -9,11 +9,11 @@ export type ResizeImageMessage = {
 }
 
 export async function getResizedBlob(src: string, width: number, height: number | undefined = undefined) {
-    let imageSrc = await contentDownloadImage(src);
-    let canvas = document.createElement('canvas');
-    let image = new Image();
+    const imageSrc = await contentDownloadImage(src);
+    const canvas = document.createElement('canvas');
+    const image = new Image();
     image.src = imageSrc;
-    let ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     return new Promise<Blob|null>((resolve) => {
         image.onload = () => {
             height ??= image.height / image.width * width;
@@ -40,7 +40,7 @@ export function backgroundDownloadImage(src: string) {
 
     return new Promise(async(resolve) => {
         const imageFileResponse = await fetch(imageUrl);
-        let reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = event => {
             console.log(reader.result);
             resolve(reader.result)

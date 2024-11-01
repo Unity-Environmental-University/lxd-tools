@@ -1,10 +1,10 @@
 import {COURSE_CODE_REGEX} from "@/canvas/course/Course";
 
 export function parseCourseCode(code: string) {
-    let match = COURSE_CODE_REGEX.exec(code);
+    const match = COURSE_CODE_REGEX.exec(code);
     if (!match) return null;
-    let prefix = match[1] || "";
-    let courseCode = match[2] || "";
+    const prefix = match[1] || "";
+    const courseCode = match[2] || "";
     if (prefix.length > 0) {
         return `${prefix}_${courseCode}`;
     }
@@ -12,7 +12,7 @@ export function parseCourseCode(code: string) {
 }
 
 export function baseCourseCode(code: string) {
-    let match = COURSE_CODE_REGEX.exec(code);
+    const match = COURSE_CODE_REGEX.exec(code);
     if (!match) return null;
     return match[2];
 }

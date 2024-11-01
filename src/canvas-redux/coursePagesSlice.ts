@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import {IPageData} from "@canvas/content/pages/types";
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import { IPageData } from "@canvas/content/pages/types";
 import PageKind from "@canvas/content/pages/PageKind";
 
 // Define types for your state
@@ -36,7 +36,7 @@ export const fetchCoursePages = createAsyncThunk<
       for await (const pageData of pageDataGen) {
         dispatch(updateCoursePages({ pageData })); // Ensure updateCoursePages has the correct payload
       }
-    } catch (error) {
+    } catch (_error) {
       return rejectWithValue('Failed to fetch course pages');
     }
   }
@@ -68,13 +68,23 @@ const coursePagesSlice = createSlice({
   },
 });
 
+// Memoized selectors
+const selectCoursePages = (state: { coursePages: CoursePagesState }) => state.coursePages;
 
+export const getSliceCoursePagesData = createSelector(
+  selectCoursePages,
+  (coursePages) => coursePages.data
+);
 
+export const getSliceCoursePagesStatus = createSelector(
+  selectCoursePages,
+  (coursePages) => coursePages.loading
+);
 
-export const getSliceCoursePagesData = (state: State) => state.data;
-export const getSliceCoursePagesStatus = (state: State) => state.loading;
-export const getSliceCoursePagesError = (state: State) => state.error;
+export const getSliceCoursePagesError = createSelector(
+  selectCoursePages,
+  (coursePages) => coursePages.error
+);
 
 export const { updateCoursePages } = coursePagesSlice.actions;
-export const getCoursePagesState = (state: { coursePages: CoursePagesState }) => state.coursePages;
 export default coursePagesSlice.reducer;

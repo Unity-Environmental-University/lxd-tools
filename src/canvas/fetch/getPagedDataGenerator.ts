@@ -13,7 +13,7 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
     const generator = getPagedDataGenerator<T>(url, config);
 
     const out: T[] = [];
-    for await (let value of generator) {
+    for await (const value of generator) {
         out.push(value);
     }
     return out;
@@ -52,8 +52,8 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
  * making it a great tool for consuming paginated data without needing to manage manual pagination or buffering.
  */
 export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData>(generators: AsyncGenerator<T, T[], void>[]) {
-    for (let generator of generators) {
-        for await (let result of generator) {
+    for (const generator of generators) {
+        for await (const result of generator) {
             yield result;
         }
     }
@@ -79,7 +79,7 @@ function handleResponseData<T extends CanvasData>(data: undefined | null | T | T
         return [] as T[]
     }
     if (typeof data === 'object' && !Array.isArray(data)) {
-        let values = Array.from(Object.values(data));
+        const values = Array.from(Object.values(data));
         if (values) {
             data = values.find((a) => Array.isArray(a)) as T[];
         }
@@ -130,9 +130,9 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
 
     /* Returns a list of data from a GET request, going through multiple pages of data requests as necessary */
     let response = await fetch(url, config?.fetchInit);
-    let data = handleResponseData<T>(await response.json(), url);
+    const data = handleResponseData<T>(await response.json(), url);
     if (data.length === 0) return data;
-    for (let value of data) yield value;
+    for (const value of data) yield value;
 
     let next_page_link = "!";
     while (next_page_link.length !== 0 &&
@@ -142,9 +142,9 @@ export async function* getPagedDataGenerator<T extends CanvasData = CanvasData>(
         if (!nextLink) break;
         next_page_link = nextLink.split(";")[0].split("<")[1].split(">")[0];
         response = await fetch(next_page_link, config?.fetchInit);
-        let responseData = handleResponseData<T>(await response.json(), url);
+        const responseData = handleResponseData<T>(await response.json(), url);
 
-        for (let value of responseData) {
+        for (const value of responseData) {
             yield value;
         }
     }

@@ -40,7 +40,7 @@ const removeLmNarrativePlaceholder = {
         el.innerHTML = input;
         const divs = el.querySelectorAll<HTMLDivElement>('div.cbt-content');
         const toRemove = Array.from(divs).filter((div) => div.innerHTML.includes('LM Narrative'));
-        for(let element of toRemove) element.remove();
+        for(const element of toRemove) element.remove();
         const output = el.innerHTML;
         el.remove();
         return output;
@@ -64,7 +64,7 @@ const contentFixes: ContentFix[] = [
  * @param course
  */
 async function fixLmAnnotations(course:Course) {
-    let pages = await course.getPages({
+    const pages = await course.getPages({
         queryParams: {
             include: ['body'],
             search_term: 'learning materials'
@@ -76,7 +76,7 @@ async function fixLmAnnotations(course:Course) {
     const failedPages: Page[]  = [];
     const failedFixes: FixFailureResult<string>[] = [];
 
-    for (let page of pages) {
+    for (const page of pages) {
         const sourceHtml = page.body;
         const fix = runReplacements(contentFixes, sourceHtml);
         const fixedValue = fix.output;

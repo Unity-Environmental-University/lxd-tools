@@ -71,8 +71,8 @@ function SetOpenAiKey() {
     }
 
     useEffectAsync(async () => {
-            let savedKeyRecord = await storage.local.get(OPEN_AI_API_KEY_KEY);
-            let savedKey = savedKeyRecord[OPEN_AI_API_KEY_KEY] as string;
+            const savedKeyRecord = await storage.local.get(OPEN_AI_API_KEY_KEY);
+            const savedKey = savedKeyRecord[OPEN_AI_API_KEY_KEY] as string;
             console.log(savedKey);
             setKey(savedKey);
     }, []);

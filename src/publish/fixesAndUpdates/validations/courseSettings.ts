@@ -21,7 +21,7 @@ export const extensionsInstalledTest: CourseValidation<Course> = {
     run: async (course, config) => {
         const missing: Set<string> = new Set(extensionsToTest);
         const tabs = await course.getTabs(config);
-        for (let tab of tabs) {
+        for (const tab of tabs) {
             if (missing.has(tab.label) && !tab.hidden) missing.delete(tab.label);
         }
         return {
@@ -120,7 +120,7 @@ export const badGradingPolicyTest: CourseFixValidation<Course, BadGradingUserDat
                 underGradStandard,
             }
 
-            let success = currentGradingStandard?.title == expectedStandard.title;
+            const success = currentGradingStandard?.title == expectedStandard.title;
 
             const failureMessage = [{
                 bodyLines: [`Grading standard set to ${currentGradingStandard?.title} expected to be ${expectedStandard.title}`],

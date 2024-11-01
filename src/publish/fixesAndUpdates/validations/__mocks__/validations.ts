@@ -27,9 +27,9 @@ import {Assignment} from "@/canvas/content/assignments/Assignment";
 export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string, badContentItems?:IContentHaver[]) {
     return async () => {
 
-        let goofuses: IContentHaver[] = badContentItems ?? contentGoofuses(badHtml, goodHtml);
+        const goofuses: IContentHaver[] = badContentItems ?? contentGoofuses(badHtml, goodHtml);
 
-        for (let goofus of goofuses) {
+        for (const goofus of goofuses) {
             const result = await test.run(goofus);
             assert(!result.success, badHtml)
         }
@@ -57,7 +57,7 @@ export function badContentTextValidationFixTest<
                     [...aggregator, ...courseFunc(badExample, goodExample)]
                 , [] as IContentHaver[])
 
-            for (let goofus of goofuses) {
+            for (const goofus of goofuses) {
                 let testResult = await test.run(goofus);
                 expect(testResult.success).toBe(false);
                 const fixResult = await test.fix(goofus);
@@ -78,7 +78,7 @@ export function badContentTextValidationFixTest<
         }, [] as string[])];
 
         if(test.positiveExemplars) successfulText.push(...test.positiveExemplars);
-        for await (let result of successfulText.map((text) => test.run(contentGallant(text)))) {
+        for await (const result of successfulText.map((text) => test.run(contentGallant(text)))) {
             if(!result.success) {
                 console.error(result.messages.map(msg => msg.bodyLines))
             }

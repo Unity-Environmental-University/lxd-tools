@@ -31,7 +31,7 @@ runtime.onMessage.addListener((
     sender,
     sendResponse
 ) => {
-  for(let messageKey in messageHandlers) {
+  for(const messageKey in messageHandlers) {
     if(message.hasOwnProperty(messageKey)) {
       const handler = messageHandlers[messageKey];
       const params = message[messageKey];
@@ -43,7 +43,7 @@ runtime.onMessage.addListener((
 runtime.onMessage.addListener((message: { downloadImage : string }, sender, sendResponse:(value:any) => void) => {
   if (message.downloadImage) {
     (async () => {
-      let resized = await backgroundDownloadImage(message.downloadImage);
+      const resized = await backgroundDownloadImage(message.downloadImage);
       sendResponse(resized);
 
     })();

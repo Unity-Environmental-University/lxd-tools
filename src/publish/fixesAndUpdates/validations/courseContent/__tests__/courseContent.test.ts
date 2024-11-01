@@ -127,7 +127,7 @@ test('Course project outline header not "Project outline" test works', async () 
 })
 
 describe("Code of code of conduct", () => {
-    for (let [bad, good] of codeAndCodeOfCodeTest.beforeAndAfters) {
+    for (const [bad, good] of codeAndCodeOfCodeTest.beforeAndAfters) {
         test(`Text works ${bad}, ${good}`, badContentTextValidationTest(codeAndCodeOfCodeTest, bad, good));
     }
 
@@ -144,7 +144,7 @@ describe("Code of code of conduct", () => {
 })
 
 describe("Overview Discussion 3AM night -> morning", () => {
-    for (let [bad, good] of overviewDiscMornToNightTest.beforeAndAfters) {
+    for (const [bad, good] of overviewDiscMornToNightTest.beforeAndAfters) {
         test(`Text works ${bad}, ${good}`, badContentTextValidationTest(overviewDiscMornToNightTest, bad, good));
     }
 

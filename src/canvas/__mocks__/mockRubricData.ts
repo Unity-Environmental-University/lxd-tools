@@ -56,7 +56,7 @@ export const mockRubric:IRubricData = {
   ) {
 
     return assignmentIds.map((association_id, index) => {
-      let rubric_id = 1000 + index;
+      const rubric_id = 1000 + index;
       return {
         ...mockRubric,
         id: rubric_id,

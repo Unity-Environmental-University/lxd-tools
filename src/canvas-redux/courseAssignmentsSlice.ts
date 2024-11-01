@@ -1,41 +1,42 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {IAssignmentData} from "@canvas/content/assignments/types";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSelector } from 'reselect'; // Import createSelector for memoization
+import { IAssignmentData } from "@canvas/content/assignments/types";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
+// Define types for payload and state
 type PayloadParams = {
     courseId: number,
+};
 
-}
-
+export const SLICE_NAME = "courseAssignments"
 
 const initialState = {
     data: [] as IAssignmentData[],
     loading: false,
     error: undefined as string | undefined,
-}
+};
 
 type State = typeof initialState;
 
+// Async thunk for fetching course assignments
 export const fetchCourseAssignments = createAsyncThunk(
-    'courseAssignments/fetchCourseAssignments',
-    async ({courseId}: PayloadParams, thunkAPI) => {
-        // Fetch modules if not provided
-
-        // Filter out modules already processed
-        const assignmentDataGen = AssignmentKind.dataGenerator(courseId)
+    `${SLICE_NAME}/fetchCourseAssignments`,
+    async ({ courseId }: PayloadParams, thunkAPI) => {
+        const assignmentDataGen = AssignmentKind.dataGenerator(courseId);
 
         for await (const assignmentData of assignmentDataGen) {
-            thunkAPI.dispatch(updateCourseAssignments({assignmentData}));
+            thunkAPI.dispatch(updateCourseAssignments({ assignmentData }));
         }
     }
-)
+);
 
+// Create the slice
 const courseAssignmentsSlice = createSlice({
-    name: 'courseAssignments',
+    name: SLICE_NAME,
     initialState,
     reducers: {
         updateCourseAssignments: (state, action) => {
-            const {assignmentData} = action.payload;
+            const { assignmentData } = action.payload;
             state.data.push(assignmentData);
         },
     },
@@ -54,9 +55,33 @@ const courseAssignmentsSlice = createSlice({
     },
 });
 
+// Export actions
+export const { updateCourseAssignments } = courseAssignmentsSlice.actions;
 
-export const {updateCourseAssignments} = courseAssignmentsSlice.actions;
-export const getSliceCourseAssignmentsData = (state: State) => state.data;
-export const getSliceCourseAssignmentsStatus = (state: State) => state.loading;
-export const getSliceCourseAssignmentsError = (state: State) => state.error;
+
+// Define PartialRootState
+type PartialRootState = {
+    [key in typeof SLICE_NAME]?: State;
+};
+
+// Base selector for accessing the courseAssignments slice
+const selectCourseAssignmentsState = (state: PartialRootState) => state[SLICE_NAME];
+
+// Memoized selectors for data, loading, and error states
+export const getSliceCourseAssignmentsData = createSelector(
+    selectCourseAssignmentsState,
+    (courseAssignments) => courseAssignments?.data
+);
+
+export const getSliceCourseAssignmentsStatus = createSelector(
+    selectCourseAssignmentsState,
+    (courseAssignments) => courseAssignments?.loading
+);
+
+export const getSliceCourseAssignmentsError = createSelector(
+    selectCourseAssignmentsState,
+    (courseAssignments) => courseAssignments?.error
+);
+
+// Export the reducer
 export default courseAssignmentsSlice.reducer;

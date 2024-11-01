@@ -142,7 +142,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         const out = {section, instructors, frontPageProfile};
 
         if (!potentialProfilesByCourseId[section.id]) {
-        let profiles = await section.getPotentialInstructorProfiles();
+        const profiles = await section.getPotentialInstructorProfiles();
             dispatchPotentialProfilesByCourseId({set: [section.id, profiles]})
         }
         dispatchSectionInfoCache({set: [courseId, out]});
@@ -151,14 +151,14 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
 
     function openAll() {
-        for (let course of Object.values(sections)) {
+        for (const course of Object.values(sections)) {
             window.open(course.courseUrl, "_blank");
         }
     }
 
     function sectionError(section: Course, error: string) {
-        let tempErrors = {...errorsByCourseId}
-        let errorSet = tempErrors[section.id] ?? [];
+        const tempErrors = {...errorsByCourseId}
+        const errorSet = tempErrors[section.id] ?? [];
         errorSet.push(error);
         tempErrors[section.id] = errorSet
         setErrorsByCourseId({...tempErrors})
@@ -169,7 +169,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         inform("Updating section profiles...");
         const currentProfiles = {...frontPageProfilesByCourseId};
         setErrorsByCourseId({});
-        for (let section of Object.values(sections)) {
+        for (const section of Object.values(sections)) {
             const profiles = potentialProfilesByCourseId[section.id];
             const errors = [];
             if (profiles.length < 1) {
@@ -216,7 +216,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         let tempTerm: Term | null = null;
 
         let actualStart: Temporal.PlainDate | null;
-        for await (let sectionInfos of batchGen(sectionGen, 6)) {
+        for await (const sectionInfos of batchGen(sectionGen, 6)) {
             const promises = sectionInfos.map(sectionInfo => (async () => {
                 const result = await loadSection(sectionInfo.id);
                 console.log(result);

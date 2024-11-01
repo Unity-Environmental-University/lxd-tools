@@ -1,22 +1,24 @@
-import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {ICourseData} from "@canvas/courseTypes";
-import {fetchJson} from "@canvas/fetch/fetchJson";
-import {getCourseData} from "@canvas/course";
-import {GetCourseOptions} from "@canvas/course/courseTypes";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector } from "reselect";
+import { ICourseData } from "@canvas/courseTypes";
+import { getCourseData } from "@canvas/course";
+import { GetCourseOptions } from "@canvas/course/courseTypes";
 
-//OpenAI. (2024). ChatGPT [Large language model]. https://chatgpt.com/c/63b33b66-0ab7-4974-a35e-f6297411628e used for interactive learning on adding fetch behavior
-
+// Define a type for the fetch parameters
 type FetchCourseDataParams = {
     courseId: number,
-    options? : GetCourseOptions,
+    options?: GetCourseOptions,
 }
 
-export const fetchCourseData = createAsyncThunk(
-    'courseData/fetchCourseData',
-    async ({courseId, options}: FetchCourseDataParams, {rejectWithValue}) => {
-        try {
+// Step 1: Define the slice name as a constant
+export const SLICE_NAME = 'courseData';
 
-            return await getCourseData(courseId, { queryParams: options })
+// Step 2: Create an async thunk for fetching course data
+export const fetchCourseData = createAsyncThunk(
+    `${SLICE_NAME}/fetchCourseData`,
+    async ({ courseId, options }: FetchCourseDataParams, { rejectWithValue }) => {
+        try {
+            return await getCourseData(courseId, { queryParams: options });
         } catch (error) {
             const errorText = error ? error.toString() : 'Error';
             return rejectWithValue(errorText);
@@ -24,24 +26,27 @@ export const fetchCourseData = createAsyncThunk(
     }
 );
 
+// Define the initial state type
 export type InitialCourseSliceState = {
-    courseData: ICourseData | undefined,
-    status: 'idle' | 'loading' | 'succeeded' | 'failed',
-    error: string | null,
-}
+    data: ICourseData | undefined;
+    status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    error: string | undefined;
+};
 
+// Step 3: Set the initial state
 export const initialState: InitialCourseSliceState = {
-    courseData: undefined,
+    data: undefined,
     status: 'idle',
-    error: null,
-}
+    error: undefined,
+};
 
+// Create the slice
 const courseDataSlice = createSlice({
-    name: 'courseData',
+    name: SLICE_NAME, // Use the constant slice name
     initialState,
     reducers: {
         setWorkingCourseData(state, action: PayloadAction<ICourseData | undefined>) {
-            state.courseData = action.payload;
+            state.data = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -49,24 +54,38 @@ const courseDataSlice = createSlice({
             .addCase(fetchCourseData.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(fetchCourseData.fulfilled, (state, action: PayloadAction<ICourseData|undefined>) => {
+            .addCase(fetchCourseData.fulfilled, (state, action: PayloadAction<ICourseData | undefined>) => {
                 state.status = 'succeeded';
-                state.courseData = action.payload;
-                state.error = null;
+                state.data = action.payload;
+                state.error = undefined;
             })
             .addCase(fetchCourseData.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload as string;
-            })
-    }
-})
+            });
+    },
+});
 
-
-
-export const getWorkingCourseData = (state: ReturnType<typeof courseDataSlice.reducer> ) => state.courseData;
-export const getStatus = (state: ReturnType<typeof courseDataSlice.reducer> ) => state.status;
-export const getError = (state: ReturnType<typeof courseDataSlice.reducer> ) => state.error;
-export const {setWorkingCourseData} = courseDataSlice.actions
+// Export actions and reducer
+export const { setWorkingCourseData } = courseDataSlice.actions;
 const courseDataReducer = courseDataSlice.reducer;
-
 export default courseDataReducer;
+
+// Step 4: Define the base selector
+const selectCourseDataState = (state: { [key: string]: InitialCourseSliceState }) => state[SLICE_NAME];
+
+// Step 5: Define memoized selectors
+export const getWorkingCourseData = createSelector(
+    selectCourseDataState,
+    (courseData) => courseData.data
+);
+
+export const getStatus = createSelector(
+    selectCourseDataState,
+    (courseData) => courseData.status
+);
+
+export const getError = createSelector(
+    selectCourseDataState,
+    (courseData) => courseData.error
+);

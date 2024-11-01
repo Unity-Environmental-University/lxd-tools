@@ -20,7 +20,7 @@ export function addHomeTileButton(el: HTMLElement, course: Course) {
 
 export async function addSectionsButton(header: HTMLElement, bp: Course, currentCourse: Course | null = null) {
     const sourceCourse = currentCourse ?? bp;
-    let sectionBtn = document.createElement('btn');
+    const sectionBtn = document.createElement('btn');
     sectionBtn.classList.add('btn');
     sectionBtn.innerHTML = "Sections";
     sectionBtn.title = "Open all sections associated with the current BP for this course."
@@ -33,7 +33,7 @@ export async function addSectionsButton(header: HTMLElement, bp: Course, current
 export async function addDevButton(header: HTMLElement, course: Course) {
     const parentCourse = await course.getParentCourse();
     if (parentCourse) {
-        let parentBtn = document.createElement('btn');
+        const parentBtn = document.createElement('btn');
 
         parentBtn.classList.add('btn');
         parentBtn.innerHTML = "DEV";
@@ -54,7 +54,7 @@ export async function addOpenAllLinksButton(
     header: HTMLElement,
     currentContentItem: BaseContentItem
 ) {
-    let btn = document.createElement('btn');
+    const btn = document.createElement('btn');
     btn.classList.add('btn');
     btn.innerHTML = "Links";
     btn.title = "Open all links in the content of this page into their own tabs."
@@ -70,13 +70,13 @@ export async function addOpenAllLinksButton(
 export function openContentFiles(contentItem: BaseContentItem) {
     if(!contentItem.body) return;
     const urls = new Set(getFileLinks(contentItem.body, contentItem.courseId));
-    for (let url of urls) window.open(url, "_blank");
+    for (const url of urls) window.open(url, "_blank");
 }
 
 export function openContentExternalLinks(contentItem: BaseContentItem) {
     if(!contentItem.body) return;
     const urls = new Set(getExternalLinks(contentItem.body, contentItem.courseId));
-    for (let url of urls) window.open(url, "_blank");
+    for (const url of urls) window.open(url, "_blank");
 }
 
 

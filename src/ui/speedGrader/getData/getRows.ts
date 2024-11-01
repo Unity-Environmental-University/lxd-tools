@@ -49,7 +49,7 @@ export async function getRows(args: IGetRowsConfig) {
     const section: number | null = sectionMatch ? parseInt(sectionMatch[1]) : null;
     const baseCode = baseCodeMatch ? baseCodeMatch[1] : null;
 
-    let instructorName = getInstructorName(instructors);
+    const instructorName = getInstructorName(instructors);
     // Let's not actually do this if we can't find the user's submissions.
 
     const baseRow = [
@@ -61,7 +61,7 @@ export async function getRows(args: IGetRowsConfig) {
     const rows = parseSubmissions(user, userSubmissions).reduce((rows, submission) => {
         if (!user) return rows;
 
-        let {assignment} = submission;
+        const {assignment} = submission;
         let rubricSettings;
         if(!assignment) {
             console.warn('No assignment associated with submission')
@@ -70,12 +70,12 @@ export async function getRows(args: IGetRowsConfig) {
         if (assignment.hasOwnProperty('rubric_settings')) {
             rubricSettings = assignment.rubric_settings;
         }
-        let criteriaInfo = getCriteriaInfo(assignment);
+        const criteriaInfo = getCriteriaInfo(assignment);
 
         course_code.replace(/^(.*)_?(\[A-Za-z]{4}\d{3}).*$/, '$1$2')
 
-        let {rubric_assessment: rubricAssessment} = submission;
-        let rubricId = typeof (rubricSettings) !== 'undefined' && rubricSettings.hasOwnProperty('id') ?
+        const {rubric_assessment: rubricAssessment} = submission;
+        const rubricId = typeof (rubricSettings) !== 'undefined' && rubricSettings.hasOwnProperty('id') ?
             rubricSettings.id : 'No Rubric Settings';
 
         const submissionBaseRow = getSubmissionBaseRow({
@@ -101,7 +101,7 @@ export function criteriaAssessmentRows(rubricAssessment:RubricAssessment | null 
     critAssessments = fillEmptyCriteria(critAssessments, criteriaInfo, critIds);
     sortCritAssessments(critAssessments, criteriaInfo);
     return critAssessments.map((critAssessment, critIndex) => {
-        let criterion = criteriaInfo?.critsById[critAssessment.id];
+        const criterion = criteriaInfo?.critsById[critAssessment.id];
         return [...submissionBaseRow,
             criterion ? criterion.id : critAssessment.id,
             Number(critIndex) + 1,
@@ -113,7 +113,7 @@ export function criteriaAssessmentRows(rubricAssessment:RubricAssessment | null 
 }
 
 export function sortCritAssessments(critAssessments: CriteriaAssessment[], criteriaInfo?: CriteriaInfo | null) {
-    let critOrder = criteriaInfo?.order;
+    const critOrder = criteriaInfo?.order;
     if (critOrder) {
         critAssessments.sort(function (a, b) {
             assert(critOrder);
@@ -123,7 +123,7 @@ export function sortCritAssessments(critAssessments: CriteriaAssessment[], crite
 }
 
 export function fillEmptyCriteria(critAssessments: CriteriaAssessment[], criteriaInfo: any, critIds: any) {
-    for (let critKey in criteriaInfo?.order) {
+    for (const critKey in criteriaInfo?.order) {
         if (!critIds.includes(critKey)) {
             critAssessments.push({'id': critKey, 'points': null, 'rating': null});
         }
@@ -148,18 +148,18 @@ export function getCriteriaInfo(assignment: IAssignmentData): CriteriaInfo | nul
     if (!assignment || !assignment.rubric) {
         return null;
     }
-    let rubricCriteria = assignment.rubric;
+    const rubricCriteria = assignment.rubric;
 
-    let order: LookUpTable<number> = {};
-    let ratingDescriptions: Record<string, Record<string, any>> = {};
-    let critsById: LookUpTable<IRubricCriterionData> = {};
-    for (let critIndex in rubricCriteria) {
-        let rubricCriterion: IRubricCriterionData = rubricCriteria[critIndex];
+    const order: LookUpTable<number> = {};
+    const ratingDescriptions: Record<string, Record<string, any>> = {};
+    const critsById: LookUpTable<IRubricCriterionData> = {};
+    for (const critIndex in rubricCriteria) {
+        const rubricCriterion: IRubricCriterionData = rubricCriteria[critIndex];
         order[rubricCriterion.id] = parseInt(critIndex);
         ratingDescriptions[rubricCriterion.id] = {};
         critsById[rubricCriterion.id] = rubricCriterion;
 
-        for (let rating of rubricCriterion.ratings) {
+        for (const rating of rubricCriterion.ratings) {
             ratingDescriptions[rubricCriterion.id][rating.id] = rating.description;
         }
     }
@@ -177,11 +177,11 @@ export function getInstructorName(instructors: IUserData[]) {
 }
 
 export function getCritIdsAndAssessments(rubricAssessment: RubricAssessment | undefined | null, criteriaInfo?: CriteriaInfo | null) {
-    let critAssessments = []
-    let critIds = []
+    const critAssessments = []
+    const critIds = []
     if (rubricAssessment) {
-        for (let [critKey, critValue] of Object.entries(rubricAssessment)) {
-            let crit = {
+        for (const [critKey, critValue] of Object.entries(rubricAssessment)) {
+            const crit = {
                 'id': critKey,
                 'points': critValue.points,
                 'rating': null
@@ -257,7 +257,7 @@ export function parseSubmissions(user: IUserData, userSubmissions: (IAssignmentS
     const singleUserSubmissions = userSubmissions.filter(a => a.user_id === user.id);
     if (singleUserSubmissions.length === 0) return [];
 
-    let entry = singleUserSubmissions[0];
+    const entry = singleUserSubmissions[0];
     if ('submissions' in entry) {
         return entry.submissions;
     } else {

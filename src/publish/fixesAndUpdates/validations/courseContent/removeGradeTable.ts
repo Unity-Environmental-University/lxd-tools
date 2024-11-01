@@ -20,8 +20,8 @@ export const removeGradeTable: OverviewFix = {
     async run(course) {
         const pages = await getContent(course.id);
 
-        let brokenPages = pages.filter(a => findActivitySection(a.body))
-        let success = brokenPages.length === 0;
+        const brokenPages = pages.filter(a => findActivitySection(a.body))
+        const success = brokenPages.length === 0;
 
         return testResult(success, {
             failureMessage: "Oveview page not fixed",
@@ -33,14 +33,14 @@ export const removeGradeTable: OverviewFix = {
    async fix(course, result?) {
     let success = false;
     result ??= await this.run(course);
-    let brokenPages = result.userData;
+    const brokenPages = result.userData;
 
     if (result.success || !brokenPages || brokenPages.length === 0) {
         return testResult('not run', { notFailureMessage: "Test not run; no broken pages" });
     }
 
     const fixedPages = [] as IPageData[];
-    for (let page of brokenPages) {
+    for (const page of brokenPages) {
         const body = document.createElement('div');
         body.innerHTML = page.body;
 

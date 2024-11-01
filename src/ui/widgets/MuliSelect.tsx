@@ -8,7 +8,7 @@ export interface IMultiSelectOption {
 }
 
 export function optionize<
-    BaseType extends Object,
+    BaseType extends object,
 >(
     objects: BaseType[],
     idFunc?: (object: BaseType) => number | string,
@@ -17,7 +17,7 @@ export function optionize<
 
 
     const objectsArray = Array.isArray(objects) ? objects : [objects];
-    let idGenerator = function* (i: number) {
+    const idGenerator = function* (i: number) {
         while (true) {
             yield i;
             i++;
@@ -26,15 +26,15 @@ export function optionize<
 
 
     const results = objectsArray.map(object => {
-        let key = idFunc ? idFunc(object) : idGenerator.next().value;
-        let label = labelFunc ? labelFunc(object) : key.toString();
+        const key = idFunc ? idFunc(object) : idGenerator.next().value;
+        const label = labelFunc ? labelFunc(object) : key.toString();
         return optionizeOne(object, key, label)
 
     });
     return results;
 }
 
-export function optionizeOne<BaseType extends Object>(
+export function optionizeOne<BaseType extends object>(
     object: BaseType,
     key?: number | string,
     label?: string

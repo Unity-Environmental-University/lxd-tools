@@ -39,14 +39,14 @@ export function SearchCourses({
         const accountIds = [rootAccount.id];
         setIsSearching(true)
         let courses: (Course & IMultiSelectOption)[] = [];
-        for (let code of seekCourseCodes) {
+        for (const code of seekCourseCodes) {
 
             const config = onlySearchBlueprints ? {
                 queryParams: {blueprint: true,}
             } : undefined;
             const generator = getCourseGenerator(code, accountIds, undefined,config);
 
-            for await (let course of generator) {
+            for await (const course of generator) {
                 const [optionCourse] = optionize(
                     [course],
                     course => course.id,
@@ -65,7 +65,7 @@ export function SearchCourses({
 
         const strings = courseSearchString.split(',').map(string => string.trimEnd());
         //Filter out dupes
-        let courseCodes = strings.filter((value, index, array) => array.indexOf(value) === index);
+        const courseCodes = strings.filter((value, index, array) => array.indexOf(value) === index);
         // if (onlySearchBlueprints && !includeLegacyBps) {
         //     courseCodes = courseCodes.map(bpify)
         // }

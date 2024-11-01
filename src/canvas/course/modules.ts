@@ -39,7 +39,7 @@ export async function changeModuleLockDate(courseId: number, module: IModuleData
 
 
 export async function getModuleOverview(module: IModuleData, courseId: number) {
-    let overview = module.items.find(item =>
+    const overview = module.items.find(item =>
         item.type === "Page" &&
         item.title.toLowerCase().includes('overview')
     );
@@ -52,14 +52,14 @@ export async function getModuleOverview(module: IModuleData, courseId: number) {
 
 export function getModuleWeekNumber(module: Record<string, any>) {
     const regex = /(week|module) (\d+)/i;
-    let match = module.name.match(regex);
+    const match = module.name.match(regex);
     let weekNumber = !match ? null : Number(match[1]);
     if (!weekNumber) {
-        for (let moduleItem of module.items) {
+        for (const moduleItem of module.items) {
             if (!moduleItem.hasOwnProperty('title')) {
                 continue;
             }
-            let match = moduleItem.title.match(regex);
+            const match = moduleItem.title.match(regex);
             if (match) {
                 weekNumber = match[2];
             }
@@ -69,9 +69,9 @@ export function getModuleWeekNumber(module: Record<string, any>) {
 }
 
 export async function getModulesByWeekNumber(modules: IModuleData[]) {
-    let modulesByWeekNumber: Record<string | number, IModuleData> = {};
-    for (let module of modules) {
-        let weekNumber = getModuleWeekNumber(module);
+    const modulesByWeekNumber: Record<string | number, IModuleData> = {};
+    for (const module of modules) {
+        const weekNumber = getModuleWeekNumber(module);
         if (weekNumber) {
             modulesByWeekNumber[weekNumber] = module;
         }

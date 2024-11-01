@@ -22,7 +22,7 @@ class MockAccount extends BaseCanvasObject<CanvasData> {
         if (url === null) {
             url = document.documentURI;
         }
-        let match = /accounts\/(\d+)/.exec(url);
+        const match = /accounts\/(\d+)/.exec(url);
         if (match) {
             return await this.getAccountById(parseInt(match[1]));
         }
@@ -41,7 +41,7 @@ class MockAccount extends BaseCanvasObject<CanvasData> {
         if (!resetCache && this.mockAccount) {
             return this.mockAccount;
         }
-        let root = this.mockAccounts.find((a) => a.rootAccountId === null);
+        const root = this.mockAccounts.find((a) => a.rootAccountId === null);
         if (!root) {
             throw new Error('No root account found in mock data');
         }

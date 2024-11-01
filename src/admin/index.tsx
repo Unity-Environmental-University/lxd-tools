@@ -5,8 +5,8 @@ import syllabusTests from "../publish/fixesAndUpdates/validations/syllabusTests"
 import {Course} from "@/canvas/course/Course";
 
 export function bpify(code: string) {
-    let [, prefix] = code.match(/^([^_ ]*)[_ ]/) || [null, ''];
-    let [, body] = code.match(`${prefix || ''}[ _]?(.*)`) || [null, code];
+    const [, prefix] = code.match(/^([^_ ]*)[_ ]/) || [null, ''];
+    const [, body] = code.match(`${prefix || ''}[ _]?(.*)`) || [null, code];
     return `BP_${body}`;
 }
 

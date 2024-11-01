@@ -29,10 +29,10 @@ export class Term extends BaseCanvasObject<ITermData> {
     }
 
     static async getTermById(termId: number, config: ICanvasCallConfig | null = null) {
-        let account = await Account.getRootAccount();
+        const account = await Account.getRootAccount();
         if(!account) throw new RootAccountNotFoundError();
-        let url = `/api/v1/accounts/${account.id}/terms/${termId}`;
-        let termData = await fetchJson(url, config) as ITermData | null;
+        const url = `/api/v1/accounts/${account.id}/terms/${termId}`;
+        const termData = await fetchJson(url, config) as ITermData | null;
         if (termData) return new Term(termData);
         return null;
     }
@@ -49,17 +49,17 @@ export class Term extends BaseCanvasObject<ITermData> {
         config = config || {};
         config.queryParams = config.queryParams || {};
 
-        let queryParams = config.queryParams;
+        const queryParams = config.queryParams;
         if (workflowState) queryParams['workflow_state'] = workflowState;
         if (code) queryParams['term_name'] = code;
-        let rootAccount = await Account.getRootAccount();
+        const rootAccount = await Account.getRootAccount();
         assert(rootAccount);
-        let url = `/api/v1/accounts/${rootAccount.id}/terms`;
+        const url = `/api/v1/accounts/${rootAccount.id}/terms`;
         const data = await getPagedData<ITermData>(url, config);
-        let terms: ITermData[] = [];
-        for (let datum of data) {
+        const terms: ITermData[] = [];
+        for (const datum of data) {
             if (datum.hasOwnProperty('enrollment_terms')) {
-                for (let termData of datum['enrollment_terms']) {
+                for (const termData of datum['enrollment_terms']) {
                     terms.push(termData);
                 }
             } else {

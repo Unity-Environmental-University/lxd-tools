@@ -154,7 +154,7 @@ describe("Recursive object merge", () => {
             expect(deepObjectMerge([1, 2], [3, 4])).toContain(i);
         });
 
-        let simpleMerged = deepObjectMerge([1, 2], ['a', 'b']);
+        const simpleMerged = deepObjectMerge([1, 2], ['a', 'b']);
         [1, 2, 'a', 'b'].forEach(a => {
             assert(simpleMerged);
             expect(simpleMerged).toContain(a);
@@ -165,17 +165,17 @@ describe("Recursive object merge", () => {
     });
 
     test('Files and Complex arrays', () => {
-        let object = {key: "X", value: 7, list: [1, 2, 3, 4, 5]};
-        let file = new File([JSON.stringify(object)], 'file.txt')
+        const object = {key: "X", value: 7, list: [1, 2, 3, 4, 5]};
+        const file = new File([JSON.stringify(object)], 'file.txt')
         expect(deepObjectMerge(file, file)?.name).toBe(file.name);
         let counterFile = new File([JSON.stringify(object)], 'file2.txt');
         expect(() => deepObjectMerge(file, counterFile)?.name).toThrow(AssertionError)
         counterFile = new File(['aaaaaa'], 'file.txt');
         expect(() => deepObjectMerge(file, counterFile)?.name).toThrow(AssertionError)
         expect(deepObjectMerge(file, counterFile, true)?.name).toBe(file.name)
-        let complexMerged = deepObjectMerge([null, 'a', file], [undefined, [1, 2, 3, 4], 5, object, object, file]);
+        const complexMerged = deepObjectMerge([null, 'a', file], [undefined, [1, 2, 3, 4], 5, object, object, file]);
         expect(complexMerged).toHaveLength(9);
-        for (let value of [5, 'a', null, undefined]) {
+        for (const value of [5, 'a', null, undefined]) {
             expect(complexMerged).toContain(value);
         }
 
@@ -185,7 +185,7 @@ describe("Recursive object merge", () => {
         expect(extractedObject).toStrictEqual(object);
         expect(extractedObject === extractedObjectTwo).toBe(false);
         expect(extractedObject === object).toBe(false);
-        let [fileOne, fileTwo] = objectsInMerge.filter(item => item instanceof File);
+        const [fileOne, fileTwo] = objectsInMerge.filter(item => item instanceof File);
         expect(fileOne).toBe(fileTwo);
     })
 
@@ -249,7 +249,7 @@ describe("Recursive object merge", () => {
 
     test('Complex Merge', () => {
 
-        let a: Record<string, any> = {
+        const a: Record<string, any> = {
             list: [1, 2],
             human: {
                 name: "Stan",
@@ -266,7 +266,7 @@ describe("Recursive object merge", () => {
             }
         }
 
-        let b: Record<string, any> = {
+        const b: Record<string, any> = {
             list: [2, 3, 4, undefined],
             human: {
                 name: "Stan",
@@ -282,7 +282,7 @@ describe("Recursive object merge", () => {
 
         }
 
-        let expectedMerge = {
+        const expectedMerge = {
             list: [1, 2, 2, 3, 4, undefined],
             human: {
                 name: "Stan",
@@ -326,7 +326,7 @@ describe('batchGen', () => {
         const generator = batchGen(testGenerator(), 2);
         const result = [];
 
-        for await (let batch of generator) {
+        for await (const batch of generator) {
             result.push(batch);
         }
 
@@ -337,7 +337,7 @@ describe('batchGen', () => {
         const generator = batchGen(testGenerator(), 10);
         const result = [];
 
-        for await (let batch of generator) {
+        for await (const batch of generator) {
             result.push(batch);
         }
 
@@ -349,7 +349,7 @@ describe('batchGen', () => {
         const generator = batchGen(emptyGenerator(), 2);
         const result = [];
 
-        for await (let batch of generator) {
+        for await (const batch of generator) {
             result.push(batch);
         }
 
@@ -392,7 +392,7 @@ describe('generatorMap', () => {
         const generator = generatorMap(testGenerator(), mapFunc);
         const result = [];
 
-        for await (let item of generator) {
+        for await (const item of generator) {
             result.push(item);
         }
 
@@ -404,7 +404,7 @@ describe('generatorMap', () => {
         const generator = generatorMap(testGenerator(), mapFunc);
         const result = [];
 
-        for await (let item of generator) {
+        for await (const item of generator) {
             result.push(item);
         }
 
@@ -416,7 +416,7 @@ describe('generatorMap', () => {
         const generator = generatorMap(emptyGenerator(), (value) => value);
         const result = [] as Array<any>;
 
-        for await (let item of generator) {
+        for await (const item of generator) {
             result.push(item);
         }
 
@@ -434,7 +434,7 @@ describe('batchGen additional tests', () => {
         const generator = batchGen(testGenerator(), 1);
         const result = [];
 
-        for await (let batch of generator) {
+        for await (const batch of generator) {
             result.push(batch);
         }
 
@@ -454,7 +454,7 @@ describe('batchGen additional tests', () => {
         const result = [];
 
         await expect(async () => {
-            for await (let batch of generator) {
+            for await (const batch of generator) {
                 result.push(batch);
             }
         }).rejects.toThrow('Test error');
@@ -495,7 +495,7 @@ describe('generatorMap additional tests', () => {
         const generator = generatorMap(testGenerator(), mapFunc);
         const result = [];
 
-        for await (let item of generator) {
+        for await (const item of generator) {
             result.push(item);
         }
 
@@ -509,7 +509,7 @@ describe('generatorMap additional tests', () => {
         const generator = generatorMap(testGenerator(), mapFunc);
 
         await expect(async () => {
-            for await (let item of generator) {}
+            for await (const item of generator) {}
         }).rejects.toThrow('Map error');
     });
 
@@ -518,7 +518,7 @@ describe('generatorMap additional tests', () => {
         const generator = generatorMap(testGenerator(), mapFunc);
         const result = [];
 
-        for await (let item of generator) {
+        for await (const item of generator) {
             result.push(item);
         }
 

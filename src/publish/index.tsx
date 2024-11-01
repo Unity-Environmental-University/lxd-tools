@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import PublishApp from "./PublishApp";
 //comment for publish test
 const root = document.createElement("div")
-let courseStatusEl = document.body.querySelector("#course_status")
+const courseStatusEl = document.body.querySelector("#course_status")
 const sidebarEl = document.getElementById('right-side');
 let rootAnchor: Element;
 if(courseStatusEl) {

@@ -22,7 +22,7 @@ const failedFixes: ContentFix<T>[]= [];
     const output: T = fixes.reduce((accumulator, {run, tests, preflightTests}) => {
         // run through all preflight tests, if any of them fail, return the pre-transformation value
         if (preflightTests && preflightTests.map((test) => test(output)).includes(false)) return accumulator;
-        let output = run(accumulator);
+        const output = run(accumulator);
         // run through all tests, if any of them fail, return the pre-transformation value
         if (tests && tests.map((test) => test(output)).includes(false)) {
             failedFixes.push({run, tests, preflightTests})

@@ -15,8 +15,8 @@ export function DevToBpMigrationBar({migration, course, onFinishMigration}: Migr
     const [progress, setProgress] = useState<IProgressData>()
 
     useEffectAsync(async () => {
-        let progressGen = genCourseMigrationProgress(migration, 2500);
-        for await(let progress of progressGen) {
+        const progressGen = genCourseMigrationProgress(migration, 2500);
+        for await(const progress of progressGen) {
             setProgress(progress);
         }
     }, [migration]);

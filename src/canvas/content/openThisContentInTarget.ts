@@ -17,20 +17,20 @@ export default async function openThisContentInTarget(
     const targetCourseIds = Array.isArray(target) ? target.map(getIdOrCourse) : [getIdOrCourse(target)];
 
     
-    let currentContentItem: BaseContentItem | null = await getContentItemFromUrl(document.documentURI);
-    let targetInfos = targetCourseIds.map((targetCourseId) => {
+    const currentContentItem: BaseContentItem | null = await getContentItemFromUrl(document.documentURI);
+    const targetInfos = targetCourseIds.map((targetCourseId) => {
         return {
             courseId: targetCourseId,
             contentItemPromise: currentContentItem?.getMeInAnotherCourse(targetCourseId)
         }
     });
 
-    for (let {courseId, contentItemPromise} of targetInfos) {
-        let targetContentItem = await contentItemPromise;
+    for (const {courseId, contentItemPromise} of targetInfos) {
+        const targetContentItem = await contentItemPromise;
         if (targetContentItem) {
             window.open(targetContentItem.htmlContentUrl);
         } else {
-            let url = document.URL.replace(currentCourseId.toString(), courseId.toString())
+            const url = document.URL.replace(currentCourseId.toString(), courseId.toString())
             window.open(url);
         }
     }

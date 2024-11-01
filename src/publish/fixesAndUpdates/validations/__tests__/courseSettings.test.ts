@@ -109,20 +109,20 @@ describe('Grading policy validation correct test', () => {
 
     test("Flags old UG standard", async () => {
         const oldUgSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockUgModules]);
-        let result = await badGradingPolicyTest.run(oldUgSchemeCourse);
+        const result = await badGradingPolicyTest.run(oldUgSchemeCourse);
         expect(result.success).toBe(false);
     })
 
     test("Flags ug scheme in new course old UG standard", async () => {
         const badGradSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockGradModules]);
-        let result = await badGradingPolicyTest.run(badGradSchemeCourse);
+        const result = await badGradingPolicyTest.run(badGradSchemeCourse);
         expect(result.success).toBe(false);
     })
 
 
     test("Flags ug scheme in new course old UG standard", async () => {
         const badGradSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockGradModules]);
-        let result = await badGradingPolicyTest.run(badGradSchemeCourse);
+        const result = await badGradingPolicyTest.run(badGradSchemeCourse);
         expect(result.success).toBe(false);
     })
 
@@ -138,7 +138,7 @@ describe('Grading policy validation correct test', () => {
             }
         })
 
-        let result = await badGradingPolicyTest.run(noPermissionsCourse);
+        const result = await badGradingPolicyTest.run(noPermissionsCourse);
         expect(result.success).toEqual(false);
         expect(result.messages.reduce(
             (aggregator, current, index, array) =>
@@ -154,7 +154,7 @@ describe('Grading policy validation correct test', () => {
             return {...mockCourseData, ...change}
         })
         const badGradSchemeCourse = await mockModuleGradingPolicyHaver(mockGradingPolicies[0], [...mockGradModules]);
-        let result = await badGradingPolicyTest.fix(badGradSchemeCourse);
+        const result = await badGradingPolicyTest.fix(badGradSchemeCourse);
         expect(result.success).toBe(true);
         assert(result.userData && 'id' in result.userData)
         expect(result.userData.grading_standard_id).toEqual( "2")
@@ -167,14 +167,14 @@ describe('Extensions installed', () => {
 
         const mockCourse = new Course(mockCourseData);
         mockCourse.getTabs = mockGetTabs(extensionsToTest.map(label => ({...mockTabData, label})))
-        let result = await extensionsInstalledTest.run(mockCourse);
+        const result = await extensionsInstalledTest.run(mockCourse);
         expect(result.success).toBe(true);
     })
     it('fails if not all extensions are present', async () => {
 
         const mockCourse = new Course(mockCourseData);
         mockCourse.getTabs = mockGetTabs([{...mockTabData, label: extensionsToTest[0]}, mockTabData, mockTabData])
-        let result = await extensionsInstalledTest.run(mockCourse);
+        const result = await extensionsInstalledTest.run(mockCourse);
         expect(result.success).toBe(false);
     })
 })

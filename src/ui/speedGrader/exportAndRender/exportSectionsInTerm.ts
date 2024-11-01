@@ -27,7 +27,7 @@ export async function exportSectionsInTerm(course: ICourseData & { term: ITermDa
     assert(term);
     assert(courseId !== null);
 
-    let sections = sectionDataGenerator(courseId);
+    const sections = sectionDataGenerator(courseId);
     const allSectionRows: string[] = sections ? await getRowsForSections(await renderAsyncGen(sections)) : [];
     saveDataGenFunc()(allSectionRows, `${term.name} ${course.baseCode} All Sections.csv`);
     return allSectionRows;

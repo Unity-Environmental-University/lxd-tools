@@ -13,12 +13,12 @@ describe('renderAsyncGen renders an async generator out', () => {
     const entries = range(0, 20);
     it('render async generator', async () => {
         const asyncGen = async function* () {
-            for (let i of [...entries]) {
+            for (const i of [...entries]) {
                 yield i;
             }
         }
         const entryIterator = range(0, 20);
-        for (let result of await renderAsyncGen(asyncGen())) {
+        for (const result of await renderAsyncGen(asyncGen())) {
             expect(result).toEqual(entryIterator.next().value)
         }
     })

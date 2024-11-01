@@ -1,4 +1,4 @@
-import { Middleware } from '@reduxjs/toolkit';
+import {Action, Middleware} from '@reduxjs/toolkit';
 import { RootState } from './store'; // Import your RootState type
 import { kalturaMigrationsSlice } from "@publish/publishInterface/videoUpdater/data/kalturaMigrationsSlice";
 
@@ -6,7 +6,7 @@ import { kalturaMigrationsSlice } from "@publish/publishInterface/videoUpdater/d
 type KalturaMigrationsActions = ReturnType<typeof kalturaMigrationsSlice.actions[keyof typeof kalturaMigrationsSlice.actions]>;
 
 // Type guard to check if an action is one of the Kaltura migrations actions
-const isKalturaMigrationsAction = (action: any): action is KalturaMigrationsActions => {
+const isKalturaMigrationsAction = (action: Action): action is KalturaMigrationsActions => {
     return action.type.startsWith('kalturaMigrations/');
 };
 

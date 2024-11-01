@@ -1,20 +1,17 @@
 import React, {useState, useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {Button, Alert, Spinner} from 'react-bootstrap';
+import {Button, Alert} from 'react-bootstrap';
 import {
     resetKalturaState,
-    loadMigrationsFromLocalStorage,
+    loadMigrationsFromLocalStorage, selectKalturaStatus,
 } from '@publish/publishInterface/videoUpdater/data/kalturaMigrationsSlice';
-import {KalturaAppDispatch} from "@publish/publishInterface/videoUpdater/data/store";
+import {KalturaAppDispatch, RootState} from "@publish/publishInterface/videoUpdater/data/store";
 import {
     fetchCourseAssignments,
-    getSliceCourseAssignmentsData,
     getSliceCourseAssignmentsError,
-    getSliceCourseAssignmentsStatus
 } from "@/canvas-redux/courseAssignmentsSlice";
-import {fetchCoursePages, getSliceCoursePagesData} from "@/canvas-redux/coursePagesSlice";
+import {fetchCoursePages} from "@/canvas-redux/coursePagesSlice";
 import {VideoUpdateInterfaceProps} from "@publish/publishInterface/videoUpdater/data/types";
-import {selectKalturaStatus} from "@publish/publishInterface/videoUpdater/data/migrationSelectors";
 import {useEffectAsync} from "@/ui/utils";
 import MigrationTable from "@publish/publishInterface/videoUpdater/migrationTable/MigrationTable";
 import MigrationStatusDisplay from './MigrationStatusDisplay';
@@ -25,12 +22,9 @@ import Modal from "@/ui/widgets/Modal";
 const VideoUpdateInterface = ({courseId}: VideoUpdateInterfaceProps) => {
     const dispatch = useDispatch<KalturaAppDispatch>();
     const [showModal, setShowModal] = useState(false);
-    const courseAssignments = useSelector(getSliceCourseAssignmentsData);
-    const coursePages = useSelector(getSliceCoursePagesData);
-    const {migrations, status, error} = useSelector(selectKalturaStatus);
-    const courseAssignmentsStatus = useSelector(getSliceCourseAssignmentsStatus);
-    const courseAssignmentsError = useSelector(getSliceCourseAssignmentsError);
-    const course = useSelector(getWorkingCourseData);
+    const {migrations, status, error} = useSelector<RootState>();
+    const courseAssignmentsError = useSelector<RootState>(getSliceCourseAssignmentsError);
+    const course = useSelector<RootState>(getWorkingCourseData);
 
     useEffect(() => {
         dispatch(fetchCourseData({courseId}));
@@ -45,6 +39,10 @@ const VideoUpdateInterface = ({courseId}: VideoUpdateInterfaceProps) => {
         }
     }, [showModal, courseId, dispatch]);
 
+    useEffect(() => {
+
+        console.log(course);
+    }, [course]);
 
     // Handle collecting migration details
     useEffectAsync(async () => {

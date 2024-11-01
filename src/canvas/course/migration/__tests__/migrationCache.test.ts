@@ -10,12 +10,12 @@ describe('Saving and loading migration states', () => {
         localStorage.clear();
     })
     it('has base functions that save and load migration data', () => {
-        let migrations = loadCachedCourseMigrations(0);
+        const migrations = loadCachedCourseMigrations(0);
         expect(migrations).toHaveLength(0);
 
         const cachedKeys:{[key:number] : number} = {};
-        for(let i of [...range(0, 5)]) {
-            let key = i * 2;
+        for(const i of [...range(0, 5)]) {
+            const key = i * 2;
             const migrationsToCache = [...range(1,i)].map( _ => mockMigrationData)
             cacheCourseMigrations(i * 2,  migrationsToCache);
             expect(Object.entries(loadCachedMigrations())).toHaveLength(i + 1)

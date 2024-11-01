@@ -72,7 +72,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
     }
 
     static async getDataById<T extends CanvasData = CanvasData>(contentId: number, courseId: number | null = null, config: ICanvasCallConfig | null = null): Promise<T> {
-        let url = this.getUrlPathFromIds(contentId, courseId);
+        const url = this.getUrlPathFromIds(contentId, courseId);
         const response = await fetchJson<T>(url, config);
         assert(!Array.isArray(response));
 
@@ -103,7 +103,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
     }
 
     static async getAll(config: ICanvasCallConfig | null = null) {
-        let url = this.getAllUrl();
+        const url = this.getAllUrl();
         return await renderAsyncGen(getPagedDataGenerator(this.getAllUrl(), config))
     }
 
@@ -113,7 +113,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
     }
 
     get name() {
-        let nameProperty = this.getClass().nameProperty;
+        const nameProperty = this.getClass().nameProperty;
         if (!nameProperty) return 'NAME PROPERTY NOT SET'
         return this.getItem<string>(nameProperty);
     }

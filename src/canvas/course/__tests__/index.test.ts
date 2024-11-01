@@ -36,7 +36,7 @@ describe('Course Generators', () => {
             accountIds,
         );
 
-        for (let enrollment_term_id of accountIds) {
+        for (const enrollment_term_id of accountIds) {
             const codes = ['TEST000', 'ANIM123', 'CHEM897']
             const courseDatas: ICourseData[] = codes.map(course_code => {
                 return {
@@ -47,8 +47,8 @@ describe('Course Generators', () => {
             });
 
             fetchMock.mockResponseOnce(JSON.stringify(courseDatas));
-            for (let code of codes) {
-                let {done, value: course} = await courseGenerator.next();
+            for (const code of codes) {
+                const {done, value: course} = await courseGenerator.next();
                 assert(course instanceof Course);
                 expect(done).toBe(false);
                 expect(course.termId).toBe(enrollment_term_id);

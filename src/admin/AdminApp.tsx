@@ -85,7 +85,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
         let coursesToValidate: typeof coursesToRunOn = [];
 
 
-        for (let course of coursesToRunOn) {
+        for (const course of coursesToRunOn) {
             coursesToValidate = [...coursesToValidate, course].filter(filterUniqueFunc);
             if (includeDev) {
                 const dev = await getParentCourse(course);
@@ -114,13 +114,13 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
             }
         }
 
-        for (let batch of batchify(coursesToValidate, 5)) {
+        for (const batch of batchify(coursesToValidate, 5)) {
 
-            for (let test of validationsToRun) {
+            for (const test of validationsToRun) {
                 console.log('running', test.name);
-                let testResults = await Promise.all(batch.map((course) => getTestResultOption(course, test)));
+                const testResults = await Promise.all(batch.map((course) => getTestResultOption(course, test)));
 
-                for (let result of testResults) {
+                for (const result of testResults) {
                     dispatchValidationResultsLut({
                         add: [result.courseId, [result]]
                     })

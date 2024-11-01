@@ -112,7 +112,7 @@ export function MakeBp({
             clear: true,
         })
         const migrationsForCourse = migrationsForCourseGen(currentBp.id);
-        for await (let migration of migrationsForCourse) {
+        for await (const migration of migrationsForCourse) {
             cacheCourseMigrations(currentBp.id, [migration]);
             allMigrationDispatcher({
                 add: migration
@@ -140,9 +140,9 @@ export function MakeBp({
 
     useEffectAsync(async () => {
         if (currentBp && currentBp.isBlueprint()) {
-            let sections:SectionData[] = [];
+            const sections:SectionData[] = [];
             const sectionGen = sectionDataGenerator(currentBp.id);
-            for await (let sectionData of sectionGen ) {
+            for await (const sectionData of sectionGen ) {
                 sections.push(sectionData);
                 if(sectionData.term_name) setTermName(sectionData.term_name)
             }

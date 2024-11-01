@@ -8,14 +8,14 @@ function getAllLinks(body:string): string[] {
     const el = bodyAsElement(body);
     const anchors = el.querySelectorAll('a');
     const urls: string[] = [];
-    for (let link of anchors) urls.push(link.href);
+    for (const link of anchors) urls.push(link.href);
     return urls;
 
 }
 
 
 function bodyAsElement(body: string) {
-    let el = document.createElement('div');
+    const el = document.createElement('div');
     el.innerHTML = body;
     return el;
 }

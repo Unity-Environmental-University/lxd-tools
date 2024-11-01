@@ -14,27 +14,27 @@ export class AssignmentsCollection {
 
     constructor(assignments: IAssignmentData[]) {
         this.assignmentsById = {}
-        for (let assignment of assignments) {
+        for (const assignment of assignments) {
             this.assignmentsById[assignment.id] = assignment;
         }
 
         this.discussions = assignments.filter(assignment => assignment.hasOwnProperty('discussion_topic'))
             .map(function (assignment) {
-                let discussion = assignment.discussion_topic;
+                const discussion = assignment.discussion_topic;
                 discussion.assignment = assignment;
                 return discussion;
             });
 
         this.discussionsById = {};
         this.assignmentsByDiscussionId = {};
-        for (let discussion of this.discussions) {
+        for (const discussion of this.discussions) {
             this.discussionsById[discussion.id] = discussion;
             this.assignmentsByDiscussionId[discussion.id] = discussion.assignment;
 
         }
 
         this.assignmentsByQuizId = {};
-        for (let assignment of assignments.filter(a => a.hasOwnProperty('quiz_id'))) {
+        for (const assignment of assignments.filter(a => a.hasOwnProperty('quiz_id'))) {
             this.assignmentsByQuizId[assignment.quiz_id] = assignment;
         }
     }
@@ -46,7 +46,7 @@ export class AssignmentsCollection {
      * @returns {*}
      */
     getContentById(id: number): any {
-        for (let collection of [
+        for (const collection of [
             this.assignmentsByQuizId,
             this.assignmentsByDiscussionId,
             this.assignmentsById
@@ -78,7 +78,7 @@ export class AssignmentsCollection {
         if (contentItem.hasOwnProperty('quiz_id')) {
             return 'Quiz'
         }
-        let id = contentItem?.id;
+        const id = contentItem?.id;
         return "Assignment";
     }
 

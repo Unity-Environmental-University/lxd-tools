@@ -44,7 +44,7 @@ export async function getFacultyPages(searchTerm: string) {
 async function getPotentialFacultyProfiles(user:IUserData) {
     let pages: Page[] = [];
     const [lastName, firstName] = user.name.split(' ')
-    for(let query of [
+    for(const query of [
         user.name,
         lastName,
         firstName,
@@ -54,10 +54,10 @@ async function getPotentialFacultyProfiles(user:IUserData) {
         if(pages.length > 0) break;
     }
 
-    let profiles = pages.map((page) => getProfileFromPage(page, user), true)
+    const profiles = pages.map((page) => getProfileFromPage(page, user), true)
 
     if(profiles.length > 0) {
-        for(let profile of profiles) {
+        for(const profile of profiles) {
             profile.displayName ??= user.name;
         }
     }
@@ -92,7 +92,7 @@ function getProfileBody(el:Element) {
         return el.innerHTML.search(/instructor/i)
     })
     let potentials:string[] = [];
-    for(let header of instructorHeaders) {
+    for(const header of instructorHeaders) {
         const potentialParent = header.parentElement;
         if(potentialParent) {
             header.remove();
@@ -115,15 +115,15 @@ function getDisplayName(el:Element) {
     let titles = Array.from(el.querySelectorAll('strong em'));
 
     if (titles.length === 0) {
-        let enclosedImages = Array.from(el.querySelectorAll('p img'));
+        const enclosedImages = Array.from(el.querySelectorAll('p img'));
 
         titles = enclosedImages.map((el) => parentElement(el, 'p')?.nextElementSibling)
             .filter((el) => el instanceof Element) as Element[];
     }
 
     if (titles.length === 0) {
-        let headings = Array.from(el.querySelectorAll('p strong'));
-        let instructorHeaders = headings.filter(el => el.innerHTML.search(/Instructor/));
+        const headings = Array.from(el.querySelectorAll('p strong'));
+        const instructorHeaders = headings.filter(el => el.innerHTML.search(/Instructor/));
         titles = instructorHeaders.map((el) => el.previousElementSibling)
             .filter((el) => el instanceof Element) as Element[]
     }
@@ -138,7 +138,7 @@ function getDisplayName(el:Element) {
  * @param el
  */
 function getImageLink(el:Element) {
-    let imgs = el.querySelectorAll('img');
+    const imgs = el.querySelectorAll('img');
     if(imgs.length === 0) return null;
     return Array.from(imgs)[1];
 }
@@ -155,7 +155,7 @@ function winnow<T=string>(originalList: T[], winnowFuncs: WinnowFunc<T>[], retur
     let copyList = [...originalList];
     if(copyList.length === 1) return copyList; //already at 1 element
     let lastSet = [...copyList];
-    for(let winnowFunc of winnowFuncs) {
+    for(const winnowFunc of winnowFuncs) {
         lastSet = [...copyList];
         copyList = copyList.filter(winnowFunc);
         if(copyList.length === 1) break;
@@ -244,9 +244,9 @@ function getCurioProfileDiv(el:Element) {
 
 function getCurioBio(el:Element) {
     const profileDiv = getCurioProfileDiv(el);
-    let bio = profileDiv.querySelector('.cbt-instructor-bio');
+    const bio = profileDiv.querySelector('.cbt-instructor-bio');
     if(bio && bio.innerHTML) return bio;
-    let div = getCurioProfileDiv(el);
+    const div = getCurioProfileDiv(el);
     const p = div.querySelector('p');
     return p?.parentElement;
 

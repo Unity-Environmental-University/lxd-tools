@@ -12,7 +12,7 @@ import {getSingleCourse} from "@/canvas/course";
 
 export async function main() {
     const currentCourse = await Course.getFromUrl(document.documentURI);
-    let CurrentContentClass = getContentClassFromUrl(document.documentURI);
+    const CurrentContentClass = getContentClassFromUrl(document.documentURI);
     let currentContentItem = await CurrentContentClass?.getFromUrl();
     if (!CurrentContentClass && /courses\/\d+/.test(document.URL)) {
         currentContentItem = await currentCourse?.getFrontPage();
@@ -20,7 +20,7 @@ export async function main() {
     }
 
     if (!currentCourse) return;
-    let header: HTMLElement | null = document.querySelector('.right-of-crumbs');
+    const header: HTMLElement | null = document.querySelector('.right-of-crumbs');
     if (!header) return;
     let bp: Course | undefined;
 
