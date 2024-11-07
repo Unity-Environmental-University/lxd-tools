@@ -60,4 +60,5 @@ export const { updateModules } = modulesSlice.actions;
 export const getModules = (state: ModuleSliceInitState) => state.data;
 export const getModulesStatus = (state: ModuleSliceInitState) => state.loading;
 export const getModulesError = (state: ModuleSliceInitState) => state.error;
+export const modulesReducer = modulesSlice.reducer;
 export default modulesSlice.reducer;

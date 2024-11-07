@@ -28,7 +28,7 @@ export const mockModuleItemData: IModuleItemData = {
     content_id: 0,
     url: 'http://localhost:8080',
     html_url: '',
-    page_url: "http://this.page",
+    page_url: "https://this.page",
     new_tab: false,
     completion_requirement: {
         type:  "must_submit",

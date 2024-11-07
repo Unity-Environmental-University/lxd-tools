@@ -1,10 +1,9 @@
-import reducer, {
+import {
     addMigration,
     migrationSucceeded,
     migrationFailed,
-    resetKalturaState,
     loadMigrationsFromLocalStorage,
-    saveMigrationsToLocalStorage,
+    saveMigrationsToLocalStorage, kalturaMigrationsReducer,
 } from '../kalturaMigrationsSlice';
 import {KalturaMigrationDetails, KalturaMigrationsState} from "@publish/publishInterface/videoUpdater/data/types";  // Adjust this path based on your folder structure
 
@@ -31,6 +30,8 @@ const mockMigrationDetails: KalturaMigrationDetails = {
 
 }
 
+const reducer = kalturaMigrationsReducer;
+
 describe('kalturaMigrationsSlice', () => {
 
     it('should handle adding a new migration', () => {
@@ -45,7 +46,7 @@ describe('kalturaMigrationsSlice', () => {
     it('should not add a migration if the status is not pending', () => {
         const newMigration: KalturaMigrationDetails = {...mockMigrationDetails, id: '1', status: 'successful', error: undefined};
 
-        const nextState = reducer(initialState, addMigration(newMigration));
+        const nextState = kalturaMigrationsReducer(initialState, addMigration(newMigration));
 
         expect(nextState.migrations['1']).toBeUndefined();  // Migration shouldn't be added
     });
@@ -58,7 +59,7 @@ describe('kalturaMigrationsSlice', () => {
         };
 
         const updatedMigration = {...migration, status: 'successful'} as KalturaMigrationDetails;
-        const nextState = reducer(previousState, migrationSucceeded(updatedMigration));
+        const nextState = kalturaMigrationsReducer(previousState, migrationSucceeded(updatedMigration));
 
         expect(nextState.migrations['1'].status).toBe('successful');
     });

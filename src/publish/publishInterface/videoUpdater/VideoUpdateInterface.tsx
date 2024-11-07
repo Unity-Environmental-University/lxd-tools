@@ -3,7 +3,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {Button, Alert} from 'react-bootstrap';
 import {
     resetKalturaState,
-    loadMigrationsFromLocalStorage, selectKalturaStatus,
+    loadMigrationsFromLocalStorage,
 } from '@publish/publishInterface/videoUpdater/data/kalturaMigrationsSlice';
 import {KalturaAppDispatch, RootState} from "@publish/publishInterface/videoUpdater/data/store";
 import {
@@ -22,9 +22,9 @@ import Modal from "@/ui/widgets/Modal";
 const VideoUpdateInterface = ({courseId}: VideoUpdateInterfaceProps) => {
     const dispatch = useDispatch<KalturaAppDispatch>();
     const [showModal, setShowModal] = useState(false);
-    const {migrations, status, error} = useSelector<RootState>();
-    const courseAssignmentsError = useSelector<RootState>(getSliceCourseAssignmentsError);
-    const course = useSelector<RootState>(getWorkingCourseData);
+    const {migrations, status, error} = useSelector((state:RootState) => state.kaltura);
+    const courseAssignmentsError = useSelector(getSliceCourseAssignmentsError);
+    const course = useSelector(getWorkingCourseData);
 
     useEffect(() => {
         dispatch(fetchCourseData({courseId}));
@@ -68,7 +68,7 @@ const VideoUpdateInterface = ({courseId}: VideoUpdateInterfaceProps) => {
 
     return (
         <div>
-            <div>{courseAssignmentsError}</div>
+            {courseAssignmentsError && <div>{courseAssignmentsError}</div>}
             <div>Course: {course?.name}</div>
             <Button onClick={() => setShowModal(true)}>Migrate Kaltura Content</Button>
             <Modal isOpen={showModal} requestClose={handleCloseModal}>

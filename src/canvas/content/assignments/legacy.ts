@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 
 

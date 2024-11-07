@@ -11,11 +11,10 @@ type FetchCourseDataParams = {
 }
 
 // Step 1: Define the slice name as a constant
-export const SLICE_NAME = 'courseData';
 
 // Step 2: Create an async thunk for fetching course data
 export const fetchCourseData = createAsyncThunk(
-    `${SLICE_NAME}/fetchCourseData`,
+    `course/fetchCourseData`,
     async ({ courseId, options }: FetchCourseDataParams, { rejectWithValue }) => {
         try {
             return await getCourseData(courseId, { queryParams: options });
@@ -42,7 +41,7 @@ export const initialState: InitialCourseSliceState = {
 
 // Create the slice
 const courseDataSlice = createSlice({
-    name: SLICE_NAME, // Use the constant slice name
+    name: 'course', // Use the constant slice name
     initialState,
     reducers: {
         setWorkingCourseData(state, action: PayloadAction<ICourseData | undefined>) {
@@ -68,11 +67,9 @@ const courseDataSlice = createSlice({
 
 // Export actions and reducer
 export const { setWorkingCourseData } = courseDataSlice.actions;
-const courseDataReducer = courseDataSlice.reducer;
-export default courseDataReducer;
 
 // Step 4: Define the base selector
-const selectCourseDataState = (state: { [key: string]: InitialCourseSliceState }) => state[SLICE_NAME];
+const selectCourseDataState = (state: { course: InitialCourseSliceState }) => state.course;
 
 // Step 5: Define memoized selectors
 export const getWorkingCourseData = createSelector(
@@ -89,3 +86,5 @@ export const getError = createSelector(
     selectCourseDataState,
     (courseData) => courseData.error
 );
+
+export const courseDataReducer = courseDataSlice.reducer;

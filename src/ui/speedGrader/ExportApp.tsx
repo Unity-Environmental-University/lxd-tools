@@ -1,17 +1,15 @@
 import "./speedGrader.scss"
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 
-import assert from "assert";
 
-import {Course} from "@/canvas/course/Course";
 import SpeedGraderModalDialog from "@/ui/speedGrader/controls/SpeedGraderModalDialog";
 import DateRangeExportDialog from "@/ui/speedGrader/controls/DateRangeExportDialog";
 
 import ExportOneButton from "@/ui/speedGrader/controls/ExportOneButton";
 import ExportAllButton from "@/ui/speedGrader/controls/ExportAllButton";
-import {getCourseById, getCourseData, getSingleCourse} from "@/canvas/course";
+import {getCourseData} from "@/canvas/course";
 import {useEffectAsync} from "@/ui/utils";
-import * as url from "url";
+
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {ICourseData} from "@/canvas/courseTypes";
 import {IAssignmentData} from "@/canvas/content/assignments/types";
@@ -52,7 +50,6 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
         const stringId = urlParams.get('assignment_id');
         const assignmentId = stringId? parseInt(stringId) : undefined;
         if (assignmentId && !assignment) {
-            const data = await AssignmentKind.get(course.id, assignmentId)
             const assignment = assignmentId ? await AssignmentKind.get(course?.id, assignmentId) : undefined;
             setAssignment(assignment);
         }

@@ -1,19 +1,19 @@
 import React, {useEffect, useReducer, useState} from "react";
-import {IProfile, IProfileWithUser, renderProfileIntoCurioFrontPage} from "../../canvas/profile";
-import {useEffectAsync} from "../../ui/utils";
+import {IProfile, IProfileWithUser, renderProfileIntoCurioFrontPage} from "@canvas/profile";
+import {useEffectAsync} from "@/ui/utils";
 import {Button} from "react-bootstrap";
-import Modal from "../../ui/widgets/Modal/index";
+import Modal from "@/ui/widgets/Modal/index";
 import {SectionDetails} from "./sectionDetails/SectionDetails";
-import {IUserData} from "../../canvas/canvasDataDefs";
+import {IUserData} from "@/canvas/canvasDataDefs";
 import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
 import {MakeBp} from "./MakeBp";
-import {Course} from "../../canvas/course/Course";
+import {Course} from "@/canvas/course/Course";
 import {Term} from "@/canvas/term/Term";
 import {getStartDateAssignments} from "@/canvas/course/changeStartDate";
 import {assignmentDataGen} from "@/canvas/content/assignments";
-import {IListAction, listDispatcher, lutDispatcher} from "@/ui/reducerDispatchers";
+import {IListAction, lutDispatcher} from "@/ui/reducerDispatchers";
 import {sectionDataGenerator} from "@/canvas/course/blueprint";
 import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
 import {sleep} from "@/index";
@@ -76,7 +76,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
             setWorkingCourseId(course.id);
             await getFullCourses(course)
         }
-        ; //ONLY refresh courses if it's a new course being set.
+         //ONLY refresh courses if it's a new course being set.
     }, [course]);
 
 
@@ -84,7 +84,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         function handleBeforeUnload(e: BeforeUnloadEvent) {
             if (unloadWarning) {
                 e.preventDefault();
-                e.returnValue = unloadWarning;
+                e.returnValue = unloadWarning; //legacy support
                 return unloadWarning;
             }
         }

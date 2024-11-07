@@ -36,8 +36,9 @@ export const fetchCoursePages = createAsyncThunk<
       for await (const pageData of pageDataGen) {
         dispatch(updateCoursePages({ pageData })); // Ensure updateCoursePages has the correct payload
       }
-    } catch (_error) {
-      return rejectWithValue('Failed to fetch course pages');
+    } catch (error) {
+
+      return rejectWithValue(`Failed to fetch course pages ${error}`);
     }
   }
 );
@@ -87,4 +88,5 @@ export const getSliceCoursePagesError = createSelector(
 );
 
 export const { updateCoursePages } = coursePagesSlice.actions;
-export default coursePagesSlice.reducer;
+
+export const coursePagesReducer = coursePagesSlice.reducer;

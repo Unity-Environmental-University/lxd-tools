@@ -1,4 +1,10 @@
-import courseDataReducer, { fetchCourseData, setWorkingCourseData, getWorkingCourseData, initialState } from "../courseDataSlice";
+import {
+    fetchCourseData,
+    setWorkingCourseData,
+    getWorkingCourseData,
+    initialState,
+    courseDataReducer
+} from "../courseDataSlice";
 import { ICourseData } from "@canvas/courseTypes";
 import { mockCourseData } from "@canvas/course/__mocks__/mockCourseData";
 import { getCourseData } from "@canvas/course";
@@ -49,7 +55,7 @@ describe('courseDataSlice selectors', () => {
     it('getWorkingCourseData should return course data', () => {
         // Ensure the status matches the defined union type
         const state = {
-            courseData: {  // Update this to match the expected shape
+            course: {  // Update this to match the expected shape
                 data: { ...mockCourseData, id: 1, name: 'Test Course' },
                 status: 'idle' as const,
                 error: undefined,
@@ -80,12 +86,12 @@ describe('fetchCourseData asyncThunk', () => {
         const result = await fetchCourseData({ courseId })(dispatch, getState, undefined);
 
         // Check if the thunk returns the fulfilled action with the right payload
-        expect(result.type).toBe('courseData/fetchCourseData/fulfilled');
+        expect(result.type).toBe('course/fetchCourseData/fulfilled');
         expect(result.payload).toEqual(mockData);
 
         // Confirm the pending action was dispatched first, followed by fulfilled
-        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'courseData/fetchCourseData/pending' }));
-        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'courseData/fetchCourseData/fulfilled' }));
+        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'course/fetchCourseData/pending' }));
+        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'course/fetchCourseData/fulfilled' }));
     });
 
     it('should dispatch rejected when API call fails', async () => {
@@ -102,11 +108,11 @@ describe('fetchCourseData asyncThunk', () => {
         const result = await fetchCourseData({ courseId })(dispatch, getState, undefined);
 
         // Check if the thunk returns the rejected action with the error message
-        expect(result.type).toBe('courseData/fetchCourseData/rejected');
+        expect(result.type).toBe('course/fetchCourseData/rejected');
         expect(result.payload).toEqual('Error: Failed to fetch course data');
 
         // Confirm the pending action was dispatched first, followed by rejected
-        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'courseData/fetchCourseData/pending' }));
-        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'courseData/fetchCourseData/rejected' }));
+        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'course/fetchCourseData/pending' }));
+        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'course/fetchCourseData/rejected' }));
     });
 });

@@ -1,7 +1,6 @@
 import React from "react";
 import {exportData} from "@/ui/speedGrader/exportAndRender/exportData";
 import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
-import {Course} from "@/canvas/course/Course";
 import {ICourseData} from "@/canvas/courseTypes";
 
 export type ExportAllButtonProps = UiHandlerProps & { course: ICourseData }

@@ -1,12 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
 import DateRangeExportDialog, { IDateRangeExportProps } from '../DateRangeExportDialog';
-import { Course } from "@/canvas/course/Course";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {getCourseDataGenerator} from "@/canvas/course";
+import '@testing-library/jest-dom';
 
 // Mocking the dependencies
 jest.mock('@/ui/speedGrader/saveDataGenFunc', () => ({
@@ -23,7 +21,6 @@ jest.mock('@/canvas/course/index', () => ({
 
 jest.mock('@/canvas/course/blueprint');
 
-const mockCourse: Course = new Course(mockCourseData);
 
 describe('DateRangeExportDialog', () => {
   const handleShow = jest.fn();

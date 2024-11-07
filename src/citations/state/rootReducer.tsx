@@ -1,11 +1,11 @@
-import {combineReducers, Reducer} from "redux";
-import courseDataSlice from "@/canvas-redux/courseDataSlice";
-import learningMaterialsSlice from "@/canvas-redux/learningMaterialsSlice";
-import modulesSlice from "@/canvas-redux/modulesSlice";
+import {combineReducers} from "redux";
+import {learningMaterialsReducer} from "@/canvas-redux/learningMaterialsSlice";
+import {modulesReducer} from "@/canvas-redux/modulesSlice";
+import {courseDataReducer} from "@/canvas-redux/courseDataSlice";
 
 export default combineReducers({
-    courseData: courseDataSlice,
-    learningMaterials: learningMaterialsSlice,
-    modules: modulesSlice,
+    courseData: courseDataReducer,
+    learningMaterials: learningMaterialsReducer,
+    modules: modulesReducer,
 })
 

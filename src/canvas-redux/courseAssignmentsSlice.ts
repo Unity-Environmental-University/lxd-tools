@@ -8,7 +8,6 @@ type PayloadParams = {
     courseId: number,
 };
 
-export const SLICE_NAME = "courseAssignments"
 
 const initialState = {
     data: [] as IAssignmentData[],
@@ -20,7 +19,7 @@ type State = typeof initialState;
 
 // Async thunk for fetching course assignments
 export const fetchCourseAssignments = createAsyncThunk(
-    `${SLICE_NAME}/fetchCourseAssignments`,
+    `courseAssignments/fetchCourseAssignments`,
     async ({ courseId }: PayloadParams, thunkAPI) => {
         const assignmentDataGen = AssignmentKind.dataGenerator(courseId);
 
@@ -32,7 +31,7 @@ export const fetchCourseAssignments = createAsyncThunk(
 
 // Create the slice
 const courseAssignmentsSlice = createSlice({
-    name: SLICE_NAME,
+    name: 'courseAssignments',
     initialState,
     reducers: {
         updateCourseAssignments: (state, action) => {
@@ -61,11 +60,11 @@ export const { updateCourseAssignments } = courseAssignmentsSlice.actions;
 
 // Define PartialRootState
 type PartialRootState = {
-    [key in typeof SLICE_NAME]?: State;
+    courseAssignments: State,
 };
 
 // Base selector for accessing the courseAssignments slice
-const selectCourseAssignmentsState = (state: PartialRootState) => state[SLICE_NAME];
+const selectCourseAssignmentsState = (state: PartialRootState) => state.courseAssignments;
 
 // Memoized selectors for data, loading, and error states
 export const getSliceCourseAssignmentsData = createSelector(
@@ -84,4 +83,4 @@ export const getSliceCourseAssignmentsError = createSelector(
 );
 
 // Export the reducer
-export default courseAssignmentsSlice.reducer;
+export const courseAssignmentsReducer = courseAssignmentsSlice.reducer;

@@ -1,6 +1,6 @@
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import { fireEvent  } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { Course } from '@/canvas/course/Course';
 import openThisContentInTarget from '@/canvas/content/openThisContentInTarget';
 import { act } from 'react';

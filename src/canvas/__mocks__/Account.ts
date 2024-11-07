@@ -3,7 +3,7 @@ import { CanvasData } from '@/canvas/canvasDataDefs';
 import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
 
 // Create a type alias for the original Account class
-class MockAccount extends BaseCanvasObject<CanvasData> {
+export class MockAccount extends BaseCanvasObject<CanvasData> {
     static override nameProperty = 'name';
     static override contentUrlTemplate = '/api/v1/accounts/{content_id}';
     static override allContentUrlTemplate = '/api/v1/accounts';
@@ -29,7 +29,7 @@ class MockAccount extends BaseCanvasObject<CanvasData> {
         return null;
     }
 
-    static async getAccountById(accountId: number, config: ICanvasCallConfig | undefined = undefined): Promise<MockAccount> {
+    static async getAccountById(accountId: number, _config: ICanvasCallConfig | undefined = undefined): Promise<MockAccount> {
         const data = this.mockDataById[accountId];
         if (!data) {
             throw new Error(`No mock data found for account ID: ${accountId}`);

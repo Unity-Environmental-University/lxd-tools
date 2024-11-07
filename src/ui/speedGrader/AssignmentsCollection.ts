@@ -1,3 +1,5 @@
+// noinspection GrazieInspection
+
 import {CanvasData, IModuleItemData, LookUpTable, ModuleItemType} from "@/canvas/canvasDataDefs";
 import {IAssignmentData} from "@/canvas/content/assignments/types";
 import {IDiscussionData} from "@/canvas/content/discussions/types";

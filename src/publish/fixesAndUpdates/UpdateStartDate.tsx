@@ -104,8 +104,8 @@ export function UpdateStartDate(
     }
 
 
-    function updateStartDateValue(inDate: Date) {
-        setWorkingStartDate(oldDateToPlainDate(inDate));
+    function updateStartDateValue(inDate: Date|null) {
+        if(inDate) setWorkingStartDate(oldDateToPlainDate(inDate));
     }
 
 

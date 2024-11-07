@@ -13,14 +13,15 @@ export default tseslint.config(
             }
         },
         rules: {
+            "no-unused-vars" : "warn",
             "@/no-undef": "error", // TypeScript specific: disallow use of undeclared variables
-            "@/no-unused-vars": "error", // Warn for unused variables, ignore those starting with '_'
+            "@/no-unused-vars": "warn", // Warn for unused variables, ignore those starting with '_'
         }
     },
     {
         files: ['**/*.test.ts', '**/*.test.tsx'], // Adjust the glob pattern if necessary
         rules: {
             '@typescript-eslint/no-explicit-any': 'off', // Allow any types in test files
-        },
-    },
+        }
+    }
 )

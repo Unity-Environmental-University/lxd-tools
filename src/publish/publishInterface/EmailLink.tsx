@@ -16,6 +16,24 @@ type EmailLinkProps = {
     termData?: ITermData,
 }
 
+
+export async function getAdditionsTemplate(courseCode: string) {
+    const templates = await getSpecificTemplates();
+    const baseCode = baseCourseCode(courseCode);
+    if (!templates) return;
+    if (!baseCode) return;
+    const topic = templates && baseCode && templates.find(topic =>
+        topic.toLocaleLowerCase().includes(baseCode.toLocaleLowerCase()));
+    const url = `${DOCUMENTATION_TOPICS_URL}/${topic}`
+    if (!topic || !url) return;
+    const response = await fetch(url);
+    if (!response.ok) throw new TemplateNotFoundError(courseCode);
+    const additionsTemplate = await response.text();
+    return additionsTemplate.split('\n').slice(1).join('\n')
+
+}
+
+
 /**
  * Section start needed because the data based term start in Canvas is frustratingly wrong
  * @param user
@@ -49,7 +67,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
 
     useEffectAsync(async () => {
         if (course.baseCode) {
-            const additionsTemplate = await getAdditionsTemplate(course.baseCode);
+            const _additionsTemplate = await getAdditionsTemplate(course.baseCode);
             setAdditionsTemplate(additionsTemplate);
         }
     }, [course])
@@ -137,7 +155,6 @@ async function getSpecificTemplates() {
     const tocXml = new DOMParser().parseFromString(text, 'text/xml') as XMLDocument;
 
     const tocItems = [...tocXml.getElementsByTagName('toc-element')];
-    const tocTopics = tocItems.map(a => a.getAttribute('topic'))
     const formEmailTemplate = tocItems.find(a => a.getAttribute('topic') == ('Form-Email-Template.md'))
     const children = formEmailTemplate?.getElementsByTagName('toc-element') ?? [];
     const topics: string[] = [];
@@ -149,22 +166,6 @@ async function getSpecificTemplates() {
     return topics;
 }
 
-
-export async function getAdditionsTemplate(courseCode: string) {
-    const templates = await getSpecificTemplates();
-    const baseCode = baseCourseCode(courseCode);
-    if (!templates) return;
-    if (!baseCode) return;
-    const topic = templates && baseCode && templates.find(topic =>
-        topic.toLocaleLowerCase().includes(baseCode.toLocaleLowerCase()));
-    const url = `${DOCUMENTATION_TOPICS_URL}/${topic}`
-    if (!topic || !url) return;
-    const response = await fetch(url);
-    if (!response.ok) throw new TemplateNotFoundError(courseCode);
-    const additionsTemplate = await response.text();
-    return additionsTemplate.split('\n').slice(1).join('\n')
-
-}
 
 export class TemplateNotFoundError extends Error {
     name = 'TemplateNotFoundError'

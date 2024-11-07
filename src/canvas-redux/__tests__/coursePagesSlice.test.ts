@@ -1,6 +1,6 @@
 import { mockPageData } from "@canvas/content/__mocks__/mockContentData";
 import { configureStore } from '@reduxjs/toolkit';
-import coursePagesReducer, { fetchCoursePages, updateCoursePages } from '../coursePagesSlice';
+import {coursePagesReducer, fetchCoursePages, updateCoursePages} from '../coursePagesSlice';
 import { IPageData } from '@canvas/content/pages/types';
 import PageKind from "@canvas/content/pages/PageKind";
 
@@ -58,6 +58,6 @@ describe('coursePagesSlice', () => {
     const state = store.getState().coursePages;
     expect(result.type).toBe(fetchCoursePages.rejected.type);
     expect(state.loading).toBe(false);
-    expect(state.error).toBe('Failed to fetch course pages');
+    expect(state.error).toBe('Failed to fetch course pages Error: Network error');
   });
 });

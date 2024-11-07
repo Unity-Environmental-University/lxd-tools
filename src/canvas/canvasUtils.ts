@@ -171,7 +171,7 @@ export function deepObjectMerge<
         return outputArray;
     }
 
-    if (Array.isArray(b)) return deepObjectCopy(b, complexObjectsTracker); //we already know a is not an array at this point, return a deep copy of b
+    if (Array.isArray(b)) return deepObjectCopy(b, complexObjectsTracker); //we already know A is not an array at this point, return a deep copy of b
     if ((a && typeof a === 'object') || (b && typeof b === 'object')) {
         if (a instanceof File && b instanceof File) {
             if (!overrideWithA) assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);

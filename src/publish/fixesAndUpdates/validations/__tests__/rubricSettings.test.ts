@@ -38,7 +38,7 @@ jest.mock('@canvas/content/assignments/AssignmentKind', () => ({
     ...jest.requireActual('@canvas/content/assignments/AssignmentKind'),
     get: jest.fn(),
     dataGenerator: jest.fn(),
-    getHtmlUrl: jest.fn(() => 'http://www.google.com')
+    getHtmlUrl: jest.fn(() => 'https://www.google.com')
 }))
 
 

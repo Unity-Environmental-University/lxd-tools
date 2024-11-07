@@ -3,16 +3,9 @@ import {IContentHaver} from "@canvas/course/courseTypes";
 import {Page} from "@canvas/content/pages/Page";
 import PageKind from "@canvas/content/pages/PageKind";
 import {renderAsyncGen} from "@canvas/canvasUtils";
-import badContentReplaceFuncs from "@publish/fixesAndUpdates/validations/courseContent/badContentReplaceFuncs";
-import mockOverviewCategoriesBefore
-    from "@publish/fixesAndUpdates/validations/courseContent/data/mockOverviewCategoriesBefore";
-import mockOverviewCategoriesAfter
-    from "@publish/fixesAndUpdates/validations/courseContent/data/mockOverviewCategoriesAfter";
-import {ContentFix} from "@canvas/fixes";
 import {Course} from "@canvas/course/Course";
 import {IPageData} from "@canvas/content/pages/types";
 import assert from "assert";
-import {type} from "@testing-library/user-event/dist/type";
 
 type OverviewFix = CourseFixValidation<Course, IPageData|undefined>
 export const footerOnFrontPageFix: OverviewFix = {

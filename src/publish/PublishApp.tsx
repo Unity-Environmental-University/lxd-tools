@@ -14,12 +14,10 @@ import {IMultiSelectOption} from "@/ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {DIST_REPO_MANIFEST, DIST_REPO_URL} from "@/publish/consts";
+import {DIST_REPO_MANIFEST} from "@/publish/consts";
 import validations from "@publish/fixesAndUpdates/validations";
-// import VideoUpdateInterface from "@publish/publishInterface/videoUpdater/VideoUpdateInterface";
 import {Provider} from "react-redux";
 import {store} from "@publish/publishInterface/videoUpdater/data/store";
-import VideoUpdateInterface from "@publish/publishInterface/videoUpdater/VideoUpdateInterface";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 

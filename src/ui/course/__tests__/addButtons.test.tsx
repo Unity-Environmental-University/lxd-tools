@@ -1,22 +1,20 @@
 import '@testing-library/jest-dom';
 import { fireEvent, waitFor } from '@testing-library/dom';
 import { Course } from '@/canvas/course/Course';
-import ReactDOM from 'react-dom/client';
+
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 
 import {
     addBpButton,
     addDevButton,
-    addHighlightBigImageResizer,
     addOpenAllLinksButton,
-    addSectionsButton, openContentFiles
 } from "@/ui/course/addButtons";
 import {act} from "react";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 import * as getContentFuncs from '@/canvas/content/getContentFuncs';
+import ReactDOM from "react-dom/client";
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
 jest.mock('@/canvas/fetch/fetchJson')

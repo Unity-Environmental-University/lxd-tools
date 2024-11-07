@@ -1,6 +1,6 @@
 import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData"; // Adjust import for assignment mock data
 import { configureStore } from '@reduxjs/toolkit';
-import courseAssignmentsReducer, { fetchCourseAssignments, updateCourseAssignments } from '../courseAssignmentsSlice'; // Update the path as needed
+import {courseAssignmentsReducer, fetchCourseAssignments, updateCourseAssignments} from '../courseAssignmentsSlice'; // Update the path as needed
 import { IAssignmentData } from "@canvas/content/assignments/types";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 

@@ -1,6 +1,7 @@
 // PublishApp.test.tsx
 import {runtime} from "webextension-polyfill";
 
+// eslint-disable-next-line @/no-undef,@typescript-eslint/no-require-imports
 global.TextEncoder = require('util').TextEncoder;
 
 import {Course} from "../../canvas/course/Course";

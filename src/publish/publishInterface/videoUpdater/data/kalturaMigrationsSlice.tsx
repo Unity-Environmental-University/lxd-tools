@@ -1,7 +1,5 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {createSelector, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {KalturaMigrationDetails, KalturaMigrationsState} from "@publish/publishInterface/videoUpdater/data/types";
-import {SLICE_NAME} from "@/canvas-redux/courseAssignmentsSlice";
-import {useSelector} from "react-redux";
 
 // Define the initial state for migrations
 const initialState: KalturaMigrationsState = {
@@ -92,13 +90,13 @@ type PartialRootState = {
 const selectKalturaState = (state: PartialRootState) => state.kaltura;
 
 
-export const selectKalturaStatus = useSelector(
+export const selectKalturaStatus = createSelector(
     selectKalturaState,
-    (state: { kaltura: KalturaMigrationsState }) => {
+    (state ) => {
         return {
-            status: state.kaltura.status,
-            error: state.kaltura.error,
-            migrations: state.kaltura.migrations
+            status: state.status,
+            error: state.error,
+            migrations: state.migrations
         };
     }
 )
@@ -116,4 +114,5 @@ export const {
     loadMigrationsFromLocalStorage,
     saveMigrationsToLocalStorage
 } = kalturaMigrationsSlice.actions;
-export default kalturaMigrationsSlice.reducer;
+
+export const kalturaMigrationsReducer = kalturaMigrationsSlice.reducer;
