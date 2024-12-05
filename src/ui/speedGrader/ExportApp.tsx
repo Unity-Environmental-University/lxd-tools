@@ -104,5 +104,4 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
 }
 
 
-// @ts-ignore
 export default ExportApp

@@ -47,7 +47,7 @@ export class AssignmentsCollection {
      * The content_id property that it would have were it in a module
      * @returns {*}
      */
-    getContentById(id: number): any {
+    getContentById(id: number):IAssignmentData |undefined {
         for (const collection of [
             this.assignmentsByQuizId,
             this.assignmentsByDiscussionId,

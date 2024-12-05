@@ -10,7 +10,7 @@ export default function ExportAllButton({course, ...handlers}: ExportAllButtonPr
         if (!course) return;
         handlers.popUp("Exporting scores, please wait...", "Exporting");
         event.preventDefault();
-        await exportData(course.rawData, handlers);
+        await exportData(course, handlers);
         handlers.popClose();
     }}>Rubrics:Section
     </button>

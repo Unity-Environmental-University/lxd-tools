@@ -6,13 +6,14 @@ export function getModuleInfo(contentItem: CanvasData, modules: IModuleData[], a
     const regex = /(week|module) (\d+)/i;
     for (const module of modules) {
         const moduleNameMatch = module.name.match(regex);
-        let [fullMatch, weekOrModule, weekNumber] = moduleNameMatch ?? [];
+        let weekNumber = (moduleNameMatch ?? [])[2];
         if (!weekNumber) {
             for (const moduleItem of module.items) {
                 if (!moduleItem.hasOwnProperty('title')) {
                     continue;
                 }
-                const [fullMatch, weekOrModule, itemWeekNumber] =  moduleItem.title.match(regex) ?? [];
+                const [_a, _b, itemWeekNumber] =  moduleItem.title.match(regex) ?? [];
+
                 if (itemWeekNumber) {
                     weekNumber = itemWeekNumber;
                 }
@@ -69,7 +70,7 @@ export function getItemInModule(contentItem: CanvasData, module: IModuleData, as
             return moduleItem;
         }
 
-        if (type === 'Discussion' && !moduleItemAssignment.rubric) {
+        if (type === 'Discussion' && !moduleItemAssignment?.rubric) {
             continue;
         }
 
