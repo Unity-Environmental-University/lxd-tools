@@ -1,28 +1,31 @@
 import {
-    badGradingPolicyTest,
+    badGradingPolicyTest, createSettingsValidation,
     extensionsInstalledTest,
     extensionsToTest,
     latePolicyTest,
     noEvaluationTest
 } from "../courseSettings";
-import {deFormDataify, ICanvasCallConfig, range} from "@/canvas/canvasUtils";
-import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";
+import {deFormDataify, ICanvasCallConfig, range} from "@canvas/canvasUtils";
+import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
 import {mockGradModules, mockUgModules} from "@/canvas/course/__mocks__/mockModuleData";
-import {IModuleData} from "@/canvas/canvasDataDefs";
-import {getModulesByWeekNumber} from "@/canvas/course/modules";
+import {IModuleData} from "@canvas/canvasDataDefs";
+import {getModulesByWeekNumber} from "@canvas/course/modules";
 import {
     IGradingStandardData,
     IPagesHaver
-} from "@/canvas/course/courseTypes";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Course} from "@/canvas/course/Course";
-import mockTabData from "@/canvas/__mocks__/mockTabData";
+} from "@canvas/course/courseTypes";
+import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
+import {Course} from "@canvas/course/Course";
+import mockTabData from "@canvas/__mocks__/mockTabData";
 import {getDummyLatePolicyHaver} from "../__mocks__/validations";
 import assert from "assert";
 
 import {ICourseData, ITabData} from "@/canvas/courseTypes";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {Page} from "@/canvas/content/pages/Page";
+import {
+    CourseFixValidation,
+} from "@publish/fixesAndUpdates/validations/utils";
 
 jest.mock('@/canvas/fetch/fetchJson')
 
@@ -82,10 +85,10 @@ type MockModGradPolHavOpts = {
     async function mockModuleGradingPolicyHaver(gradingPolicy: IGradingStandardData | null, modules: IModuleData[], options?: MockModGradPolHavOpts) {
 
         const additions:Partial<Course> = Object.assign(<Partial<Course>>{
-            getCurrentGradingStandard: async (config?) => gradingPolicy,
-            getAvailableGradingStandards: async (config?) => mockGradingPolicies,
-            getModules: async (config?) => modules,
-            getModulesByWeekNumber: async (config?: ICanvasCallConfig) => (await getModulesByWeekNumber(modules))
+            getCurrentGradingStandard: async (_?) => gradingPolicy,
+            getAvailableGradingStandards: async (_?) => mockGradingPolicies,
+            getModules: async (_?) => modules,
+            getModulesByWeekNumber: async (_?: ICanvasCallConfig) => (await getModulesByWeekNumber(modules))
         }, options?.overrides);
 
         const out:Course = Object.assign(new Course({...mockCourseData, id: 0}), additions)
@@ -178,3 +181,127 @@ describe('Extensions installed', () => {
         expect(result.success).toBe(false);
     })
 })
+
+describe('createSettingTest', () => {
+    let mockCourse: Partial<Course>;
+    let testSetting: CourseFixValidation;
+
+    beforeEach(() => {
+        // Initialize a mock course object with necessary methods
+        mockCourse = {
+            getSettings: jest.fn(),
+            updateSettings: jest.fn(),
+        };
+        testSetting = createSettingsValidation('show_announcements_on_home_page', true);
+    });
+
+    test('run method should confirm the setting is on', async () => {
+        // Arrange
+        const settingsResponse = { show_announcements_on_home_page: true };
+        (mockCourse.getSettings as jest.Mock).mockResolvedValue(settingsResponse);
+
+        // Act
+        const result = await testSetting.run(mockCourse as Course);
+
+        // Assert
+        expect(result.success).toBe(true);
+        expect(mockCourse.getSettings).toHaveBeenCalled();
+    });
+
+    test('run method should indicate when the setting is not on', async () => {
+        // Arrange
+        const settingsResponse = { show_announcements_on_home_page: false };
+        (mockCourse.getSettings as jest.Mock).mockResolvedValue(settingsResponse);
+
+        // Act
+        const result = await testSetting.run(mockCourse as Course);
+
+        // Assert
+        expect(result.success).toBe(false);
+        expect(result.messages.reduce((
+            prev, currentValue) => [...prev, ...currentValue.bodyLines], [] as string[]))
+            .toContain('Setting "show_announcements_on_home_page" not set to true');
+        expect(mockCourse.getSettings).toHaveBeenCalled();
+    });
+
+    test('fix method should successfully turn on the setting', async () => {
+        // Arrange
+        (mockCourse.updateSettings as jest.Mock).mockResolvedValue({ show_announcements_on_home_page: true });
+
+        // Act
+        const result = await testSetting.fix(mockCourse as Course);
+
+        // Assert
+        expect(result.success).toBe(true);
+        expect(mockCourse.updateSettings).toHaveBeenCalledWith({ show_announcements_on_home_page: true });
+    });
+
+    test('fix method should provide feedback when failing to turn the setting on', async () => {
+        // Arrange
+        const errorMessage = 'Failed to update settings';
+        (mockCourse.updateSettings as jest.Mock).mockRejectedValue(new Error(errorMessage));
+
+        // Act
+        const result = await testSetting.fix(mockCourse as Course);
+
+        // Assert
+        expect(result.success).toBe(false);
+        expect(result.messages.reduce((
+            prev, currentValue) => [...prev, ...currentValue.bodyLines], [] as string[])).toContain(`Error: ${errorMessage}`);
+    });
+
+    test('fix method should handle non-error throws properly', async () => {
+        // Arrange
+        (mockCourse.updateSettings as jest.Mock).mockImplementation(() => { throw "Unexpected error"; });
+
+        // Act / Assert
+        await expect(testSetting.fix(mockCourse as Course)).rejects.toThrow("Threw a non-error: Unexpected error");
+    });
+
+      test('run method should indicate when the setting is set to false', async () => {
+        // Arrange
+        const settingsResponse = { show_announcements_on_home_page: false };
+        (mockCourse.getSettings as jest.Mock).mockResolvedValue(settingsResponse);
+
+        // Act
+        const result = await testSetting.run(mockCourse as Course);
+
+        // Assert
+        expect(result.success).toBe(false);
+        expect(result.messages.reduce((
+            prev, currentValue) => [...prev, ...currentValue.bodyLines], [] as string[]))
+            .toContain('Setting "show_announcements_on_home_page" not set to true');
+        expect(mockCourse.getSettings).toHaveBeenCalled();
+    });
+
+    test('run method should indicate when the setting has an unexpected type', async () => {
+        // Arrange
+        const settingsResponse = { show_announcements_on_home_page: "unexpectedString" }; // Non-boolean value
+        (mockCourse.getSettings as jest.Mock).mockResolvedValue(settingsResponse);
+
+        // Act
+        const result = await testSetting.run(mockCourse as Course);
+
+        // Assert
+        expect(result.success).toBe(false);
+        // Check if it captures the unexpected type in the error message.
+        expect(result.messages.reduce((
+            prev, currentValue) => [...prev, ...currentValue.bodyLines], [] as string[])).toContain('Setting "show_announcements_on_home_page" not set to true');
+        expect(mockCourse.getSettings).toHaveBeenCalled();
+    });
+
+    test('fix method should attempt to set the setting to false', async () => {
+        // Arrange
+        (mockCourse.updateSettings as jest.Mock).mockResolvedValue({ show_announcements_on_home_page: false });
+
+        // Act
+        const result = await createSettingsValidation('show_announcements_on_home_page', false).fix(mockCourse as Course);
+
+        // Assert
+        expect(result.success).toBe(true);
+        expect(mockCourse.updateSettings).toHaveBeenCalledWith({ show_announcements_on_home_page: false });
+    });
+
+
+});
+

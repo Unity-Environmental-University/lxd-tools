@@ -1,20 +1,17 @@
 /// Course Settings
-import {CourseFixValidation, CourseValidation, errorMessageResult, stringsToMessageResult, testResult} from "./utils";
-import {config} from "dotenv";
+import {CourseFixValidation, CourseValidation, errorMessageResult, testResult, ValidationResult} from "./utils";
 import {
-    ICourseSettingsHaver, IGradingStandardData,
-    IGradingStandardsHaver,
+    IGradingStandardData,
     ILatePolicyHaver,
     IModulesHaver,
     IPagesHaver
-} from "../../../canvas/course/courseTypes";
-import {Course} from "../../../canvas/course/Course";
+} from "@canvas/course/courseTypes";
+import {Course} from "@canvas/course/Course";
 import assert from "assert";
-import {setGradingStandardForCourse} from "@/canvas/course";
+import {setGradingStandardForCourse} from "@canvas/course";
 
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
 
-export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
 export const extensionsInstalledTest: CourseValidation<Course> = {
     name: "Extensions Installed",
     description: 'Big Blue Button and Dropout Detective in nav bar',
@@ -30,16 +27,66 @@ export const extensionsInstalledTest: CourseValidation<Course> = {
         }
     }
 }
-export const announcementsOnHomePageTest: CourseValidation<Course> = {
-    name: "Show Announcements",
-    description: 'Confirm under "Settings" --> "more options" that the "Show announcements" box is checked',
-    run: async (course) => {
-        const settings = await course.getSettings();
-        const success = !!settings.show_announcements_on_home_page
-        const failureMessage = "'show announcements on home page' not turned on";
-        return testResult(success, {failureMessage})
-    }
+export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
+
+
+/**
+ * Creates a validation and fix mechanism for a specific course setting.
+ *
+ * This function generates a structure that includes methods to check
+ * the current state of a course setting and to attempt to fix it if
+ * it does not match the expected value. It supports both retrieval
+ * of current settings and an update mechanism that adjusts the
+ * specified setting to the desired value.
+ *
+ * @template SettingNameType - The type of the setting name, which must
+ * be a key of the ICourseSettings interface.
+ * @param {SettingNameType} settingName - The name of the course setting
+ * to validate and potentially fix.
+ * @param {ICourseSettings[SettingNameType]} correctSettingValue - The
+ * expected value that the specified course setting should hold (e.g.,
+ * true or false for boolean settings).
+ *
+ * @returns {CourseFixValidation} An object containing:
+ * - name: A formatted string representing the test's name.
+ * - description: A detailed string describing what the test checks and fixes.
+ * - run: An asynchronous method that checks the current state of the setting.
+ * - fix: An asynchronous method that attempts to update the setting to the correct value.
+ */
+export function createSettingsValidation<
+    SettingNameType extends keyof ICourseSettings,
+>(settingName: SettingNameType, correctSettingValue: ICourseSettings[SettingNameType]): CourseFixValidation {
+    const formattedSettingName = settingName.replaceAll('_', ' ');
+    return {
+        name: `Course Settings: "${formattedSettingName}"`,
+        description: `"${formattedSettingName}" should be ${correctSettingValue}`,
+        run: async (course: Course): Promise<ValidationResult> => {
+            const settings = await course.getSettings();
+            const success = settings[settingName] == correctSettingValue;
+            const failureMessage = `Setting "${settingName}" not set to ${correctSettingValue}`;
+            return testResult(success, {failureMessage});
+        },
+        fix: async (course: Course): Promise<ValidationResult> => {
+            try {
+                const response = await course.updateSettings({[settingName]: correctSettingValue});
+                return testResult(response[settingName] == correctSettingValue, { failureMessage: `Failed to turn "${settingName}" on.`});
+            } catch (e) {
+                if (e instanceof Error) {
+                    return testResult(false, {failureMessage: e.toString()});
+                } else {
+                    throw new Error("Threw a non-error: " + String(e));
+                }
+            }
+        }
+    };
 }
+
+export const announcementsOnHomePageTest = createSettingsValidation('show_announcements_on_home_page', true);
+export const noStudentEditDiscussions = createSettingsValidation('allow_student_discussion_editing', false)
+export const noStudentCreateDiscussions = createSettingsValidation('allow_student_discussion_topics', false)
+
+
+
 export const latePolicyTest: CourseValidation<ILatePolicyHaver> = {
     name: "Late Policy Correct",
     description: "Go to the gradebook and  click the cog in the upper right-hand corner, then check the box to automatically apply a 0 for missing submissions; or confirm that this setting has already been made.",
@@ -87,6 +134,9 @@ type BadGradingUserData = {
     gradStandard:IGradingStandardData | undefined,
     underGradStandard:IGradingStandardData | undefined,
 } | undefined
+
+
+
 
 export const badGradingPolicyTest: CourseFixValidation<Course, BadGradingUserData, ICourseData | BadGradingUserData> = {
     name: "Correct grading policy selected",
@@ -155,5 +205,7 @@ export default [
     latePolicyTest,
     announcementsOnHomePageTest,
     extensionsInstalledTest,
-    badGradingPolicyTest
+    badGradingPolicyTest,
+    noStudentCreateDiscussions,
+    noStudentEditDiscussions
 ]

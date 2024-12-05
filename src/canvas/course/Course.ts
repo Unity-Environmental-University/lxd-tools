@@ -43,6 +43,7 @@ import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentGroup} from "@/canvas/content/assignments/types";
 import {IPageData} from "@/canvas/content/pages/types";
+import ApiWriteConfig from "@/fetch/apiWriteConfig";
 
 const HOMETILE_WIDTH = 500;
 
@@ -520,6 +521,11 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     public async getSettings(config?: ICanvasCallConfig) {
         return await fetchJson(`/api/v1/courses/${this.id}/settings`, config) as ICourseSettings;
+    }
+
+    public async updateSettings(newSettings: Partial<ICourseSettings>, config? : ICanvasCallConfig) {
+        const configToUse = ApiWriteConfig("PUT", newSettings, config);
+        return await fetchJson(`/api/v1/courses/${this.id}/settings`, configToUse) as ICourseSettings;
     }
 
 }
