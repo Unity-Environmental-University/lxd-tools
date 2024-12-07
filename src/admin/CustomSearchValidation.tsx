@@ -1,6 +1,7 @@
-import {badContentRunFunc, CourseValidation} from "@publish/fixesAndUpdates/validations/utils";
+import {badContentRunFunc} from "@publish/fixesAndUpdates/validations/utils";
 import React, {FormEvent, useEffect, useState} from "react";
 import {Button, Col, Form, Row} from "react-bootstrap";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 interface ICustomSearchValidationParams {
     onGenerateSearchValidation(generatedValidation: CourseValidation): void,

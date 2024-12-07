@@ -23,9 +23,8 @@ import assert from "assert";
 import {ICourseData, ITabData} from "@/canvas/courseTypes";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {Page} from "@/canvas/content/pages/Page";
-import {
-    CourseFixValidation,
-} from "@publish/fixesAndUpdates/validations/utils";
+
+import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
 jest.mock('@/canvas/fetch/fetchJson')
 

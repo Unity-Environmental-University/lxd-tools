@@ -1,9 +1,9 @@
-import {CourseValidation} from "@publish/fixesAndUpdates/validations/utils";
 import MultiSelect, {IMultiSelectOption, optionize, optionizeOne} from "../ui/widgets/MuliSelect";
 import React, {FormEvent, useEffect, useState} from "react";
 import {tests} from "./index";
 import {Col, Form, Row} from "react-bootstrap";
 import {CustomSearchValidation} from "./CustomSearchValidation";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 type ValidationOption = CourseValidation & IMultiSelectOption
 

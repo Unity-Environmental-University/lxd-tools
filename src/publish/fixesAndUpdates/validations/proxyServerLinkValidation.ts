@@ -4,9 +4,9 @@ import {IContentHaver} from "@/canvas/course/courseTypes";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {
     badContentFixFunc,
-    badContentRunFunc,
-    ContentTextReplaceFix
+    badContentRunFunc
 } from "@publish/fixesAndUpdates/validations/utils";
+import {ContentTextReplaceFix} from "@publish/fixesAndUpdates/validations/types";
 
 
 const oldProxyRegex = /(proxy1\.unity\.edu|unity.idn.oclc.org)/g;

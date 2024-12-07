@@ -1,11 +1,11 @@
 import {
     badContentFixFunc,
     badContentRunFunc,
-    preserveCapsReplace,
-    TextReplaceValidation
+    preserveCapsReplace
 } from "../utils";
 
 import {IContentHaver} from "../../../../canvas/course/courseTypes";
+import {TextReplaceValidation} from "@publish/fixesAndUpdates/validations/types";
 
 
 export const projectRegex = /(research proposal|course project)/ig;

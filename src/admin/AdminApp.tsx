@@ -1,5 +1,4 @@
 import React, {useReducer, useState} from "react";
-import {CourseValidation} from "@publish/fixesAndUpdates/validations/utils";
 import {IMultiSelectOption, optionize, optionizeOne} from "@/ui/widgets/MuliSelect";
 import Modal from "@/ui/widgets/Modal/index";
 import {Button, Col, Container, Form, Row} from "react-bootstrap";
@@ -11,6 +10,7 @@ import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";
 import {Course} from "@/canvas/course/Course";
 import {beginBpSync} from "@/canvas/course/blueprint";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 
 interface IAdminAppProps {

@@ -1,5 +1,5 @@
 /// Course Settings
-import {CourseFixValidation, CourseValidation, errorMessageResult, testResult, ValidationResult} from "./utils";
+import {errorMessageResult, testResult, ValidationResult} from "./utils";
 import {
     IGradingStandardData,
     ILatePolicyHaver,
@@ -11,6 +11,7 @@ import assert from "assert";
 import {setGradingStandardForCourse} from "@canvas/course";
 
 import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
+import {CourseFixValidation, CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export const extensionsInstalledTest: CourseValidation<Course> = {
     name: "Extensions Installed",

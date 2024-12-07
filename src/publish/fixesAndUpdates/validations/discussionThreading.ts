@@ -1,13 +1,13 @@
 import {
     badContentFixFunc,
     badContentRunFunc,
-    CourseFixValidation,
     testResult
 } from "@publish/fixesAndUpdates/validations/utils";
 import {projectRegex} from "@/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import {Course} from "@/canvas/course/Course";
 import {IDiscussionData} from "@/canvas/content/discussions/types";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
+import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export const discussionThreadingValidation: CourseFixValidation<Course, IDiscussionData[], IDiscussionData[]> = {
     name: "Discussion Threading Turned on",

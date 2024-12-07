@@ -1,4 +1,4 @@
-import {CourseValidation, errorMessageResult, MessageResult, testResult} from "./utils";
+import {errorMessageResult, MessageResult, testResult} from "./utils";
 import {
     IRubricAssociationData,
     IRubricData,
@@ -9,6 +9,7 @@ import {IIdHaver} from "@/canvas/course/courseTypes";
 import {updateAssignmentData} from "@/canvas/content/assignments";
 import {callAll} from "@/canvas/canvasUtils";
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});

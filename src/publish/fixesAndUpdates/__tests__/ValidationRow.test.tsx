@@ -3,8 +3,9 @@ import {render, screen, fireEvent, waitFor} from "@testing-library/react";
 import {ValidationRow, ValidationRowProps} from "@/publish/fixesAndUpdates/ValidationRow";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Course} from "@/canvas/course/Course";
-import {CourseValidation, ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
+import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 import {act} from "react";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 const mockCourse = new Course(mockCourseData); // Use appropriate instantiation for Course
 const mockValidation: CourseValidation = {

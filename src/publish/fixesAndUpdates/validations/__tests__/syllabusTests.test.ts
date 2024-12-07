@@ -1,4 +1,3 @@
-import {CourseValidation, TextReplaceValidation} from "../utils";
 import {
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest, classInclusiveNoDateHeaderTest,
@@ -11,6 +10,7 @@ import {badContentTextValidationFixTest, badContentTextValidationTest, mockSylla
 import {Course} from "@/canvas/course/Course";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import assert from "assert";
+import {CourseValidation, TextReplaceValidation} from "@publish/fixesAndUpdates/validations/types";
 
 const goofusSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.goofus.html').toString()
 const gallantSyllabusHtml = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.gallant.html').toString()

@@ -9,7 +9,6 @@ import {AdminApp} from "@/admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Alert, Row} from "react-bootstrap";
 import {Course} from "@canvas/course/Course";
-import {CourseValidation} from "./fixesAndUpdates/validations/utils";
 import {IMultiSelectOption} from "@/ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 
@@ -18,6 +17,7 @@ import {DIST_REPO_MANIFEST} from "@/publish/consts";
 import validations from "@publish/fixesAndUpdates/validations";
 import {Provider} from "react-redux";
 import {store} from "@publish/publishInterface/videoUpdater/data/store";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export type ValidationOption = CourseValidation & IMultiSelectOption
 

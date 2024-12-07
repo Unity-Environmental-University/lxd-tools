@@ -1,19 +1,13 @@
 import {range} from "@canvas/canvasUtils";
 import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
-import {IContentHaver, IPagesHaver} from "@canvas/course/courseTypes";
+import {IPagesHaver} from "@canvas/course/courseTypes";
 import {
     badContentTextValidationFixTest,
     badContentTextValidationTest,
     mockContentHaver,
     mockPagesHaver
 } from "../../__mocks__/validations";
-import * as fetchApi from "@canvas/fetch/utils";
-import {badContentRunFunc, ContentTextReplaceFix} from "../../utils";
-import {BaseContentItem} from "@canvas/content/BaseContentItem";
 import {Page} from "@canvas/content/pages/Page";
-import {classInclusiveNoDateHeaderTest} from "@publish/fixesAndUpdates/validations/syllabusTests";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
-import {Course} from "@canvas/course/Course";
 import {weeklyObjectivesTest} from "@publish/fixesAndUpdates/validations/courseContent/weeklyObjectivesTest";
 import {courseProjectOutlineTest} from "@publish/fixesAndUpdates/validations/courseContent/courseProjectOutlineTest";
 import {codeAndCodeOfCodeTest} from "@publish/fixesAndUpdates/validations/courseContent/codeAndCodeOfCodeTest";

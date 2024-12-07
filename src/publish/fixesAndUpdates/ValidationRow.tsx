@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
-import {CourseValidation, errorMessageResult, ValidationResult} from "./validations/utils";
+import {errorMessageResult, ValidationResult} from "./validations/utils";
 import assert from "assert";
 import {Row} from "react-bootstrap";
 import {Course} from "@/canvas/course/Course";
 
 
 import {ICourseData} from "@/canvas/courseTypes";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export type ValidationRowProps = {
     course: Course,

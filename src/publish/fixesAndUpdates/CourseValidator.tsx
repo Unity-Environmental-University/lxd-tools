@@ -1,9 +1,9 @@
 import React from "react";
 import './CourseValidTest.scss'
 import {ValidationRow} from "./ValidationRow";
-import {CourseValidation} from "./validations/utils";
 import {Course} from "../../canvas/course/Course";
 import {Col} from "react-bootstrap";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export type CourseValidatorProps<T = Course> = {
     course: T,

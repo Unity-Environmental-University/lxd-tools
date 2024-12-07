@@ -1,6 +1,7 @@
-import {CourseValidation, testResult} from "@publish/fixesAndUpdates/validations/utils";
+import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {IPagesHaver} from "@canvas/course/courseTypes";
 import {decodeHtml} from "@publish/fixesAndUpdates/validations/courseContent/decodeHtml";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export const weeklyObjectivesTest: CourseValidation<IPagesHaver> = {
     name: "Learning Objectives -> Weekly Objectives",

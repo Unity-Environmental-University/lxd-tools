@@ -1,4 +1,4 @@
-import {ContentTextReplaceFix, CourseFixValidation, testResult} from "@publish/fixesAndUpdates/validations/utils";
+import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {IContentHaver} from "@canvas/course/courseTypes";
 import {Page} from "@canvas/content/pages/Page";
 import PageKind from "@canvas/content/pages/PageKind";
@@ -6,6 +6,7 @@ import {renderAsyncGen} from "@canvas/canvasUtils";
 import {Course} from "@canvas/course/Course";
 import {IPageData} from "@canvas/content/pages/types";
 import assert from "assert";
+import {ContentTextReplaceFix, CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
 type OverviewFix = CourseFixValidation<Course, IPageData|undefined>
 export const footerOnFrontPageFix: OverviewFix = {

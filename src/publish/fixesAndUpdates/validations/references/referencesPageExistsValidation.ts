@@ -1,10 +1,11 @@
-import {CourseFixValidation, testResult} from "@publish/fixesAndUpdates/validations/utils";
+import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {Course} from "@/canvas/course/Course";
 import {IPageData} from "@/canvas/content/pages/types";
 import PageKind from "@/canvas/content/pages/PageKind";
 import {REFERENCES_PAGE_URL_NAME} from "@/publish/consts";
 import getReferencesTemplate, {ReferenceExportType} from "@/canvas/course/references/getReferencesTemplate";
 import assert from "assert";
+import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export type RefPageValidationUserData = IPageData | { message: string};
 const PAGE_NOT_FOUND = 'page not found';

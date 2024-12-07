@@ -6,9 +6,9 @@ import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {CourseValidation} from "./validations/utils";
 import {Course} from "../../canvas/course/Course";
 import {Page} from "@/canvas/content/pages/Page";
+import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export type CourseUpdateInterfaceProps = {
     course?: Course,

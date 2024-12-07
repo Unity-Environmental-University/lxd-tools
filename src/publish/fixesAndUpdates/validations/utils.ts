@@ -1,6 +1,5 @@
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {GetCourseOptions, IContentHaver, ISyllabusHaver} from "@/canvas/course/courseTypes";
-import {Course} from "@/canvas/course/Course";
+import {IContentHaver, ISyllabusHaver} from "@/canvas/course/courseTypes";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {overrideConfig} from "@canvas/fetch/utils";
 
@@ -20,49 +19,6 @@ export type ValidationResult<UserDataType = unknown> = {
     messages: MessageResult[],
     links?: string[],
 }
-
-
-
-export type CourseValidation<
-    T = Course,
-    UserDataType = any,
-    FixUserDataType = UserDataType
-> = {
-    courseCodes?: string[],
-    name: string,
-    description: string,
-    run: (course: T, config?: ICanvasCallConfig) => Promise<ValidationResult<UserDataType>>
-    fix?: (course: T, result?: ValidationResult<UserDataType>) => Promise<ValidationResult<FixUserDataType>>
-}
-
-export interface CourseFixValidation<T = Course,
-    UserDataType = unknown,
-    FixUserDataType = UserDataType
->  extends CourseValidation<T, UserDataType, FixUserDataType> {
-    fix: (course: T, result?: ValidationResult<UserDataType>) => Promise<ValidationResult<FixUserDataType>>
-}
-
-export type TextReplaceValidation<T, UserData = unknown> = {
-    beforeAndAfters: [string, string][],
-    positiveExemplars?: string[],
-} &  CourseValidation<T, UserData>
-
-export type ContentValidation<
-    T,
-    ContentType extends BaseContentItem,
-    UserData = unknown
-> = CourseValidation<T, UserData> & {
-    negativeExemplars: [string, string?][],
-    getContent?: (course: T) => Promise<ContentType[]>
-}
-
-export type ContentTextReplaceFix<
-    T,
-    ContentType extends BaseContentItem,
-    UserData = unknown
-> = {
-    getContent?: (course: T) => Promise<ContentType[]>,
-} & TextReplaceValidation<T, UserData>
 
 
 
@@ -95,22 +51,55 @@ const testResultDefaults = {
     notFailureMessage: 'success'
 }
 
+/**
+ * Processes the result of a test and returns a structured validation result.
+ *
+ * @param success - Indicates the success state of the test. It can be a boolean
+ *                  or one of the three string states: "unknown" or "not run".
+ *                  If undefined, it defaults to "unknown".
+ * @param options  - Optional settings that affect the output, including:
+ *                   - failureMessage: Message shown if the test fails.
+ *                   - notFailureMessage: Message shown if the test did not fail.
+ *                   - links: Optional links related to the test result.
+ *                   - userData: Additional user context to include in the result, especially
+ *                   used to pass data from a validation run into the fix run so we don't
+ *                   have to duplicate checks/ collection of bad links.
+ *
+ * @returns A ValidationResult object containing the success state, relevant messages,
+ *          and possibly user data and links.
+ *
+ * @example
+ * const result = testResult(true, {
+ *     failureMessage: "Test failed due to X.",
+ *     notFailureMessage: "Test passed successfully!",
+ *     links: { documentation: "http://example.com/test-docs" },
+ *     userData: { userId: 12345 }
+ * });
+ * console.log(result);
+ * // Output: {
+ * //   success: true,
+ * //   messages: "Test passed successfully!",
+ * //   userData: { userId: 12345 },
+ * //   links: { documentation: "http://example.com/test-docs" }
+ * // }
+ */
 export function testResult<UserData>(
     success: boolean | "unknown" | "not run" | undefined, options?: TestResultOptions<UserData> ): ValidationResult<UserData> {
-
     const displayMessage = success === 'unknown' ? success : !!success;
-    const reportedSuccess = success === undefined? 'unknown' : success;
-    let { failureMessage, notFailureMessage, links, userData} = {...testResultDefaults, ...options };
+    const reportedSuccess = success === undefined ? 'unknown' : success;
+
+    const localOptions = { ...testResultDefaults, ...options };
+    let { failureMessage, notFailureMessage } = localOptions;
+    const { links, userData } = localOptions;
 
     failureMessage = ensureMessageResults(failureMessage);
-    notFailureMessage = ensureMessageResults(notFailureMessage)
+    notFailureMessage = ensureMessageResults(notFailureMessage);
 
     const response: ValidationResult<UserData> = {
         success: reportedSuccess,
         messages: displayMessage ? notFailureMessage : failureMessage,
         userData
-
-    }
+    };
     if (links) response.links = links;
     return response;
 }

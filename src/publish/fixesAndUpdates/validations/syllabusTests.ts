@@ -1,14 +1,11 @@
-import {getPlainTextFromHtml} from "../../../canvas/canvasUtils";
+import {getPlainTextFromHtml} from "@canvas/canvasUtils";
 import {
     badSyllabusFixFunc, badSyllabusRunFunc,
-    CourseFixValidation,
-    CourseValidation,
     errorMessageResult,
-    testResult,
-    TextReplaceValidation
+    testResult
 } from "./utils";
-import {ISyllabusHaver} from "../../../canvas/course/courseTypes";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {ISyllabusHaver} from "@canvas/course/courseTypes";
+import {CourseFixValidation, CourseValidation, TextReplaceValidation} from "@publish/fixesAndUpdates/validations/types";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
@@ -132,11 +129,6 @@ function htmlDiv(text: string) {
     return el;
 }
 
-const iteratorFindOptionDefaults = {
-    maxIterations: 1000,
-}
-type IteratorFindOptions = Partial<typeof iteratorFindOptionDefaults>;
-
 
 function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
     const discussExpectEl = [...document.querySelectorAll('h3')]
@@ -192,7 +184,6 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
     }
 }
 
-
 export default [
     classInclusiveNoDateHeaderTest,
     courseCreditsInSyllabusTest,
@@ -201,5 +192,6 @@ export default [
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
     gradeTableHeadersCorrectTest,
+    secondDiscussionParaOff
 ]
 

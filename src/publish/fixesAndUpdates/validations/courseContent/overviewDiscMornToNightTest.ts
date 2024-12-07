@@ -1,9 +1,9 @@
-import {ContentTextReplaceFix} from "@publish/fixesAndUpdates/validations/utils";
 import {IContentHaver} from "@canvas/course/courseTypes";
 import {Page} from "@canvas/content/pages/Page";
 import PageKind from "@canvas/content/pages/PageKind";
 import {renderAsyncGen} from "@canvas/canvasUtils";
 import badContentReplaceFuncs from "@publish/fixesAndUpdates/validations/courseContent/badContentReplaceFuncs";
+import {ContentTextReplaceFix} from "@publish/fixesAndUpdates/validations/types";
 
 export const overviewDiscMornToNightTest: ContentTextReplaceFix<IContentHaver, Page> = {
     name: "overview discussion 3AM night -> morning",

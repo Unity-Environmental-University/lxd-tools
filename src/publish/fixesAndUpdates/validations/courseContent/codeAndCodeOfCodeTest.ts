@@ -1,7 +1,7 @@
-import {ContentTextReplaceFix} from "@publish/fixesAndUpdates/validations/utils";
 import {IContentHaver} from "@canvas/course/courseTypes";
 import {Page} from "@canvas/content/pages/Page";
 import badContentReplaceFuncs from "@publish/fixesAndUpdates/validations/courseContent/badContentReplaceFuncs";
+import {ContentTextReplaceFix} from "@publish/fixesAndUpdates/validations/types";
 
 export const codeAndCodeOfCodeTest: ContentTextReplaceFix<IContentHaver, Page> = {
     name: "Code and Code of Code",
