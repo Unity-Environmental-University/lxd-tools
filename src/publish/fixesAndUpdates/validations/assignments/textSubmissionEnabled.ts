@@ -3,8 +3,17 @@ import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {IAssignmentData} from "@canvas/content/assignments/types";
 import {Course} from "@canvas/course/Course";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 import assignmentKind from "@canvas/content/assignments/AssignmentKind";
+import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
+import {validateTestFuncGen} from "@publish/fixesAndUpdates/validations/validateTestFuncGen";
+
+
+const shouldSkipAssignment = validateTestFuncGen<IAssignmentData>(
+    ba => ba.submission_types.includes('external_tool'),
+    ba => ba.submission_types.includes('discussion_topic'),
+    ba => ba.submission_types.includes('online_text_entry'),
+    ba => ba.submission_types.includes('online_quiz'),
+);
 
 export const textSubmissionEnabled: CourseFixValidation<Course, IAssignmentData[]> = {
     name: "Text submission enabled for all assignments",
@@ -17,8 +26,7 @@ export const textSubmissionEnabled: CourseFixValidation<Course, IAssignmentData[
             const badAssignments = [] as IAssignmentData[];
 
             for await(const assignment of assignmentGen) {
-                if (assignment.submission_types.includes('external_tool')) continue; //Skip external tools as these are a separate case.
-                if (!assignment.submission_types.includes('online_text_entry')) badAssignments.push(assignment);
+                if(shouldSkipAssignment(assignment)) badAssignments.push(assignment);
             }
 
 
@@ -38,14 +46,10 @@ export const textSubmissionEnabled: CourseFixValidation<Course, IAssignmentData[
 
         if (!badAssignments) return testResult(false, {failureMessage: "Failed to fetch bad assignments"});
 
-        // Sanity check to filter out external_tool assignments
-        const validAssignments = badAssignments.filter(ba => !ba.submission_types.includes('external_tool'));
-
-        if (validAssignments.length === 0) {
+        if (badAssignments.length === 0) {
             return testResult(false, {failureMessage: "No valid assignments to update"});
         }
-
-        const results = await Promise.all(validAssignments.map((ba) => assignmentKind.put(
+        const results = await Promise.all(badAssignments.map((ba) => assignmentKind.put(
             course.id, ba.id, {
                 assignment: {
                     submission_types: [...ba.submission_types, "online_text_entry"]

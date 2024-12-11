@@ -1,16 +1,18 @@
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 import textSubmissionEnabled from "@publish/fixesAndUpdates/validations/assignments/textSubmissionEnabled";
-import assignmentKind from "@canvas/content/assignments/AssignmentKind";
 import {Course} from "@canvas/course/Course";
 import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {IAssignmentData} from "@canvas/content/assignments/types";
 
 
+
 describe('textSubmissionEnabled', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        AssignmentKind.dataGenerator = jest.fn()
+        AssignmentKind.put = jest.fn()
     });
 
     describe('run method', () => {
@@ -28,7 +30,7 @@ describe('textSubmissionEnabled', () => {
                 {id: '3', name: 'Assignment 3', submission_types: ['external_tool'], html_url: 'url3'} // Should be ignored
             ];
             jest.fn().mockResolvedValue(mockAssignmentData);
-            AssignmentKind.dataGenerator = jest.fn().mockImplementation(async function* () {
+            (AssignmentKind.dataGenerator as jest.Mock).mockImplementationOnce(async function* () {
                 for (const assignment of mockAssignmentData) {
                     yield assignment;
                 }
@@ -56,7 +58,7 @@ describe('textSubmissionEnabled', () => {
                 {id: '2', name: 'Assignment 2', submission_types: ['online_text_entry'], html_url: 'url2'}
             ];
 
-            AssignmentKind.dataGenerator = jest.fn().mockImplementation(async function* () {
+            (AssignmentKind.dataGenerator as jest.Mock).mockImplementationOnce(async function* () {
                 for (const assignment of mockAssignmentData) {
                     yield assignment;
                 }
@@ -72,7 +74,7 @@ describe('textSubmissionEnabled', () => {
         });
 
         test('should return an empty array if no assignments are present', async () => {
-            AssignmentKind.dataGenerator = jest.fn().mockImplementation(async function* () {
+            (AssignmentKind.dataGenerator as jest.Mock).mockImplementationOnce(async function* () {
             });
 
             const result = await textSubmissionEnabled.run(new Course({...mockCourseData, id: mockCourseId}));
@@ -86,7 +88,7 @@ describe('textSubmissionEnabled', () => {
 
         test('should handle errors gracefully from the data generator', async () => {
             const errorMessage = 'Error fetching assignments';
-            AssignmentKind.dataGenerator = jest.fn().mockImplementation(async function* () {
+            (AssignmentKind.dataGenerator as jest.Mock).mockImplementationOnce(async function* () {
                 throw new Error(errorMessage);
             });
 
@@ -104,17 +106,19 @@ describe('textSubmissionEnabled', () => {
         test('should ignore assignments with external_tool submission types', async () => {
             const mockAssignmentData = [
                 {id: '1', name: 'Assignment 1', submission_types: ['external_tool'], html_url: 'url1'},
-                {id: '2', name: 'Assignment 2', submission_types: [], html_url: 'url2'} // Needs text entry
+                {id: '2', name: 'Assignment 2', submission_types: [], html_url: 'url2'},
+                {id: '3', name: 'Discussion 1', submission_types: ['discussion_topic'], html_url: 'url3'},
+                {id: '3', name: 'Quiz 1', submission_types: ['online_quiz'], html_url: 'url4'},
             ];
 
-            AssignmentKind.dataGenerator = jest.fn().mockImplementation(async function* () {
+            (AssignmentKind.dataGenerator as jest.Mock).mockImplementationOnce(async function* () {
                 for (const assignment of mockAssignmentData) {
                     yield assignment;
                 }
             });
 
             const result = await textSubmissionEnabled.run(new Course({...mockCourseData, id: mockCourseId}));
-
+            expect(result.userData).toHaveLength(1);
 
             expect(result).toEqual(expect.objectContaining({
                 success: false,
@@ -143,7 +147,7 @@ describe('textSubmissionEnabled', () => {
             jest.spyOn(textSubmissionEnabled, 'run').mockResolvedValue(mockRunResult);
 
             // Mock the put function to return the expected response
-            assignmentKind.put = jest.fn().mockResolvedValue({...mockAssignmentData[1], submission_types: ['online_text_entry']});
+            (AssignmentKind.put as jest.Mock).mockResolvedValueOnce({...mockAssignmentData[1], submission_types: ['online_text_entry']});
 
             const result = await textSubmissionEnabled.fix(new Course({
                 ...mockCourseData,
@@ -159,31 +163,11 @@ describe('textSubmissionEnabled', () => {
                 userData: undefined,
             }));
 
-            expect(assignmentKind.put).toHaveBeenCalledWith(mockCourseId, '2', {
+            expect(AssignmentKind.put).toHaveBeenCalledWith(mockCourseId, '2', {
                 assignment: {
                     submission_types: ['online_text_entry']
                 }
             });
-        });
-
-        test('should not modify assignments flagged as external tools', async () => {
-            const mockAssignmentData = [
-                {id: '1', name: 'Assignment 1', submission_types: ['external_tool'], html_url: 'url1'}
-            ] as unknown as IAssignmentData[];
-            const mockRunResult = testResult(false, {userData: mockAssignmentData});
-            jest.spyOn(textSubmissionEnabled, 'run').mockResolvedValue(mockRunResult);
-
-            const result = await textSubmissionEnabled.fix(new Course({
-                ...mockCourseData,
-                id: mockCourseId
-            }), mockRunResult);
-
-            expect(result).toEqual(expect.objectContaining({
-                success: false,
-           }));
-
-            // Ensure 'external_tool' assignment was not modified
-            expect(assignmentKind.put).not.toHaveBeenCalledWith(mockCourseId, '1', expect.any(Object));
         });
     });
 
