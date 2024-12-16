@@ -10,8 +10,8 @@ import * as canvasUtils from '@/canvas/canvasUtils';
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {putContentConfig} from "@/canvas/content/BaseContentItem";
-import {UpdateAssignmentDataOptions} from "@/canvas/content/assignments/types";
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
+import {UpdateAssignmentDataOptions} from "@canvas/content/types";
 
 fetchMock.enableMocks();
 

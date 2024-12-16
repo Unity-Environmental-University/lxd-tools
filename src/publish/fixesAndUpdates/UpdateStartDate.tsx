@@ -18,9 +18,10 @@ import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 
-import {IDiscussionData} from "@/canvas/content/discussions/types";
 import {IModuleData} from "@/canvas/canvasDataDefs";
 import {renderAsyncGen} from "@canvas/canvasUtils";
+
+import {IDiscussionData} from "@canvas/type";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,

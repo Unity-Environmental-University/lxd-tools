@@ -3,7 +3,8 @@ import textSubmissionEnabled from "@publish/fixesAndUpdates/validations/assignme
 import {Course} from "@canvas/course/Course";
 import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {IAssignmentData} from "@canvas/content/assignments/types";
+
+import {IAssignmentData} from "@canvas/content/types";
 
 
 

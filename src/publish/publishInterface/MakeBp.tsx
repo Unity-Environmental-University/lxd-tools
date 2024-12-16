@@ -4,9 +4,8 @@ import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
 import {
     getBlueprintsFromCode,
-    getSections,
-    getTermNameFromSections, lockBlueprint,
-    retireBlueprint, sectionDataGenerator, setAsBlueprint
+    lockBlueprint,
+    sectionDataGenerator, setAsBlueprint
 } from "@/canvas/course/blueprint";
 import {bpify} from "@/admin";
 import {migrationsForCourseGen, IMigrationData, startMigration} from "@/canvas/course/migration";
@@ -24,6 +23,9 @@ import {SectionData} from "@/canvas/courseTypes";
 import dateFromTermName from "@/canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
 import {jsonRegex} from "ts-loader/dist/constants";
+import {getSections} from "@canvas/course/getSections";
+import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
+import {retireBlueprint} from "@canvas/course/retireBlueprint";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'

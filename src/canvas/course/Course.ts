@@ -1,6 +1,5 @@
 import {BaseCanvasObject} from "../baseCanvasObject";
 import {
-    CanvasData,
     ILatePolicyData,
     IModuleData,
     IModuleItemData,
@@ -18,15 +17,14 @@ import {
     ILatePolicyHaver,
     IModulesHaver
 } from "./courseTypes";
-import {cachedGetAssociatedCoursesFunc, IBlueprintCourse, isBlueprint} from "./blueprint";
+import {isBlueprint} from "./blueprint";
 import {filterUniqueFunc, formDataify, ICanvasCallConfig, renderAsyncGen} from "../canvasUtils";
-import assert from "assert";
 import {getModuleUnlockStartDate} from "./changeStartDate";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile, IProfileWithUser} from "../profile";
-import {getCourseById, getCourseData, getCourseGenerator, getGradingStandards, getSingleCourse} from "./index";
+import {getCourseById, getCourseData,  getGradingStandards, getSingleCourse} from "./index";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
 import {Term} from "@/canvas/term/Term";
@@ -41,9 +39,12 @@ import {Quiz} from "@/canvas/content/quizzes/Quiz";
 import {Page} from "@/canvas/content/pages/Page";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {IAssignmentGroup} from "@/canvas/content/assignments/types";
 import {IPageData} from "@/canvas/content/pages/types";
 import ApiWriteConfig from "@/fetch/apiWriteConfig";
+import {IAssignmentGroup} from "@canvas/content/types";
+import {IBlueprintCourse} from "@canvas/course/IBlueprintCourse";
+import {cachedGetAssociatedCoursesFunc} from "@canvas/course/cachedGetAssociatedCoursesFunc";
+import assert from "assert";
 
 const HOMETILE_WIDTH = 500;
 
@@ -91,7 +92,6 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         const data = await getCourseData(courseId, config);
         return new Course(data);
     }
-
 
     static async publishAll(courses: number[] | Course[], accountId: number) {
 

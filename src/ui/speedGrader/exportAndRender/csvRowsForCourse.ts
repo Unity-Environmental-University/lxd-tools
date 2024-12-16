@@ -11,8 +11,8 @@ import {ITermData} from "@/canvas/term/Term";
 import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {moduleGenerator} from "@/canvas/course/modules";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/assignments/types";
 import {renderAsyncGen} from "@canvas/canvasUtils";
+import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
 
 export async function csvRowsForCourse(course: SectionData | ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];

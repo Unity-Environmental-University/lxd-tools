@@ -3,12 +3,12 @@ import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Course} from "@/canvas/course/Course";
 import {Term} from "@/canvas/term/Term";
 import {mockTermData} from "@/canvas/__mocks__/mockTermData";
-import {getSections} from "@/canvas/course/blueprint";
 import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import mock = jest.mock;
 import {getCourseData} from "@canvas/course";
+import {getSections} from "@canvas/course/getSections";
 
 
 jest.mock('@/canvas/course/blueprint');

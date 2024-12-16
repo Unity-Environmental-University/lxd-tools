@@ -4,7 +4,8 @@ import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCours
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {IAssignmentData} from "@/canvas/content/assignments/types";
+
+import {IAssignmentData} from "@canvas/content/types";
 
 export async function exportData(course: ICourseData, {
     popUp,

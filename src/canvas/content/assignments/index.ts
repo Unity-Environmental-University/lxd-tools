@@ -1,7 +1,7 @@
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import {IAssignmentData} from "@/canvas/content/assignments/types";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {IAssignmentData} from "@canvas/content/types";
 
 
 export const assignmentDataGen = AssignmentKind.dataGenerator;

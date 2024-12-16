@@ -1,9 +1,9 @@
-import {IAssignmentData, UpdateAssignmentDataOptions} from "@/canvas/content/assignments/types";
 import {CanvasData} from "@/canvas/canvasDataDefs";
 import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/ContentKind";
+import {IAssignmentData, UpdateAssignmentDataOptions} from "@canvas/content/types";
 
 export const assignmentUrlFuncs = contentUrlFuncs('assignments');
 const AssignmentKind: ContentKind<

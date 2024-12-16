@@ -8,7 +8,7 @@ import assert from "assert";
 
 import {csvEncode} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 
-import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/assignments/types";
+import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
 
 
 

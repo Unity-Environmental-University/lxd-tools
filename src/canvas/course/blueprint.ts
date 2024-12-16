@@ -1,11 +1,8 @@
 import {formDataify, getItemTypeAndId, ICanvasCallConfig, renderAsyncGen} from "../canvasUtils";
 import {IModuleData, IModuleItemData} from "../canvasDataDefs";
 import {getCourseDataGenerator, getCourseGenerator} from "./index";
-import {GetCourseOptions, GetCoursesFromAccountOptions, ICourseCodeHaver, IIdHaver} from "./courseTypes";
-import {Course} from "./Course";
-import {config} from "dotenv";
-import {baseCourseCode, MalformedCourseCodeError} from "@/canvas/course/code";
-
+import {GetCoursesFromAccountOptions} from "./courseTypes";
+import {baseCourseCode} from "@/canvas/course/code";
 import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchGetConfig} from "@/canvas/fetch/utils";
@@ -13,17 +10,9 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {apiWriteConfig} from "@/fetch/apiWriteConfig";
 
 
-
-
-export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
-    isBlueprint(): boolean,
-    getAssociatedCourses(redownload?: boolean): Promise<Course[]>
-}
-
 export function isBlueprint({blueprint}: { blueprint?: boolean | undefined }) {
     return !!blueprint;
 }
-
 //W
 export function genBlueprintDataForCode(courseCode:string | null, accountIds:number[], queryParams?: GetCoursesFromAccountOptions) {
     if(!courseCode) {
@@ -36,52 +25,15 @@ export function genBlueprintDataForCode(courseCode:string | null, accountIds:num
         return null;
     }
 
-    const courseGen = getCourseDataGenerator(baseCode, accountIds, undefined, fetchGetConfig<GetCoursesFromAccountOptions>({
+    return getCourseDataGenerator(baseCode, accountIds, undefined, fetchGetConfig<GetCoursesFromAccountOptions>({
         blueprint: true,
         include: ['concluded'],
-    }, { queryParams }))
-    return courseGen;
-}
-
-export async function getSections(courseId: number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
-    return (await renderAsyncGen(sectionDataGenerator(courseId, config))).map(section => new Course(section as ICourseData));
+    }, {queryParams}));
 }
 
 export function sectionDataGenerator(courseId:number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>) {
     const url = `/api/v1/courses/${courseId}/blueprint_templates/default/associated_courses`;
-    return getPagedDataGenerator<SectionData>(url);
-}
-export function cachedGetAssociatedCoursesFunc(course: IBlueprintCourse) {
-    let cache: Course[] | null = null;
-    return async (redownload = false) => {
-        if (!redownload && cache) return cache;
-        cache = await getSections(course.id);
-        return cache;
-    }
-}
-
-export async function getTermNameFromSections(sections: Course[]) {
-    const [section] = sections;
-    if (!section) throw new Error("Cannot determine term name by sections; there are no sections.")
-    const sectionTerm = await section.getTerm();
-    if (!sectionTerm) throw new Error("Section does not have associated term: " + section.name);
-    return sectionTerm.name;
-}
-
-export async function retireBlueprint(course: Course, termName: string | null, config?: ICanvasCallConfig) {
-
-    if (!course.parsedCourseCode) throw new MalformedCourseCodeError(course.courseCode);
-    const isCurrentBlueprint = course.parsedCourseCode?.match('BP_');
-    if (!isCurrentBlueprint) throw new NotABlueprintError("This blueprint is not named BP_; are you trying to retire a retired blueprint?")
-
-    const newCode = `BP-${termName}_${course.baseCode}`;
-    const saveData: Record<string, any> = {};
-
-    saveData[Course.nameProperty] = course.name.replace(course.parsedCourseCode, newCode);
-    saveData['course_code'] = newCode
-    await course.saveData({
-        course: saveData
-    }, config);
+    return getPagedDataGenerator<SectionData>(url, config);
 }
 
 
@@ -94,7 +46,7 @@ export async function beginBpSync(courseId:number, {message, copy_settings, conf
 }:BeginSyncOptions) {
     const url = `/api/v1/courses/${courseId}/blueprint_templates/default/migrations`;
     if(typeof  copy_settings === 'undefined') copy_settings = true;
-    const result = await fetchJson(url, apiWriteConfig('POST', {
+    return await fetchJson(url, apiWriteConfig('POST', {
         message,
         copy_settings
     }, config))
@@ -163,6 +115,3 @@ export async function unSetAsBlueprint(courseId: number, config?: ICanvasCallCon
 }
 
 
-export class NotABlueprintError extends Error {
-    name = "NotABlueprintError"
-}

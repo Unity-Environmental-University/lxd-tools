@@ -22,11 +22,10 @@ export async function main() {
     if (!currentCourse) return;
     const header: HTMLElement | null = document.querySelector('.right-of-crumbs');
     if (!header) return;
-    let bp: Course | undefined;
 
 
     await addDevButton(header, currentCourse);
-    bp = currentCourse.isBlueprint()? currentCourse : await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+    const bp = currentCourse.isBlueprint()? currentCourse : await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
     if (bp) {
         await addBpButton(header, currentCourse, bp);
         await addSectionsButton(header, bp, currentCourse);

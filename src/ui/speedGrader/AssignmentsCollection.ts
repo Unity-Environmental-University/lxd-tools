@@ -1,8 +1,9 @@
 // noinspection GrazieInspection
 
 import {CanvasData, IModuleItemData, LookUpTable, ModuleItemType} from "@/canvas/canvasDataDefs";
-import {IAssignmentData} from "@/canvas/content/assignments/types";
-import {IDiscussionData} from "@/canvas/content/discussions/types";
+import {IAssignmentData} from "@canvas/content/types";
+
+import {IDiscussionData} from "@canvas/type";
 
 /**
  * A collection of assignments grabbed from the submissions that returns and finds them in various ways

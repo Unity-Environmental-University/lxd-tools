@@ -1,15 +1,16 @@
 // MakeBp.test.tsx initial pass by ChatGPT 4o
 
 import React, {act} from 'react';
-import {render, screen, fireEvent, waitFor} from '@testing-library/react';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {MakeBp, IMakeBpProps, TERM_NAME_PLACEHOLDER} from '../MakeBp';
+import {IMakeBpProps, MakeBp, TERM_NAME_PLACEHOLDER} from '../MakeBp';
 import * as blueprintApi from '../../../canvas/course/blueprint';
 import {
     genCourseMigrationProgress,
-    migrationsForCourseGen,
     IMigrationData,
-    IProgressData, startMigration
+    IProgressData,
+    migrationsForCourseGen,
+    startMigration
 } from "@/canvas/course/migration";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {Course} from "@/canvas/course/Course";
@@ -19,16 +20,16 @@ import {bpify} from "@/admin";
 
 import {createNewCourse} from '@/canvas/course';
 import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
-import {
-    cacheCourseMigrations,
-} from "@/canvas/course/migration/migrationCache";
-import * as cacheMigrationApi from '@/canvas/course/migration/migrationCache'
+import * as cacheMigrationApi from "@/canvas/course/migration/migrationCache";
+import {cacheCourseMigrations, loadCachedCourseMigrations} from "@/canvas/course/migration/migrationCache";
 import {range} from "@/canvas/canvasUtils";
-import {loadCachedCourseMigrations} from "@/canvas/course/migration/migrationCache";
 import assert from "assert";
 import {Temporal} from "temporal-polyfill";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {SectionData} from "@/canvas/courseTypes";
+import {getSections} from "@canvas/course/getSections";
+import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
+import {retireBlueprint} from "@canvas/course/retireBlueprint";
 
 jest.mock('@/canvas/course/blueprint');
 
@@ -112,7 +113,7 @@ describe('MakeBp Component', () => {
 
     it('fetches and sets blueprint info on mount', async () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
-        (blueprintApi.getTermNameFromSections as jest.Mock).mockResolvedValue('Spring 2024');
+        (getTermNameFromSections as jest.Mock).mockResolvedValue('Spring 2024');
 
         await renderComponent();
 
@@ -122,7 +123,7 @@ describe('MakeBp Component', () => {
 
     it('disables archive button if term name is empty', async () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
-        (blueprintApi.getSections as jest.Mock).mockResolvedValue([]);
+        (getSections as jest.Mock).mockResolvedValue([]);
         await renderComponent();
         await waitFor(() => screen.getByText(/Archive/));
         expect(screen.getByPlaceholderText(TERM_NAME_PLACEHOLDER)).toHaveValue('');
@@ -150,8 +151,8 @@ describe('Retirement and updates', () => {
             term_name: 'DE5W06.04.20',
         }]));
 
-        (blueprintApi.getTermNameFromSections as jest.Mock).mockResolvedValue('DE5W06.04.1980');
-        (blueprintApi.retireBlueprint as jest.Mock).mockResolvedValue(undefined);
+        (getTermNameFromSections as jest.Mock).mockResolvedValue('DE5W06.04.1980');
+        (retireBlueprint as jest.Mock).mockResolvedValue(undefined);
         await renderComponent();
 
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([]);
@@ -160,7 +161,7 @@ describe('Retirement and updates', () => {
         await act(async () => fireEvent.click(screen.getByText(/Archive/)));
 
         // Wait for the retireBlueprint API call to be made
-        expect(blueprintApi.retireBlueprint).toHaveBeenCalled();
+        expect(retireBlueprint).toHaveBeenCalled();
         expect(screen.getByLabelText(/New BP/)).not.toBeDisabled();
     });
 

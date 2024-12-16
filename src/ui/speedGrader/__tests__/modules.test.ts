@@ -7,7 +7,8 @@ import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {mockAssignmentData, mockDiscussionData, mockQuizData} from "@/canvas/content/__mocks__/mockContentData";
 
 import {Discussion} from "@/canvas/content/discussions/Discussion";
-import {IAssignmentData} from "@/canvas/content/assignments/types";
+
+import {IAssignmentData} from "@canvas/content/types";
 
 // Mock data
 const mockContentItem = {

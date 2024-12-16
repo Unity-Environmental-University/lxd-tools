@@ -1,7 +1,7 @@
-import {IAssignmentData} from "@canvas/content/assignments/types";
 import {IPageData} from "@canvas/content/pages/types";
 import {KalturaMigrationDetails} from "@publish/publishInterface/videoUpdater/data/types";
 import {MigrationRowData} from "@publish/publishInterface/videoUpdater/migrationTable/MigrationRowData";
+import {IAssignmentData} from "@canvas/content/types";
 
 // Define the union type for transformable data
 export type TransformableData = KalturaMigrationDetails | IPageData | IAssignmentData;

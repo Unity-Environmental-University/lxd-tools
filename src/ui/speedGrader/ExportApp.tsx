@@ -12,8 +12,8 @@ import {useEffectAsync} from "@/ui/utils";
 
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {ICourseData} from "@/canvas/courseTypes";
-import {IAssignmentData} from "@/canvas/content/assignments/types";
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
+import {IAssignmentData} from "@canvas/content/types";
 
 
 export type ExportAppProps = {

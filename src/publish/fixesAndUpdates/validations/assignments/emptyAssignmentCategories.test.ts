@@ -1,10 +1,10 @@
 
 import genAssignmentGroups from "@canvas/content/assignments/genAssignmentGroups";
 import deleteAssignmentGroup from "@canvas/content/assignments/deleteAssignmentGroup";
-import {AssignmentGroup, IAssignmentData} from "@canvas/content/assignments/types";
 import {Course} from "@canvas/course/Course";
 import emptyAssignmentCategories from "@publish/fixesAndUpdates/validations/assignments/emptyAssignmentCategories";
 import {mockAsyncGen} from "@/__mocks__/utils";
+import {AssignmentGroup, IAssignmentData} from "@canvas/content/types";
 
 // Mock data
 const mockCourse = { id: 1 } as Course;

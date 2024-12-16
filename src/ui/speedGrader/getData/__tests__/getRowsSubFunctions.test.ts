@@ -20,7 +20,7 @@ import {mockUserData} from "@/canvas/__mocks__/mockUserData";
 import {getModuleInfo} from "@/ui/speedGrader/modules";
 import mockAssignmentSubmission from "@/canvas/content/__mocks__/mockAssignmentSubmission";
 import {RubricAssessment} from "@/canvas/rubrics";
-import {IAssignmentData, IAssignmentSubmission} from "@/canvas/content/assignments/types";
+import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
 
 
 jest.mock('@/ui/speedGrader/modules')

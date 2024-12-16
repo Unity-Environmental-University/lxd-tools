@@ -3,11 +3,12 @@ import {ITermData, Term} from "@/canvas/term/Term";
 import assert from "assert";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
-import {getSections, sectionDataGenerator} from "@/canvas/course/blueprint";
+import {sectionDataGenerator} from "@/canvas/course/blueprint";
 import {ICourseData} from "@/canvas/courseTypes";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {getCourseById, getCourseData} from "@/canvas/course";
 import {renderAsyncGen} from "@canvas/canvasUtils";
+import {getSections} from "@canvas/course/getSections";
 
 
 

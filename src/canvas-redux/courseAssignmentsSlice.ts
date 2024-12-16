@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { createSelector } from 'reselect'; // Import createSelector for memoization
-import { IAssignmentData } from "@canvas/content/assignments/types";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
+import {IAssignmentData} from "@canvas/content/types";
 
 // Define types for payload and state
 type PayloadParams = {

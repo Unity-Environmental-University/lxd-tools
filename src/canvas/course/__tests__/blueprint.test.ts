@@ -3,11 +3,7 @@
 
 import {deFormDataify, ICanvasCallConfig, range} from "../../canvasUtils";
 import {
-    getSections,
-    getTermNameFromSections,
-    IBlueprintCourse,
-    retireBlueprint,
-    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint, genBlueprintDataForCode, NotABlueprintError
+    getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint, genBlueprintDataForCode
 } from "../blueprint";
 import {mockCourseData} from "../__mocks__/mockCourseData";
 import fetchMock, {FetchMock} from "jest-fetch-mock";
@@ -249,6 +245,11 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
 import {ITermData, Term} from "@/canvas/term/Term";
 
 import apiWriteConfig from "@/fetch/apiWriteConfig";
+import {IBlueprintCourse} from "@canvas/course/IBlueprintCourse";
+import {getSections} from "@canvas/course/getSections";
+import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
+import {retireBlueprint} from "@canvas/course/retireBlueprint";
+import {NotABlueprintError} from "@canvas/course/notABlueprintError";
 
 
 describe("genBlueprintsForCode", () => {

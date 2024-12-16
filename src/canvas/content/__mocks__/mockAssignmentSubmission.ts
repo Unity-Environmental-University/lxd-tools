@@ -1,4 +1,4 @@
-import {IAssignmentSubmission} from "@/canvas/content/assignments/types";
+import {IAssignmentSubmission} from "@canvas/content/types";
 
 const mockSubmission: IAssignmentSubmission = {
   assignment_id: 23,

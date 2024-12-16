@@ -3,7 +3,8 @@ import {IModuleData} from "../canvasDataDefs";
 import {findDateRange, oldDateToPlainDate} from "@/date";
 
 import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {IAssignmentData} from "@/canvas/content/assignments/types";
+
+import {IAssignmentData} from "@canvas/content/types";
 
 const DEFAULT_LOCALE = 'en-US';
 

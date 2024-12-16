@@ -1,10 +1,11 @@
 import {projectRegex} from "@/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import {Course} from "@/canvas/course/Course";
-import {IDiscussionData} from "@/canvas/content/discussions/types";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 import {discussionThreadingValidation} from "../discussionThreading";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
+
+import {IDiscussionData} from "@canvas/type";
 
 jest.mock("@/canvas/content/discussions/DiscussionKind", () => ({
         dataGenerator: jest.fn(),

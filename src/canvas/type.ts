@@ -1,6 +1,5 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {DateString} from "@/canvas/content/types";
-import {IAssignmentData} from "@/canvas/content/assignments/types";
+import {DateString, IAssignmentData} from "@canvas/content/types";
+import {CanvasData} from "@canvas/canvasDataDefs";
 
 type DiscussionType = 'side_comment' | 'threaded' | 'not_threaded';
 
@@ -42,26 +41,25 @@ export interface IDiscussionData extends CanvasData {
 
 }
 
-
 export interface SaveDiscussionData {
-  title?: string;
-  message?: string;
-  discussion_type?: DiscussionType;
-  published?: boolean;
-  delayed_post_at?: Date;
-  lock_at?: Date;
-  podcast_enabled?: boolean;
-  podcast_has_student_posts?: boolean;
-  require_initial_post?: boolean;
-  assignment?: IAssignmentData;
-  is_announcement?: boolean;
-  pinned?: boolean;
-  position_after?: string;
-  group_category_id?: number;
-  allow_rating?: boolean;
-  only_graders_can_rate?: boolean;
-  sort_by_rating?: boolean;
-  specific_sections?: string;
+    title?: string;
+    message?: string;
+    discussion_type?: DiscussionType;
+    published?: boolean;
+    delayed_post_at?: Date;
+    lock_at?: Date;
+    podcast_enabled?: boolean;
+    podcast_has_student_posts?: boolean;
+    require_initial_post?: boolean;
+    assignment?: IAssignmentData;
+    is_announcement?: boolean;
+    pinned?: boolean;
+    position_after?: string;
+    group_category_id?: number;
+    allow_rating?: boolean;
+    only_graders_can_rate?: boolean;
+    sort_by_rating?: boolean;
+    specific_sections?: string;
 }
 
 export type TopicPermissions = Record<string, any>

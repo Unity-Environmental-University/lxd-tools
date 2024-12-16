@@ -1,10 +1,10 @@
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 
 import genAssignmentGroups from "@canvas/content/assignments/genAssignmentGroups";
-import {AssignmentGroup} from "@canvas/content/assignments/types";
 import {Course} from "@canvas/course/Course";
 import deleteAssignmentGroup from "@canvas/content/assignments/deleteAssignmentGroup";
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
+import {AssignmentGroup} from "@canvas/content/types";
 
 export const emptyAssignmentCategories: CourseFixValidation<Course, AssignmentGroup[]> = {
     name: "Empty assignment categories",
