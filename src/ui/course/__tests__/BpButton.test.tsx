@@ -54,7 +54,7 @@ describe('BpButton', () => {
     it('displays "BP" button and opens the main BP when clicked', async () => {
         (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce([]);
         (renderAsyncGen as jest.Mock).mockResolvedValueOnce([currentBp]);
-        global.open = jest.fn();
+        window.open = jest.fn();
         const {getByText} = await act(async () => render(<BpButton course={course} currentBp={currentBp}/>));
         await waitFor(() => {
             expect(getByText('BP')).toBeInTheDocument();

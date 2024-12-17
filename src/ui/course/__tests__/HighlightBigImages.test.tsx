@@ -15,7 +15,7 @@ describe('HighlightBigImages', () => {
     let bannerImage: HTMLImageElement;
     let currentContentItem: BaseContentItem;
 
-    global.fetch = jest.fn();
+    window.fetch = jest.fn();
     beforeEach(() => {
         el = document.createElement('div');
         document.body.appendChild(el);

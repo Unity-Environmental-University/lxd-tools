@@ -1,5 +1,3 @@
-// MakeBp.test.tsx initial pass by ChatGPT 4o
-
 import React, {act} from 'react';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -19,7 +17,6 @@ import {mockMigrationData} from "@/canvas/course/migration/__mocks__/mockMigrati
 import {bpify} from "@/admin";
 
 import {createNewCourse} from '@/canvas/course';
-import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
 import * as cacheMigrationApi from "@/canvas/course/migration/migrationCache";
 import {cacheCourseMigrations, loadCachedCourseMigrations} from "@/canvas/course/migration/migrationCache";
 import {range} from "@/canvas/canvasUtils";
@@ -27,12 +24,15 @@ import assert from "assert";
 import {Temporal} from "temporal-polyfill";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {SectionData} from "@/canvas/courseTypes";
-import {getSections} from "@canvas/course/getSections";
-import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
-import {retireBlueprint} from "@canvas/course/retireBlueprint";
 
 jest.mock('@/canvas/course/blueprint');
+import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
 
+
+jest.mock('@canvas/course/getTermNameFromSections', () => ({
+   getTermNameFromSections: jest.fn()
+}))
+import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
 
 const mockCourse: Course = new Course({
     ...mockCourseData,
@@ -75,7 +75,7 @@ jest.mock('@/canvas/course', () => ({
 
 
 jest.mock('@/canvas/course/migration', () => {
-    const originalModule = jest.requireActual('../../../canvas/course/migration');
+    const originalModule = jest.requireActual('@canvas/course/migration');
     return {
         __esModule: true,
         ...originalModule,
@@ -96,7 +96,12 @@ jest.mock('@/canvas/course/migration/migrationCache', () => ({
     cacheCourseMigrations: jest.fn(),
     loadCachedCourseMigrations: jest.fn(() => []),
 }))
+jest.mock('@canvas/course/getSections',() => ({ getSections: jest.fn(() => mockSectionData) }))
+import {getSections} from "@canvas/course/getSections";
 
+
+jest.mock('@canvas/course/retireBlueprint',() => ({ retireBlueprint: jest.fn() }));
+import {retireBlueprint} from "@canvas/course/retireBlueprint";
 
 describe('MakeBp Component', () => {
     beforeEach(() => {
@@ -199,9 +204,9 @@ describe('Retirement and updates', () => {
         await renderComponent({devCourse: mockCourse});
         await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())
 
-        global.confirm = jest.fn(() => false);
+        window.confirm = jest.fn(() => false);
         await act(async () => fireEvent.click(screen.getByText(/Archive/)));
-        expect(global.confirm).toHaveBeenCalled();
+        expect(window.confirm).toHaveBeenCalled();
 
     })
 

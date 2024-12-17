@@ -16,7 +16,6 @@ const localMockCourseData = {
 
 
 
-
 describe("textSubEnabledBug Validation", () => {
     it("should correctly identify assignments with metadata issues for discussions and quizzes", async () => {
         // Use the mockCourseData to create the mock course
@@ -49,6 +48,7 @@ describe("textSubEnabledBug Validation", () => {
                 html_url: "url3",
                 name: "Assignment 3",
             },
+
             {
                 id: 4,
                 course_id: 123,

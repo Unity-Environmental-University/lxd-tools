@@ -5,7 +5,8 @@ import {discussionThreadingValidation} from "../discussionThreading";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
-import {IDiscussionData} from "@canvas/type";
+
+import {IDiscussionData} from "@canvas/content/types";
 
 jest.mock("@/canvas/content/discussions/DiscussionKind", () => ({
         dataGenerator: jest.fn(),

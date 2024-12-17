@@ -8,7 +8,8 @@ import {Course} from "@/canvas/course/Course";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
-import {IDiscussionData} from "@canvas/type";
+
+import {IDiscussionData} from "@canvas/content/types";
 
 export const discussionThreadingValidation: CourseFixValidation<Course, IDiscussionData[], IDiscussionData[]> = {
     name: "Discussion Threading Turned on",

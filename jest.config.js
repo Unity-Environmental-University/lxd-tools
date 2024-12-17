@@ -8,7 +8,9 @@ module.exports = {
     "transformIgnorePatterns": [
         "node_modules/(?!isomorphic-git)"
     ],
-
+    transform: {
+        "^.+\\.html$": "<rootDir>/html-loader.js",
+    },
     moduleNameMapper: {
         ...pathsToModuleNameMapper(compilerOptions.paths, {prefix: '<rootDir>/src/'}),
         "^webextension-polyfill$":

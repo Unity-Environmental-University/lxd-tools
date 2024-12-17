@@ -1,6 +1,5 @@
 import {genBlueprintDataForCode} from "@canvas/course/blueprint";
 import {Course} from "@canvas/course/Course";
-import {IDiscussionData} from "@canvas/type";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
@@ -8,7 +7,7 @@ import {mockAssignmentData, mockDiscussionData} from "@canvas/content/__mocks__/
 import {genEquivalentDiscussionData} from "@canvas/content/discussions/genEquivalentDiscussionData";
 import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
 import {renderAsyncGen} from "@canvas/canvasUtils";
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
 
 // Local mock data for discussions
 const localMockDiscussionData = {...mockDiscussionData} as IDiscussionData;

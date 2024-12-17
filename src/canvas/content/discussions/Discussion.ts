@@ -4,7 +4,7 @@ import {Temporal} from "temporal-polyfill";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 
 
-import {IDiscussionData} from "@canvas/type";
+import {IDiscussionData} from "@canvas/content/types";
 
 export class Discussion extends BaseContentItem {
     static kindInfo = DiscussionKind;

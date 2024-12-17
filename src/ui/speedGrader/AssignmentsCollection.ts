@@ -1,9 +1,10 @@
 // noinspection GrazieInspection
 
 import {CanvasData, IModuleItemData, LookUpTable, ModuleItemType} from "@/canvas/canvasDataDefs";
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
 
-import {IDiscussionData} from "@canvas/type";
+import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
+import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
 /**
  * A collection of assignments grabbed from the submissions that returns and finds them in various ways
@@ -21,9 +22,10 @@ export class AssignmentsCollection {
             this.assignmentsById[assignment.id] = assignment;
         }
 
-        this.discussions = assignments.filter(assignment => assignment.hasOwnProperty('discussion_topic'))
+        this.discussions = assignments
+            .filter(assignment => assignment?.discussion_topic && DiscussionKind.dataIsThisKind(assignment.discussion_topic))
             .map(function (assignment) {
-                const discussion = assignment.discussion_topic;
+                const discussion = assignment.discussion_topic as IDiscussionData;
                 discussion.assignment = assignment;
                 return discussion;
             });

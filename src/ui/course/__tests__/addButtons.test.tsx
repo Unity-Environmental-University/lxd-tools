@@ -76,7 +76,7 @@ describe('Button Functions', () => {
         expect(addedButton).toBeInTheDocument();
         expect(button).toBeInTheDocument();
         expect(button).toHaveTextContent('Links');
-        global.open = jest.fn();
+        window.open = jest.fn();
         contentItem.getAllLinks = jest.fn();
         const getExternalLinks = jest.spyOn(getContentFuncs, 'getExternalLinks')
         await act( async () => fireEvent.click(addedButton!));

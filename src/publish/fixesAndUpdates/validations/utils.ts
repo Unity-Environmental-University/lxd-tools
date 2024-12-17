@@ -1,6 +1,6 @@
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {IContentHaver, ISyllabusHaver} from "@/canvas/course/courseTypes";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {ICanvasCallConfig} from "@canvas/canvasUtils";
+import {IContentHaver, ISyllabusHaver} from "@canvas/course/courseTypes";
+import {BaseContentItem} from "@canvas/content/BaseContentItem";
 import {overrideConfig} from "@canvas/fetch/utils";
 
 //number of characters to show around a match

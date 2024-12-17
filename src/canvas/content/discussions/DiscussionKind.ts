@@ -3,7 +3,8 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/ContentKind";
 
-import {IDiscussionData, SaveDiscussionData} from "@canvas/type";
+
+import {IDiscussionData, SaveDiscussionData} from "@canvas/content/types";
 
 export type GetDiscussionOptions = Record<string, any>;
 export const discussionUrlFuncs = contentUrlFuncs('discussion_topics');

@@ -1,17 +1,13 @@
 import {
-    EmailTextProps, getAdditionsTemplate,
-    renderEmailTemplate, TemplateNotFoundError
+    getAdditionsTemplate,
+    renderEmailTemplate,
 } from "@/publish/publishInterface/EmailLink";
-import {render} from "@testing-library/react";
 import publishEmailMock, {
     mockCourseSpecificContent,
     mockFilled, mockFilledSpecific, mockTocXml,
     mockValues
 } from "@/publish/publishInterface/__mocks__/publishEmailMock";
-import * as EmailLinkApi from '../EmailLink';
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {DOCUMENTATION_TOPICS_URL} from "@/publish/consts";
-global.fetch = jest.fn();
+window.fetch = jest.fn();
 const fetchMock = fetch as jest.Mock;
 
 describe('Renders Email template', () => {

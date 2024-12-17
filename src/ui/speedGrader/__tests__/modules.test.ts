@@ -13,17 +13,11 @@ import {IAssignmentData} from "@canvas/content/types";
 // Mock data
 const mockContentItem = {
     id: 1,
-    discussion_topic: {id: 101},
+    discussion_topic: {...mockDiscussionData, id: 101},
     quiz_id: 201,
     rubric: {}
 };
 
-const mockContentItemWithoutRubric = {
-    id: 1,
-    discussion_topic: {id: 101},
-    quiz_id: 201,
-    rubric: {}
-}
 
 const mockModules: IModuleData[] = [
     {
@@ -53,9 +47,9 @@ delete(mockIntroduction.rubric);
 
 const mockAssignmentsCollection: AssignmentsCollection = new AssignmentsCollection([
     mockIntroduction,
-    {...mockIntroduction, discussion_topic: {id: 10}, id:30},
-    {...mockAssignmentData, discussion_topic: {id: 101}, id:20},
-    {...mockAssignmentData, discussion_topic: {id: 102}, id:25},
+    {...mockIntroduction, discussion_topic: {...mockDiscussionData,  id: 5}, id:30},
+    {...mockAssignmentData, discussion_topic: {...mockDiscussionData, id: 101}, id:20},
+    {...mockAssignmentData, discussion_topic: {...mockDiscussionData, id: 102}, id:25},
     {...mockAssignmentData, quiz_id: 201, id: 10},
     {...mockAssignmentData, id: 300},
 ])

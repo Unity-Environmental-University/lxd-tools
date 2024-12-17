@@ -1,8 +1,6 @@
 import {IQuizData} from "@/canvas/content/quizzes/types";
 import {IPageData} from "@/canvas/content/pages/types";
-import {IAssignmentData} from "@canvas/content/types";
-
-import {IDiscussionData} from "@canvas/type";
+import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
 
 
 export const mockPageData: IPageData = {

@@ -1,17 +1,11 @@
-import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Course} from "@/canvas/course/Course";
-import {Term} from "@/canvas/term/Term";
 import {mockTermData} from "@/canvas/__mocks__/mockTermData";
-import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
-import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
-import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
-import mock = jest.mock;
-import {getCourseData} from "@canvas/course";
-import {getSections} from "@canvas/course/getSections";
-
-
+jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn(() => 1))
+jest.mock('@/ui/speedGrader/saveDataGenFunc')
+jest.mock('@/ui/speedGrader/getData/getRowsForSections')
+jest.mock('@/canvas/Account')
 jest.mock('@/canvas/course/blueprint');
+jest.mock('@canvas/course/getSections', () => ({ getSections: jest.fn() }))
 jest.mock('@/canvas/course/index', () => ({
     getCourseData: jest.fn(),
     getCourseById: jest.fn(),
@@ -20,10 +14,17 @@ jest.mock('@/canvas/course/index', () => ({
         term: mockTermData,
     })),
 }))
-jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn(() => 1))
-jest.mock('@/ui/speedGrader/saveDataGenFunc')
-jest.mock('@/ui/speedGrader/getData/getRowsForSections')
-jest.mock('@/canvas/Account')
+
+
+import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
+import {Course} from "@/canvas/course/Course";
+import {Term} from "@/canvas/term/Term";
+import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
+import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
+import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
+import {getCourseData} from "@canvas/course";
+
+import {getSections} from "@canvas/course/getSections";
 
 describe('exportSectionsInTerm', () => {
     let mockCourse = new Course(mockCourseData)

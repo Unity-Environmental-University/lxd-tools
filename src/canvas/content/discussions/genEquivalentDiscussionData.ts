@@ -1,7 +1,7 @@
 import {genBlueprintDataForCode} from "@canvas/course/blueprint";
 import {Course} from "@canvas/course/Course";
-import {IDiscussionData} from "@canvas/type";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
+import {IDiscussionData} from "@canvas/content/types";
 
 /**
  * Retrieves the equivalent discussion data for a given assignment across multiple course blueprints.

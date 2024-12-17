@@ -1,5 +1,5 @@
 import { AssignmentsCollection } from '../AssignmentsCollection';
-import {CanvasData, IModuleData, IModuleItemData} from '@/canvas/canvasDataDefs';
+import {CanvasData, IModuleItemData} from '@/canvas/canvasDataDefs';
 import {mockAssignmentData, mockDiscussionData} from "@/canvas/content/__mocks__/mockContentData";
 import {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";
 

@@ -52,8 +52,10 @@ describe('getContentClassFromUrl', () => {
 });
 
 describe('getContentItemFromUrl', () => {
-    const getContentApi = require('../determineContent');
-    const getContentClassFromUrlSpy = jest.spyOn(getContentApi, 'getContentClassFromUrl');
+    let getContentApi: typeof import('../determineContent');
+    beforeEach(async () => {
+        getContentApi = await import('../determineContent');
+    })
 
     it('should return null if getContentClassFromUrl returns null', async () => {
         const result = await getContentItemFromUrl('https://example.com');
@@ -66,8 +68,9 @@ describe('getContentItemFromUrl', () => {
         const contentClass = getContentClassFromUrl(url);
         assert(contentClass !== null)
         const getAssignmentSpy = jest.spyOn(contentClass, 'getFromUrl');
-        const assignment = await getContentItemFromUrl(url);
         (fetchJson as jest.Mock).mockResolvedValue(mockAssignmentData);
+
+        const assignment = await getContentItemFromUrl(url);
         expect(getAssignmentSpy).toHaveBeenCalledWith(url);
 
     });

@@ -4,30 +4,28 @@ import {
     sortAssignmentsByDueDate, syllabusHeaderName,
     updatedDateSyllabusHtml
 } from '../changeStartDate'
-import fs from "fs";
 import {Temporal} from "temporal-polyfill";
-import {oldDateToPlainDate} from "../../../date";
-import assert from "assert";
-import {mockAssignmentData} from "../../content/__mocks__/mockContentData";
-import {range} from "../../canvasUtils";
-import mockModuleData from "@/canvas/course/__mocks__/mockModuleData";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
-
+import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData";
+import {range} from "@canvas/canvasUtils";
+import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
+import {Assignment} from "@canvas/content/assignments/Assignment";
+const baseSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.gallant.html')
+const gradSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.grad.html')
 
 describe('Syllabus date changes', () => {
-    const baseSyllabus = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.gallant.html').toString();
 
     test('Changing date works for grad courses', () => {
         const now = Temporal.Now.plainDateISO();
-        const syllabus = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.grad.html').toString();
+        const syllabus = gradSyllabus;
         const newSyllabus = updatedDateSyllabusHtml(syllabus, now);
         const month = now.toLocaleString('en-US', {month: "2-digit"})
         const day = now.toLocaleString('en-US', {day: "2-digit"})
         const year = now.toLocaleString('en-US', {year: "2-digit"})
+        expect(newSyllabus.html).toContain(`DE8W${month}.${day}.${year}`)
     });
     test('Changing date works for undergrad courses', () => {
         const now = Temporal.Now.plainDateISO();
-        const syllabus = fs.readFileSync('./src/canvas/course/__mocks__/syllabus.gallant.html').toString();
+        const syllabus = baseSyllabus
         const newSyllabus = updatedDateSyllabusHtml(syllabus, now);
         const month = now.toLocaleString('en-US', {month: "2-digit"})
         const day = now.toLocaleString('en-US', {day: "2-digit"})
