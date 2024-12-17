@@ -49,6 +49,37 @@ describe("textSubEnabledBug Validation", () => {
                 html_url: "url3",
                 name: "Assignment 3",
             },
+            {
+                id: 4,
+                course_id: 123,
+                submission_types: ["online_text_entry"],
+                discussion_topic: undefined,
+                html_url: "url1",
+                name: "Assignment 4",
+            },
+            {
+                id: 5,
+                course_id: 123,
+                submission_types: ["discussion_topic"],
+                discussion_topic: {...mockDiscussionData},
+                html_url: "url1",
+                name: "Assignment 5",
+            },
+            {
+                id: 6,
+                course_id: 123,
+                submission_types: ["external_tool"],
+                html_url: "url1",
+                name: "Assignment 1",
+            },
+            {
+                id: 7,
+                course_id: 123,
+                submission_types: ["online_text_entry", "online_text_entry"],
+                html_url: "url1",
+                name: "Assignment 1",
+            },
+
         ].map(a => ({
             ...mockAssignmentData,
             ...a,
@@ -71,8 +102,8 @@ describe("textSubEnabledBug Validation", () => {
 
         expect(result.userData)
             .toHaveLength(2);
-        expect(result.userData)
-            .toEqual(mockAssignments.filter((a) => typeof a.discussion_topic === 'undefined'));
+        expect(result.userData?.map(a => a.id))
+            .toEqual([1, 3]);
     });
 });
 
