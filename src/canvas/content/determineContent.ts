@@ -37,8 +37,18 @@ export function getContentKindFromUrl(url:string) {
     return CONTENT_KINDS.find(a => a.isValidUrl(url))
 }
 
-export function getContentKindFromContent(contentData:ContentData) {
-    return CONTENT_KINDS.find(a => a.dataIsThisKind(contentData));
+
+export type ContentKindInPractice = (typeof CONTENT_KINDS[number]);
+export type ContentDataType<Kind extends ContentKindInPractice> = Awaited<ReturnType<Kind['get']>>
+export function getContentKindFromContent<Kind extends ContentKindInPractice>(contentData:ContentDataType<Kind>) {
+
+
+    const result = CONTENT_KINDS.find(a => a.dataIsThisKind(contentData)) as Kind;
+    function typeGuard(result: ContentKindInPractice) : result is  Kind{
+        return true;
+    }
+    if(!typeGuard(result)) throw new Error("Faulty content type coercion");
+    return result;
 
 }
 

@@ -1,7 +1,20 @@
 import {genBlueprintDataForCode} from "@canvas/course/blueprint";
 import {Course} from "@canvas/course/Course";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {IDiscussionData} from "@canvas/content/types";
+import {ContentData, IAssignmentData, IDiscussionData} from "@canvas/content/types";
+import {Assignment} from "@canvas/content/assignments/Assignment";
+import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
+import {getModuleWeekNumber, moduleGenerator} from "@canvas/course/modules";
+import {ContentKind} from "@canvas/content/ContentKind";
+import {
+    CONTENT_KINDS,
+    ContentKindInPractice,
+    ContentDataType,
+    getContentKindFromContent
+} from "@canvas/content/determineContent";
+import {getModuleInfo} from "@/ui/speedGrader/modules";
+import {renderAsyncGen} from "@canvas/canvasUtils";
+import {IModuleItemData} from "@canvas/canvasDataDefs";
 
 /**
  * Retrieves the equivalent discussion data for a given assignment across multiple course blueprints.
@@ -35,19 +48,50 @@ import {IDiscussionData} from "@canvas/content/types";
  * }
  */
 
-export async function* genEquivalentDiscussionData(course: Course, assignmentId: number): AsyncGenerator<IDiscussionData> {
-  const blueprintGen = genBlueprintDataForCode(course.courseCode, [course.accountId]);
-  if(!blueprintGen) throw new Error("Blueprint generator not found");
-  for await (const blueprint of blueprintGen) {
-    // Iterate through assignments in this blueprint
-    const assignments = AssignmentKind.dataGenerator(blueprint.id);
-
-    // Find assignments in the blueprint that match the given assignmentId
-    for await (const assignment of assignments) {
-      if (assignment.id === assignmentId && assignment.discussion_topic) {
-        // If a match is found, yield the associated discussion
-        yield assignment.discussion_topic;
-      }
-    }
-  }
-}
+// export async function* genEquivalentDiscussionData(course: {id: number, courseCode: string, accountId: number }, assignmentId: number): AsyncGenerator {
+//     const blueprintGen = genBlueprintDataForCode(course.courseCode, [course.accountId]);
+//     if (!blueprintGen) throw new Error("Blueprint generator not found");
+//     const assignmentData = await AssignmentKind.get(course.id, assignmentId, { });
+//     if(!assignmentData) return;
+//     for await (const blueprint of blueprintGen) {
+//         const bpModules = await renderAsyncGen(moduleGenerator(blueprint.id));
+//         for await (const bpModule of bpModules) {
+//             const items = bpModule.items;
+//             for(const item of items) {
+//                 if(item.title == assignmentData.name) {
+//                     let analogAssignment: IAssignmentData;
+//                     const contentKind = item.type === 'Assignment' ? AssignmentKind :
+//                         item.type === 'Discussion' ? DiscussionKind :
+//                             undefined;
+//                     if(!contentKind) continue; //this is not a relevant data type
+//                     const primaryData = await contentKind.get(blueprint.id, item.content_id);
+//
+//
+//                     if (!analogDiscussionId) return undefined;
+//                     const analogDiscussionData = await DiscussionKind.get(analogAssignment.courseId, analogDiscussionId);
+//
+//
+//                 }
+//             }
+//
+//         }
+//         // Iterate through assignments in this blueprint
+//         // Find assignments in the blueprint that match the given assignmentId
+//         const moduleItem = getModuleInfo(analogAssignment.id);
+//         // If a match is found, yield the associated discussion
+//     }
+// }
+//
+//
+// async function getByName<Kind extends ContentKindInPractice>(items: AsyncGenerator<ContentDataType<Kind>>, search: string | ((toCheck: string) => boolean)) {
+//
+//   const checkFunc = typeof search != 'string' ? search : (toCheck:string) => search == toCheck;
+//   for await (const item of items) {
+//     const contentKind = getContentKindFromContent(item) as Kind & { getByName: (name:string) => typeof item};
+//     if(!contentKind) continue;
+//     if(!contentKind.dataIsThisKind(item)) throw new Error("Data constraint violation in getting content by name");
+//     const name = (contentKind as { getName: (data:ContentDataType<Kind>) => string|undefined}).getName(item);
+//     if(name && checkFunc(name)) return item;
+//   }
+//   return undefined;
+// }
