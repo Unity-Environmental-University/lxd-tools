@@ -1,8 +1,13 @@
 import {
     aiPolicyInSyllabusTest,
-    bottomOfSyllabusLanguageTest, classInclusiveNoDateHeaderTest,
+    badDiscussionPostOrderLanguage,
+    bottomOfSyllabusLanguageTest,
+    classInclusiveNoDateHeaderTest,
     communication24HoursTest,
-    courseCreditsInSyllabusTest, finalNotInGradingPolicyParaTest, gradeTableHeadersCorrectTest
+    courseCreditsInSyllabusTest,
+    finalNotInGradingPolicyParaTest,
+    gradeTableHeadersCorrectTest,
+    removeSameDayPostRestrictionTest
 } from "../syllabusTests";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
 import assert from "assert";
@@ -20,6 +25,7 @@ describe('Syllabus validation', () => {
     test('Grading policy language in syllabus text is correct', syllabusTestTest(finalNotInGradingPolicyParaTest))
     test('Grade table headers correct', syllabusTestTest(gradeTableHeadersCorrectTest))
     test('Class Inclusive Dates Test', syllabusTestTest(classInclusiveNoDateHeaderTest))
+    test('Remove same day post restriction test', syllabusTestTest(removeSameDayPostRestrictionTest))
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {

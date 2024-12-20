@@ -47,9 +47,6 @@ export async function getPagedData<T extends CanvasData = CanvasData>(
  *     console.log(data); // Process each item from both generators as a single stream
  * }
  *
- * @remarks
- * This function uses `for await...of` loops to asynchronously iterate over the provided generators and their results,
- * making it a great tool for consuming paginated data without needing to manage manual pagination or buffering.
  */
 export async function* mergePagedDataGenerators<T extends CanvasData = CanvasData, Return = T[]>(generators: AsyncGenerator<T, Return, void>[]) {
     for (const generator of generators) {

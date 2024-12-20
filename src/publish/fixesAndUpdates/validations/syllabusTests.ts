@@ -59,7 +59,7 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
 }
 
 
-const badTest = /<p>\s*<strong>\s*Class Inclusive[\s:]*<\/strong>[\s:]*(.*)<\/p>/ig;
+const classInclusiveDatesLanguageRegex = /<p>\s*<strong>\s*Class Inclusive[\s:]*<\/strong>[\s:]*(.*)<\/p>/ig;
 export const classInclusiveNoDateHeaderTest: TextReplaceValidation<ISyllabusHaver> = {
     name: "Class Inclusive -> Class Inclusive Dates",
     beforeAndAfters: [
@@ -71,18 +71,32 @@ export const classInclusiveNoDateHeaderTest: TextReplaceValidation<ISyllabusHave
         ['<p><strong>Class Inclusive : </strong><span> Aug 12 - Sept 12</span></p>', '<p><strong>Class Inclusive Dates:</strong> Aug 12 - Sept 12</p>'],
     ],
     description: 'Syllabus lists date range for course as "Class Inclusive Dates:" NOT as "Class Inclusive:"',
-    run: badSyllabusRunFunc(badTest),
-    fix: badSyllabusFixFunc(badTest, (badText:string) => {
+    run: badSyllabusRunFunc(classInclusiveDatesLanguageRegex),
+    fix: badSyllabusFixFunc(classInclusiveDatesLanguageRegex, (badText:string) => {
         badText = badText.replaceAll(/<\/?span>/ig, '');
-        return badText.replaceAll(badTest, '<p><strong>Class Inclusive Dates:</strong> $1</p>')
+        return badText.replaceAll(classInclusiveDatesLanguageRegex, '<p><strong>Class Inclusive Dates:</strong> $1</p>')
     })
 }
+export const badDiscussionPostOrderLanguage = /If you submit[^.]*only one post\.\s*(&nbsp;)?\s*/g;
+export const removeSameDayPostRestrictionTest: TextReplaceValidation<ISyllabusHaver> = {
+    name: "Remove discussion same day post restriction",
+    description: "remove 'If you submit your original post and your peer response on the same day, you will receive credit for only one post'",
+    beforeAndAfters: [
+        ['If you submit your original post and your peer response on the same day, you will receive credit for only one post.',''],
+        ['If you submit your original post and your peer response on the same day, you will receive credit for only one post.   &nbsp; ',''],
+        ['Monkeys. If you submit your original post and your peer response on the same day, you will receive credit for only one post. However,','Monkeys. However,']
+
+    ],
+    run: badSyllabusRunFunc(badDiscussionPostOrderLanguage),
+    fix: badSyllabusFixFunc(badDiscussionPostOrderLanguage, '')
+}
+
 
 
 export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "AI Policy in Syllabus Test",
     description: "The AI policy is present in the syllabus",
-    run: async (course: ISyllabusHaver, config) => {
+    run: async (course: ISyllabusHaver) => {
         const text = await course.getSyllabus();
         const success = text.includes('Generative Artificial Intelligence');
         const links = [`/courses/${course.id}/assignments/syllabus`];
@@ -95,7 +109,7 @@ export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
 export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
     name: "Bottom-of-Syllabus Test",
     description: "Replace language at the bottom of the syllabus with: \"Learning materials for Weeks 2 forward are organized with the rest of the class in your weekly modules. The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
-    run: async (course, config) => {
+    run: async (course) => {
         const text = getPlainTextFromHtml(await course.getSyllabus());
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
         const links = [`/courses/${course.id}/assignments/syllabus`];
@@ -108,7 +122,7 @@ export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
 export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
     name: "Grade headers correct",
     description: "Grade table headers on syllabus should read Letter Grade, Percent, and the third should be blank",
-    async run(course, config) {
+    async run(course) {
         const el = document.createElement('div');
         el.innerHTML = await course.getSyllabus();
         const ths = [...el.querySelectorAll('th')];
@@ -131,7 +145,7 @@ function htmlDiv(text: string) {
 
 
 function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
-    const discussExpectEl = [...document.querySelectorAll('h3')]
+    const discussExpectEl = [...syllabusEl.querySelectorAll('h3')]
         .find(h3 => (h3.innerText ?? h3.textContent ?? '').includes('Discussion Expectations'))
     if (!discussExpectEl) return undefined;
     return discussExpectEl.querySelectorAll('p')[1] as HTMLParagraphElement | undefined;
@@ -139,9 +153,9 @@ function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
 }
 
 
+
+
 const correctSecondPara = 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" (for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".'
-
-
 export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
     el: HTMLElement,
     secondPara?: HTMLElement
@@ -184,7 +198,11 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
     }
 }
 
+
+
+
 export default [
+    removeSameDayPostRestrictionTest,
     classInclusiveNoDateHeaderTest,
     courseCreditsInSyllabusTest,
     finalNotInGradingPolicyParaTest,

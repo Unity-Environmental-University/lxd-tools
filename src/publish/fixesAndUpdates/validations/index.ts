@@ -1,7 +1,7 @@
 import courseContent from "@publish/fixesAndUpdates/validations/courseContent";
 import proxyServerLinkValidation from "@publish/fixesAndUpdates/validations/proxyServerLinkValidation";
 import rubricSettings from "@publish/fixesAndUpdates/validations/rubricSettings";
-import syllabusTests from "@publish/fixesAndUpdates/validations/syllabusTests";
+import syllabusTests, {removeSameDayPostRestrictionTest} from "@publish/fixesAndUpdates/validations/syllabusTests";
 import discussionThreading from "@publish/fixesAndUpdates/validations/discussionThreading";
 import courseSettings from "@publish/fixesAndUpdates/validations/courseSettings";
 import assignments from "@publish/fixesAndUpdates/validations/assignments";
