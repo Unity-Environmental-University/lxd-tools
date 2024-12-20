@@ -42,7 +42,6 @@ function PublishApp() {
         setUser(user);
     }, []);
 
-    const allValidations = validations;
 
 
 
@@ -51,12 +50,12 @@ function PublishApp() {
             <CourseUpdateInterface
                 course={course}
                 parentCourse={parentCourse}
-                allValidations={allValidations}
+                allValidations={validations}
                 refreshCourse={() => getCourse(true)
             }/>
             <PublishInterface course={course} user={user}/>
             {/*{course && <VideoUpdateInterface courseId={course?.id}/>}*/}
-            <AdminApp course={course} allValidations={allValidations}/>
+            <AdminApp course={course} allValidations={validations}/>
             <Row>
                 <UpdateNeeded/>
             </Row>
