@@ -2,6 +2,7 @@ import {ICanvasCallConfig} from "@canvas/canvasUtils";
 import {IContentHaver, ISyllabusHaver} from "@canvas/course/courseTypes";
 import {BaseContentItem} from "@canvas/content/BaseContentItem";
 import {overrideConfig} from "@canvas/fetch/utils";
+import {ICourseData} from "@canvas/courseTypes";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -21,22 +22,18 @@ export type ValidationResult<UserDataType = unknown> = {
 }
 
 
-
-
-export function stringsToMessageResult(value:string[] | string, links?: string[] | string) {
-    const messageResult:MessageResult = {bodyLines: Array.isArray(value) ? value : [value]}
-    if(links) messageResult.links = Array.isArray(links)? links : [links]
+export function stringsToMessageResult(value: string[] | string, links?: string[] | string) {
+    const messageResult: MessageResult = {bodyLines: Array.isArray(value) ? value : [value]}
+    if (links) messageResult.links = Array.isArray(links) ? links : [links]
     return messageResult;
 }
 
 function ensureMessageResults(value: string | string[] | MessageResult[] | MessageResult) {
-    if(!Array.isArray(value)) return typeof value === 'string' ? [stringsToMessageResult(value)] : [value];
-    if(value.length === 0) return value as MessageResult[];
-    if(typeof value[0] === 'string') return [stringsToMessageResult(value as string[])];
+    if (!Array.isArray(value)) return typeof value === 'string' ? [stringsToMessageResult(value)] : [value];
+    if (value.length === 0) return value as MessageResult[];
+    if (typeof value[0] === 'string') return [stringsToMessageResult(value as string[])];
     return value as MessageResult[];
 }
-
-
 
 
 type TestResultOptions<T> = {
@@ -84,13 +81,13 @@ const testResultDefaults = {
  * // }
  */
 export function testResult<UserData>(
-    success: boolean | "unknown" | "not run" | undefined, options?: TestResultOptions<UserData> ): ValidationResult<UserData> {
+    success: boolean | "unknown" | "not run" | undefined, options?: TestResultOptions<UserData>): ValidationResult<UserData> {
     const displayMessage = success === 'unknown' ? success : !!success;
     const reportedSuccess = success === undefined ? 'unknown' : success;
 
-    const localOptions = { ...testResultDefaults, ...options };
-    let { failureMessage, notFailureMessage } = localOptions;
-    const { links, userData } = localOptions;
+    const localOptions = {...testResultDefaults, ...options};
+    let {failureMessage, notFailureMessage} = localOptions;
+    const {links, userData} = localOptions;
 
     failureMessage = ensureMessageResults(failureMessage);
     notFailureMessage = ensureMessageResults(notFailureMessage);
@@ -103,7 +100,6 @@ export function testResult<UserData>(
     if (links) response.links = links;
     return response;
 }
-
 
 
 export function capitalize(str: string) {
@@ -145,17 +141,17 @@ export function matchHighlights(content: string, search: RegExp, maxHighlightLen
 type CustomContentGetter<
     CourseType extends IContentHaver,
     ContentType extends BaseContentItem
-> = (course:CourseType) => Promise<ContentType[]>
+> = (course: CourseType) => Promise<ContentType[]>
 
 export function badContentRunFunc<
     CourseType extends IContentHaver,
     ContentType extends BaseContentItem,
 >(
     badTest: RegExp,
-    contentFunc?:CustomContentGetter<CourseType, ContentType>
+    contentFunc?: CustomContentGetter<CourseType, ContentType>
 ) {
     return async (course: CourseType, config?: ICanvasCallConfig) => {
-        const defaultConfig:ICanvasCallConfig = {queryParams: {include: ['body'], per_page: 50}};
+        const defaultConfig: ICanvasCallConfig = {queryParams: {include: ['body'], per_page: 50}};
         const content = await (contentFunc ? contentFunc(course) :
             course.getContent(overrideConfig(config, defaultConfig)));
 
@@ -195,9 +191,9 @@ export function badContentRunFunc<
 
 
 export function badSyllabusRunFunc(
-        badTest: RegExp,
+    badTest: RegExp,
 ) {
-    return async (course:ISyllabusHaver) => {
+    return async (course: ISyllabusHaver) => {
         const syllabus = await course.getSyllabus();
         const match = syllabus.match(badTest);
         const success = match === null;
@@ -206,26 +202,96 @@ export function badSyllabusRunFunc(
             links: [`/courses/${course.id}/assignments/syllabus`]
         })
     }
+}
 
+
+export type InSyllabusSectionFuncUserData = {
+    sectionEl: HTMLElement | null | undefined,
+    syllabusEl: HTMLElement
+};
+
+export function inSyllabusSectionFunc(
+    sectionHeaderSearch: string | RegExp,
+    sectionBodySearch: string | RegExp,
+): ((course:ISyllabusHaver) =>  Promise<ValidationResult<InSyllabusSectionFuncUserData>>)
+{
+    return async (course: ISyllabusHaver) => {
+        const syllabus = await course.getSyllabus();
+        const syllabusEl = document.createElement("div");
+        syllabusEl.innerHTML = syllabus;
+        const isCorrectSection = (header:HTMLElement) =>  (header.innerText ?? header.textContent)?.search(sectionHeaderSearch) > -1;
+        const sectionEl = syllabusEl.querySelectorAll('h3').values().find(isCorrectSection)
+        if (!sectionEl) {
+            return testResult(false, {
+                failureMessage: `Could not find section with name ${sectionHeaderSearch} in syllabus`,
+                userData: {sectionEl, syllabusEl},
+            })
+        }
+        const success = sectionEl?.innerHTML.search(sectionBodySearch) > -1;
+        return testResult(success, {
+            userData: {sectionEl, syllabusEl},
+            failureMessage: `"${sectionBodySearch.toString()} not found in ${sectionEl.innerHTML}"`
+        });
+    }
 }
 
 
 
+export function addSyllabusSectionFix(
+    newSubSectionHtml: string,
+    atEnd: boolean = true,
+) {
+
+    return async ({changeSyllabus, id }: ISyllabusHaver, result: ValidationResult<InSyllabusSectionFuncUserData>
+    ) => {
+
+        if (!result || !result.userData) return testResult(false);
+        const {sectionEl, syllabusEl } = result.userData;
+        if(!sectionEl) return testResult(false, {failureMessage : "Section El to fix not found"})
+        if (atEnd) {
+            const lastEl = sectionEl.lastElementChild;
+            if(!lastEl) return testResult(false, { failureMessage: "No last element found to insert after"})
+            lastEl.insertAdjacentHTML('afterend', newSubSectionHtml)
+        } else {
+            // Find the first <h3> in the section element
+            const firstH3 = sectionEl.querySelector('h3');
+            if (firstH3) {
+                // Insert the new subsection HTML after the first <h3>
+                firstH3.insertAdjacentHTML('afterend', newSubSectionHtml);
+            } else {
+                // Handle the case where no <h3> is found, if necessary
+                return testResult(false, { failureMessage: "No <h3> element found to insert after" });
+            }
+        }
+
+        const failureMessage: MessageResult[] = [];
+
+        const changeResponse = await changeSyllabus( syllabusEl.innerHTML) as ICourseData;
+
+        /* This is optimistic at best */
+        const success = changeResponse.id === id;
+
+        return testResult(success, {
+            userData: {sectionEl, syllabusEl},
+            failureMessage,
+        });
+    }
+}
+
+
 export function badSyllabusFixFunc(
-    validateRegEx: RegExp ,
+    validateRegEx: RegExp,
     replace: string | ((str: string, ...args: any[]) => string)
-    ) {
+) {
     const replaceText = replaceTextFunc(validateRegEx, replace);
     return async (course: ISyllabusHaver) => {
         try {
             await fixSyllabus(course, validateRegEx, replaceText);
             return testResult<never>(true)
         } catch (e) {
-            return errorMessageResult(undefined)
+            return errorMessageResult(e)
         }
-
     }
-
 }
 
 
@@ -233,14 +299,14 @@ export function badContentFixFunc<CourseType extends IContentHaver, ContentType 
     badContentRegex: RegExp,
     replace: string | ((str: string, ...args: any[]) => string),
     contentFunc?: CustomContentGetter<CourseType, ContentType>
-    ) {
+) {
     return async (course: CourseType): Promise<ValidationResult<never>> => {
         let success = false;
         const messages: MessageResult[] = [];
 
-        const testRegex = new RegExp(badContentRegex.source, badContentRegex.flags.replace('g',''))
+        const testRegex = new RegExp(badContentRegex.source, badContentRegex.flags.replace('g', ''))
         const includeBody = {queryParams: {include: ['body']}};
-        let content = await( contentFunc ? contentFunc(course) : course.getContent(includeBody));
+        let content = await (contentFunc ? contentFunc(course) : course.getContent(includeBody));
         content = content.filter(item => item.body && testRegex.test(item.body));
 
         badContentRegex.lastIndex = 0;
@@ -280,18 +346,17 @@ export function badContentFixFunc<CourseType extends IContentHaver, ContentType 
 
         return {
             success,
-             messages
+            messages
         }
     }
 }
-
 
 
 function replaceTextFunc(validateRegEx: RegExp, replace: string | ((text: string) => string)) {
     return (str: string) => {
         validateRegEx.lastIndex = 0;
         const out = typeof replace === 'string' ?
-            str.replaceAll(validateRegEx, replace):
+            str.replaceAll(validateRegEx, replace) :
             str.replaceAll(validateRegEx, replace); //This is the silliest thing in the world, but the regex overloads wont recognize it otherwise.
         validateRegEx.lastIndex = 0; //Resetting the lastIndex so the regext starts from the beginning of the string every time.
 
@@ -314,7 +379,7 @@ export function errorMessageResult(e: unknown, links?: string[]) {
     const bodyLines = [
         e?.toString() || 'Error',
     ]
-    if (e && e instanceof Error && e.stack) bodyLines.push( e.stack);
+    if (e && e instanceof Error && e.stack) bodyLines.push(e.stack);
 
-    return { success:false, messages: [{bodyLines}], links};
+    return {success: false, messages: [{bodyLines}], links};
 }

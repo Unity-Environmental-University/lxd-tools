@@ -137,7 +137,7 @@ export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
 }
 
 
-function htmlDiv(text: string) {
+export function htmlDiv(text: string) {
     const el = document.createElement('div');
     el.innerHTML = text;
     return el;

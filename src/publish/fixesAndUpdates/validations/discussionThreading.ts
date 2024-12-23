@@ -1,9 +1,6 @@
 import {
-    badContentFixFunc,
-    badContentRunFunc,
     testResult
 } from "@publish/fixesAndUpdates/validations/utils";
-import {projectRegex} from "@/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import {Course} from "@/canvas/course/Course";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
