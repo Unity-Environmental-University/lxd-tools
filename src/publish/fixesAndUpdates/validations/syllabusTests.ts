@@ -1,11 +1,17 @@
 import {getPlainTextFromHtml} from "@canvas/canvasUtils";
 import {
-    badSyllabusFixFunc, badSyllabusRunFunc,
+    AddPosition,
+    addSyllabusSectionFix,
+    badSyllabusFixFunc,
+    badSyllabusRunFunc,
     errorMessageResult,
+    inSyllabusSectionFunc,
+    InSyllabusSectionFuncUserData,
     testResult
 } from "./utils";
 import {ISyllabusHaver} from "@canvas/course/courseTypes";
 import {CourseFixValidation, CourseValidation, TextReplaceValidation} from "@publish/fixesAndUpdates/validations/types";
+import {beforeAndAfterSet, paraify} from "@/testing/DomUtils";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
@@ -72,7 +78,7 @@ export const classInclusiveNoDateHeaderTest: TextReplaceValidation<ISyllabusHave
     ],
     description: 'Syllabus lists date range for course as "Class Inclusive Dates:" NOT as "Class Inclusive:"',
     run: badSyllabusRunFunc(classInclusiveDatesLanguageRegex),
-    fix: badSyllabusFixFunc(classInclusiveDatesLanguageRegex, (badText:string) => {
+    fix: badSyllabusFixFunc(classInclusiveDatesLanguageRegex, (badText: string) => {
         badText = badText.replaceAll(/<\/?span>/ig, '');
         return badText.replaceAll(classInclusiveDatesLanguageRegex, '<p><strong>Class Inclusive Dates:</strong> $1</p>')
     })
@@ -82,15 +88,14 @@ export const removeSameDayPostRestrictionTest: TextReplaceValidation<ISyllabusHa
     name: "Remove discussion same day post restriction",
     description: "remove 'If you submit your original post and your peer response on the same day, you will receive credit for only one post'",
     beforeAndAfters: [
-        ['If you submit your original post and your peer response on the same day, you will receive credit for only one post.',''],
-        ['If you submit your original post and your peer response on the same day, you will receive credit for only one post.   &nbsp; ',''],
-        ['Monkeys. If you submit your original post and your peer response on the same day, you will receive credit for only one post. However,','Monkeys. However,']
+        ['If you submit your original post and your peer response on the same day, you will receive credit for only one post.', ''],
+        ['If you submit your original post and your peer response on the same day, you will receive credit for only one post.   &nbsp; ', ''],
+        ['Monkeys. If you submit your original post and your peer response on the same day, you will receive credit for only one post. However,', 'Monkeys. However,']
 
     ],
     run: badSyllabusRunFunc(badDiscussionPostOrderLanguage),
     fix: badSyllabusFixFunc(badDiscussionPostOrderLanguage, '')
 }
-
 
 
 export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
@@ -108,7 +113,10 @@ export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
 
 export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
     name: "Bottom-of-Syllabus Test",
-    description: "Replace language at the bottom of the syllabus with: \"Learning materials for Weeks 2 forward are organized with the rest of the class in your weekly modules. The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
+    description: "Replace language at the bottom of the syllabus with: \"Learning materials for Weeks 2 forward" +
+        " are organized with the rest of the class in your weekly modules. The modules will become available after " +
+        "you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview" +
+        " page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
     run: async (course) => {
         const text = getPlainTextFromHtml(await course.getSyllabus());
         const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
@@ -151,8 +159,6 @@ function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
     return discussExpectEl.querySelectorAll('p')[1] as HTMLParagraphElement | undefined;
 
 }
-
-
 
 
 const correctSecondPara = 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" (for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".'
@@ -198,16 +204,61 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
     }
 }
 
+const goodApaLanguage = 'The standard citation style for all Unity DE courses, ' +
+    'unless otherwise noted in assignment instructions, ' +
+    'is APA.';
 
+
+const runApaNote = inSyllabusSectionFunc(/grading policies/i, /standard citation style/i);
+const fixApaNote = addSyllabusSectionFix(runApaNote, paraify(goodApaLanguage), AddPosition.DirectlyAfterHeader);
+
+export const addApaNoteToGradingPoliciesTest  = {
+    name: "Add APA default language",
+    beforeAndAfters: [
+        ['<div><h3>Grading</h3><h4>Grading Policies</h4><p>control</p></div>',
+        `<div><h3>Grading</h3><h4>Grading Policies</h4><p>${goodApaLanguage}</p><p>control</p></div>`]
+    ],
+    description: `Add the following language to the grading policies section: ${goodApaLanguage}`,
+    run: runApaNote,
+    fix: fixApaNote,
+} as TextReplaceValidation<
+    ISyllabusHaver,
+    InSyllabusSectionFuncUserData,
+    InSyllabusSectionFuncUserData | undefined
+>
+
+
+const goodAiLanguage = 'In this course, you may be asked to use or encouraged to explore employing generative AI tools ' +
+    'to improve your understanding of course content. ' +
+    'Potentially permitted uses of generative AI are detailed in the above policy.'
+
+const runAiGenLang = inSyllabusSectionFunc(/using generative artificial/i, /potentially permitted uses of generative ai/i);
+const fixAiGenLang = addSyllabusSectionFix(runAiGenLang, paraify(goodAiLanguage), AddPosition.AtEnd)
+
+export const addAiGenerativeLanguageTest  = {
+    name: "Add AI generative Language",
+    beforeAndAfters: [
+        beforeAndAfterSet('Using Generative Artificial Intelligence', ['control'], ['control', goodAiLanguage])
+    ],
+    description: `Add the following ,language to the generative ai section: ${goodAiLanguage}`,
+    run: runAiGenLang,
+    fix: fixAiGenLang,
+} as TextReplaceValidation<
+    ISyllabusHaver,
+    InSyllabusSectionFuncUserData,
+    InSyllabusSectionFuncUserData | undefined
+>
 
 
 export default [
+    addAiGenerativeLanguageTest,
     removeSameDayPostRestrictionTest,
     classInclusiveNoDateHeaderTest,
     courseCreditsInSyllabusTest,
     finalNotInGradingPolicyParaTest,
     communication24HoursTest,
     aiPolicyInSyllabusTest,
+    addApaNoteToGradingPoliciesTest,
     bottomOfSyllabusLanguageTest,
     gradeTableHeadersCorrectTest,
     secondDiscussionParaOff

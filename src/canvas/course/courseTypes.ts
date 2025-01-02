@@ -25,7 +25,7 @@ export interface ICourseCodeHaver {
 
 export interface ISyllabusHaver extends IIdHaver {
     getSyllabus: (config?: ICanvasCallConfig<GetCourseOptions>) => Promise<string>,
-    changeSyllabus: (newHtml: string, config?: ICanvasCallConfig) => any
+    changeSyllabus: (this:ISyllabusHaver, newHtml: string, config?: ICanvasCallConfig) => any
 }
 
 export interface ICourseSettingsHaver extends IIdHaver {

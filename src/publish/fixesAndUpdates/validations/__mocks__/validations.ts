@@ -72,14 +72,9 @@ export function badContentTextValidationFixTest<
                 expect(testResult.success).toBe(true);
             }
         }
-        const successfulText = [...test.beforeAndAfters.reduce(function (
-            aggregator,
-            current,
-            index
-        ) {
-            return [...aggregator, ...test.beforeAndAfters.map(([_, pass]) => pass)]
-
-        }, [] as string[])];
+        // Extracts all 'pass' values from the 'beforeAndAfters' array of tuples in 'test'.
+        // Flattens the results into a single array of strings (initialized as string[]).
+        const successfulText = test.beforeAndAfters.flatMap(([_, pass]) => pass);
 
         if(test.positiveExemplars) successfulText.push(...test.positiveExemplars);
         for await (const result of successfulText.map((text) => test.run(contentGallant(text)))) {
@@ -154,6 +149,7 @@ export function mockSyllabusHaver(syllabus: string): ISyllabusHaver {
         },
         changeSyllabus: async function (newHtml, _config) {
             syllabus = newHtml;
+            return { id: 1 };
         }
     }
 }

@@ -1,5 +1,5 @@
 import {ICanvasCallConfig} from "@canvas/canvasUtils";
-import {IContentHaver, ISyllabusHaver} from "@canvas/course/courseTypes";
+import {IContentHaver, ICourseDataHaver, IIdHaver, ISyllabusHaver} from "@canvas/course/courseTypes";
 import {BaseContentItem} from "@canvas/content/BaseContentItem";
 import {overrideConfig} from "@canvas/fetch/utils";
 import {ICourseData} from "@canvas/courseTypes";
@@ -12,6 +12,7 @@ export type MessageResult = {
     bodyLines: string[],
     links?: string[]
 }
+
 
 
 export type ValidationResult<UserDataType = unknown> = {
@@ -205,71 +206,233 @@ export function badSyllabusRunFunc(
 }
 
 
-export type InSyllabusSectionFuncUserData = {
-    sectionEl: HTMLElement | null | undefined,
-    syllabusEl: HTMLElement
+
+export const queryFindFirst = <T extends Element>(
+    el: Element,
+    querySelector: string,
+    filter: (element: T) => boolean
+): T | undefined => {
+    // eslint-disable-next-line @/no-undef
+    const queriedEls = el.querySelectorAll(querySelector) as NodeListOf<T>;
+    for (const queriedEl of queriedEls) {
+        if (filter(queriedEl)) return queriedEl;
+    }
+    return undefined;
 };
 
+
+export const isCorrectSectionFunc = (sectionHeaderSearch: string | RegExp) =>
+    ({innerText, textContent}:HTMLElement) =>
+        (innerText ?? textContent)?.search(sectionHeaderSearch) > -1 || false;
+
+
+/**
+ * Represents detailed user data for a validation error, providing a structured way to capture
+ * information about the course, the error that occurred, and any additional context-specific data.
+ *
+ * @template CourseType - The type of the course object associated with the validation error.
+ *                        Typically extends `IIdHaver` to ensure the course has a unique identifier.
+ * @template DataType - An object type representing additional fields specific to the context
+ *                      of the validation. Allows extending the error data with custom attributes.
+ *
+ * @property {CourseType} course - The course object associated with the validation error. This
+ *                                 allows consumers to trace errors back to the specific course
+ *                                 being processed.
+ * @property {unknown} [error] - An optional field to capture the error that caused the validation
+ *                               failure. Useful for debugging and logging purposes.
+ * @property {Record<string, unknown>} [additionalInfo] - An optional object for providing extra
+ *                                                        context about the error. This can include
+ *                                                        any metadata or runtime information
+ *                                                        relevant to the validation process.
+ * @property {DataType} - Additional custom fields extending the base structure to include
+ *                        context-specific data for the validation scenario.
+ *
+ * @example
+ * // Example usage within a validation function:
+ * export function validateCourse(course: ISyllabusHaver): Promise<ValidationResult<ValidationErrorUserData<ISyllabusHaver, { missingSections: string[] }>>> {
+ *     try {
+ *         // Perform some validation logic...
+ *         const missingSections = ["Introduction", "Conclusion"];
+ *         if (missingSections.length > 0) {
+ *             return Promise.resolve(
+ *                 testResult(false, {
+ *                     course,
+ *                     additionalInfo: { missingSections },
+ *                     failureMessage: `Course is missing required sections: ${missingSections.join(", ")}`,
+ *                 })
+ *             );
+ *         }
+ *         return Promise.resolve(testResult(true, {}));
+ *     } catch (e) {
+ *         return Promise.resolve(
+ *             testResult(false, {
+ *                 course,
+ *                 error: e,
+ *                 additionalInfo: { attemptedValidation: "required sections check" },
+ *                 failureMessage: `Error during validation: ${e}`,
+ *             })
+ *         );
+ *     }
+ * }
+ */
+export type ValidationErrorUserData<CourseType extends IIdHaver, DataType extends Record<string, any>> = {
+    course: CourseType;
+    error?: unknown;
+    additionalInfo?: Record<string, unknown>;
+} & DataType;
+
+function isErrorUserData(userData: InSyllabusSectionFuncUserData): userData is InSyllabusSectionFuncErrorData {
+    return (userData as InSyllabusSectionFuncErrorData).error !== undefined;
+}
+
+export type InSyllabusSectionFuncErrorData = ValidationErrorUserData<ISyllabusHaver, {
+    course: ISyllabusHaver;
+    error: unknown;
+}>;
+
+
+export type InSyllabusSectionFuncUserData =
+    | { sectionEl: HTMLElement | null | undefined; syllabusEl: HTMLElement, headerEl: HTMLElement | null | undefined }
+    | InSyllabusSectionFuncErrorData;
+
+export function syllabusToEl(syllabus: string): HTMLElement {
+    const syllabusEl = document.createElement("div");
+    syllabusEl.innerHTML = syllabus;
+    return syllabusEl;
+}
+
+/**
+ * Validates whether a syllabus contains a specific section with the given header and body content.
+ *
+ * This function searches a course syllabus for a section header and its associated body text,
+ * allowing for flexible matching using strings or regular expressions. It returns a function
+ * that asynchronously validates the course, producing a `ValidationResult` with detailed
+ * user data on success or failure.
+ *
+ * @param {string | RegExp} sectionHeaderSearch - A (non-empty string) or regular expression to match the
+ *                                                desired section header in the syllabus. Throws an error on an empty string.
+ * @param {string | RegExp} sectionBodySearch - A (non-empty string) or regular expression to match the
+ *                                              content of the section body associated with
+ *                                              the matched header. Throws an error on an empty string.
+ *
+ * @returns {(course: ISyllabusHaver) => Promise<ValidationResult<InSyllabusSectionFuncUserData>>}
+ *          A function that accepts a course implementing the `ISyllabusHaver` interface and
+ *          returns a promise resolving to a `ValidationResult` object. The result indicates
+ *          whether the validation passed or failed and provides detailed error or success
+ *          metadata.
+ *
+ * ### User Data on Failure
+ * On validation failure, the result's `userData` object includes:
+ * - `syllabusEl`: The parsed syllabus as a `HTMLElement`.
+ * - `sectionEl`: The header element that was searched for but not found.
+ * - Failure-specific data such as the `sectionHeaderSearch` and `sectionBodySearch` criteria.
+ *
+ * ### User Data on Success
+ * On success, the result's `userData` object includes:
+ * - `syllabusEl`: The parsed syllabus as a `HTMLElement`.
+ * - `sectionEl`: The matched header element.
+ *
+ * @example
+ * // Example usage in a validation pipeline:
+ * const validateSection = inSyllabusSectionFunc(/Week 1: Introduction/, /Learn the basics/);
+ * const result = await validateSection(course);
+ *
+ * if (!result.success) {
+ *     console.error(result.failureMessage, result.userData);
+ * } else {
+ *     console.log("Validation passed!", result.userData);
+ * }
+ *
+ * @throws {Error} Throws an error if the syllabus cannot be retrieved or processed.
+ *
+ * ### Error Handling
+ * If an error occurs during syllabus retrieval or parsing, the result includes:
+ * - `error`: The captured error object.
+ * - `course`: The course object being validated.
+ * - `failureMessage`: A descriptive message with error details.
+ */
 export function inSyllabusSectionFunc(
-    sectionHeaderSearch: string | RegExp,
+    sectionHeaderSearch: (string ) | RegExp,
     sectionBodySearch: string | RegExp,
-): ((course:ISyllabusHaver) =>  Promise<ValidationResult<InSyllabusSectionFuncUserData>>)
-{
+): ((course: ISyllabusHaver) => Promise<ValidationResult<InSyllabusSectionFuncUserData>>) {
+    const isCorrectSection = isCorrectSectionFunc(sectionHeaderSearch);
+    if(typeof sectionHeaderSearch === 'string' && sectionHeaderSearch.length == 0) throw new Error('Section header search strings must have a value. If you want to match ALL sections, use /.*/')
+    if(typeof sectionBodySearch === 'string' && sectionBodySearch.length == 0) throw new Error('Section body search strings must have a value. If you want to match all, use /.*/ instead')
+
     return async (course: ISyllabusHaver) => {
-        const syllabus = await course.getSyllabus();
-        const syllabusEl = document.createElement("div");
-        syllabusEl.innerHTML = syllabus;
-        const isCorrectSection = (header:HTMLElement) =>  (header.innerText ?? header.textContent)?.search(sectionHeaderSearch) > -1;
-        const sectionEl = syllabusEl.querySelectorAll('h3').values().find(isCorrectSection)
-        if (!sectionEl) {
+        try {
+            const syllabus = await course.getSyllabus();
+            const syllabusEl = syllabusToEl(syllabus);
+            const headerEl = queryFindFirst(syllabusEl, 'h2,h3,h4', isCorrectSection);
+            const sectionEl = headerEl?.parentElement;
+            const userData = { sectionEl, syllabusEl, headerEl};
+            
+            if (!sectionEl) {
+                return testResult(false, {
+                    failureMessage: `Could not find section with name ${sectionHeaderSearch} in syllabus`,
+                    userData,
+                });
+            }
+
+            const html = sectionEl.innerHTML;
+            const success = html.search(sectionBodySearch) > -1;
+            return testResult(success, {
+                userData,
+                failureMessage: `"${sectionBodySearch.toString()} not found in ${sectionEl.innerHTML}"`,
+            });
+        } catch (e) {
             return testResult(false, {
-                failureMessage: `Could not find section with name ${sectionHeaderSearch} in syllabus`,
-                userData: {sectionEl, syllabusEl},
-            })
+                userData: {
+                    sectionHeaderSearch,
+                    sectionBodySearch,
+                    course,
+                    error: e,
+                },
+                failureMessage: `Error processing syllabus for ${course.id}: ${e}`,
+            });
         }
-        const success = sectionEl?.innerHTML.search(sectionBodySearch) > -1;
-        return testResult(success, {
-            userData: {sectionEl, syllabusEl},
-            failureMessage: `"${sectionBodySearch.toString()} not found in ${sectionEl.innerHTML}"`
-        });
-    }
+    };
 }
 
 
+export enum AddPosition {
+    AtBeginning,
+    AtEnd,
+    DirectlyAfterHeader
+}
 
 export function addSyllabusSectionFix(
+    run: (course:ISyllabusHaver & ICourseDataHaver) => Promise<ValidationResult<InSyllabusSectionFuncUserData>>,
     newSubSectionHtml: string,
-    atEnd: boolean = true,
+    position: AddPosition = AddPosition.AtEnd,
 ) {
-
-    return async ({changeSyllabus, id }: ISyllabusHaver, result: ValidationResult<InSyllabusSectionFuncUserData>
-    ) => {
-
-        if (!result || !result.userData) return testResult(false);
-        const {sectionEl, syllabusEl } = result.userData;
-        if(!sectionEl) return testResult(false, {failureMessage : "Section El to fix not found"})
-        if (atEnd) {
-            const lastEl = sectionEl.lastElementChild;
-            if(!lastEl) return testResult(false, { failureMessage: "No last element found to insert after"})
-            lastEl.insertAdjacentHTML('afterend', newSubSectionHtml)
-        } else {
-            // Find the first <h3> in the section element
-            const firstH3 = sectionEl.querySelector('h3');
-            if (firstH3) {
-                // Insert the new subsection HTML after the first <h3>
-                firstH3.insertAdjacentHTML('afterend', newSubSectionHtml);
+    return async (course: ISyllabusHaver & ICourseDataHaver, result: ValidationResult<InSyllabusSectionFuncUserData> | undefined
+    )  => {
+        if (!result) result = await run(course);
+        if(!result.userData || isErrorUserData(result.userData)) return result;
+        const { sectionEl, syllabusEl, headerEl } =  result.userData;
+        if(!sectionEl) return testResult(false, {failureMessage : "Section El to fix not found", userData: undefined})
+        if (position == AddPosition.AtEnd) {
+            sectionEl.insertAdjacentHTML('beforeend', newSubSectionHtml)
+        } else if (position == AddPosition.AtBeginning) {
+            const firstHeader = sectionEl.querySelector('h1, h2, h3, h4, h5, h6');
+            if (firstHeader) {
+                firstHeader.insertAdjacentHTML('afterend', newSubSectionHtml);
             } else {
-                // Handle the case where no <h3> is found, if necessary
-                return testResult(false, { failureMessage: "No <h3> element found to insert after" });
+                return testResult(false, { failureMessage: "No header element found to insert after", userData: undefined });
             }
+        } else if(position == AddPosition.DirectlyAfterHeader) {
+            headerEl?.insertAdjacentHTML("afterend", newSubSectionHtml);
+        } else {
+            throw Error("Insert Position Not Handled")
         }
 
         const failureMessage: MessageResult[] = [];
 
-        const changeResponse = await changeSyllabus( syllabusEl.innerHTML) as ICourseData;
+        const changeResponse = await course.changeSyllabus( syllabusEl.innerHTML) as ICourseData;
 
         /* This is optimistic at best */
-        const success = changeResponse.id === id;
+        const success = changeResponse.id === course.id;
 
         return testResult(success, {
             userData: {sectionEl, syllabusEl},

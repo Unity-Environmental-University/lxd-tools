@@ -52,7 +52,7 @@ export function ValidationRow({
         setLoading(true);
         try {
             assert(test.fix);
-            const result = await test.fix(course);
+            const result = await test.fix(course, validationResult);
             setFixResult(result);
             setUpdateTest(true);
             await refreshCourse();

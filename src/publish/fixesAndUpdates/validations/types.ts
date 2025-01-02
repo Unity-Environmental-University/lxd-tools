@@ -22,19 +22,11 @@ export interface CourseFixValidation<T = Course,
     fix: (course: T, result?: ValidationResult<UserDataType>) => Promise<ValidationResult<FixUserDataType>>
 }
 
-export type TextReplaceValidation<T, UserData = any> = {
+export type TextReplaceValidation<T, UserData = any, FixUserDataType = UserData> = {
     beforeAndAfters: [string, string][],
     positiveExemplars?: string[],
-} & CourseValidation<T, UserData>
+} & CourseValidation<T, UserData, FixUserDataType>
 
-// export type ContentValidation<
-//     T,
-//     ContentType extends BaseContentItem,
-//     UserData = unknown
-// > = CourseValidation<T, UserData> & {
-//     negativeExemplars: [string, string?][],
-//     getContent?: (course: T) => Promise<ContentType[]>
-// }
 
 export type ContentTextReplaceFix<
     T,

@@ -1,6 +1,7 @@
 import {
+    addAiGenerativeLanguageTest,
+    addApaNoteToGradingPoliciesTest,
     aiPolicyInSyllabusTest,
-    badDiscussionPostOrderLanguage,
     bottomOfSyllabusLanguageTest,
     classInclusiveNoDateHeaderTest,
     communication24HoursTest,
@@ -26,6 +27,10 @@ describe('Syllabus validation', () => {
     test('Grade table headers correct', syllabusTestTest(gradeTableHeadersCorrectTest))
     test('Class Inclusive Dates Test', syllabusTestTest(classInclusiveNoDateHeaderTest))
     test('Remove same day post restriction test', syllabusTestTest(removeSameDayPostRestrictionTest))
+
+    test('Add apa language to grading policy test', syllabusTestTest(addApaNoteToGradingPoliciesTest))
+    test('Add generative ai language', syllabusTestTest(addAiGenerativeLanguageTest))
+
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {

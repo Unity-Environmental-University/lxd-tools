@@ -2,7 +2,6 @@ import { exec, execSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
 import  nodePackage from './package.json' assert { type: 'json'}
 import manifest from './manifest.json' assert {type: 'json'}
 
@@ -10,8 +9,6 @@ import manifest from './manifest.json' assert {type: 'json'}
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Promisify exec to use with async/await
-const execAsync = promisify(exec);
 
 // Helper function to log process output
 function logProcessOutput(process) {
@@ -19,19 +16,24 @@ function logProcessOutput(process) {
     process.stderr?.on('data', (data) => console.error(data.toString()));
 }
 
+
+
+function checkDistTag(packageTag) {
+    const distTags = getGitTags('../dist');
+    if (distTags.includes(packageTag)) {
+        throw new Error(`Version ${packageTag} has already been tagged. Please update the version.`);
+    }
+
+}
+
+
 // Main function
 async function main() {
     try {
         const packageTag = getPackageTag();
-        const tags = getGitTags('./');
         console.log(packageTag);
 
-        // Check if the package tag has already been used
-        const distTags = getGitTags('../dist');
-        if (distTags.includes(packageTag)) {
-            throw new Error(`Version ${packageTag} has already been tagged. Please update the version.`);
-        }
-
+        checkDistTag(packageTag);
         updateTag(packageTag, './');
 
         const distManifestPath = path.resolve(__dirname, '../dist/manifest.json');
@@ -53,10 +55,10 @@ async function main() {
 
         console.log(commitMessages);
         // Filter out lines that begin with tildes
-        const filteredCommitMessages = commitMessages.filter(msg => !msg.trim().startsWith('~'));
+        //const filteredCommitMessages = commitMessages.filter(msg => !msg.trim().startsWith('~'));
 
         const commitFilePath = path.resolve(distOptions.cwd, 'commit.tmp');
-        await writeFile(commitFilePath, filteredCommitMessages.join('\n'));
+        await writeFile(commitFilePath, commitMessages.join('\n-----\n'));
 
         console.log(await readFile(commitFilePath, 'utf-8'));
 
@@ -75,6 +77,7 @@ async function main() {
 
     } catch (error) {
         console.error('Error in main:', error);
+        // eslint-disable-next-line @/no-undef
         process.exit(1);  // Exit with an error code
     }
 }
@@ -131,9 +134,11 @@ function getPackageTag() {
 // Function to get commit messages between two tags and filter them
 function getCommitMessages(tagOne, tagTwo) {
     try {
-        return execSync(`git log --pretty=oneline ${tagOne}...${tagTwo}`, { cwd: path.resolve(__dirname, '../dist') })
+        return execSync(`git log --pretty=format:"%s%d%n%H%n%b---" ${tagOne}...${tagTwo}`, {
+            cwd: path.resolve(__dirname)
+        })
             .toString()
-            .split('\n');
+            .split('---');
     } catch (error) {
         console.error('Error in getCommitMessages:', error);
         return [];

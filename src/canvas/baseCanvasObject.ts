@@ -53,6 +53,7 @@ export class BaseCanvasObject<CanvasDataType extends CanvasData> implements ICan
         return {...this.canvasData};
     }
 
+
     get contentUrlPath(): null | string {
         const constructor = <typeof BaseCanvasObject>this.constructor;
 

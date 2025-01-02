@@ -43,6 +43,7 @@ export function CourseUpdateInterface({
     const [mode, setMode] = useState<InterfaceMode>('fix')
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         onChangeMode && onChangeMode(mode)
     }, [mode]);
 
