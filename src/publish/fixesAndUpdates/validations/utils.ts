@@ -194,6 +194,7 @@ export function badContentRunFunc<
 export function badSyllabusRunFunc(
     badTest: RegExp,
 ) {
+    if(!badTest.global) badTest = new RegExp(badTest, 'g');
     return async (course: ISyllabusHaver) => {
         const syllabus = await course.getSyllabus();
         const match = syllabus.match(badTest);

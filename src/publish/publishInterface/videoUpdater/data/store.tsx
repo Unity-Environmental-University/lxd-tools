@@ -5,8 +5,6 @@ import {rootReducer} from "@publish/publishInterface/videoUpdater/data/rootReduc
 // Step 2: Configure the store
 export const store = configureStore({
     reducer: rootReducer,
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware()
 });
 
 

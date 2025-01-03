@@ -19,8 +19,7 @@ const MigrationStatusDisplay: React.FC<MigrationStatusDisplayProps> = ({status, 
             Object.values(migrations).filter(m => m.status === 'successful').length,
         [migrations]
     );
-    const pendingMigrations = totalMigrations - completedMigrations;
-    console.log(styles);
+   // const pendingMigrations = totalMigrations - completedMigrations;
     const steps = [
         {label: 'Scan Pages or Assignments', key: 'initial_scan'},
         {label: 'Scanning in Progress', key: 'scanning'},
@@ -30,11 +29,11 @@ const MigrationStatusDisplay: React.FC<MigrationStatusDisplayProps> = ({status, 
     ];
 
     const getStepStyle = (stepKey: string) => {
-        if (status === stepKey) return styles.inProgress;
+        if (status === stepKey) return styles['status-in-progress'];
         if (steps.findIndex(step => step.key === stepKey) < steps.findIndex(step => step.key === status))
-            return styles.completed;
+            return styles['status-completed'];
 
-        const style = styles.pending; // default style
+        const style = styles['status-pending']; // default style
         console.log(`Status: ${status}, StepKey: ${stepKey}, Style: ${style}`);
         return style;
     };
@@ -43,14 +42,14 @@ const MigrationStatusDisplay: React.FC<MigrationStatusDisplayProps> = ({status, 
     const progressNow = totalMigrations > 0 ? (completedMigrations / totalMigrations) * 100 : 0;
 
     return (
-        <Card className={styles.statusCard}>
+        <Card className={styles['status-card']}>
             <Card.Body>
                 <h5>Migration Status</h5>
                 <div role="status" aria-live="polite">
                     <Row className="text-center">
                         {steps.map((step, index) => (
                             <Col key={step.key} xs={3} className="position-relative" style={{padding: '10px'}}>
-                                <div className={`${styles.statusBox} ${getStepStyle(step.key)}`}>
+                                <div className={`${styles['status-box']} ${getStepStyle(step.key)}`}>
                                     <span style={{fontSize: '14px'}}>{step.label}</span>
                                     {status === step.key && (
                                         <>
@@ -71,9 +70,9 @@ const MigrationStatusDisplay: React.FC<MigrationStatusDisplayProps> = ({status, 
                         ))}
                     </Row>
                 </div>
-                {error && <Alert variant="danger" className={styles.errorAlert}>{error}</Alert>}
+                {error && <Alert variant="danger" className={styles['error-alert']}>{error}</Alert>}
                 <ProgressBar now={progressNow} label={`${completedMigrations}/${totalMigrations}`}
-                             className={styles.progressBar}/>
+                             className={styles['progress-bar']}/>
             </Card.Body>
         </Card>
     );

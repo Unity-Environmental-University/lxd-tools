@@ -15,7 +15,7 @@ import {VideoUpdateInterfaceProps} from "@publish/publishInterface/videoUpdater/
 import {useEffectAsync} from "@/ui/utils";
 import MigrationTable from "@publish/publishInterface/videoUpdater/migrationTable/MigrationTable";
 import MigrationStatusDisplay from './MigrationStatusDisplay';
-import {collectMigrationDetails} from "@publish/publishInterface/videoUpdater/data/actions/collectMigrationDetails";
+import {beginMigration} from "@publish/publishInterface/videoUpdater/data/actions/beginMigration";
 import {fetchCourseData, getWorkingCourseData} from "@/canvas-redux/courseDataSlice";
 import Modal from "@/ui/widgets/Modal";
 
@@ -59,7 +59,7 @@ const VideoUpdateInterface = ({courseId}: VideoUpdateInterfaceProps) => {
 
     const handleCollectMigrationDetails = async () => {
         try {
-            await dispatch(collectMigrationDetails({courseId}));
+            await dispatch(beginMigration({courseId}));
         } catch (error) {
             console.error("Error collecting migration details", error);
         }

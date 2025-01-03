@@ -3,7 +3,9 @@ import {createAsyncThunk} from "@reduxjs/toolkit";
 import {KalturaMigrationDetails, MigrationVideo} from "@publish/publishInterface/videoUpdater/data/types";
 import {addMigration, updateMigration} from "@publish/publishInterface/videoUpdater/data/kalturaMigrationsSlice";
 
-export const collectMigrationDetails = createAsyncThunk<void, { courseId: number }, {
+
+
+export const beginMigration = createAsyncThunk<void, { courseId: number }, {
     state: RootState,
     dispatch: KalturaAppDispatch;
 }>(
