@@ -98,6 +98,7 @@ export const removeSameDayPostRestrictionTest: TextReplaceValidation<ISyllabusHa
 }
 
 
+
 export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "AI Policy in Syllabus Test",
     description: "The AI policy is present in the syllabus",
@@ -228,26 +229,21 @@ export const addApaNoteToGradingPoliciesTest  = {
 >
 
 
-const goodAiLanguage = 'In this course, you may be asked to use or encouraged to explore employing generative AI tools ' +
-    'to improve your understanding of course content. ' +
-    'Potentially permitted uses of generative AI are detailed in the above policy.'
+const badAiLanguage = 'n this course, you may be encouraged to explore';
+const badAiRegex = /n this course,? you may be encouraged to explore/ig;
 
-const runAiGenLang = inSyllabusSectionFunc(/using generative artificial/i, /potentially permitted uses of generative ai/i);
-const fixAiGenLang = addSyllabusSectionFix(runAiGenLang, paraify(goodAiLanguage), AddPosition.AtEnd)
-
+const goodAiLanguage = 'n this course, you may be asked to use or encouraged to explore';
 export const addAiGenerativeLanguageTest  = {
     name: "Add AI generative Language",
+    description: `Add the following language to the generative ai section: ${goodAiLanguage}`,
     beforeAndAfters: [
-        beforeAndAfterSet('Using Generative Artificial Intelligence', ['control'], ['control', goodAiLanguage])
+        [badAiLanguage, goodAiLanguage],
+        [`<p>${badAiLanguage}</p>`, `<p>${goodAiLanguage}</p>`],
+        [`<p>abcd${badAiLanguage}efg</p>`, `<p>abcd${goodAiLanguage}efg</p>`],
     ],
-    description: `Add the following ,language to the generative ai section: ${goodAiLanguage}`,
-    run: runAiGenLang,
-    fix: fixAiGenLang,
-} as TextReplaceValidation<
-    ISyllabusHaver,
-    InSyllabusSectionFuncUserData,
-    InSyllabusSectionFuncUserData | undefined
->
+    run: badSyllabusRunFunc(badAiRegex),
+    fix: badSyllabusFixFunc(badAiRegex, goodAiLanguage)
+}
 
 
 export default [

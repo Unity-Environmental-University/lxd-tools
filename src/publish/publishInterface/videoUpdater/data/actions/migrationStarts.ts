@@ -9,7 +9,6 @@ import {
 } from './actionTypes';
 import {IPageData} from "@canvas/content/pages/types";
 import {KalturaMigrationDetails} from "@publish/publishInterface/videoUpdater/data/types";
-import {MigrationRowData} from "@publish/publishInterface/videoUpdater/migrationTable/MigrationRowData";
 import PageKind from "@canvas/content/pages/PageKind";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 import {IAssignmentData} from "@canvas/content/types";

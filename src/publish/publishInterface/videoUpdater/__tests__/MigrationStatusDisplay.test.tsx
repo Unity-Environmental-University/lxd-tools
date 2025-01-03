@@ -48,17 +48,17 @@ describe('MigrationStatusDisplay', () => {
     test('shows the correct classes for each step based on status', () => {
         const { container } = render(<MigrationStatusDisplay status="scanning" migrations={mockMigrations} />);
         console.log(container.innerHTML)
-        console.log(Array.from(container.getElementsByClassName('statusBox')).map(a => a.innerHTML));
+        console.log(Array.from(container.getElementsByClassName('status-box')).map(a => a.innerHTML));
         // Check that the second step is in progress
-        expect(container.getElementsByClassName('statusBox').item(1)).toHaveClass('inProgress');
+        expect(container.getElementsByClassName('status-box').item(1)).toHaveClass('status-in-progress');
 
         // Check that the first step is completed
-        expect(container.getElementsByClassName('statusBox').item(0)).toHaveClass('completed');
+        expect(container.getElementsByClassName('status-box').item(0)).toHaveClass('status-completed');
 
         // Check that the rest are pending
-        expect(container.getElementsByClassName('statusBox').item(2)).toHaveClass('pending');
-        expect(container.getElementsByClassName('statusBox').item(3)).toHaveClass('pending');
-        expect(container.getElementsByClassName('statusBox').item(4)).toHaveClass('pending');
+        expect(container.getElementsByClassName('status-box').item(2)).toHaveClass('status-pending');
+        expect(container.getElementsByClassName('status-box').item(3)).toHaveClass('status-pending');
+        expect(container.getElementsByClassName('status-box').item(4)).toHaveClass('status-pending');
     });
 
     test('renders correctly with no migrations', () => {

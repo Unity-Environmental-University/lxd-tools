@@ -10,7 +10,7 @@ export async function processKalturaVideos(migrationId: string): Promise<Migrati
     return []; // Return an array of modified links
 }
 
-const preFinalizeMigration = createAsyncThunk<void, { id: string }, {
+export const preFinalizeMigration = createAsyncThunk<void, { id: string }, {
     state: RootState,
     dispatch: KalturaAppDispatch;
 }>(
@@ -42,4 +42,3 @@ const preFinalizeMigration = createAsyncThunk<void, { id: string }, {
     }
 );
 
-export default preFinalizeMigration;
