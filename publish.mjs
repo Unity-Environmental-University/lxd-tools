@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import  nodePackage from './package.json' assert { type: 'json'}
-import manifest from './manifest.json' assert {type: 'json'}
+import manifest from './manifest.source.json' assert {type: 'json'}
 
 // Get the directory name for the current module in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -36,7 +36,7 @@ async function main() {
         checkDistTag(packageTag);
         updateTag(packageTag, './');
 
-        const distManifestPath = path.resolve(__dirname, '../dist/manifest.json');
+        const distManifestPath = path.resolve(__dirname, '../dist/manifest.source.json');
         let distManifest = JSON.parse(await readFile(distManifestPath, 'utf-8'));
 
         if (distManifest.version !== packageTag) {

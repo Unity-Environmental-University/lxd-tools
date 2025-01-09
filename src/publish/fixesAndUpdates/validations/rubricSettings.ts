@@ -1,7 +1,5 @@
 import {errorMessageResult, MessageResult, testResult} from "./utils";
 import {
-    IRubricAssociationData,
-    IRubricData,
     rubricsForCourseGen,
     updateRubricAssociation
 } from "@/canvas/rubrics";
@@ -11,14 +9,16 @@ import {callAll} from "@/canvas/canvasUtils";
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
+import {IRubricAssociationData, RubricTypes} from "@/canvas";
+
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});
-    const returnPairs: [IRubricData, IRubricAssociationData][] = [];
+    const returnPairs: [RubricTypes, IRubricAssociationData][] = [];
     for await (const rubric of rubricGen) {
         const associations = rubric.associations;
         const badAssociations = associations && associations
             .filter(assoc => !assoc.use_for_grading)
-            .map<[IRubricData, IRubricAssociationData]>(assoc => [rubric, assoc]);
+            .map<[RubricTypes, IRubricAssociationData]>(assoc => [rubric, assoc]);
         if (badAssociations && badAssociations.length > 0) returnPairs.push(...badAssociations);
     }
     return returnPairs;

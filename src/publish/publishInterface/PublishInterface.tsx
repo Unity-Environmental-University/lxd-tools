@@ -1,5 +1,5 @@
 import React, {useEffect, useReducer, useState} from "react";
-import {IProfile, IProfileWithUser, renderProfileIntoCurioFrontPage} from "@canvas/profile";
+import {renderProfileIntoCurioFrontPage} from "@canvas/profile";
 import {useEffectAsync} from "@/ui/utils";
 import {Button} from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal/index";
@@ -16,8 +16,9 @@ import {assignmentDataGen} from "@/canvas/content/assignments";
 import {IListAction, lutDispatcher} from "@/ui/reducerDispatchers";
 import {sectionDataGenerator} from "@/canvas/course/blueprint";
 import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
-import {sleep} from "@/index";
 import {getCourseData} from "@canvas/course";
+import {sleep} from "@/toolbox";
+import {IProfile, IProfileWithUser} from "@canvas/type";
 
 
 export interface IPublishInterfaceProps {

@@ -1,8 +1,6 @@
 import {ICourseData, SectionData} from '@/canvas/courseTypes';
 import {AssignmentsCollection} from '@/ui/speedGrader/AssignmentsCollection';
 
-import {IRubricCriterionData, RubricAssessment} from '@/canvas/rubrics';
-
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 import {ITermData} from "@/canvas/term/Term";
 import {IModuleData, IUserData} from "@/canvas/canvasDataDefs";
@@ -15,6 +13,8 @@ import {mockEnrollment} from "@/canvas/__mocks__/mockEnrollment";
 import mockAssignmentSubmission from "@/canvas/content/__mocks__/mockAssignmentSubmission";
 import mock = jest.mock;
 import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
+
+import {IRubricCriterionData, RubricAssessment} from "@/canvas";
 // Mock data
 const mockCourse: ICourseData = {
     ...mockCourseData,

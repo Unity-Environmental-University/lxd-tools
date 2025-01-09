@@ -18,6 +18,15 @@ export const CONTENT_KINDS = [
     QuizKind,
 ]
 
+export const ContentKinds = {
+    fromUrl: getContentKindFromUrl,
+    fromContent: getContentKindFromContent,
+    getBody<Type extends ContentData>(contentData:Type) {
+        const kind = getContentKindFromContent(contentData);
+        return (kind?.getBody as (a:any) => string)(contentData);
+    }
+}
+
 
 export function getContentClassFromUrl(url: string | null = null) {
     if (!url) url = document.documentURI;
@@ -52,14 +61,6 @@ export function getContentKindFromContent<Kind extends ContentKindInPractice>(co
 
 }
 
-export const ContentKinds = {
-    fromUrl: getContentKindFromUrl,
-    fromContent: getContentKindFromContent,
-    getBody<Type extends ContentData>(contentData:Type) {
-        const kind = getContentKindFromContent(contentData);
-        return (kind?.getBody as (a:any) => string)(contentData);
-    }
-}
 
 
 export async function getContentDataFromUrl(url:string, config:ICanvasCallConfig) {

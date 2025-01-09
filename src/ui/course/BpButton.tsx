@@ -8,7 +8,8 @@ import {Button, Col, Row} from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal";
 import {Course} from "@/canvas/course/Course";
 import {listDispatcher} from "@/ui/reducerDispatchers";
-import {aMinusBSortFn, bMinusASortFn} from "@/index";
+
+import {aMinusBSortFn, bMinusASortFn} from "@/toolbox";
 
 
 type BpButtonProps = {

@@ -3,7 +3,6 @@ import {
     formDataify,
     ICanvasCallConfig
 } from "../../canvasUtils";
-import {sleep} from "../../../index";
 import {createNewCourse, getCourseData} from "../index";
 import {Course} from "../Course";
 
@@ -12,6 +11,7 @@ import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {GetCourseOptions} from "@/canvas/course/courseTypes";
+import {sleep} from "@/toolbox";
 export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
 
 

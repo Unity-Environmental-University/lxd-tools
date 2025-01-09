@@ -1,13 +1,6 @@
 import {runtime} from "webextension-polyfill";
 import assert from "assert";
 
-export type ResizeImageMessage = {
-    src: string,
-    image: HTMLImageElement,
-    width: number,
-    height?: number
-}
-
 export async function getResizedBlob(src: string, width: number, height: number | undefined = undefined) {
     const imageSrc = await contentDownloadImage(src);
     const canvas = document.createElement('canvas');

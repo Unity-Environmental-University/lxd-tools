@@ -1,6 +1,7 @@
 import {IUserData} from "../canvasDataDefs";
-import {frontPageBio, IProfile} from "../profile";
+import {frontPageBio} from "../profile";
 import {mockUserData} from "../__mocks__/mockUserData";
+import {IProfile} from "@canvas/type";
 
 describe('frontPageBio', () => {
         const profile = {

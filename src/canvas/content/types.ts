@@ -2,9 +2,10 @@ import {CanvasData} from "@/canvas/canvasDataDefs";
 import {IQueryParams} from "@/canvas/canvasUtils";
 import {IQuizData} from "@/canvas/content/quizzes/types";
 import {IPageData} from "@/canvas/content/pages/types";
-import {IRubricCriterionData, RubricAssessment} from "@canvas/rubrics";
 import {ICourseData} from "@canvas/courseTypes";
 import {FileAttachment, TopicPermissions} from "@canvas/type";
+
+import {IRubricCriterionData, RubricAssessment} from "@/canvas";
 
 export type DateString = string;
 

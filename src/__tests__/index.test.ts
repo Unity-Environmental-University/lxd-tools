@@ -1,5 +1,6 @@
 import {Temporal} from "temporal-polyfill";
-import {aMinusBSortFn, bMinusASortFn, sleep} from "../index";
+
+import {aMinusBSortFn, bMinusASortFn, sleep} from "@/toolbox";
 
 
 describe('Testing basic sleep function', () => {

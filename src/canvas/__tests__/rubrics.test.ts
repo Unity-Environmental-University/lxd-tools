@@ -3,7 +3,6 @@ import {
     getRubric,
     rubricApiUrl,
     getRubricsFetchUrl,
-    IRubricData,
     rubricsForCourseGen,
     rubricAssociationUrl, updateRubricAssociation
 } from "../rubrics";
@@ -13,6 +12,8 @@ import mockRubric, {mockRubricAssociation, mockRubricsForAssignments} from "../_
 import {deepObjectMerge, formDataify, renderAsyncGen} from "../canvasUtils";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
+
+import {RubricTypes} from "@/canvas";
 
 
 jest.mock('../fetch/fetchJson', () => ({

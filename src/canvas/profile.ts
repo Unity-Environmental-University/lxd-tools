@@ -6,23 +6,10 @@ import {Course} from "./course/Course";
 import {Account} from "@/canvas/Account";
 import {getSingleCourse} from "@/canvas/course";
 import {Page} from "@/canvas/content/pages/Page";
+import {IProfile, IProfileWithUser} from "@canvas/type";
 
 
 let facultyCourseCached: Course;
-
-export interface IProfile {
-    user?: IUserData,
-    bio?: string | null,
-    displayName?: string | null,
-    image?: HTMLImageElement | null,
-    imageLink?: string | null,
-    sourcePage?: Page | null,
-
-}
-
-export interface IProfileWithUser extends IProfile {
-    user: IUserData
-}
 
 async function getFacultyCourse() {
     const facultyCourse = facultyCourseCached ?? await getSingleCourse('Faculty Bios', (await Account.getAll()).map(a => a.id));

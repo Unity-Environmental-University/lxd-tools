@@ -1,0 +1,68 @@
+{
+  "manifest_version": 3,
+  "name": "LXD Browser Extension REACT version",
+  "description": "Shortcuts including search by code.",
+  "action": {
+    "default_popup" : "popup.html",
+    "default_title" : "LXD Tools"
+  },
+  "icons" : {
+    "16" : "img/lxdLogo16.png",
+    "48" : "img/lxdLogo48.png",
+    "128" : "img/lxdLogo128.png"
+  },
+ "commands" : {
+      "_execute_action": {
+          "suggested_key": "Shift+Alt+F",
+          "mac": "Shift+Option+F"
+      }
+  },
+  "background" : {
+      "service_worker": "js/background.js",
+      "type" : "module"
+  },
+  "web_accessible_resources": [{
+     "matches": ["<all_urls>"],
+     "resources": ["*.map"]
+   }],
+  "content_scripts" : [
+    {
+      "matches" : ["*://*.instructure.com/courses/**"],
+      "js" : ["js/pageFixes.js"],
+      "run_at" : "document_end"
+    },
+   {
+      "matches" : ["*://*.instructure.com/courses/*/gradebook/speed_grader?*"],
+      "js" : ["js/speedGrader.js"],
+      "run_at" : "document_end"
+    },
+    {
+      "matches" : ["*://*.instructure.com/**/settings", "*://*.instructure.com/**/details"],
+      "js": ["js/publish.js"]
+    },
+    {
+      "matches" : ["*://*.instructure.com/courses/*/modules"],
+      "js" : ["js/ui/module.js"],
+      "run_at" : "document_end"
+    },
+    {
+      "matches" : ["*://*.instructure.com/courses/**"],
+      "js" : ["js/ui/course.js"],
+      "run_at" : "document_end"
+    },
+    {
+      "matches" : ["*://*.instructure.com/accounts/*"],
+      "js" : ["js/ui/account.js"],
+      "run_at" : "document_end"
+    }
+  ],
+  "permissions" : ["activeTab", "scripting", "storage", "downloads"],
+  "host_permissions" : [
+    "*://*.inscloudgate.com/*",
+    "*://*.canvas-user-content.com/*",
+    "*://*.canvas-user-content.com/*",
+    "*://*.instructure.com/*"
+  ],
+  "optional_host_permissions":[
+  ]
+}

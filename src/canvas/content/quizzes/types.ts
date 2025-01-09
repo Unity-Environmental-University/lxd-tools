@@ -96,4 +96,6 @@ export interface IQuizData {
     "anonymous_submissions"?: boolean
 }
 
-type QuizPermissions = Record<string, any>
+export type QuizPermissions = Record<string, any>
+export type SaveQuizOptions = Record<string, any>
+export type GetQuizOptions = Record<string, any>

@@ -1,4 +1,4 @@
-import {IProfile, renderProfileIntoCurioFrontPage} from "../../../canvas/profile";
+import {renderProfileIntoCurioFrontPage} from "../../../canvas/profile";
 import React, {useState} from "react";
 import {IModuleData, IUserData} from "../../../canvas/canvasDataDefs";
 import {useEffectAsync} from "../../../ui/utils";
@@ -9,6 +9,7 @@ import {Course} from "../../../canvas/course/Course";
 
 
 import {IAssignmentGroup} from "@canvas/content/types";
+import {IProfile} from "@canvas/type";
 
 type SectionDetailsProps = {
     section?: Course | null,

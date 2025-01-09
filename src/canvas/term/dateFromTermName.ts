@@ -1,6 +1,6 @@
 import {Temporal} from "temporal-polyfill";
 
-function dateFromTermName(termName:string) {
+export function dateFromTermName(termName:string) {
     const [newCode, month, day, year] = /DE\dW(\d+)\.(\d+)\.(\d+)/i.exec(termName) ?? [];
     if(newCode) {
         const yearInt = parseInt(year);

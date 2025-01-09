@@ -1,7 +1,8 @@
 // drawing from https://hackernoon.com/how-to-create-a-chrome-extension-with-react
 
 import {runtime, action, scripting, Runtime, Downloads, tabs} from 'webextension-polyfill'
-import {ResizeImageMessage, backgroundDownloadImage} from "../canvas/image";
+import {backgroundDownloadImage} from "../canvas/image";
+import {ResizeImageMessage} from "@canvas/type";
 
 
 type MessageHandler<T, Output> = (

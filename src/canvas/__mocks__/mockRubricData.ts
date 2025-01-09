@@ -1,8 +1,9 @@
-import {IRubricData, IRubricAssociationData, IRubricAssessmentData} from "../rubrics";
 import mock = jest.mock;
 
 
 import {IAssignmentData} from "@canvas/content/types";
+
+import {IRubricAssessmentData, IRubricAssociationData, RubricTypes} from "@/canvas";
 
 
 export const mockRubricAssociation:IRubricAssociationData = {
@@ -30,7 +31,7 @@ export const mockRubricAssessment: IRubricAssessmentData = {
 
 }
 
-export const mockRubric:IRubricData = {
+export const mockRubric:RubricTypes = {
   // the ID of the rubric
   "id": 1,
   // title of the rubric
@@ -51,7 +52,7 @@ export const mockRubric:IRubricData = {
 
   export function mockRubricsForAssignments(
       assignmentIds:number[],
-      rubricOverride?:Partial<IRubricData>,
+      rubricOverride?:Partial<RubricTypes>,
       associationOverride?:Partial<IRubricAssociationData>
   ) {
 

@@ -1,7 +1,5 @@
-import {IPageData} from "@canvas/content/pages/types";
 import {IModuleData} from "@canvas/canvasDataDefs";
 import PageKind from "@canvas/content/pages/PageKind";
-
 
 
 export async function* learningMaterialsForModule(courseId: number, module: IModuleData) {

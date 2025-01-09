@@ -23,7 +23,7 @@ import {getModuleUnlockStartDate} from "./changeStartDate";
 import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
-import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles, IProfile, IProfileWithUser} from "../profile";
+import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles} from "../profile";
 import {getCourseById, getCourseData,  getGradingStandards, getSingleCourse} from "./index";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
@@ -45,6 +45,7 @@ import {IAssignmentGroup} from "@canvas/content/types";
 import {IBlueprintCourse} from "@canvas/course/IBlueprintCourse";
 import {cachedGetAssociatedCoursesFunc} from "@canvas/course/cachedGetAssociatedCoursesFunc";
 import assert from "assert";
+import {IProfile, IProfileWithUser} from "@canvas/type";
 
 const HOMETILE_WIDTH = 500;
 

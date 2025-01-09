@@ -1,8 +1,8 @@
 import { saveDataGenFunc } from '../saveDataGenFunc';
 import { FILE_HEADER } from '@/ui/speedGrader/consts';
 
-global.URL.revokeObjectURL = jest.fn();
-global.URL.createObjectURL = jest.fn();
+window.URL.revokeObjectURL = jest.fn();
+window.URL.createObjectURL = jest.fn();
 
 describe('saveDataGenFunc', () => {
     let createElementSpy: jest.SpyInstance;
