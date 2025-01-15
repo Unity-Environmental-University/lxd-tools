@@ -107,7 +107,7 @@ function getHtmlPlugins(chunks) {
 const transformManifest = (content) => {
     let manifest = JSON.parse(content.toString());
     manifest.version = packageJson.version;
-    manifest.web_accessible_resources = [];
+
     return JSON.stringify(manifest, null, 2);
 }
 

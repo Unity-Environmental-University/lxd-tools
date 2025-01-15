@@ -510,13 +510,18 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     public async getPotentialInstructorProfiles() {
-        const instructors = await this.getInstructors();
-        let profiles: IProfileWithUser[] = [];
-        if (!instructors) return profiles;
-        for (const instructor of instructors) {
-            profiles = profiles.concat(await getPotentialFacultyProfiles(instructor))
+        try {
+
+            const instructors = await this.getInstructors();
+            let profiles: IProfileWithUser[] = [];
+            if (!instructors) return profiles;
+            for (const instructor of instructors) {
+                profiles = profiles.concat(await getPotentialFacultyProfiles(instructor))
+            }
+            return profiles;
+        } catch (e) {
+            return [] as IProfileWithUser[];
         }
-        return profiles;
 
     }
 

@@ -399,8 +399,8 @@ export async function* batchGen<T>(generator: AsyncGenerator<T>, batchSize: numb
     }
 }
 
-export async function renderAsyncGen<T>(generator: AsyncGenerator<T, any, undefined>) {
-    const out = [];
+export async function renderAsyncGen<T, R = any>(generator: AsyncGenerator<T, R, undefined>) {
+    const out = [] as T[];
     for await (const item of generator) {
         out.push(item);
     }

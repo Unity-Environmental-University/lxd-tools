@@ -28,7 +28,9 @@ describe('textSubmissionEnabled', () => {
             const mockAssignmentData = [
                 {id: '1', name: 'Assignment 1', submission_types: ['online_text_entry'], html_url: 'url1'},
                 {id: '2', name: 'Assignment 2', submission_types: [], html_url: 'url2'}, // No support for text entry
-                {id: '3', name: 'Assignment 3', submission_types: ['external_tool'], html_url: 'url3'} // Should be ignored
+                {id: '3', name: 'Assignment 3', submission_types: ['external_tool'], html_url: 'url3'}, // Should be ignored
+                {id: '4', name: 'Assignment 4', submission_types: ['on_paper'], html_url: 'url4'}, // Should be ignored
+                {id: '4', name: 'Assignment 5', submission_types: ['none'], html_url: 'url5'} // Should be ignored
             ];
             jest.fn().mockResolvedValue(mockAssignmentData);
             (AssignmentKind.dataGenerator as jest.Mock).mockImplementationOnce(async function* () {

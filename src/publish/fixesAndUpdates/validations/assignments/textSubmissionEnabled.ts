@@ -10,7 +10,9 @@ import {IAssignmentData} from "@canvas/content/types";
 const shouldSkipAssignment = validateTestFuncGen<IAssignmentData>(
     (ba) => ba.submission_types.includes('external_tool'),
     (ba) => ba.submission_types.includes('discussion_topic') || ba.submission_types.includes('online_quiz'),
-    (ba) => ba.submission_types.includes('online_text_entry')
+    (ba) => ba.submission_types.includes('online_text_entry'),
+    (ba) => ba.submission_types.includes('none'),
+    (ba) => ba.submission_types.includes('on_paper'),
 );
 
 export const textSubmissionEnabled: CourseFixValidation<Course, IAssignmentData[]> = {
