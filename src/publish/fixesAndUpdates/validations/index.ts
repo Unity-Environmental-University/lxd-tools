@@ -19,5 +19,5 @@ export default [
     ...assignments,
     proxyServerLinkValidation,
     discussionThreading,
-   dontUseThisValidation
+   //dontUseThisValidation
 ]

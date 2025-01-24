@@ -28,12 +28,17 @@ export const textSubEnabledBug: CourseValidation<Course, {
             for await (const assignment of assignmentGen) {
                 //If there's no text entry then there's no problem
                 if (!assignment.submission_types.includes('online_text_entry')) {
-                    if (assignment.submission_types.includes('discussion_topic') && !assignment.discussion_topic)
+                    if (assignment.submission_types.includes('discussion_topic') && !assignment.discussion_topic) {
                         potentiallyAffectedDiscussions.push(assignment);
+                    }
                     if (assignment.submission_types.includes('online_quiz') && !assignment.quiz_id) potentiallyAffectedQuizzes.push(assignment);
                     continue;
                 }
-                // Add logic to check if metadata is intact or needs fixing.
+
+                if(assignment.submission_types.includes('online_text_entry') && assignment.submission_types.includes('none')) {
+                    affectedAssignments.push(assignment);
+                }
+
                 if (assignment.submission_types.includes('discussion_topic') ||
                     assignment.submission_types.includes('online_quiz') ||
                     assignment.submission_types.includes('external_tool')) {

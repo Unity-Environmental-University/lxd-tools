@@ -64,7 +64,7 @@ export interface IModuleItemData extends CanvasData {
     page_url?: string,
     external_url?: string,
     new_tab: boolean,
-    completion_requirement: {
+    completion_requirement?: {
         type: "min_score" | "must_view" | "must_contribute" | "must_submit" | "must_mark_done",
         min_score?: number
     },

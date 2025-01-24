@@ -3,6 +3,11 @@ import {Course} from "@canvas/course/Course";
 import {ICanvasCallConfig} from "@canvas/canvasUtils";
 import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 
+
+export type RunTestFunction<T, UserDataType> = (course: T, config?: ICanvasCallConfig) => Promise<ValidationResult<UserDataType>>
+
+
+
 export type CourseValidation<
     T = Course,
     UserDataType = any,
@@ -11,7 +16,7 @@ export type CourseValidation<
     courseCodes?: string[],
     name: string,
     description: string,
-    run: (course: T, config?: ICanvasCallConfig) => Promise<ValidationResult<UserDataType>>
+    run: RunTestFunction<T, UserDataType>,
     fix?: (course: T, result?: ValidationResult<UserDataType>) => Promise<ValidationResult<FixUserDataType>>
 }
 

@@ -4,6 +4,9 @@ import codeAndCodeOfCodeTest from "@publish/fixesAndUpdates/validations/courseCo
 import overviewDiscMornToNightTest from "@publish/fixesAndUpdates/validations/courseContent/overviewDiscMornToNightTest";
 import removeGradeTable from "@publish/fixesAndUpdates/validations/courseContent/removeGradeTable";
 import footerOnFrontPageTest from "@publish/fixesAndUpdates/validations/courseContent/footerOnFrontPageTest";
+import {
+    moduleElementsAreRequiredValidation
+} from "@publish/fixesAndUpdates/validations/courseContent/moduleElementsAreRequired";
 
 
 export default [
@@ -13,4 +16,5 @@ export default [
     overviewDiscMornToNightTest,
     removeGradeTable,
     footerOnFrontPageTest,
+    moduleElementsAreRequiredValidation,
 ]

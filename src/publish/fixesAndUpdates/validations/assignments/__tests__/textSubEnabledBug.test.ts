@@ -101,6 +101,14 @@ describe("textSubEnabledBug Validation", () => {
             html_url: "url3",
             name: "Assignment 3",
         },
+        {
+            id: 922392,
+            course_id: 123,
+            submission_types: ["none", "online_text_entry"],
+            metadata: null,
+            html_url: "url4",
+            name: "Assignment 4",
+        },
     ]);
 
     const badMetadataDiscussions = testAssignmentfy([
@@ -150,7 +158,7 @@ describe("textSubEnabledBug Validation", () => {
         expect(result.links).toEqual(expect.arrayContaining(["url1", "url3"])); //spot check on array
 
         const {affectedAssignments} = result.userData!;
-        expect(affectedAssignments)
+        expect(affectedAssignments.map(a => ({ id: a.id, submission_type: a.submission_types })))
             .toHaveLength(badTypeAssignments.length);
         expect(affectedAssignments.map(a => a.id))
             .toEqual(badTypeAssignments.map(a => a.id));
