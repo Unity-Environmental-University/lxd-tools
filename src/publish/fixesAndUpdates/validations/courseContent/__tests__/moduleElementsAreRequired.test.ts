@@ -1,4 +1,4 @@
-import {moduleGenerator} from "@canvas/course/modules";
+import {moduleGenerator, saveModuleItem} from "@canvas/course/modules";
 import {IModuleItemData} from "@canvas/canvasDataDefs";
 import {
     moduleElementsAreRequiredValidation
@@ -12,14 +12,13 @@ export function mockAll<T>(partials: Partial<T>[], filler: T) {
 
 // Mock moduleGenerator
 jest.mock("@canvas/course/modules", () => ({
+    ...jest.requireActual("@canvas/course/modules"),
     moduleGenerator: jest.fn(),
+    saveModuleItem: jest.fn(),
 }));
 
 describe("moduleElementsAreRequiredValidation", () => {
-    it("should return success when all module items have completion requirements", async () => {
-        // Arrange
-        const mockCourse = {id: 123};
-        const mockModuleItems: IModuleItemData[] = mockAll([
+    const baseMockModuleItems : IModuleItemData[] = mockAll([
             {
                 id: 1,
                 title: "Module 1 Item",
@@ -33,6 +32,12 @@ describe("moduleElementsAreRequiredValidation", () => {
                 html_url: "http://example.com/2"
             }
         ], mockModuleItemData);
+
+
+    it("should return success when all module items have completion requirements", async () => {
+        // Arrange
+        const mockCourse = {id: 123};
+        const mockModuleItems = [...baseMockModuleItems];
 
         (moduleGenerator as jest.Mock).mockImplementation(function* () {
             yield {published:true,  items: mockModuleItems};
@@ -117,4 +122,93 @@ describe("moduleElementsAreRequiredValidation", () => {
             ])
         );
     });
+
+    // skip("should fix requirements on assignments, discussions, anmd", async () => {
+    //     // Arrange
+    //     const mockCourse = {id: 123};
+    //     const mockModuleItems= mockAll([
+    //         {
+    //             ...mockModuleItemData,
+    //             id: 1,
+    //             title: "Module 1 Item",
+    //             type: "Discussion",
+    //             completion_requirement: undefined,
+    //             html_url: "http://example.com/1"
+    //         },
+    //         {
+    //             ...mockModuleItemData,
+    //             id: 2,
+    //             title: "Module 1 Item 2",
+    //             type: "Assignment",
+    //             completion_requirement: undefined,
+    //             html_url: "http://example.com/2"
+    //         },
+    //         {
+    //             ...mockModuleItemData,
+    //             id: 3,
+    //             title: "Week 1 Learning Materials",
+    //             type: "Page",
+    //             completion_requirement: undefined,
+    //             html_url: "http://example.com/2"
+    //         },
+    //         {
+    //             ...mockModuleItemData,
+    //             id: 4,
+    //             title: "Week 1 Overview",
+    //             type: "Page",
+    //             completion_requirement: undefined,
+    //             html_url: "http://example.com/2"
+    //         },
+    //         {
+    //             ...mockModuleItemData,
+    //             id: 5,
+    //             title: "Course Project Overview",
+    //             type: "Page",
+    //             completion_requirement: undefined,
+    //             html_url: "http://example.com/2"
+    //         },
+    //         {
+    //             ...mockModuleItemData,
+    //             id: 6,
+    //             title: "ZZZ",
+    //             type: "ExternalTool",
+    //             completion_requirement: undefined,
+    //             html_url: "http://example.com/2"
+    //         },
+    //         {
+    //             ...mockModuleItemData,
+    //             id: 7,
+    //             title: "ZZZ",
+    //             type: "Quiz",
+    //             completion_requirement: undefined,
+    //             html_url: "http://example.com/2"
+    //         },
+    //     ], {...mockModuleItemData, completion_requirement: undefined});
+    //
+    //
+    //
+    //     (saveModuleItem as jest.Mock).mockImplementation(async (a) => a)
+    //
+    //     // Act
+    //     const result = await moduleElementsAreRequiredValidation.fix(mockCourse, {
+    //         success: false,
+    //         messages: [],
+    //         userData: mockModuleItems satisfies { completion_requirement: undefined }[],
+    //     });
+    //
+    //     // Assert
+    //     expect(result.success).toBe(true);
+    //     expect(result.userData).toHaveLength(5);
+    //     expect(result.userData?.[0].title).toBe("Module 1 Item");
+    //     expect(result.userData?.[1].title).toBe("Module 1 Item 2");
+    //     expect(result.userData?.[2].title).toBe("Week 1 Learning Materials");
+    //     expect(result.userData?.[3].title).toBe("Week 1 Overview");
+    //     expect(result.userData?.[4].title).toBe("Course Project Overview");
+    //
+    //     expect(result.userData?.map((a: IModuleItemData )=> a.completion_requirement?.type)).toEqual(
+    //         ["min_score", "must_submit", "must_submit", "must_view", "must_submit"]
+    //     )
+    // });
 });
+
+

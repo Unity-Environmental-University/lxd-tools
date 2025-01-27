@@ -1,12 +1,13 @@
 import {Temporal} from "temporal-polyfill";
-import {IModuleData} from "../canvasDataDefs";
-import {formDataify, ICanvasCallConfig, IQueryParams} from "../canvasUtils";
+import {IModuleData, IModuleItemData} from "../canvasDataDefs";
+import {formDataify, ICanvasCallConfig} from "../canvasUtils";
 
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {Page} from "@/canvas/content/pages/Page";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {IPageData} from "@/canvas/content/pages/types";
+import {Discussion} from "@canvas/content/discussions/Discussion";
 
 export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],
@@ -16,6 +17,21 @@ export interface GenerateModulesOptions {
     include?: ('items' | 'content_details')[],
     search_term?: string,
     student_id?: string
+}
+
+
+export async function saveModuleItem(
+    courseId:number,
+    moduleId:number,
+    moduleItemId: number,
+    moduleItem: Partial<IModuleItemData>
+) {
+    return await fetchJson(`/api/v1/courses/${courseId}/modules/${moduleId}/modules/items/${moduleItemId}`, {
+        fetchInit: {
+            method: "PUT",
+            body: formDataify({ moduleItem: moduleItem }),
+        }
+    })
 }
 
 export function moduleGenerator(courseId:number, config?: ICanvasCallConfig<GenerateModulesOptions>) {
@@ -78,3 +94,20 @@ export async function getModulesByWeekNumber(modules: IModuleData[]) {
     }
     return modulesByWeekNumber;
 }
+
+const isModuleItemTypeFunc = <T extends IModuleItemData>(typeString: string) => (item: IModuleItemData): item is T => {
+    return item.type === typeString;
+}
+
+export type PageItemData = IModuleItemData & { type: "Page" };
+export const isPageItemData = isModuleItemTypeFunc<PageItemData>("Page");
+
+export type AssignmentItemData = IModuleItemData & { type: "Assignment"; };
+export const isAssignmentItemData = isModuleItemTypeFunc<AssignmentItemData>("Assignment");
+
+export type DiscussionItemData = IModuleItemData & { type: "Discussion"; };
+export const isDiscussionItemData = isModuleItemTypeFunc<DiscussionItemData>("Discussion");
+
+export type QuizItemData = IModuleItemData & { type: "Quiz"; };
+export const isQuizItemData = isModuleItemTypeFunc<QuizItemData>("Quiz");
+

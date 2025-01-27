@@ -53,6 +53,7 @@ export type RestrictModuleItemType =
 
 
 export interface IModuleItemData extends CanvasData {
+    id: number,
     module_id: number,
     position: number,
     title: string,

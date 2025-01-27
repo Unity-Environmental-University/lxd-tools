@@ -20,6 +20,7 @@ const mockModuleData: IModuleData = {
 
 
 export const mockModuleItemData: IModuleItemData = {
+    id: 1,
     module_id: 0,
     position: 0,
     title: "string",

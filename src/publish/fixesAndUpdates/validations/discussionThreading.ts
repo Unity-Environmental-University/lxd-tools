@@ -3,15 +3,13 @@ import {
 } from "@publish/fixesAndUpdates/validations/utils";
 import {Course} from "@/canvas/course/Course";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
-import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
+import {CourseFixValidation, RunTestFunction} from "@publish/fixesAndUpdates/validations/types";
 
 
 import {IDiscussionData} from "@canvas/content/types";
 
-export const discussionThreadingValidation: CourseFixValidation<Course, IDiscussionData[], IDiscussionData[]> = {
-    name: "Discussion Threading Turned on",
-    description: `Discussion Threading is turned on for all discussions in this course'`,
-    async run(course) {
+
+const run: RunTestFunction<Course, IDiscussionData[]> = async (course)  => {
         const discussionGen = DiscussionKind.dataGenerator(course.id);
         const affectedDiscussions = [] as IDiscussionData[];
         for await (const discussionData of discussionGen) {
@@ -26,11 +24,16 @@ export const discussionThreadingValidation: CourseFixValidation<Course, IDiscuss
             },
             links: affectedDiscussions.map(a => DiscussionKind.getHtmlUrl(course.id, a.id))
         })
-    },
+    }
+
+export const discussionThreadingValidation: CourseFixValidation<Course, IDiscussionData[], IDiscussionData[]> = {
+    name: "Discussion Threading Turned on",
+    description: `Discussion Threading is turned on for all discussions in this course'`,
+    run,
     async fix(course, result) {
-        if (!result) result = await (this.run(course));
-        if (result.success) return testResult("not run", {notFailureMessage: "No need for fix"});
-        const discussionDatas = result.userData;
+        if (!result) result = await (run(course));
+        if (result?.success) return testResult("not run", {notFailureMessage: "No need for fix"});
+        const discussionDatas = result?.userData;
         if (!discussionDatas) return testResult(false, {failureMessage: "Fix "});
 
         const results = await Promise.all(discussionDatas.map(async data => {
