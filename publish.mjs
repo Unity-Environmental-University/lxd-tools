@@ -2,8 +2,6 @@ import { exec, execSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import  nodePackage from './package.json' assert { type: 'json'}
-import manifest from './manifest.source.json' assert {type: 'json'}
 
 // Get the directory name for the current module in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -26,17 +24,21 @@ function checkDistTag(packageTag) {
 
 }
 
+//import  nodePackage from './package.json' assert { type: 'json'}
+// import manifest from './manifest.source.json' assert {type: 'json'}
 
 // Main function
 async function main() {
+    const manifest = JSON.parse( await readFile ('./manifest.source.json', 'utf8'));
+    const nodePackage = JSON.parse( await readFile ('./package.json', 'utf8'));
     try {
-        const packageTag = getPackageTag();
+        const packageTag = getPackageTag(nodePackage);
         console.log(packageTag);
 
         checkDistTag(packageTag);
         updateTag(packageTag, './');
 
-        const distManifestPath = path.resolve(__dirname, '../dist/manifest.source.json');
+        const distManifestPath = path.resolve(__dirname, '../dist/manifest.json');
         let distManifest = JSON.parse(await readFile(distManifestPath, 'utf-8'));
 
         if (distManifest.version !== packageTag) {
@@ -127,7 +129,7 @@ function getGitTags(workingDirectory = './') {
 }
 
 // Function to get the package version tag
-function getPackageTag() {
+function getPackageTag(nodePackage) {
     return nodePackage.version;
 }
 

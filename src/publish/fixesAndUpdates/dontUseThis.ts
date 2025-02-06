@@ -7,6 +7,9 @@ import {courseHasUnusedAssignments} from "@publish/fixesAndUpdates/validations/a
 import {sectionDataGenerator} from "@canvas/course/blueprint";
 import {batchify, renderAsyncGen} from "@canvas/canvasUtils";
 import {courseHasDoubleQuizzes} from "@publish/fixesAndUpdates/validations/assignments/courseHasDoubleQuizzes";
+import {
+    courseHasUnlimitedAttemptQuizzes
+} from "@publish/fixesAndUpdates/validations/courseContent/courseHasUnlimitedAttemptQuizzes";
 
 const ugCodes = new Set([
     "AGRO101",
@@ -159,7 +162,7 @@ const gradCodes = new Set([
 
 const codesToUse = [...ugCodes, ...gradCodes];
 
-const testToRun = courseHasDoubleQuizzes;
+const testToRun = courseHasUnlimitedAttemptQuizzes;
 
 export const dontUseThisValidation: CourseValidation = {
     name: "Dont use this",
@@ -170,21 +173,26 @@ export const dontUseThisValidation: CourseValidation = {
         const failCourses = [] as ICourseData[];
         const failResults = [] as ValidationResult[];
         for (const code of codes) {
-            const bpCourses = await (renderAsyncGen(getCourseDataGenerator(`BP_${code}`, [accountId])));
+            //const bpCourses = await (renderAsyncGen(getCourseDataGenerator(`BP_${code}`, [accountId])));
             const devCourses = await (renderAsyncGen(getCourseDataGenerator(`DEV_${code}`, [accountId])));
-            const bpCourse = bpCourses[0];
+            //const bpCourse = bpCourses[0];
             const devCourse = devCourses[0];
 
-            const courses = [...bpCourses, ...devCourses] as ICourseData[];
-            if (devCourse) courses.push(devCourse);
+            const courses = devCourses.filter(a => !
+                (a.name.includes('DEPRECATED')
+                    || a.name.includes('OLD')
+                    || a.name.includes('MOVED')
+        )) as ICourseData[];
+            // if(devCourse.name)
+            // if (devCourse) courses.push(devCourse);
 
-            if (bpCourse) {
-                courses.push(bpCourse);
-                const sections = (await renderAsyncGen<SectionData, void>(sectionDataGenerator(bpCourse.id))).slice(0, 3);
-
-                const sectionCourses = (await Promise.all(sections.map(secData => getCourseData(secData.id))))
-                courses.push(...sectionCourses);
-            }
+            // if (bpCourse) {
+            //     courses.push(bpCourse);
+            //     // const sections = (await renderAsyncGen<SectionData, void>(sectionDataGenerator(bpCourse.id))).slice(0, 3);
+            //     //
+            //     // const sectionCourses = (await Promise.all(sections.map(secData => getCourseData(secData.id))))
+            //     // courses.push(...sectionCourses);
+            // }
 
             const batches = batchify(courses, 5);
 
@@ -192,6 +200,7 @@ export const dontUseThisValidation: CourseValidation = {
             for (const batch of batches) {
                 console.log(`running for ${batch.map(a => a.course_code).join(", ")}...`);
                 const runPromises = batch.map(async (course) => {
+
                     return {
                         result: await testToRun.run(new Course(course)),
                         course,

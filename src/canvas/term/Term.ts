@@ -9,6 +9,7 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 export type TermWorkflowState = 'all' | 'active' | 'deleted'
 
 export interface ITermData extends CanvasData {
+    id: number;
     start_at: string,
     end_at: string,
     name: string,

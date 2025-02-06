@@ -1,14 +1,11 @@
-import {moduleGenerator, saveModuleItem} from "@canvas/course/modules";
+import {moduleGenerator} from "@canvas/course/modules";
 import {IModuleItemData} from "@canvas/canvasDataDefs";
 import {
     moduleElementsAreRequiredValidation
 } from "@publish/fixesAndUpdates/validations/courseContent/moduleElementsAreRequired";
 import {mockModuleItemData} from "@canvas/course/__mocks__/mockModuleData";
+import {mockAll} from "@/utils/testUtls";
 
-
-export function mockAll<T>(partials: Partial<T>[], filler: T) {
-    return partials.map(p => ({...filler, ...p})) as T[]
-}
 
 // Mock moduleGenerator
 jest.mock("@canvas/course/modules", () => ({

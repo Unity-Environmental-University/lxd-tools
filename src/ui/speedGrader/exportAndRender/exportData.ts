@@ -15,7 +15,7 @@ export async function exportData(course: ICourseData, {
     try {
         window.addEventListener("error", showError);
         const csvRows = await csvRowsForCourse(course as SectionData, assignment)
-        let filename = assignment ? assignment.name : course.courseCode;
+        let filename = assignment ? assignment.name : course.course_code;
         filename ??= "COURSE CODE NOT FOUND"
         saveDataGenFunc()(csvRows, `Rubric Scores ${filename.replace(/[^a-zA-Z 0-9]+/g, '')}.csv`);
         window.removeEventListener("error", showError);

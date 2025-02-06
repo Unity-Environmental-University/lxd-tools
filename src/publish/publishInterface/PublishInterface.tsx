@@ -17,7 +17,7 @@ import {IListAction, lutDispatcher} from "@/ui/reducerDispatchers";
 import {sectionDataGenerator} from "@/canvas/course/blueprint";
 import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
 import {getCourseData} from "@canvas/course";
-import {sleep} from "@/toolbox";
+import {sleep} from "@/utils/toolbox";
 import {IProfile, IProfileWithUser} from "@canvas/type";
 
 

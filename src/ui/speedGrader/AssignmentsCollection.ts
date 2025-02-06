@@ -1,11 +1,13 @@
 // noinspection GrazieInspection
 
-import {CanvasData, IModuleItemData, LookUpTable, ModuleItemType} from "@/canvas/canvasDataDefs";
+import {CanvasData, IModuleItemData, ModuleItemType} from "@/canvas/canvasDataDefs";
 import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
 
 import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
+
+type LookUpTable<T> = Record<string, T>
 /**
  * A collection of assignments grabbed from the submissions that returns and finds them in various ways
  */

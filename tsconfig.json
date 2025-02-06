@@ -15,6 +15,7 @@
       "@canvas/*": [
         "canvas/*"
       ],
+
       "@citations/*": [
         "citations/*"
       ],

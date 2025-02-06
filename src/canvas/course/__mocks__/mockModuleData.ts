@@ -1,8 +1,5 @@
 import {IModuleData, IModuleItemData, ModuleItemType} from "../../canvasDataDefs";
 
-
-
-
 const mockModuleData: IModuleData = {
     id: 0,
     items: [],
@@ -17,7 +14,6 @@ const mockModuleData: IModuleData = {
     unlock_at: ""
 
 }
-
 
 export const mockModuleItemData: IModuleItemData = {
     id: 1,
@@ -36,7 +32,6 @@ export const mockModuleItemData: IModuleItemData = {
         min_score: 0
     },
 }
-
 
 export const mockUgModules:IModuleData[] = [];
 export const mockGradModules:IModuleData[] = [];

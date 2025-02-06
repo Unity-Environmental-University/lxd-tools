@@ -17,6 +17,8 @@ const entry = {
     'js/background': './src/background',
     'js/content': './src/content',
     'js/publish': './src/publish',
+    'js/reporting' : './src/reporting',
+
     'js/pageFixes': './src/content/pageFixes.js',
     'js/speedGrader': './src/ui/speedGrader',
     'js/ui/course': './src/ui/course',
@@ -142,7 +144,6 @@ const createPlugins = () => [
     }),
     ...getHtmlPlugins(["popup"]),
 ];
-
 
 module.exports = {
     mode: isDevelopment ? 'development' : 'production',

@@ -25,7 +25,7 @@ export function getCourseData(id: number, config?: ICanvasCallConfig<GetCourseOp
 
 
 export function getCourseDataGenerator(
-    queryString: string | undefined | null, accountIds: number[] | number, term?: Term, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>
+    queryString: string | undefined | null, accountIds: number[] | number, term?: Term | number, config?: ICanvasCallConfig<GetCoursesFromAccountOptions>
 ) {
     if (!Array.isArray(accountIds)) accountIds = [accountIds];
 
@@ -35,7 +35,9 @@ export function getCourseDataGenerator(
         }
     } : {};
 
-    if (term && defaultConfig.queryParams) defaultConfig.queryParams.enrollment_term_id = term.id;
+    const termId = typeof term === 'object' ? term.id : term;
+
+    if (termId && defaultConfig.queryParams) defaultConfig.queryParams.enrollment_term_id = termId;
     config = overrideConfig(defaultConfig, config);
     const generators = accountIds.map(accountId => {
         const url = `/api/v1/accounts/${accountId}/courses`;
