@@ -38,3 +38,5 @@ export const fetchCoursesThunk = createAsyncThunk(
         dispatch(setStatus('fulfilled'));
     }
 );
+
+

@@ -21,7 +21,7 @@ describe('exportData', () => {
     beforeEach(() => {
         mockCourse = {
             ...mockCourseData,
-            courseCode: 'CS101',
+            course_code: 'CS101',
 
         } as ICourseData;
 

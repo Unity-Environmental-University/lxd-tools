@@ -1,9 +1,8 @@
 import {setStatus} from "@/reporting/data/coursesSlice";
 import {updateInstructors} from "@/reporting/data/instructorsSlice";
-import {deepObjectMerge, GetUserGenConfig, getUserGenerator} from "ueu_canvas";
+import {GetUserGenConfig, getUserGenerator} from "ueu_canvas";
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {deepObjectCopy} from "@canvas/canvasUtils";
-
 
 
 export const fetchInstructorsThunk = createAsyncThunk(
@@ -26,5 +25,8 @@ export const fetchInstructorsThunk = createAsyncThunk(
         dispatch(setStatus('fulfilled'));
     }
 );
+
+
+
 
 
