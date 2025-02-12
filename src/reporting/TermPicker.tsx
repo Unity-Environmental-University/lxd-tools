@@ -9,7 +9,7 @@ export type TermPickerProps = {
 }
 export const TermPicker = ({onPickTerm}: TermPickerProps) => {
     const [activeTerm, setActiveTerm] = React.useState<ITermData | undefined>();
-    const {terms, status} = useSelector((state: RootReportingState) => state.term);
+    const {terms, status} = useSelector((state: RootReportingState) => state.terms);
 
     const sortedTerms = useMemo(() => {
         if (!terms) return [];

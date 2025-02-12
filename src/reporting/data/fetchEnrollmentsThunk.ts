@@ -14,6 +14,5 @@ export const fetchEnrollmentsThunk = createAsyncThunk(
         for await (const enrollments of gen) {
             updateEnrollment(enrollments)
         }
-
     }
 )

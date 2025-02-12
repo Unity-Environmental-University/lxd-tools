@@ -1,5 +1,5 @@
-import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import { EnrollmentData } from 'ueu_canvas'
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {EnrollmentData} from 'ueu_canvas'
 
 export type UpdateEnrollmentAction = PayloadAction<{
     enrollment: EnrollmentData,
@@ -37,16 +37,5 @@ export const enrollmentsSlice = createSlice({
 
 export const { clear, updateEnrollment } = enrollmentsSlice.actions;
 
-
-
-type EnrollmentsSliceState = {
-    enrollments: EnrollmentsState
-}
-
-
-
-
-export const selectEnrollments = ({enrollments}: EnrollmentsSliceState) =>
-    Object.values(enrollments.enrollmentsById)
 
 export const enrollmentsReducer = enrollmentsSlice.reducer;

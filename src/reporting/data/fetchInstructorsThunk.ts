@@ -13,7 +13,6 @@ export const fetchInstructorsThunk = createAsyncThunk(
         const config = deepObjectCopy(params);
         config.queryParams = {...config.queryParams ?? {}, enrollment_type: "teacher"}
 
-
         // Generate data using provided generator function and parameters.
         const gen = getUserGenerator(params)
         dispatch(setStatus('loading'));

@@ -18,8 +18,10 @@ export async function getGradingStandards(contextId: number, contextType: 'accou
 }
 
 
-export function getCourseData(id: number, config?: ICanvasCallConfig<GetCourseOptions>) {
+export function getCourseData(id: number, config?: ICanvasCallConfig<GetCourseOptions>|GetCourseOptions) {
     const url = `/api/v1/courses/${id}`;
+
+    config = config && 'queryParams' in config ? config : { queryParams: config as GetCourseOptions | undefined } as ICanvasCallConfig<GetCourseOptions>;
     return fetchJson(url, config) as Promise<ICourseData>;
 }
 

@@ -7,9 +7,9 @@ import { enrollmentsReducer } from "./enrollmentsSlice";
 
 
 const reducer = combineReducers({
-    term: termReducer,
-    faculty: instructorReducer,
-    course: courseReducer,
+    terms: termReducer,
+    instructors: instructorReducer,
+    courses: courseReducer,
     enrollments: enrollmentsReducer,
 })
 export const reportingStore = configureStore({

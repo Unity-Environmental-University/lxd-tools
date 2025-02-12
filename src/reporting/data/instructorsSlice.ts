@@ -60,12 +60,7 @@ export const { setStatus, updateInstructors } = instructorsSlice.actions;
 export const instructorReducer = instructorsSlice.reducer;
 
 // Selector to retrieve all instructors as an array
-export const selectInstructors = (state: { instructors: InstructorsState }) =>
-    Object.values(state.instructors.instructorsById);
 
-// Selector to get instructors for a specific course
-export const selectInstructorsByCourse = (state: { instructors: InstructorsState }, courseId: number) =>
-    (state.instructors.instructorsByCourseId[courseId] || []).map(id => state.instructors.instructorsById[id]);
 
 
 
