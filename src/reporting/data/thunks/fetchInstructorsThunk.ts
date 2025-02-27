@@ -1,6 +1,6 @@
 import {setStatus} from "@/reporting/data/coursesSlice";
 import {updateInstructors} from "@/reporting/data/instructorsSlice";
-import {GetUserGenConfig, getUserGenerator} from "ueu_canvas";
+import {GetUserGenConfig, getUserGenerator} from "../../../../../../../ueu_canvas";
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {deepObjectCopy} from "@canvas/canvasUtils";
 

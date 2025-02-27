@@ -1,18 +1,23 @@
 import {createSelector} from "@reduxjs/toolkit";
-import {RootReportingState} from "@/reporting/data/reportingStore";
 import {ICourseData} from "@/canvas";
 import {LoadStatus} from "@/reporting/data/loadStatus";
+import {useSelector} from "react-redux";
+import {CoursesState} from "@/reporting/data/coursesSlice";
 
-export const selectCoursesById = (state: RootReportingState) => state.courses.coursesById;
-export const selectCoursesStatusById = (state: RootReportingState) => state.courses.courseStatus;
+
+type RootStateCourse = {
+    courses: CoursesState;
+}
+
+export const selectCoursesById = (state: RootStateCourse) => state.courses.coursesById;
+export const selectCoursesStatusById = (state: RootStateCourse) => state.courses.courseStatus;
 export const selectCourses = createSelector(
     [selectCoursesById],
     (coursesById) => Object.values(coursesById)
 );
 
-const courseSelectorsCache = new Map<number, (state:RootReportingState) => ICourseData|undefined>();
-const courseStatusSelectorsCache = new Map<number, (state:RootReportingState) => LoadStatus|undefined>();
-
+const courseSelectorsCache = new Map<number, (state:RootStateCourse) => ICourseData|undefined>();
+const courseStatusSelectorsCache = new Map<number, (state:RootStateCourse) => LoadStatus|undefined>();
 
 export const selectCourse = (id: number) => {
     if (!courseSelectorsCache.has(id)) {
@@ -39,3 +44,13 @@ export const selectCourseLoadingStatus = (id:number) => {
     }
     return courseStatusSelectorsCache.get(id)!;
 }
+
+export const selectCourseIdsByTermId = ({courses}: { courses: CoursesState }) => courses.courseIdsByTermId;
+export const selectCoursesByTermIds = (termIds: number[]) =>
+    createSelector(
+        [selectCourseIdsByTermId, selectCoursesById],
+        (idLookup, coursesById) =>
+            termIds.flatMap(termId =>
+                (Array.from(idLookup[termId] || [])).map(courseId => coursesById[courseId])
+            )
+    );

@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {ReportingApp} from "@/reporting/ReportingApp";
-import {reportingStore} from "@/reporting/data/reportingStore";
+import {persistor, reportingStore} from "@/reporting/data/reportingStore";
 import {Provider} from "react-redux";
+import { PersistGate } from 'redux-persist/integration/react';
 const leftSide = document.body.querySelector("#left-side #section-tabs")
 
  if(leftSide) {
@@ -12,7 +13,9 @@ const leftSide = document.body.querySelector("#left-side #section-tabs")
     rootDiv.render(
         <React.StrictMode>
             <Provider store={reportingStore}>
-                <ReportingApp/>
+                <PersistGate loading={null} persistor={persistor}>
+                    <ReportingApp/>
+                </PersistGate>
             </Provider>
         </React.StrictMode>
     );

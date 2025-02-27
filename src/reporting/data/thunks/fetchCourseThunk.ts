@@ -1,4 +1,4 @@
-import {createAsyncThunk, GetThunkAPI} from "@reduxjs/toolkit";
+import {createAsyncThunk} from "@reduxjs/toolkit";
 
 
 import {deepObjectMerge, getCourseData, GetCourseOptions } from "ueu_canvas";

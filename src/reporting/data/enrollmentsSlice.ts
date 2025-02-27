@@ -6,8 +6,8 @@ export type UpdateEnrollmentAction = PayloadAction<{
 }>
 export type EnrollmentsState = {
     enrollmentsById: Record<number, EnrollmentData>,
-    enrollmentsByCourseId: Record<number, Set<number>>,
-    enrollmentsByUserId: Record<number, Set<number>>,
+    enrollmentsByCourseId: Record<number, number[]>,
+    enrollmentsByUserId: Record<number, number[]>,
 }
 const enrollmentsInitialState: EnrollmentsState = {
     enrollmentsById: {},
@@ -25,11 +25,18 @@ export const enrollmentsSlice = createSlice({
         },
         updateEnrollment: (state:EnrollmentsState, action: UpdateEnrollmentAction) => {
             const {enrollment} = action.payload;
-            state.enrollmentsById[enrollment.id] = enrollment;
-            state.enrollmentsByCourseId[enrollment.course_id] ??= new Set();
-            state.enrollmentsByCourseId[enrollment.course_id].add(enrollment.id);
-            state.enrollmentsByUserId[enrollment.user_id] ??= new Set();
-            state.enrollmentsByUserId[enrollment.user_id].add(enrollment.id);
+            const {id, course_id, user_id} = enrollment;
+            state.enrollmentsById[id] = enrollment;
+            state.enrollmentsByCourseId[course_id] ??= [];
+
+            if(!(id in state.enrollmentsByCourseId[course_id])) {
+                state.enrollmentsByCourseId[course_id].push(id);
+            }
+
+            state.enrollmentsByUserId[user_id] ??= [];
+            if(!(id in state.enrollmentsByUserId)) {
+                state.enrollmentsByUserId[user_id].push(id);
+            }
         },
     }
 

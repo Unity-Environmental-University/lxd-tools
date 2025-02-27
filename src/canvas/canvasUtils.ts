@@ -97,142 +97,151 @@ const type_lut: Record<ModuleItemType, RestrictModuleItemType | null> = {
 
 }
 
-export function formDataify(data: Record<string, any>) {
-    const formData = new FormData();
-    for (const key in data) {
-        addToFormData(formData, key, data[key]);
-    }
-
-    if (document) {
-        const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
-        const authenticityToken = el ? el.value : null;
-        const cookies = getCookies();
-        let csrfToken = cookies['_csrf_token'];
-        if (authenticityToken) formData.append('authenticity_token', authenticityToken);
-        else if (csrfToken) {
-            csrfToken = csrfToken.replaceAll(/%([0-9A-F]{2})/g, (substring, hex) => {
-                const hexCode = hex;
-                return String.fromCharCode(parseInt(hexCode, 16))
-            })
-
-            console.log(csrfToken);
-            formData.append('authenticity_token', csrfToken);
-        }
-    }
-    return formData;
-}
+export {
+    formDataify,
+    deepObjectCopy,
+    deepObjectMerge,
+    deFormDataify,
+} from 'ueu_canvas';
 
 
-export function deepObjectCopy<T extends ReturnType<typeof deepObjectMerge> & ({} | [])>(
-    toCopy: T,
-    complexObjectsTracker: Array<unknown> = [],
-) {
-    return deepObjectMerge(toCopy, {} as T, true, complexObjectsTracker) as T;
-}
+
+// export function formDataify(data: Record<string, any>) {
+//     const formData = new FormData();
+//     for (const key in data) {
+//         addToFormData(formData, key, data[key]);
+//     }
+//
+//     if (document) {
+//         const el: HTMLInputElement | null = document.querySelector("input[name='authenticity_token']");
+//         const authenticityToken = el ? el.value : null;
+//         const cookies = getCookies();
+//         let csrfToken = cookies['_csrf_token'];
+//         if (authenticityToken) formData.append('authenticity_token', authenticityToken);
+//         else if (csrfToken) {
+//             csrfToken = csrfToken.replaceAll(/%([0-9A-F]{2})/g, (substring, hex) => {
+//                 const hexCode = hex;
+//                 return String.fromCharCode(parseInt(hexCode, 16))
+//             })
+//
+//             console.log(csrfToken);
+//             formData.append('authenticity_token', csrfToken);
+//         }
+//     }
+//     return formData;
+// }
 
 
-export function deepObjectMerge<
-    Return extends string | number | object | Record<string, any> | null | undefined | []
->(
-    a: Return,
-    b: Return,
-    overrideWithA: boolean = false,
-    complexObjectsTracker: Array<unknown> = [],
-): Return {
-    for (const value of [a, b]) {
-        if (typeof value == "object" &&
-            complexObjectsTracker.includes(value)) throw new Error(`Infinite Loop: Element ${value} contains itself`);
-    }
+// export function deepObjectCopy<T extends ReturnType<typeof deepObjectMerge> & ({} | [])>(
+//     toCopy: T,
+//     complexObjectsTracker: Array<unknown> = [],
+// ) {
+//     return deepObjectMerge(toCopy, {} as T, true, complexObjectsTracker) as T;
+// }
+//
+//
+// export function deepObjectMerge<
+//     Return extends string | number | object | Record<string, any> | null | undefined | []
+// >(
+//     a: Return,
+//     b: Return,
+//     overrideWithA: boolean = false,
+//     complexObjectsTracker: Array<unknown> = [],
+// ): Return {
+//     for (const value of [a, b]) {
+//         if (typeof value == "object" &&
+//             complexObjectsTracker.includes(value)) throw new Error(`Infinite Loop: Element ${value} contains itself`);
+//     }
+//
+//     //if the types don't match
+//     if (a && b && (
+//         typeof a !== typeof b ||
+//         Array.isArray(a) != Array.isArray(b)
+//     )) {
+//         if (a === b) return a;
+//         if (overrideWithA) return a;
+//         throw new Error(`Type clash on merge ${typeof a} ${a}, ${typeof b} ${b}`);
+//     }
+//
+//     //If either or both are arrays, merge if able to
+//     if (Array.isArray(a)) {
+//         if (!b) return deepObjectCopy(a, complexObjectsTracker);
+//         assert(Array.isArray(b), "We should not get here if b is not an array")
+//         const mergedArray = [...a, ...b];
+//         const outputArray = mergedArray.map(value => {
+//             if (!value) return value;
+//             if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+//                 //Make a deep of any object literal
+//                 if (!value) return value;
+//                 value = deepObjectCopy(value, [...complexObjectsTracker, a, b]);
+//             }
+//             return value;
+//         }) as Return
+//         return outputArray;
+//     }
+//
+//     if (Array.isArray(b)) return deepObjectCopy(b, complexObjectsTracker); //we already know A is not an array at this point, return a deep copy of b
+//     if ((a && typeof a === 'object') || (b && typeof b === 'object')) {
+//         if (a instanceof File && b instanceof File) {
+//             if (!overrideWithA) assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
+//             return a;
+//         }
+//         if (a && Object.getPrototypeOf(a) != Object.prototype
+//             || b && Object.getPrototypeOf(b) != Object.prototype) {
+//             if (!overrideWithA) assert(!a || !b || a === b, `Non-mergeable object clash ${a} ${b}`);
+//             if (a) return a;
+//             if (b) return b;
+//         }
+//         if (a && !b) return deepObjectCopy(a, complexObjectsTracker);
+//         if (b && !a) return deepObjectCopy(b, complexObjectsTracker);
+//
+//
+//         assert(a && typeof a === 'object' && Object.getPrototypeOf(a) === Object.prototype, "a should always be defined here.")
+//         assert(b && typeof b === 'object' && Object.getPrototypeOf(b) === Object.prototype, "b should always be defined here.")
+//
+//         const allKeys = [...Object.keys(a), ...Object.keys(b)].filter(filterUniqueFunc);
+//         const aRecord: Record<string, any> = a;
+//         const bRecord: Record<string, any> = b;
+//
+//         const entries = allKeys.map((key: string) => [
+//             key,
+//             deepObjectMerge(aRecord[key], bRecord[key], overrideWithA, [...complexObjectsTracker, a, b])
+//         ]);
+//         return Object.fromEntries(entries)
+//     }
+//     if (a && b) {
+//         if (overrideWithA || a === b) return a;
+//         throw new Error(`Values unmergeable, ${a}>:${typeof a}, ${b} ${typeof b}`)
+//     }
+//     if (a) return a;
+//     if (b) return b;
+//     if (a === null) return a;
+//     if (b === null) return b;
+//     assert(typeof a === 'undefined')
+//     return a;
+// }
 
-    //if the types don't match
-    if (a && b && (
-        typeof a !== typeof b ||
-        Array.isArray(a) != Array.isArray(b)
-    )) {
-        if (a === b) return a;
-        if (overrideWithA) return a;
-        throw new Error(`Type clash on merge ${typeof a} ${a}, ${typeof b} ${b}`);
-    }
-
-    //If either or both are arrays, merge if able to
-    if (Array.isArray(a)) {
-        if (!b) return deepObjectCopy(a, complexObjectsTracker);
-        assert(Array.isArray(b), "We should not get here if b is not an array")
-        const mergedArray = [...a, ...b];
-        const outputArray = mergedArray.map(value => {
-            if (!value) return value;
-            if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
-                //Make a deep of any object literal
-                if (!value) return value;
-                value = deepObjectCopy(value, [...complexObjectsTracker, a, b]);
-            }
-            return value;
-        }) as Return
-        return outputArray;
-    }
-
-    if (Array.isArray(b)) return deepObjectCopy(b, complexObjectsTracker); //we already know A is not an array at this point, return a deep copy of b
-    if ((a && typeof a === 'object') || (b && typeof b === 'object')) {
-        if (a instanceof File && b instanceof File) {
-            if (!overrideWithA) assert(a.size == b.size && a.name == b.name, `File value clash ${a.name} ${b.name}`);
-            return a;
-        }
-        if (a && Object.getPrototypeOf(a) != Object.prototype
-            || b && Object.getPrototypeOf(b) != Object.prototype) {
-            if (!overrideWithA) assert(!a || !b || a === b, `Non-mergeable object clash ${a} ${b}`);
-            if (a) return a;
-            if (b) return b;
-        }
-        if (a && !b) return deepObjectCopy(a, complexObjectsTracker);
-        if (b && !a) return deepObjectCopy(b, complexObjectsTracker);
-
-
-        assert(a && typeof a === 'object' && Object.getPrototypeOf(a) === Object.prototype, "a should always be defined here.")
-        assert(b && typeof b === 'object' && Object.getPrototypeOf(b) === Object.prototype, "b should always be defined here.")
-
-        const allKeys = [...Object.keys(a), ...Object.keys(b)].filter(filterUniqueFunc);
-        const aRecord: Record<string, any> = a;
-        const bRecord: Record<string, any> = b;
-
-        const entries = allKeys.map((key: string) => [
-            key,
-            deepObjectMerge(aRecord[key], bRecord[key], overrideWithA, [...complexObjectsTracker, a, b])
-        ]);
-        return Object.fromEntries(entries)
-    }
-    if (a && b) {
-        if (overrideWithA || a === b) return a;
-        throw new Error(`Values unmergeable, ${a}>:${typeof a}, ${b} ${typeof b}`)
-    }
-    if (a) return a;
-    if (b) return b;
-    if (a === null) return a;
-    if (b === null) return b;
-    assert(typeof a === 'undefined')
-    return a;
-}
-
-export interface FormMergeOutput {
-    [key: string]: FormMergeOutput | FormDataEntryValue | FormDataEntryValue[]
-}
-
-export function deFormDataify(formData: FormData) {
-    return [...formData.entries()].reduce((aggregator, [key, value]) => {
-        const isArray = key.includes('[]');
-        const keys = key.split('[').map(key => key.replaceAll(/[\[\]]/g, ''));
-        if (isArray) keys.pop(); //remove the last, empty, key if it's an array
-        let currentValue: FormDataEntryValue | FormDataEntryValue[] | FormMergeOutput = isArray ? [value] : value;
-        while (keys.length > 0) {
-            let newValue: Record<string, any>;
-            newValue = {
-                [keys.pop() as string]: currentValue
-            };
-            currentValue = newValue;
-
-        }
-        return deepObjectMerge(aggregator, currentValue as FormMergeOutput) || {...aggregator};
-    }, {} as FormMergeOutput);
-}
+// export interface FormMergeOutput {
+//     [key: string]: FormMergeOutput | FormDataEntryValue | FormDataEntryValue[]
+// }
+//
+// export function deFormDataify(formData: FormData) {
+//     return [...formData.entries()].reduce((aggregator, [key, value]) => {
+//         const isArray = key.includes('[]');
+//         const keys = key.split('[').map(key => key.replaceAll(/[\[\]]/g, ''));
+//         if (isArray) keys.pop(); //remove the last, empty, key if it's an array
+//         let currentValue: FormDataEntryValue | FormDataEntryValue[] | FormMergeOutput = isArray ? [value] : value;
+//         while (keys.length > 0) {
+//             let newValue: Record<string, any>;
+//             newValue = {
+//                 [keys.pop() as string]: currentValue
+//             };
+//             currentValue = newValue;
+//
+//         }
+//         return deepObjectMerge(aggregator, currentValue as FormMergeOutput) || {...aggregator};
+//     }, {} as FormMergeOutput);
+// }
 
 
 function getCookies() {

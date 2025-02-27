@@ -1,7 +1,12 @@
-import {RootReportingState} from "@/reporting/data/reportingStore";
+
 import {createSelector} from "@reduxjs/toolkit";
 import {EnrollmentData} from "ueu_canvas";
 import {generateGroupGetter} from "@/reporting/data/selectors/generateGroupGetter";
+import {EnrollmentsState} from "@/reporting/data/enrollmentsSlice";
+
+type RootReportingState = {
+    enrollments: EnrollmentsState;
+}
 
 export const selectEnrollmentsById = ({enrollments}: RootReportingState) => enrollments.enrollmentsById;
 export const selectEnrollmentsByCourseId = ({enrollments}: RootReportingState) =>

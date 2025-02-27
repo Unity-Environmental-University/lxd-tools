@@ -4,7 +4,8 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 export type CoursesState = {
     coursesById: Record<number, ICourseData>;
-    courseStatus: Record<number, LoadStatus|undefined>;
+    courseIdsByTermId: Record<number, number[]>;
+    courseStatus: Record<number, LoadStatus | undefined>;
     status: LoadStatus;
     error?: string;
 };
@@ -12,6 +13,7 @@ export type CoursesState = {
 const initialState: CoursesState = {
     coursesById: {},
     courseStatus: {},
+    courseIdsByTermId: {},
     status: "idle",
 };
 
@@ -22,17 +24,39 @@ const coursesSlice = createSlice({
         setStatus: (state, action: PayloadAction<LoadStatus>) => {
             state.status = action.payload;
         },
-        setCourseStatus(state, action: PayloadAction<{ status: LoadStatus, courseId:number }>) {
-            const { status, courseId } = action.payload;
+        setCourseStatus(state, action: PayloadAction<{ status: LoadStatus, courseId: number }>) {
+            const {status, courseId} = action.payload;
             state.courseStatus[courseId] = status;
         },
         addCourse: (state, action: PayloadAction<ICourseData>) => {
             const course = action.payload;
             state.coursesById[course.id] = course;
-        },
+
+            // Ensure courseIdsByTermId is initialized
+            state.courseIdsByTermId ??= {};
+
+            const termIds = Array.isArray(course.enrollment_term_id) ? course.enrollment_term_id : [course.enrollment_term_id];
+            for (let termId of termIds) {
+                // Initialize the Set if it doesn't exist
+                if (!state.courseIdsByTermId[termId]) {
+                    state.courseIdsByTermId[termId] = [];
+                }
+                try {
+                    // State update logic
+                    if(!(course.id in state.courseIdsByTermId[termId])) {
+                        state.courseIdsByTermId[termId].push(course.id);
+
+                    }
+                } catch (error) {
+                    console.error("Error in state update:", error);
+                }
+
+            }
+        }
+
     },
 });
 
-export const { setStatus, addCourse, setCourseStatus } = coursesSlice.actions;
+export const {setStatus, addCourse, setCourseStatus} = coursesSlice.actions;
 export const courseReducer = coursesSlice.reducer;
 

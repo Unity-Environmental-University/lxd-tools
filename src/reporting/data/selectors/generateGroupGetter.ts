@@ -1,6 +1,6 @@
 import {RootReportingState} from "@/reporting/data/reportingStore";
 
-export type LookupSetSelector = (state: RootReportingState) => Record<number,  Set<number> | undefined>;
+export type LookupSetSelector = (state: RootReportingState) => Record<number,  Set<number> | number[] | undefined>;
 export const generateGroupGetter = <T>(
     selector: LookupSetSelector,
     baseSelector: (state: RootReportingState) => Record<number, T>

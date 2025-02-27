@@ -7,7 +7,7 @@ export async function getResizedBlob(src: string, width: number, height: number 
     const image = new Image();
     image.src = imageSrc;
     const ctx = canvas.getContext('2d');
-    return new Promise<Blob|null>((resolve) => {
+    return new Promise<Blob | null>((resolve) => {
         image.onload = () => {
             height ??= image.height / image.width * width;
             assert(ctx);
@@ -18,6 +18,27 @@ export async function getResizedBlob(src: string, width: number, height: number 
             canvas.toBlob(resolve);
         }
     })
+}
+
+export async function getCroppedSquareBlob(src: string, size: number): Promise<Blob | null> {
+    const imageSrc = await contentDownloadImage(src);
+    const image = new Image();
+    image.src = imageSrc;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    return new Promise<Blob | null>((resolve) => {
+        image.onload = () => {
+            assert(ctx);
+            const minDim = Math.min(image.width, image.height);
+            const cropX = (image.width - minDim) / 2;
+            const cropY = (image.height - minDim) / 2;
+
+            canvas.width = size;
+            canvas.height = size;
+            ctx.drawImage(image, cropX, cropY, minDim, minDim, 0, 0, size, size);
+            canvas.toBlob(resolve);
+        };
+    });
 }
 
 export async function contentDownloadImage(src: string) {
@@ -31,7 +52,7 @@ export function backgroundDownloadImage(src: string) {
     //if(!height) height = src.height / src.width * width;
     const imageUrl = src;
 
-    return new Promise(async(resolve) => {
+    return new Promise(async (resolve) => {
         const imageFileResponse = await fetch(imageUrl);
         const reader = new FileReader();
         reader.onload = event => {

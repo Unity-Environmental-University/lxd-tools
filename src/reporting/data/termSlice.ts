@@ -1,19 +1,21 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {ITermData} from "@canvas/term/Term";
 import {LoadStatus} from "@/reporting/data/loadStatus";
-import {getTermsThunk} from "@/reporting/data/getTermsThunk";
+import {fetchTermsThunk} from "@/reporting/data/thunks/fetchTermsThunk";
 
 
 type ADD_TERM = 'ADD_TERM';
 
 export interface TermState {
     terms: ITermData[];
+    termsById: Record<number, ITermData>
     status: LoadStatus;
     error?: string | undefined;
 }
 
 const initialState: TermState = {
     terms: [],
+    termsById: {},
     status: 'idle',
 };
 
@@ -28,7 +30,8 @@ export const termSlice = createSlice({
         },
         addTerm: (state, action:PayloadAction<ITermData>) => {
             state.terms ??= [];
-            state.terms = [...state.terms, action.payload.value];
+            state.terms = [...state.terms, action.payload];
+            state.termsById[action.payload.id] = action.payload;
         },
         reset: (state: TermState) => {
             state.terms = [];

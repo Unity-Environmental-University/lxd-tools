@@ -1,4 +1,4 @@
-import { getTermsThunk, GetTermsThunkParams } from "@/reporting/data/getTermsThunk";
+import { fetchTermsThunk, GetTermsThunkParams } from "@/reporting/data/thunks/fetchTermsThunk";
 
 import { addTerm, setStatus } from "@/reporting/data/termSlice";
 import {mockAsyncGen} from "@/__mocks__/utils";
@@ -30,7 +30,7 @@ describe("getTermsThunk", () => {
 
     const params: GetTermsThunkParams = { rootAccountId: 999 };
 
-    await getTermsThunk(params)(dispatch, getState, undefined);
+    await fetchTermsThunk(params)(dispatch, getState, undefined);
 
     expect(dispatch).toHaveBeenCalledWith(setStatus("loading"));
     for (const term of mockTerms) {

@@ -7,8 +7,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const packageJson = require('./package.json');
 const {TsconfigPathsPlugin} = require("tsconfig-paths-webpack-plugin");
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const dotenv = require('dotenv').config({path: __dirname + '/.env'})
+//const dotenv = require('dotenv').config({path: __dirname + '/.env'})
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const outputPath = path.resolve(__dirname, "../dist");
 

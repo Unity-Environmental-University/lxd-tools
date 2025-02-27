@@ -4,8 +4,6 @@ import { fetchModules } from '@/canvas-redux/modulesSlice';
 import learningMaterialsForModule from "@canvas/content/pages/learningMaterialsForModule";
 import {IModuleData, IModuleItemData} from "@canvas/canvasDataDefs";
 import {IPageData} from "@canvas/content/pages/types";
-import {RootState} from "@citations/state/store";
-import getReferencesTemplate from "@canvas/course/references/getReferencesTemplate";
 
 type PayloadParams = {
     courseId: number,
@@ -35,7 +33,9 @@ export const fetchLearningMaterials = createAsyncThunk(
         }
 
         // Filter out modules already processed
-        const state = thunkAPI.getState() as RootState;
+        const state = thunkAPI.getState() as { modules: {
+            data: IModuleData[],
+            }};
         const loadedModuleIds = new Set(state.modules.data.map(m => m.id));
 
         for (const module of modules) {

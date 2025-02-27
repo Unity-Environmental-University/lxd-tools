@@ -1,117 +1,58 @@
-import {useDispatch, useSelector} from "react-redux";
+import {FormEvent, useMemo, useState} from "react";
+import {Button, Card, Container, Row} from "react-bootstrap";
+import { ITermData } from "ueu_canvas";
+import { useCourses } from "./hooks/useCourses";
+import { TermPicker } from "@/reporting/TermPicker";
+import {fetchCoursesThunk} from "@/reporting/data/thunks";
 import {AppDispatch, RootReportingState} from "@/reporting/data/reportingStore";
-import {Card, Col, Container, Row, Table} from "react-bootstrap";
-import React, {useEffect, useMemo, useState} from "react";
-import {
-    createInstructorSelector,
-    selectCourse,
-    selectCourseLoadingStatus, selectInstructors,
-    selectInstructorState
-} from "@/reporting/data/selectors";
-import {EnrollmentData, getAccountIdFromUrl} from "ueu_canvas";
-import {fetchInstructorsThunk} from "@/reporting/data/fetchInstructorsThunk";
-import {ICourseData} from "@/canvas";
-import {fetchEnrollmentsThunk} from "@/reporting/data/fetchEnrollmentsThunk";
-import {getEnrollmentByUserId} from "@/reporting/data/selectors/enrollmentSelectors";
-import {selectCourses} from "@/reporting/data/selectors/courseSelectors";
-import {fetchCourseThunk} from "@/reporting/data/fetchCourseThunk";
-
-
-const sortCourseByName = (a: ICourseData, b: ICourseData) => {
-    return a.name.localeCompare(b.name);
-}
-
-const sortAlgorithms: Record<string, (a: ICourseData, b: ICourseData) => number> = {
-    name: sortCourseByName,
-}
-
-const filterAlgorithms: Record<string, (a: ICourseData) => boolean> = {}
+import {useDispatch, useSelector} from "react-redux";
+import {useInstructorsByTerm} from "@/reporting/hooks/useInstructorsByTerm";
+import {FacultyRow} from "@/reporting/FacultyRow";
 
 export const FacultyView = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const {status: instructorStatus} = useSelector(
-        (state: RootReportingState) => state.instructors
-    );
-    const instructors = useSelector(selectInstructors);
-    const {status: courseLoadStatus} = useSelector((state: RootReportingState) => state.courses);
-    const [sortAlgorithm] = useState<keyof typeof filterAlgorithms | undefined>('name');
-    const [filterAlgorithm] = useState<keyof typeof sortAlgorithms | undefined>();
-    const accountId = getAccountIdFromUrl();
-    const _courses = useSelector(selectCourses);
+    const [selectableTerms, setSelectableTerms] = useState<ITermData[] | undefined>();
+    const [selectedTerms, setSelectedTerms] = useState<ITermData[]>([]);
 
-    const courses = useMemo(() => {
-        let output = _courses;
-        if(filterAlgorithm) output = output.filter(filterAlgorithms[filterAlgorithm])
-        if(sortAlgorithm) output = output.sort(sortAlgorithms[sortAlgorithm]);
-        return output;
-    }, [_courses])
+    const { status: termsStatus } = useSelector((state: RootReportingState) => state.terms);
+    const { status: coursesStatus } = useSelector((state: RootReportingState) => state.courses);
+
+    const courses = useCourses(selectableTerms);
+    const accountId = useSelector((state: RootReportingState) => state.accounts.accountId);
+    const onPickTerm =  (terms:ITermData[]) => setSelectableTerms(terms);
 
 
-    useEffect(() => {
-        if (instructorStatus == 'idle' && accountId) dispatch(fetchInstructorsThunk({
+    const instructors = useInstructorsByTerm({selectedTerms: selectedTerms})
+
+    const handleSubmit = (e:FormEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        console.log("SUBMIT", accountId);
+        console.log(instructors.map(i => i?.id))
+        setSelectedTerms(selectableTerms ?? []);
+        if(!accountId || !selectableTerms || selectableTerms.length == 0) return;
+        dispatch(fetchCoursesThunk({
             accountId,
+            termId: selectableTerms.map(t => t.id),
         }));
-    }, [instructorStatus, accountId]);
+    }
 
-
-    return <Card>
-        <Card.Body>
-            <h3>{instructorStatus}</h3>
-            <Container>
-                {instructors
-                    .map(faculty => <FacultyRow userId={faculty.id} key={faculty.id}/>)}
-            </Container>
-        </Card.Body>
-    </Card>
-}
-
-
-type FacultyRowProps = { userId: number }
-export const FacultyRow = ({userId}: FacultyRowProps) => {
-    const dispatch = useDispatch<AppDispatch>();
-    const instructor = useSelector(createInstructorSelector(userId));
-    const enrollments = useSelector(getEnrollmentByUserId(userId));
-    useEffect(()=> {
-        if(typeof enrollments === 'undefined'){
-            dispatch(fetchEnrollmentsThunk({
-                userId,
-                queryParams: {},
-            }))
-        }
-    }, [enrollments])
-
-
-    return <Row>
-        <Col>{instructor.sortable_name}</Col>
-        <Col>{instructor.name}</Col>
-        <Col>{instructor.email}</Col>
-        <Row>
-            {enrollments?.map(enrollment => <FacEnrollmentRow enrollment={enrollment} key={enrollment.id}></FacEnrollmentRow>)}
-        </Row>
-    </Row>
-}
-type FacEnrollmentRowProps = {
-    enrollment: EnrollmentData,
-}
-export const FacEnrollmentRow = ({enrollment}:FacEnrollmentRowProps) => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { course_id } = enrollment;
-    
-    const course = useSelector(selectCourse(course_id));
-    const status = useSelector(selectCourseLoadingStatus(course_id));
-
-
-    useEffect(() => {
-        if(typeof course === 'undefined' && status !== 'loading') {
-            dispatch(fetchCourseThunk({courseId: course_id}));
-        }
-
-    }, [course_id, course, status]);
-
-    return <>
-        {course && <>
-            <Col>{course.course_code}</Col><Col>{course.name}</Col>
-        </>}
-    </>
-
-}
+    return (
+        <Card>
+            <Card.Body>
+                <Row>{coursesStatus === 'loading' && <div>
+                    Loading Courses... ({courses.length}) loaded...)
+                </div>}</Row>
+                <Container>
+                    <button onClick={handleSubmit} disabled={!selectableTerms || selectableTerms.length == 0}>Find Users</button>
+                    <TermPicker onPickTerms={onPickTerm} />
+                    <Row>
+                        {instructors.filter(f => typeof f !== 'undefined').map(faculty => (
+                            <FacultyRow userId={faculty.id} key={faculty.id} />
+                        ))}
+                    </Row>
+                    {courses.map(course => <Row>{course.course_code}</Row>)}
+                </Container>
+            </Card.Body>
+        </Card>
+    );
+};
