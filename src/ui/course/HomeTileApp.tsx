@@ -6,6 +6,7 @@ import {getCroppedSquareBlob, getResizedBlob} from "@canvas/image";
 import {Course} from "@canvas/course/Course";
 import {getModuleOverview} from "@canvas/course/modules";
 import {getBannerImage} from "@/canvas";
+import {Row} from "react-bootstrap";
 
 type HomeTileAppProps = {
     course: Course,
@@ -18,6 +19,7 @@ export function HomeTileApp({course, el}: HomeTileAppProps) {
     const [running, setRunning] = useState(false);
     const [modalText, setModalText] = useState("Home Tiles");
     const [moduleNumber, setModuleNumber] = useState(0);
+    const [useDefault, setUseDefault] = useState(true);
 
 
     async function regenerate() {
@@ -43,9 +45,25 @@ export function HomeTileApp({course, el}: HomeTileAppProps) {
 
     return (<>
         {createPortal(<>
-            <button onClick={regenerate}>Generate Home Tiles</button>
-            <button onClick={downloadStoreTiles}>Salesforce Image Download</button>
-            <input type={"number"} onChange={(e) => setModuleNumber(parseInt(e.target.value) ?? 0)} value={moduleNumber}></input>
+            <Row>
+                <button onClick={regenerate}>Generate Home Tiles</button>
+                <button onClick={downloadStoreTiles}>Salesforce Image Download</button>
+
+
+
+            </Row>
+                <Row>
+                    <label>Use Course Image</label>
+                    <input type={"checkbox"} checked={useDefault} onChange={(e) => setUseDefault(e.target.checked)}/>
+                </Row>
+            {!useDefault && <Row>
+                <label>Module Number (0 is course?)</label>
+                <input type={"number"}
+                       onChange={(e) => setModuleNumber(parseInt(e.target.value) ?? 0)}
+                       placeholder={"Module Number to User"}
+                       value={moduleNumber}></input>
+            </Row>}
+
         </>, el)}
         <Modal isOpen={showModal} canClose={!running} requestClose={() => setShowModal(false)}>
             <p>{running ? `Updating ${modalText}...` : `Finished Updating ${modalText}`}</p>
