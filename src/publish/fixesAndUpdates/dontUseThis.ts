@@ -166,7 +166,8 @@ const testToRun = courseHasUnlimitedAttemptQuizzes;
 
 export const dontUseThisValidation: CourseValidation = {
     name: "Dont use this",
-    description: "If you are seeing this hallie either wanted you to and told you specifically, or hallie has forgotten to comment out a debug setting.",
+    description: "If you are seeing this hallie either wanted you to and told you specifically, or Hallie has forgotten to comment out a debug setting. I promise you would remember if Hallie told you to use this. If you're " +
+        "the first person to see this in a build and Hallie didn't mention it, she owes you a baked good of your choice from the market.",
     async run(course) {
         const accountId = course.rootAccountId;
         const codes = codesToUse;

@@ -7,7 +7,7 @@ import courseSettings from "@publish/fixesAndUpdates/validations/courseSettings"
 import assignments from "@publish/fixesAndUpdates/validations/assignments";
 import courseSpecific from "@publish/fixesAndUpdates/validations/courseSpecific";
 import references from "@publish/fixesAndUpdates/validations/references";
-import {dontUseThisValidation} from "@publish/fixesAndUpdates/dontUseThis";
+//import {dontUseThisValidation} from "@publish/fixesAndUpdates/dontUseThis";
 
 export default [
     ...courseContent,
@@ -19,5 +19,5 @@ export default [
     ...assignments,
     proxyServerLinkValidation,
     discussionThreading,
-   dontUseThisValidation
+//   dontUseThisValidation
 ]
