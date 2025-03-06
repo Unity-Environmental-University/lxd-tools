@@ -47,7 +47,7 @@ export interface IRubricAssociationData {
     hide_outcome_results: boolean,
 }
 
-export interface RubricTypes {
+export interface IRubricData {
     id: number,
     title: string,
     context_id: number,

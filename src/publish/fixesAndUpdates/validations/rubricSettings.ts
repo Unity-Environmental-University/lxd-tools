@@ -9,16 +9,16 @@ import {callAll} from "@/canvas/canvasUtils";
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
-import {IRubricAssociationData, RubricTypes} from "@/canvas";
+import {IRubricAssociationData, IRubricData} from "@/canvas";
 
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});
-    const returnPairs: [RubricTypes, IRubricAssociationData][] = [];
+    const returnPairs: [IRubricData, IRubricAssociationData][] = [];
     for await (const rubric of rubricGen) {
         const associations = rubric.associations;
         const badAssociations = associations && associations
             .filter(assoc => !assoc.use_for_grading)
-            .map<[RubricTypes, IRubricAssociationData]>(assoc => [rubric, assoc]);
+            .map<[IRubricData, IRubricAssociationData]>(assoc => [rubric, assoc]);
         if (badAssociations && badAssociations.length > 0) returnPairs.push(...badAssociations);
     }
     return returnPairs;

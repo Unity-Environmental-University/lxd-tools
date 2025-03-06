@@ -13,7 +13,7 @@ import {deepObjectMerge, formDataify, renderAsyncGen} from "../canvasUtils";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 
-import {RubricTypes} from "@/canvas";
+import {IRubricData} from "@/canvas";
 
 
 jest.mock('../fetch/fetchJson', () => ({

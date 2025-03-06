@@ -21,7 +21,7 @@ export {
 export type {
     RubricAssociationUpdateOptions,
     GetRubricsForCourseOptions,
-    RubricTypes,
+    IRubricData,
     IRubricAssociationData,
     RubricAssessment,
     IRubricAssessmentData,

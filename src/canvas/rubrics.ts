@@ -3,7 +3,7 @@ import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 
-import {GetRubricsForCourseOptions, RubricTypes, RubricAssociationUpdateOptions} from "@canvas/rubricTypes";
+import {GetRubricsForCourseOptions, IRubricData, RubricAssociationUpdateOptions} from "@canvas/rubricTypes";
 
 
 export function getRubricsFetchUrl(courseId:number) { return `/api/v1/courses/${courseId}/rubrics`}
@@ -11,7 +11,7 @@ export function rubricApiUrl(courseId:number, rubricId:number) { return `/api/v1
 
 export function rubricsForCourseGen(courseId: number, options?: GetRubricsForCourseOptions, config?: ICanvasCallConfig) {
     const url = getRubricsFetchUrl(courseId);
-    const dataGenerator = getPagedDataGenerator<RubricTypes>(url, config);
+    const dataGenerator = getPagedDataGenerator<IRubricData>(url, config);
     if (options?.include) {
         return async function* () {
             for await(const rubric of dataGenerator) {
@@ -30,7 +30,7 @@ export async function getRubric(courseId: number, rubricId: number, options?: Ge
         config ??= {};
         config.queryParams = deepObjectMerge(config?.queryParams, {include: options.include})
     }
-    return await fetchJson(url, config) as RubricTypes
+    return await fetchJson(url, config) as IRubricData
 }
 
 export function rubricAssociationUrl(courseId:number, rubricAssociationId:number) {

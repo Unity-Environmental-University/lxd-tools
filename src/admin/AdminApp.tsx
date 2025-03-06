@@ -114,7 +114,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
             }
         }
 
-        for (const batch of batchify(coursesToValidate, 5)) {
+        for (const batch of batchify(coursesToValidate, 2)) {
 
             for (const test of validationsToRun) {
                 console.log('running', test.name);
@@ -272,7 +272,7 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
 
                         <Row>
                             <Col>
-                                Reulsts
+                                Results
                                 <ResultsDisplay/>
                             </Col>
                         </Row>

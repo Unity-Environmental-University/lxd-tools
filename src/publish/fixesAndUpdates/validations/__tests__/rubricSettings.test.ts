@@ -13,7 +13,7 @@ import {updateAssignmentData} from "@/canvas/content/assignments";
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
-import {RubricTypes} from "@/canvas";
+import {IRubricData} from "@/canvas";
 
 
 jest.mock('@/canvas/rubrics', () => {
@@ -55,7 +55,7 @@ describe('rubrics are set to grade assignments', () => {
 
         const course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
-            returnMockAsyncGen<RubricTypes>([{
+            returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
                 associations: [
                     {...mockRubricAssociation, use_for_grading: true, association_id: 1},
@@ -74,7 +74,7 @@ describe('rubrics are set to grade assignments', () => {
 
         const course = new Course({...mockCourseData});
         rubricsForCourseGen.mockImplementation(
-            returnMockAsyncGen<RubricTypes>([{
+            returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
                 associations: [
                     {...mockRubricAssociation, use_for_grading: true, association_id: 1},
@@ -93,7 +93,7 @@ describe('rubrics are set to grade assignments', () => {
 
     function runMockValidation<T, UserDataType>(course: T, validation: CourseValidation<T, UserDataType>) {
         rubricsForCourseGen.mockImplementation(
-            returnMockAsyncGen<RubricTypes>([{
+            returnMockAsyncGen<IRubricData>([{
                 ...mockRubricData,
                 associations: [
                     {...mockRubricAssociation, use_for_grading: true, association_id: 1},
