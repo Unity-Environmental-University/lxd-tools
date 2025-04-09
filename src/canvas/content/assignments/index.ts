@@ -14,8 +14,7 @@ type UpdateAssignmentDueDatesOptions = {
 }
 export async function updateAssignmentDueDates(offset: number, assignments:IAssignmentData[], options?: UpdateAssignmentDueDatesOptions) {
 
-        const promises: Promise<any>[] = [];
-        const returnAssignments: Assignment[] = [];
+        const returnAssignments: IAssignmentData[] = [];
         let { courseId } = options ?? {};
         if (!courseId && courseId !== 0) {
             courseId = assignments[0].course_id;
@@ -23,8 +22,11 @@ export async function updateAssignmentDueDates(offset: number, assignments:IAssi
         if (offset === 0 || offset) {
             for await (const data of assignments) {
                 const assignment = new Assignment(data, courseId);
-                returnAssignments.push(assignment);
-                promises.push(assignment.dueAtTimeDelta(Number(offset)));
+                const returnData = await assignment.dueAtTimeDelta(Number(offset)) as IAssignmentData | null;
+                if(returnData) {
+                    returnAssignments.push(returnData);
+
+                }
             }
         }
         return returnAssignments;

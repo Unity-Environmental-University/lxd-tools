@@ -23,6 +23,7 @@ import {renderAsyncGen} from "@canvas/canvasUtils";
 
 
 import {IDiscussionData} from "@canvas/content/types";
+import {Assignment} from "@canvas/content/assignments/Assignment";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,
@@ -70,7 +71,10 @@ export function UpdateStartDate(
 
 
             const affectedAssignments = await updateAssignmentDates(course.id, startDate, workingStartDate);
-            affectedItems = [...affectedItems, ...affectedAssignments.map(ContentAffectedRow)]
+            affectedItems = [...affectedItems, ...affectedAssignments
+                .map(data => new Assignment(data, course.id))
+                .map(ContentAffectedRow)
+            ]
             const contentDateOffset = startDate.until(workingStartDate).days;
 
             const announcementGenerator = getPagedDataGenerator<IDiscussionData>(`/api/v1/courses/${course.id}/discussion_topics`, {

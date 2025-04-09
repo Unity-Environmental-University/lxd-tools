@@ -42,7 +42,7 @@ export class Assignment extends BaseContentItem {
 
 
         this.canvasData['due_at'] = dueAt.toISOString();
-        return data;
+        return data as IAssignmentData;
 
     }
 
