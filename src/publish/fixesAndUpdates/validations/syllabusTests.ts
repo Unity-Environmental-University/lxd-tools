@@ -231,8 +231,8 @@ export const addApaNoteToGradingPoliciesTest  = {
 
 const badAiLanguage = 'n this course, you may be encouraged to explore';
 const badAiRegex = /n this course,? you may be encouraged to explore/ig;
-
 const goodAiLanguage = 'n this course, you may be asked to use or encouraged to explore';
+
 export const addAiGenerativeLanguageTest  = {
     name: "Add AI generative Language",
     description: `Add the following language to the generative ai section: ${goodAiLanguage}`,
@@ -246,6 +246,26 @@ export const addAiGenerativeLanguageTest  = {
 }
 
 
+const badSupportEmail = 'helpdesk@unity.edu';
+const goodSupportEmail = 'unitysupport@unity.edu';
+
+const badSupportEmailRegex = /helpdesk@unity\.edu/ig;
+
+
+export const fixSupportEmailTest: TextReplaceValidation<ISyllabusHaver> = {
+    name: "Update Support Email",
+    description: `Update the support email in the syllabus from ${badSupportEmail} to ${goodSupportEmail}`,
+    beforeAndAfters: [
+        [badSupportEmail, goodSupportEmail],
+        [
+            `<p>For support, please contact <a href="mailto:${badSupportEmail}`,
+            `<p>For support, please contact <a href="mailto:${goodSupportEmail}`
+        ],
+    ],
+    run: badSyllabusRunFunc(badSupportEmailRegex),
+    fix: badSyllabusFixFunc(badSupportEmailRegex, goodSupportEmail)
+}
+
 export default [
     addAiGenerativeLanguageTest,
     removeSameDayPostRestrictionTest,
@@ -257,6 +277,7 @@ export default [
     addApaNoteToGradingPoliciesTest,
     bottomOfSyllabusLanguageTest,
     gradeTableHeadersCorrectTest,
-    secondDiscussionParaOff
+    secondDiscussionParaOff,
+    fixSupportEmailTest,
 ]
 

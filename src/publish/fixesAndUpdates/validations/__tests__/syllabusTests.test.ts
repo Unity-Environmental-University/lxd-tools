@@ -6,7 +6,7 @@ import {
     classInclusiveNoDateHeaderTest,
     communication24HoursTest,
     courseCreditsInSyllabusTest,
-    finalNotInGradingPolicyParaTest,
+    finalNotInGradingPolicyParaTest, fixSupportEmailTest,
     gradeTableHeadersCorrectTest,
     removeSameDayPostRestrictionTest
 } from "../syllabusTests";
@@ -30,6 +30,7 @@ describe('Syllabus validation', () => {
 
     test('Add apa language to grading policy test', syllabusTestTest(addApaNoteToGradingPoliciesTest))
     test('Add generative ai language', syllabusTestTest(addAiGenerativeLanguageTest))
+    test('Fix support email', syllabusTestTest(fixSupportEmailTest));
 
 });
 
