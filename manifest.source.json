@@ -1,7 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "LXD Browser Extension REACT version",
-  "description": "Shortcuts including search by code.",
+  "name": "LXD Browser Extension REACT version for Chrome and Firefox",
+  "description": "Chrome/Firefox adaptation Shortcuts including search by code.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "lxd-entension@unity.edu",
+      "strict_min_version": "109.0"
+    }
+  },
   "action": {
     "default_popup": "popup.html",
     "default_title": "LXD Tools"
@@ -13,11 +19,14 @@
   },
   "commands": {
     "_execute_action": {
-      "suggested_key": "Shift+Alt+F",
-      "mac": "Shift+Option+F"
+      "suggested_key": {
+        "default": "Shift+Alt+F"
+      },
+      "description": "Activate the extension"
     }
   },
   "background": {
+    "scripts": ["js/background.js"],
     "service_worker": "js/background.js",
     "type": "module"
   },
@@ -105,6 +114,6 @@
     "*://*.canvas-user-content.com/*",
     "*://*.instructure.com/*"
   ],
-  "optional_host_permissions": [
-  ]
+  "optional_host_permissions": [],
+  "version": "1.0.0"
 }
