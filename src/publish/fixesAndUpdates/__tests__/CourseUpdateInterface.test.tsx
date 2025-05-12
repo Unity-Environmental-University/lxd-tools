@@ -13,7 +13,7 @@ const mockBp = new Course({...mockCourseData, name: 'BP_TEST000', course_code: '
 jest.mock('../CourseValidator', () => ({
     CourseValidator: jest.fn(() => <div>validator</div>)
 }))
-jest.mock('../StartDate/UpdateStartDate', () => ({
+jest.mock('../UpdateStartDate', () => ({
     UpdateStartDate: jest.fn(() => <div>startDate</div>)
 }))
 
