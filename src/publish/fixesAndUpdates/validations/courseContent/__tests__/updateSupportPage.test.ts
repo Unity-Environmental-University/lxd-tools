@@ -31,8 +31,8 @@ describe('updateSupportPage', () => {
         const result = await updateSupportPage.run({ id: 1 });
 
         expect(result).toEqual(testResult('unknown',{
-            notFailureMessage: "Page not found: Support page not found",
-            userData: []
+            notFailureMessage: "Support page not found",
+            userData: undefined
         }));
     });
 
@@ -62,7 +62,7 @@ describe('updateSupportPage', () => {
             body: `<div><a href="${goodUrl}">Updated support message</a></div>`,
         };
 
-        pageKindMock.getByString.mockResolvedValue({ message: "Bad Result"});
+        pageKindMock.getByString.mockResolvedValue(_mockPageData);
         pageKindMock.dataGenerator.mockReturnValueOnce(mockAsyncGen([_mockPageData]));
         pageKindMock.dataIsThisKind.mockReturnValue(true);
 

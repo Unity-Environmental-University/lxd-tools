@@ -31,7 +31,7 @@ export const fetchCourseAssignments = createAsyncThunk(
 
 // Create the slice
 const courseAssignmentsSlice = createSlice({
-    name: 'courseAssignments',
+    name: 'assignments/courseAssignments',
     initialState,
     reducers: {
         updateCourseAssignments: (state, action) => {

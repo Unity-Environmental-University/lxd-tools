@@ -1,4 +1,3 @@
-
 import "./publish.scss"
 import React, {useState} from 'react';
 import {useEffectAsync} from "@/ui/utils";
@@ -54,7 +53,6 @@ function PublishApp() {
                 refreshCourse={() => getCourse(true)
             }/>
             <PublishInterface course={course} user={user}/>
-            {/*{course && <VideoUpdateInterface courseId={course?.id}/>}*/}
             <AdminApp course={course} allValidations={validations}/>
             <Row>
                 <UpdateNeeded/>

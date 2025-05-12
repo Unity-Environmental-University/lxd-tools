@@ -13,33 +13,20 @@ const goodUrl = "https://unity.edu/distance-education/academic-and-career-suppor
 
 const run: CourseFixValidation<CourseInterface>['run'] = async ({id}) => {
 
-    const success = false;
     let page = await pageKind.getByString(id, "student-support-resources");
-    if (!page) {
-        return testResult('unknown', {
-            notFailureMessage: "Support page not found.",
-            userData: null,
-        });
-    }
-    if(!pageKind.dataIsThisKind(page)) {
+    if(!page || !pageKind.dataIsThisKind(page)) {
 
         //try to get the page by search
-        const pages = await renderAsyncGen(
-            pageKind.dataGenerator(id, { queryParams: {search_term: "Student Support Resources" }}));
-        if(pages.length > 1) {
-            return testResult('unknown', {
-                notFailureMessage: "Multiple support pages found.",
-                userData: pages,
-            })
-        }
-        if(pages.length  == 0) {
-            return testResult('unknown', {
-                notFailureMessage: "Page not found: " + page.message,
-                userData: pages,
-            })
-        }
-        page = pages[0];
+        const pageGen = pageKind.dataGenerator(id, { queryParams: {search_term: "Student Support Resources" }});
+        const { done, value } = await pageGen.next();
 
+        if (pageKind.dataIsThisKind(value)) {
+            page = value;
+        } else {
+            return testResult("unknown", {
+                notFailureMessage: "Support page not found",
+            });
+        }
     }
 
     const pageEl = document.createElement("div");
