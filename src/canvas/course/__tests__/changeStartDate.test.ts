@@ -2,7 +2,7 @@ import {
     getModuleUnlockStartDate, getNewTermName, getOldUgTermName, getStartDateAssignments, MalformedSyllabusError,
     NoAssignmentsWithDueDatesError, NoOverviewModuleFoundError,
     sortAssignmentsByDueDate, syllabusHeaderName,
-    updatedDateSyllabusHtml
+    updatedDateSyllabusHtml, getStartDateFromSyllabus
 } from '../changeStartDate'
 import {Temporal} from "temporal-polyfill";
 import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData";
@@ -148,6 +148,21 @@ describe('getStartDateAssignments', () => {
         it('returns a legacy old styl ug term name', () => {
             expect(getOldUgTermName(new Temporal.PlainDate(2024, 12, 24))).toEqual('DE-24-Dec')
         })
+    })
+})
+
+//April 8 - May 12
+describe('getStartDateSyllabus', () => {
+    it('gets the correct start date from the syllabus', () => {
+
+        const syllabus = baseSyllabus;
+        const startDate = getStartDateFromSyllabus(syllabus);
+        expect (startDate).toEqual(new Temporal.PlainDate(2024, 4, 8))
+    })
+
+    it('throws an error if the syllabus is malformed', () => {
+        const syllabus = '<p>hello world</p>';
+        expect(() => updatedDateSyllabusHtml(syllabus, new Temporal.PlainDate(2024, 12, 1))).toThrow(MalformedSyllabusError)
     })
 })
 

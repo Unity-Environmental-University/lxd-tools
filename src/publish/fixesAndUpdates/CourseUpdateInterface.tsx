@@ -4,7 +4,7 @@ import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
 import {fixLmAnnotations} from "../../canvas/fixes/annotations";
 import assert from "assert";
-import {UpdateStartDate} from "./UpdateStartDate";
+import {UpdateStartDate} from "./StartDate/UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
 import {Course} from "../../canvas/course/Course";
 import {Page} from "@/canvas/content/pages/Page";

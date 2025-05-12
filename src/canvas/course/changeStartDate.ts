@@ -48,6 +48,23 @@ export function getStartDateAssignments(assignments:Assignment[]|IAssignmentData
     return plainDateDue.add({days: dayOfWeekOffset});
 }
 
+
+export function getStartDateFromSyllabus(syllabusHtml:string, locale=DEFAULT_LOCALE) {
+    const syllabusBody = document.createElement('div');
+    syllabusBody.innerHTML = syllabusHtml;
+    const syllabusCalloutBox = syllabusBody.querySelector('div.cbt-callout-box');
+    if(!syllabusCalloutBox) throw new MalformedSyllabusError("Can't find syllabus callout box");
+
+    const paras = Array.from(syllabusCalloutBox.querySelectorAll('p'));
+    const strongParas = paras.filter((para) => para.querySelector('strong'));
+    if (strongParas.length < 5) throw new MalformedSyllabusError(`Missing syllabus headers\n${strongParas}`);
+
+    const datesEl = strongParas[2];
+    const dateRange = findDateRange(datesEl.innerHTML, locale);
+    if (!dateRange) throw new MalformedSyllabusError("Date range not found in syllabus");
+    return dateRange.start;
+}
+
 export function getUpdatedStyleTermName(termStart:Temporal.PlainDate, weekCount:string|number, locale=DEFAULT_LOCALE) {
     const month = termStart.toLocaleString(locale, { month: '2-digit'})
     const day = termStart.toLocaleString(locale, { day: '2-digit'})
