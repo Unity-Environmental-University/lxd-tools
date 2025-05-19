@@ -1,5 +1,5 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
-import {getTermsGenerator, TermQueryParams} from "../../../../../../../ueu_canvas";
+import {getTermsGenerator, TermQueryParams} from "ueu_canvas";
 import {addTerm, setStatus} from "@/reporting/data/termSlice";
 
 

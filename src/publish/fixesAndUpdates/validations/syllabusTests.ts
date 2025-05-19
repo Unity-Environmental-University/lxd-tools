@@ -245,7 +245,6 @@ export const addAiGenerativeLanguageTest  = {
     fix: badSyllabusFixFunc(badAiRegex, goodAiLanguage)
 }
 
-
 const badSupportEmail = 'helpdesk@unity.edu';
 const goodSupportEmail = 'unitysupport@unity.edu';
 
@@ -266,6 +265,24 @@ export const fixSupportEmailTest: TextReplaceValidation<ISyllabusHaver> = {
     fix: badSyllabusFixFunc(badSupportEmailRegex, goodSupportEmail)
 }
 
+//Attempt at creating a honor code language fix
+const badHCLanguage = 'Any student found to be responsible for violating the Unity Environmental University Honor Code may be suspended or dismissed from the university.';
+const goodHCLanguage = 'Penalties may include, but are not limited to, grade penalty or a failing grade for the work in question or a failing grade for the course.';
+
+const badHCRegex = /Any student found to be responsible for violating the Unity Environmental University Honor Code may be suspended or dismissed from the university\./ig;
+
+export const honorCodeLanguageText: TextReplaceValidation<ISyllabusHaver> =
+{
+  name: "Fix Honor Code Language",
+  description: 'Update language at the bottom of the honor code.',
+  beforeAndAfters: [
+    [badHCLanguage, goodHCLanguage],
+    [`<p>${badHCLanguage}</p>`, `<p>${goodHCLanguage}</p>`],
+  ],
+  run: badSyllabusRunFunc(badHCRegex),
+  fix: badSyllabusFixFunc(badHCRegex, goodHCLanguage)
+}
+
 export default [
     addAiGenerativeLanguageTest,
     removeSameDayPostRestrictionTest,
@@ -279,5 +296,6 @@ export default [
     gradeTableHeadersCorrectTest,
     secondDiscussionParaOff,
     fixSupportEmailTest,
+    honorCodeLanguageText,
 ]
 

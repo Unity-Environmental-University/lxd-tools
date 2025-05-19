@@ -14,9 +14,8 @@ module.exports = {
     moduleNameMapper: {
         ...pathsToModuleNameMapper(compilerOptions.paths, {prefix: '<rootDir>/src/'}),
         "^ueu_canvas": "ueu_canvas",
-        "^webextension-polyfill$":
-
-            path.join(process.cwd(), "src", "__mocks__", "runtime.ts"),
+        "^webextension-polyfill$": 
+          "<rootDir>/src/__mocks__/runtime.ts",
         '\\.(css|scss)$': 'identity-obj-proxy',
     }
 }

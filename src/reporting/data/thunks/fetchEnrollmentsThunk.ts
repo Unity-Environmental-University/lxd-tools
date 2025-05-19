@@ -1,7 +1,7 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {setStatus} from "@/reporting/data/coursesSlice";
 import {updateEnrollment} from "@/reporting/data/enrollmentsSlice";
-import { GetEnrollmentGenConfig, getEnrollmentGenerator } from "../../../../../../../ueu_canvas";
+import { GetEnrollmentGenConfig, getEnrollmentGenerator } from "ueu_canvas";
 
 
 
