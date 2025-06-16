@@ -23,6 +23,8 @@ const entry = {
     'js/ui/course': './src/ui/course',
     'js/ui/account': './src/ui/account',
     'js/ui/module': './src/ui/module',
+
+    'js/rubricOrganize.js': './src/ui/rubricOrganize/rubricOrganize.ts',
 };
 
 const postcssLoader = {

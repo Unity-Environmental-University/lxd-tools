@@ -35,7 +35,16 @@
         "js/ui/course.js.map",
         "js/ui/account.js.map"
       ]
-    }
+    },
+    {
+      "matches": [
+        "*://*.instructure.com/courses/*/rubrics/*"
+      ],
+      "js": [
+        "js/rubricOrganize.js"
+      ],
+      "run_at":"document_end"
+    }    
   ],
   "content_scripts": [
     {
