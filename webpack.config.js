@@ -24,7 +24,7 @@ const entry = {
     'js/ui/account': './src/ui/account',
     'js/ui/module': './src/ui/module',
 
-    'js/rubricOrganize.js': './src/ui/rubricOrganize/rubricOrganize.ts',
+    'js/rubricOrganize': './src/ui/rubricOrganize/rubricOrganize.ts',
 };
 
 const postcssLoader = {
@@ -167,6 +167,7 @@ module.exports = {
         extensions: [".tsx", ".ts", ".js", ".mjs"],
         alias: {
             config: path.resolve(__dirname, process.env.NODE_ENV || 'development'),
+            'ueu_canvas': path.resolve(__dirname, 'src/ueu_canvas_stub/index.ts'), 
         },
         plugins: [
             new TsconfigPathsPlugin({}),

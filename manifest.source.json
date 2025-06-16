@@ -33,7 +33,8 @@
         "js/publish.js.map",
         "js/ui/module.js.map",
         "js/ui/course.js.map",
-        "js/ui/account.js.map"
+        "js/ui/account.js.map",
+        "js/ui/rubricOrganize.js.map"
       ]
     },
     {
