@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useState} from "react";
 import {Temporal} from "temporal-polyfill";
 import {useEffectAsync} from "@/ui/utils";
-import {Button} from "react-bootstrap";
+import {Button, Row} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 
@@ -137,7 +137,7 @@ export function UpdateStartDate(
             }
 
             if (!syllabusText) throw new MalformedSyllabusError();
-            const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, startDate, modules);
+            const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, startDate);
             if (syllabusChanges) affectedItems.concat(syllabusChanges);
 
 
@@ -171,7 +171,7 @@ export function UpdateStartDate(
         <div className={'row'}>
             {error && <div className={'ui-alert'}><h2>{error}</h2></div>}
         </div>
-        <div className={'row'}>
+        {workingStartDate && <div className={'row'}>
 
             <div className={'col-sm-4'}>
                 <Button onClick={changeStartDate} disabled={_isDisabledLocally}>
@@ -194,8 +194,10 @@ export function UpdateStartDate(
                 {startDate && workingStartDate &&
                     <label>{'\u0394'} days: {startDate.until(workingStartDate).days}</label>}
             </div>
+        </div>}
+        <Row>
             <div className={'col-sm-4'}>Update dates of assignments, announcements, and on syllabus</div>
-        </div>
+        </Row>
     </>
 }
 
@@ -203,9 +205,11 @@ class StartDateNotSetError extends Error {
     name = "StartDateNotSetError"
 }
 
-async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate, course: Course, startDate: Temporal.PlainDate | null, modules: IModuleData[]) {
+async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate, course: Course, startDate: Temporal.PlainDate | null) {
     const affectedItems: React.ReactElement[] = [];
-    const results = updatedDateSyllabusHtml(syllabusText, updateStartDate);
+    const [courseNum] = course.courseCode?.match(/\d{3}/ig) ?? [""];
+    const isGrad = parseInt(courseNum) >= 500;
+    const results = updatedDateSyllabusHtml(syllabusText, updateStartDate, isGrad);
     if (syllabusText !== results.html) {
         await course.changeSyllabus(results.html);
         if (updateStartDate != startDate) {

@@ -37,12 +37,12 @@ export function CourseUpdateInterface({
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
     const [affectedItems, setAffectedItems] = useState<React.ReactElement[]>([])
-    const [unaffectedItems, setUnaffectedItems] = useState<React.ReactElement[]>([])
+    const [_, setUnaffectedItems] = useState<React.ReactElement[]>([])
     const [failedItems, setFailedItems] = useState<React.ReactElement[]>([])
     const [loadingCount, setLoadingCount] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [mode, setMode] = useState<InterfaceMode>('fix');
-    const [startDateSetmode, setStartDateSetMode] = useState(false);
+    const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
 
     const runValidationsDisabled = !course && !isLoading() && !batchingValidations;

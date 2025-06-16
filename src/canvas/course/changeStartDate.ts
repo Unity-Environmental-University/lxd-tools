@@ -72,21 +72,28 @@ export function getUpdatedStyleTermName(termStart:Temporal.PlainDate, weekCount:
     return `DE${weekCount}W${month}.${day}.${year}`;
 }
 
-export function getOldUgTermName(termStart:Temporal.PlainDate, locale=DEFAULT_LOCALE) {
+export function getOldUgTermName(termStart:Temporal.PlainDate) {
     const year = termStart.toLocaleString(DEFAULT_LOCALE, { year: '2-digit'})
     const month = termStart.toLocaleString(DEFAULT_LOCALE, { month: 'short'})
     return `DE-${year}-${month}`;
 }
 
-export function getNewTermName(oldTermName:string, newTermStart:Temporal.PlainDate, locale= DEFAULT_LOCALE) {
+export function getNewTermName(oldTermName:string,
+                               newTermStart:Temporal.PlainDate,
+                               isGrad: boolean | undefined = undefined) {
+
     const [termName, weekCount] = oldTermName.match(/DE(\d)W\d\d\.\d\d\.\d\d/) || [];
     if (termName) return getUpdatedStyleTermName(newTermStart, weekCount);
     const termNameUg = oldTermName.match(/(DE(?:.HL|)-\d\d)-(\w+)\w{2}?/i);
-    if (termNameUg) return getUpdatedStyleTermName(newTermStart, 5);
+    const newWeekCount = isGrad ? 8 : 5;
+    if (termNameUg) return getUpdatedStyleTermName(newTermStart, newWeekCount);
     throw new MalformedSyllabusError(`Can't Recognize Term Name ${oldTermName}`)
 }
 
-export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.PlainDate, locale = DEFAULT_LOCALE) {
+export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.PlainDate,
+                                        isGrad: boolean | undefined = undefined,
+                                        locale = DEFAULT_LOCALE) {
+
     const syllabusBody = document.createElement('div');
     syllabusBody.innerHTML = html;
     const syllabusCalloutBox = syllabusBody.querySelector('div.cbt-callout-box');
@@ -114,7 +121,9 @@ export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.Pla
 
     const courseDuration = dateRange.start.until(dateRange.end);
     const newEndDate = newStartDate.add(courseDuration);
-    const newTermName = getNewTermName(oldTermName, newStartDate)
+
+
+    const newTermName = getNewTermName(oldTermName, newStartDate, isGrad)
     
     const dateRangeText = `${dateToSyllabusString(newStartDate)} - ${dateToSyllabusString(newEndDate)}`;
 
