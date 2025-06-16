@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { selectCourses } from "@/reporting/data/selectors/courseSelectors";
-import { ICourseData, ITermData } from "ueu_canvas";
+import { ICourseData, ITermData } from "../../../../../../ueu_canvas";
 
 const sortCourseByName = (a: ICourseData, b: ICourseData) => a.name.localeCompare(b.name);
 
