@@ -1,4 +1,5 @@
 import React, {ChangeEvent, useState} from "react";
+import Alert from 'react-bootstrap/Alert';
 import {Temporal} from "temporal-polyfill";
 import {useEffectAsync} from "@/ui/utils";
 import {Button, Row} from "react-bootstrap";
@@ -148,8 +149,8 @@ export function UpdateStartDate(
         } catch (error: any) {
             console.log(error);
             setAffectedItems?.(affectedItems)
-            setFailedItems?.([<div className={'ui-alert'}><h2>{error.toString()}</h2>
-                <p>{error.stack}</p></div>]);
+            setFailedItems?.([<Alert variant="danger"><h2>{error.toString()}</h2>
+                <p>{error.stack}</p></Alert>]);
             console.error(error);
         }
         endLoading();
@@ -169,7 +170,7 @@ export function UpdateStartDate(
 
     return <>
         <div className={'row'}>
-            {error && <div className={'ui-alert'}><h2>{error}</h2></div>}
+            {error && <Alert variant="danger"><h2>{error}</h2></Alert>}
         </div>
         {workingStartDate && <div className={'row'}>
 
