@@ -45,7 +45,6 @@ export function CourseUpdateInterface({
     const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
 
-    // const runValidationsDisabled = !course && isLoading() && !batchingValidations;
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
 
@@ -150,7 +149,7 @@ export function CourseUpdateInterface({
         }
     }
 
-
+    // This is the styling of the course update interface
     function FixesMode({course}: { course: Course }) {
         return <>
             <h2>Content Fixes for {course.name}</h2>
@@ -168,8 +167,8 @@ export function CourseUpdateInterface({
                 endLoading={endLoading}
             />
             <hr/>
-            <Button onClick={runValidations()} disabled={runValidationsDisabled}>Run Validations</Button>
-            {batchingValidations && <div className={'ui-alert'}>Loading Validations...</div>}
+
+            <Button onClick={runValidations()} disabled={runValidationsDisabled}>{batchingValidations ? 'Loading Validations...' : 'Run Validations'}</Button>
             {affectedItems.length > 0 && <h3>Fixes Succeeded</h3>}
             {urlRows(affectedItems, 'lxd-cu-success')}
             {failedItems.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
