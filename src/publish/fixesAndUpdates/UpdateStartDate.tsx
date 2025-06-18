@@ -162,7 +162,7 @@ export function UpdateStartDate(
     }
 
 
-    const _isDisabledLocally = isDisabled
+    const isChangeStartDateDisabled = isDisabled
         || !course || !course.id || !workingStartDate
         || (startDate && workingStartDate.equals(startDate))
         || startDate === null || error !== null;
@@ -175,7 +175,7 @@ export function UpdateStartDate(
         {workingStartDate && <div className={'row'}>
 
             <div className={'col-sm-4'}>
-                <Button onClick={changeStartDate} disabled={_isDisabledLocally}>
+                <Button onClick={changeStartDate} disabled={isChangeStartDateDisabled}>
                     Change Start Date
                 </Button>
                 <div>Update dates of assignments, announcements, and on syllabus</div>
