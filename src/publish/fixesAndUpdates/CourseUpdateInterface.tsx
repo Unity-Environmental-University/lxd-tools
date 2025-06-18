@@ -45,7 +45,7 @@ export function CourseUpdateInterface({
     const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
 
-    const runValidationsDisabled = !course && !isLoading() && !batchingValidations;
+    const runValidationsDisabled = !course && isLoading() && !batchingValidations;
 
 
     const batchValidationsOverTime = async (inValidations: CourseValidation<Course, any, any>[], batchSize:number = 10, delay=2) => {
