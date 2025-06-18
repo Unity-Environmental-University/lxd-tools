@@ -57,6 +57,7 @@ export function UpdateStartDate(
     const [syllabusText, setSyllabusText] = useState<string | null>(null);
     const [assignments, setAssignments] = useState<IAssignmentData[] | undefined>();
     const [error, setError] = useState<string | null>(null);
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
 
     const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
     const [moduleStartDate, setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
@@ -172,7 +173,10 @@ export function UpdateStartDate(
         <div className={'row'}>
             {error && <Alert variant="danger"><h2>{error}</h2></Alert>}
         </div>
-        {workingStartDate && <div className={'row'}>
+        <Button onClick={() => setShowStartDatePicker(prev => !prev)}>
+            {showStartDatePicker ? "Hide Change Start Date" : "Show Change Start Date"}
+        </Button>
+        {workingStartDate && showStartDatePicker && <div className={'row'}>
 
             <div className={'col-sm-4'}>
                 <Button onClick={changeStartDate} disabled={isChangeStartDateDisabled}>
