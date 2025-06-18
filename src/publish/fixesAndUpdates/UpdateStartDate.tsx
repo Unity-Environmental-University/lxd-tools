@@ -178,14 +178,16 @@ export function UpdateStartDate(
                 <Button onClick={changeStartDate} disabled={_isDisabledLocally}>
                     Change Start Date
                 </Button>
+                <div>Update dates of assignments, announcements, and on syllabus</div>
+            </div>
+            <div className={'col-sm-4'}>
+                <DatePicker value={workingStartDate?.toLocaleString()} onChange={updateStartDateValue}/>
                 <label>Current: {startDate?.toLocaleString('default', {
                     weekday: 'short',
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
-                })}</label></div>
-            <div className={'col-sm-4'}>
-                <DatePicker value={workingStartDate?.toLocaleString()} onChange={updateStartDateValue}/>
+                })}</label>
                 <label>Target: {workingStartDate?.toLocaleString('default', {
                     weekday: 'short',
                     month: 'short',
@@ -196,9 +198,6 @@ export function UpdateStartDate(
                     <label>{'\u0394'} days: {startDate.until(workingStartDate).days}</label>}
             </div>
         </div>}
-        <Row>
-            <div className={'col-sm-4'}>Update dates of assignments, announcements, and on syllabus</div>
-        </Row>
     </>
 }
 
