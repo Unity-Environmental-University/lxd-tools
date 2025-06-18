@@ -39,13 +39,14 @@ export function CourseUpdateInterface({
     const [affectedItems, setAffectedItems] = useState<React.ReactElement[]>([])
     const [_, setUnaffectedItems] = useState<React.ReactElement[]>([])
     const [failedItems, setFailedItems] = useState<React.ReactElement[]>([])
-    const [loadingCount, setLoadingCount] = useState(0);
+    const [deannotatingCount, setLoadingCount] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [mode, setMode] = useState<InterfaceMode>('fix');
     const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
 
-    const runValidationsDisabled = !course && isLoading() && !batchingValidations;
+    // const runValidationsDisabled = !course && isLoading() && !batchingValidations;
+    const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
 
     const batchValidationsOverTime = async (inValidations: CourseValidation<Course, any, any>[], batchSize:number = 10, delay=2) => {
@@ -110,12 +111,12 @@ export function CourseUpdateInterface({
 
     function endLoading() {
         setLoadingCount(0);
-        console.log(loadingCount, '-');
-        if (loadingCount < 0) throw new MismatchedUnloadError();
+        console.log(deannotatingCount, '-');
+        if (deannotatingCount < 0) throw new MismatchedUnloadError();
     }
 
-    function isLoading() {
-        return loadingCount > 0;
+    function isRemovingAnnotations() {
+        return deannotatingCount > 0;
     }
 
     async function removeLmAnnotations() {
@@ -154,7 +155,6 @@ export function CourseUpdateInterface({
         return <>
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint() && <RemoveAnnotationsSection/>}
-            {batchingValidations && <div className={'ui-alert'}>Loading Validations...</div>}
 
             <UpdateStartDate
                 setAffectedItems={setAffectedItems}
@@ -163,12 +163,13 @@ export function CourseUpdateInterface({
                 refreshCourse={refreshCourse}
                 course={course}
                 setStartDateOutcome={setStartDateOutcome}
-                isDisabled={loadingCount > 0}
+                isDisabled={deannotatingCount > 0}
                 startLoading={startLoading}
                 endLoading={endLoading}
             />
             <hr/>
             <Button onClick={runValidations()} disabled={runValidationsDisabled}>Run Validations</Button>
+            {batchingValidations && <div className={'ui-alert'}>Loading Validations...</div>}
             {affectedItems.length > 0 && <h3>Fixes Succeeded</h3>}
             {urlRows(affectedItems, 'lxd-cu-success')}
             {failedItems.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
@@ -179,7 +180,7 @@ export function CourseUpdateInterface({
     function RemoveAnnotationsSection() {
         return (course?.isBlueprint() && <div className={'row'}>
             <div className={'col-sm-4'}>
-                <Button onClick={removeLmAnnotations} disabled={loadingCount > 0}>
+                <Button onClick={removeLmAnnotations} disabled={deannotatingCount > 0}>
                     Remove Annotation Placeholder
                 </Button>
             </div>
@@ -190,7 +191,7 @@ export function CourseUpdateInterface({
     return (course && <>
         <Button disabled={isDisabled()} role={'button'} className={"ui-button"} onClick={(e) => setShow(true)}
         >{buttonText}</Button>
-        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!loadingCount}>
+        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!deannotatingCount}>
             <div className={'d-flex justify-content-end'}>
                 {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Show All Tests</Button>}
                 {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
