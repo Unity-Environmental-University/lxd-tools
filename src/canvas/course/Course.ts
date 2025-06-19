@@ -51,7 +51,9 @@ const HOMETILE_WIDTH = 500;
 
 export const COURSE_CODE_REGEX = /^(.+[^_])?_?(\w{4}\d{3})/i;
 
-
+/**
+ * Model class for courses
+ */
 export class Course extends BaseCanvasObject<ICourseData> implements IContentHaver,
     ICourseDataHaver,
     ICourseSettingsHaver,
