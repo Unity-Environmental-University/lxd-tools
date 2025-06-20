@@ -47,7 +47,7 @@ export function UpdateStartDate(
         setStartDateOutcome,
     }: UpdateStartDateProps) {
 
-    const [startDate, setStartDate] = useState<Temporal.PlainDate | null>();
+    const [originalStartDate, setOriginalStartDate] = useState<Temporal.PlainDate | null>();
     const [workingStartDate, setWorkingStartDate] = useState<Temporal.PlainDate | null>();
     const [error, setError] = useState<string | null>(null);
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -111,7 +111,7 @@ export function UpdateStartDate(
         }
 
         console.log("Start Date", _assignmentsStartDate?.toLocaleString());
-        setStartDate(_assignmentsStartDate);
+        setOriginalStartDate(_assignmentsStartDate);
         setWorkingStartDate(_assignmentsStartDate);
         setStartDateOutcome?.("success");
     }
@@ -127,17 +127,17 @@ export function UpdateStartDate(
         let affectedItems: React.ReactElement[] = [];
 
         try {
-            if (!startDate) throw new StartDateNotSetError();
+            if (!originalStartDate) throw new StartDateNotSetError();
             const modules = await renderAsyncGen(moduleGenerator(course.id))
             await changeModuleLockDate(course.id, modules[0], workingStartDate);
 
 
-            const affectedAssignments = await updateAssignmentDates(course.id, startDate, workingStartDate);
+            const affectedAssignments = await updateAssignmentDates(course.id, originalStartDate, workingStartDate);
             affectedItems = [...affectedItems, ...affectedAssignments
                 .map(data => new Assignment(data, course.id))
                 .map(ContentAffectedRow)
             ]
-            const contentDateOffset = startDate.until(workingStartDate).days;
+            const contentDateOffset = originalStartDate.until(workingStartDate).days;
 
             const announcementGenerator = getPagedDataGenerator<IDiscussionData>(`/api/v1/courses/${course.id}/discussion_topics`, {
                 queryParams: {
@@ -153,13 +153,13 @@ export function UpdateStartDate(
             }
 
             if (!syllabusText) throw new MalformedSyllabusError();
-            const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, startDate);
+            const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, originalStartDate);
             if (syllabusChanges) affectedItems.concat(syllabusChanges);
 
 
             setAffectedItems?.(affectedItems)
             await refreshCourse(true);
-            setStartDate(workingStartDate);
+            setOriginalStartDate(workingStartDate);
 
         } catch (error: any) {
             console.log(error);
@@ -184,8 +184,8 @@ export function UpdateStartDate(
      */
     const isChangeStartDateDisabled = isDisabled
         || !course || !course.id || !workingStartDate
-        || (startDate && workingStartDate.equals(startDate))
-        || startDate === null || error !== null;
+        || (originalStartDate && workingStartDate.equals(originalStartDate))
+        || originalStartDate === null || error !== null;
 
 
     return <>
@@ -207,7 +207,7 @@ export function UpdateStartDate(
             </div>
             <div className={'col-sm-4'}>
                 <DatePicker value={workingStartDate?.toLocaleString()} onChange={updateStartDateValue}/>
-                <label>Current: {startDate?.toLocaleString('default', {
+                <label>Current: {originalStartDate?.toLocaleString('default', {
                     weekday: 'short',
                     month: 'short',
                     day: 'numeric',
@@ -219,8 +219,8 @@ export function UpdateStartDate(
                     day: 'numeric',
                     year: 'numeric'
                 })}</label>
-                {startDate && workingStartDate &&
-                    <label>{'\u0394'} days: {startDate.until(workingStartDate).days}</label>}
+                {originalStartDate && workingStartDate &&
+                    <label>{'\u0394'} days: {originalStartDate.until(workingStartDate).days}</label>}
             </div>
         </div>}
     </>
@@ -238,19 +238,19 @@ class StartDateNotSetError extends Error {
  * A function that updates the syllabus with the new start date.
  * It modifies the syllabus HTML to reflect the new start date and returns a list of affected items
  * @param syllabusText The current syllabus text that is to be updated
- * @param updateStartDate The new start date to be applied to the syllabus
+ * @param workingStartDate The new start date to be applied to the syllabus
  * @param course The course object that contains the syllabus that will be updated
- * @param startDate The original start date of the course, used to determine if the syllabus has changed
+ * @param originalStartDate The original start date of the course, used to determine if the syllabus has changed
  * @returns a list of affected items that were changed in the syllabus
  */
-async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate, course: Course, startDate: Temporal.PlainDate | null) {
+async function updateSyllabus(syllabusText: string, workingStartDate: Temporal.PlainDate, course: Course, originalStartDate: Temporal.PlainDate | null) {
     const affectedItems: React.ReactElement[] = [];
     const [courseNum] = course.courseCode?.match(/\d{3}/ig) ?? [""];
     const isGrad = parseInt(courseNum) >= 500;
-    const results = updatedDateSyllabusHtml(syllabusText, updateStartDate, isGrad);
+    const results = updatedDateSyllabusHtml(syllabusText, workingStartDate, isGrad);
     if (syllabusText !== results.html) {
         await course.changeSyllabus(results.html);
-        if (updateStartDate != startDate) {
+        if (workingStartDate != originalStartDate) {
             affectedItems.push(<>
                 <div className={'col-sm-6'}>Changed Lock Date</div>
                 <div className={'col-sm-6'}><a href={course.htmlContentUrl + '/modules'}>Modules Page</a></div>
@@ -266,13 +266,13 @@ type PlainDate = Temporal.PlainDate;
  * A function that updates the assignment due dates based on the new start date.
  * It calculates the offset between the new start date and the working start date
  * @param courseId The ID of the course for which assignments are being updated
- * @param startDate The new start date to be applied to the assignments
+ * @param originalStartDate The new start date to be applied to the assignments
  * @param workingStartDate The original start date of the course, used to determine the offset
  * @returns A promise that resolves to the updated assignments
  */
-async function updateAssignmentDates(courseId: number, startDate: PlainDate, workingStartDate: PlainDate) {
+async function updateAssignmentDates(courseId: number, originalStartDate: PlainDate, workingStartDate: PlainDate) {
     const assignments = await renderAsyncGen(assignmentDataGen(courseId))
-    const contentDateOffset = startDate.until(workingStartDate).days;
+    const contentDateOffset = originalStartDate.until(workingStartDate).days;
     return await updateAssignmentDueDates(contentDateOffset, assignments, {courseId});
 }
 
