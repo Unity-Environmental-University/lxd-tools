@@ -131,6 +131,10 @@ export function UpdateStartDate(
         setStartDateOutcome?.("success");
     }
 
+    /**
+     * This function is called when the user clicks the "Change Start Date" button.
+     * It updates the start date of the course, assignments, announcements, and syllabus.
+     */
     async function changeStartDate() {
         startLoading();
         if (!workingStartDate) throw new StartDateNotSetError();
@@ -182,12 +186,17 @@ export function UpdateStartDate(
         endLoading();
     }
 
-
+    /**
+     * This function updates the working start date when the user selects a new date in the date picker.
+     * @param inDate The date selected by the user in the date picker.
+     */
     function updateStartDateValue(inDate: Date|null) {
         if(inDate) setWorkingStartDate(oldDateToPlainDate(inDate));
     }
 
-
+    /**
+     * This variable determines whether the "Change Start Date" button should be disabled.
+     */
     const isChangeStartDateDisabled = isDisabled
         || !course || !course.id || !workingStartDate
         || (startDate && workingStartDate.equals(startDate))
@@ -202,7 +211,7 @@ export function UpdateStartDate(
                 onClick={handleShowChangeStartDate}
                 disabled={loading}>
                 { loading ? 'Loading Components...' : 'Show Change Start Date'}
-        </Button>
+            </Button>
         {workingStartDate && showStartDatePicker && <div className={'row'}>
 
             <div className={'col-sm-4'}>
@@ -232,10 +241,23 @@ export function UpdateStartDate(
     </>
 }
 
+/**
+ * This error is thrown when the start date is not set.
+ * It is used to indicate that the user must select a start date before proceeding.
+ */
 class StartDateNotSetError extends Error {
     name = "StartDateNotSetError"
 }
 
+/**
+ * A function that updates the syllabus with the new start date.
+ * It modifies the syllabus HTML to reflect the new start date and returns a list of affected items
+ * @param syllabusText The current syllabus text that is to be updated
+ * @param updateStartDate The new start date to be applied to the syllabus
+ * @param course The course object that contains the syllabus that will be updated
+ * @param startDate The original start date of the course, used to determine if the syllabus has changed
+ * @returns a list of affected items that were changed in the syllabus
+ */
 async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate, course: Course, startDate: Temporal.PlainDate | null) {
     const affectedItems: React.ReactElement[] = [];
     const [courseNum] = course.courseCode?.match(/\d{3}/ig) ?? [""];
@@ -255,12 +277,29 @@ async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.Pl
 
 type PlainDate = Temporal.PlainDate;
 
+/**
+ * A function that updates the assignment due dates based on the new start date.
+ * It calculates the offset between the new start date and the working start date
+ * @param courseId The ID of the course for which assignments are being updated
+ * @param startDate The new start date to be applied to the assignments
+ * @param workingStartDate The original start date of the course, used to determine the offset
+ * @returns A promise that resolves to the updated assignments
+ */
 async function updateAssignmentDates(courseId: number, startDate: PlainDate, workingStartDate: PlainDate) {
     const assignments = await renderAsyncGen(assignmentDataGen(courseId))
     const contentDateOffset = startDate.until(workingStartDate).days;
     return await updateAssignmentDueDates(contentDateOffset, assignments, {courseId});
 }
 
+/**
+ * A function that generates rows for the affected items in the syllabus.
+ * It creates a list of React elements that represent the changes made to the syllabus.
+ * @param courseId The ID of the course for which the syllabus is being updated
+ * @param results The results of the syllabus update, containing the HTML and the changed text
+ * @param results.html The updated HTML content of the syllabus
+ * @param results.changedText An array of strings representing the changes made to the syllabus
+ * @returns 
+ */
 export function SyllabusAffectedItemsRows(courseId: number, results: { html: string; changedText: string[] }) {
     return results.changedText.map((changedText) => <>
             <div className={'col-sm-6'}><strong>Change:</strong>{changedText}</div>
@@ -270,6 +309,12 @@ export function SyllabusAffectedItemsRows(courseId: number, results: { html: str
     );
 }
 
+/**
+ * A function that generates a row for an item affected by the start date change.
+ * It displays the name and due date of the item, such as an assignment or discussion.
+ * @param item An item that is affected by the start date change, such as an assignment or discussion.
+ * @returns A React element that displays the name and due date of the affected item.
+ */
 export function ContentAffectedRow(item: BaseContentItem) {
     return <>
         <div className={'col-sm-6'}><a href={item.htmlContentUrl} target={"_blank"}>{item.name}</a></div>
