@@ -72,28 +72,28 @@ export function UpdateStartDate(
      * @returns {Promise<void>}
      */
     async function loadStartDates() {
+        const errors: string[] = [];
 
         // Make async call to get assignments, syllabus, and modules all at once
         // This is to avoid multiple calls to the server and to ensure that all data is fetched
-        const [localAssignments, localSyllabusText, localModules] = await Promise.all([
+        const [assignments, syllabusText, modules] = await Promise.all([
             renderAsyncGen(assignmentDataGen(course.id)),
             course.getSyllabus(),
             renderAsyncGen(moduleGenerator(course.id))
         ]);
 
         // Assignments
-        const _assignmentsStartDate = getStartDateAssignments(localAssignments);
+        const _assignmentsStartDate = getStartDateAssignments(assignments);
         console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
         if (!assignmentsStartDate?.equals(_assignmentsStartDate)) setAssignmentsStartDate(_assignmentsStartDate);
-        const errors: string[] = [];
 
         // Syllabus
-        const _syllabusStartDate = getStartDateFromSyllabus(localSyllabusText);
+        const _syllabusStartDate = getStartDateFromSyllabus(syllabusText);
         console.log("Syllabus Start Date", _syllabusStartDate.toLocaleString());
         if (!syllabusStartDate?.equals(_syllabusStartDate)) setSyllabusStartDate(_syllabusStartDate);
 
         // Module
-        const _moduleStartDate = getModuleUnlockStartDate(localModules);
+        const _moduleStartDate = getModuleUnlockStartDate(modules);
         console.log("Module Start Date", _moduleStartDate?.toLocaleString());
         if (moduleStartDate && _moduleStartDate && !moduleStartDate?.equals(_moduleStartDate)) setModuleStartDate(_moduleStartDate);
 
