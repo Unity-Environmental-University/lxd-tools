@@ -1,8 +1,7 @@
-import React, {ChangeEvent, useState} from "react";
+import React, {useState} from "react";
 import Alert from 'react-bootstrap/Alert';
 import {Temporal} from "temporal-polyfill";
-import {useEffectAsync} from "@/ui/utils";
-import {Button, Row} from "react-bootstrap";
+import {Button} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 
@@ -46,7 +45,6 @@ export function UpdateStartDate(
         endLoading,
         refreshCourse,
         setAffectedItems,
-        setUnaffectedItems,
         setFailedItems,
         setStartDateOutcome,
     }: UpdateStartDateProps) {
