@@ -58,35 +58,60 @@ export function UpdateStartDate(
     const [assignments, setAssignments] = useState<IAssignmentData[] | undefined>();
     const [error, setError] = useState<string | null>(null);
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
     const [moduleStartDate, setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
     const [assignmentsStartDate, setAssignmentsStartDate] = useState<Temporal.PlainDate | null>(null);
 
+    /**
+     * This effect runs once when the component mounts to load the initial start dates.
+     */
+    const handleShowChangeStartDate = async () => {
+        setShowStartDatePicker(true); // Show UI immediately
+        setLoading(true);
+        await loadStartDates();       // Load your data here
+        setLoading(false);
+    };
+    
+    /**
+     * This function loads the start dates for assignments, syllabus, and modules.
+     * @returns {Promise<void>}
+     */
+    async function loadStartDates() {
+        const assignmentData = await renderAsyncGen(assignmentDataGen(course.id));
 
+        //Make async call to get assignments, syllabus, and modules all at once
+        // This is to avoid multiple calls to the server and to ensure that all data is fetched
+        const [assignments, syllabusText, modules] = await Promise.all([
+            assignmentData,
+            course.getSyllabus(),
+            renderAsyncGen(moduleGenerator(course.id)),
+        ]);
 
-    useEffectAsync(async () => {
-        const localAssignments = assignments ?? await renderAsyncGen(assignmentDataGen(course.id));
+        // Assignments
+        const localAssignments = assignments ?? assignmentData;
         if(assignments === undefined) setAssignments(localAssignments);
 
+        const _assignmentsStartDate = getStartDateAssignments(assignmentData);
+        console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
+        if (!assignmentsStartDate?.equals(_assignmentsStartDate)) setAssignmentsStartDate(_assignmentsStartDate);
+        const errors: string[] = [];
+
+        // Syllabus
         const localSyllabusText = syllabusText ?? await course.getSyllabus();
         if(!syllabusText) {setSyllabusText(localSyllabusText)}
 
         const _syllabusStartDate = getStartDateFromSyllabus(localSyllabusText);
         console.log("Syllabus Start Date", _syllabusStartDate.toLocaleString());
-        setSyllabusStartDate(_syllabusStartDate);
+        if (!syllabusStartDate?.equals(_syllabusStartDate)) setSyllabusStartDate(_syllabusStartDate);
 
+        // Module
         const localModules = modules ?? await renderAsyncGen(moduleGenerator(course.id));
         if(modules === undefined) setModules(localModules);
         const _moduleStartDate = getModuleUnlockStartDate(localModules);
         console.log("Module Start Date", _moduleStartDate?.toLocaleString());
-        setModuleStartDate(_moduleStartDate);
-
-        const _assignmentsStartDate = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(course.id)));
-        console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
-        setAssignmentsStartDate(_assignmentsStartDate);
-        const errors: string[] = [];
-
+        if (moduleStartDate && _moduleStartDate && !moduleStartDate?.equals(_moduleStartDate)) setModuleStartDate(_moduleStartDate);
 
         if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment start date mismatch");
         if(_syllabusStartDate.until(_assignmentsStartDate).days != 0) errors.push("Syllabus start date mismatch");
@@ -104,7 +129,7 @@ export function UpdateStartDate(
         setStartDate(_assignmentsStartDate);
         setWorkingStartDate(_assignmentsStartDate);
         setStartDateOutcome?.("success");
-    }, [course]);
+    }
 
     async function changeStartDate() {
         startLoading();
@@ -173,8 +198,10 @@ export function UpdateStartDate(
         <div className={'row'}>
             {error && <Alert variant="danger"><h2>{error}</h2></Alert>}
         </div>
-        <Button onClick={() => setShowStartDatePicker(prev => !prev)}>
-            {showStartDatePicker ? "Hide Change Start Date" : "Show Change Start Date"}
+            <Button 
+                onClick={handleShowChangeStartDate}
+                disabled={loading}>
+                { loading ? 'Loading Components...' : 'Show Change Start Date'}
         </Button>
         {workingStartDate && showStartDatePicker && <div className={'row'}>
 
