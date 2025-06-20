@@ -18,12 +18,10 @@ import {assignmentDataGen, updateAssignmentDueDates} from "@canvas/content/assig
 import {getPagedDataGenerator} from "@canvas/fetch/getPagedDataGenerator";
 import {BaseContentItem} from "@canvas/content/BaseContentItem";
 import {Discussion} from "@canvas/content/discussions/Discussion";
-
-import {IModuleData} from "@canvas/canvasDataDefs";
 import {renderAsyncGen} from "@canvas/canvasUtils";
 
 
-import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
+import {IDiscussionData} from "@canvas/content/types";
 import {Assignment} from "@canvas/content/assignments/Assignment";
 
 type UpdateStartDateProps = {
@@ -51,9 +49,6 @@ export function UpdateStartDate(
 
     const [startDate, setStartDate] = useState<Temporal.PlainDate | null>();
     const [workingStartDate, setWorkingStartDate] = useState<Temporal.PlainDate | null>();
-    const [modules, setModules] = useState<IModuleData[]|undefined>();
-    const [syllabusText, setSyllabusText] = useState<string | null>(null);
-    const [assignments, setAssignments] = useState<IAssignmentData[] | undefined>();
     const [error, setError] = useState<string | null>(null);
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -77,40 +72,32 @@ export function UpdateStartDate(
      * @returns {Promise<void>}
      */
     async function loadStartDates() {
-        const assignmentData = await renderAsyncGen(assignmentDataGen(course.id));
 
-        //Make async call to get assignments, syllabus, and modules all at once
+        // Make async call to get assignments, syllabus, and modules all at once
         // This is to avoid multiple calls to the server and to ensure that all data is fetched
-        const [assignments, syllabusText, modules] = await Promise.all([
-            assignmentData,
+        const [localAssignments, localSyllabusText, localModules] = await Promise.all([
+            renderAsyncGen(assignmentDataGen(course.id)),
             course.getSyllabus(),
-            renderAsyncGen(moduleGenerator(course.id)),
+            renderAsyncGen(moduleGenerator(course.id))
         ]);
 
         // Assignments
-        const localAssignments = assignments ?? assignmentData;
-        if(assignments === undefined) setAssignments(localAssignments);
-
-        const _assignmentsStartDate = getStartDateAssignments(assignmentData);
+        const _assignmentsStartDate = getStartDateAssignments(localAssignments);
         console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
         if (!assignmentsStartDate?.equals(_assignmentsStartDate)) setAssignmentsStartDate(_assignmentsStartDate);
         const errors: string[] = [];
 
         // Syllabus
-        const localSyllabusText = syllabusText ?? await course.getSyllabus();
-        if(!syllabusText) {setSyllabusText(localSyllabusText)}
-
         const _syllabusStartDate = getStartDateFromSyllabus(localSyllabusText);
         console.log("Syllabus Start Date", _syllabusStartDate.toLocaleString());
         if (!syllabusStartDate?.equals(_syllabusStartDate)) setSyllabusStartDate(_syllabusStartDate);
 
         // Module
-        const localModules = modules ?? await renderAsyncGen(moduleGenerator(course.id));
-        if(modules === undefined) setModules(localModules);
         const _moduleStartDate = getModuleUnlockStartDate(localModules);
         console.log("Module Start Date", _moduleStartDate?.toLocaleString());
         if (moduleStartDate && _moduleStartDate && !moduleStartDate?.equals(_moduleStartDate)) setModuleStartDate(_moduleStartDate);
 
+        // Error Checking
         if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment start date mismatch");
         if(_syllabusStartDate.until(_assignmentsStartDate).days != 0) errors.push("Syllabus start date mismatch");
         if(_moduleStartDate?.until(_syllabusStartDate).days != 0) errors.push("Module start date mismatch");
