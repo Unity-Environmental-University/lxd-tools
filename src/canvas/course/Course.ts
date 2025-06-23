@@ -24,7 +24,7 @@ import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGe
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles} from "../profile";
-import {getCourseById, getCourseData,  getGradingStandards, getSingleCourse} from "./index";
+import {getCourseById, getCourseData,  getCourseDataGenerator,  getCourseGenerator,  getGradingStandards, getSingleCourse} from "./index";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
 import {Term} from "@/canvas/term/Term";
@@ -439,23 +439,26 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         const migrations = await getPagedData(`/api/v1/courses/${this.id}/content_migrations`);
         const parentCode = this.devCode;
 
-        if (migrations.length < 1) {
-            console.log('no migrations found');
-            if (return_dev_search) {
-                return getSingleCourse(parentCode, this.getAccountIds())
-            } else return;
-        }
         migrations.sort((a, b) => b.id - a.id);
 
-        try {
-            for (const migration of migrations) {
-                const course = await Course.getCourseById(migration['settings']['source_course_id'])
-                if (course && course.codePrefix.includes("DEV")) return course;
-            }
-        } catch (e) {
-            return await getSingleCourse(parentCode, this.getAccountIds());
+        for (const migration of migrations) {
+          const course = await Course.getCourseById(migration['settings']['source_course_id'])
+          if (course && /^DEV/.test(course.codePrefix)){ 
+            return_dev_search = true;
+            return course;
+          } 
         }
-        return await getSingleCourse(parentCode, this.getAccountIds());
+
+        if (!return_dev_search) { 
+          const courseGen = getCourseGenerator(parentCode, this.getAccountIds(), undefined,{
+                  queryParams:{
+                    search_term:parentCode
+                  }
+                });
+                for await (const course of courseGen) {
+                  if(course.courseCode && /^DEV/.test(course.courseCode)) return course;
+                }
+        } else return;
     }
 
     getAccountIds() {
