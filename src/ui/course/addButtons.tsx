@@ -31,15 +31,18 @@ export async function addSectionsButton(header: HTMLElement, bp: Course, current
 }
 
 export async function addDevButton(header: HTMLElement, course: Course) {
-    const parentCourse = await course.getParentCourse();
-    if (parentCourse) {
-        const parentBtn = document.createElement('btn');
+    if(course.courseCode && !course.courseCode.includes('DEV')) {
+      const parentCourse = await course.getParentCourse();
 
-        parentBtn.classList.add('btn');
-        parentBtn.innerHTML = "DEV";
-        parentBtn.title = "Open the dev version of this course"
-        header?.append(parentBtn);
-        parentBtn.addEventListener('click', async () => await openThisContentInTarget(course, parentCourse))
+      if (parentCourse) {
+          const parentBtn = document.createElement('btn');
+
+          parentBtn.classList.add('btn');
+          parentBtn.innerHTML = "DEV";
+          parentBtn.title = "Open the dev version of this course"
+          header?.append(parentBtn);
+          parentBtn.addEventListener('click', async () => await openThisContentInTarget(course, parentCourse))
+      }
     }
 }
 
