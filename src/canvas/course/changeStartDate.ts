@@ -90,6 +90,7 @@ export function getNewTermName(oldTermName:string,
     throw new MalformedSyllabusError(`Can't Recognize Term Name ${oldTermName}`)
 }
 
+
 export function updatedDateSyllabusHtml(html: string, newStartDate: Temporal.PlainDate,
                                         isGrad: boolean | undefined = undefined,
                                         locale = DEFAULT_LOCALE) {

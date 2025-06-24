@@ -98,9 +98,13 @@ export function UpdateStartDate(
         if (moduleStartDate && _moduleStartDate && !moduleStartDate?.equals(_moduleStartDate)) setModuleStartDate(_moduleStartDate);
 
         // Error Checking
-        if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment start date mismatch");
-        if(_syllabusStartDate.until(_assignmentsStartDate).days != 0) errors.push("Syllabus start date mismatch");
-        if(_moduleStartDate?.until(_syllabusStartDate).days != 0) errors.push("Module start date mismatch");
+        const syllabusStartMonth = _syllabusStartDate.month;
+        const syllabusStartDay = _syllabusStartDate.day;
+
+        if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment and module lock do not match");
+        if(syllabusStartMonth != _moduleStartDate?.month || syllabusStartDay != _moduleStartDate?.day) errors.push("Syllabus and module lock do not match");
+
+
         if(errors.length > 0) {
 
             const errorString = "Start date mismatch: Syllabus: " + _syllabusStartDate.toLocaleString() +
