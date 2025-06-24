@@ -23,7 +23,7 @@ export type ValidationOption = CourseValidation & IMultiSelectOption
 function PublishApp() {
 
     const [course, setCourse] = useState<Course>();
-    const [parentCourse, setParentCourse] = useState<Course>();
+    const [parentCourse, setParentCourse] = useState<Course | null | undefined>();
     const [user, setUser] = useState<IUserData>();
 
     async function getCourse(force:boolean = false) {
@@ -48,7 +48,7 @@ function PublishApp() {
         <Provider store={store}>
             <CourseUpdateInterface
                 course={course}
-                parentCourse={parentCourse}
+                parentCourse={parentCourse??undefined}
                 allValidations={validations}
                 refreshCourse={() => getCourse(true)
             }/>
