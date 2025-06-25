@@ -44,6 +44,7 @@ export function CourseUpdateInterface({
     const [mode, setMode] = useState<InterfaceMode>('fix');
     const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
+    const [validationsFinished, setValidationsFinished] = useState(false);
 
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
@@ -73,9 +74,11 @@ export function CourseUpdateInterface({
      */
     const runValidations = () => async () => {
         if(batchingValidations) return;
+        setValidationsFinished(false);
         setBatchingValidations(true);
         await batchValidationsOverTime(allValidations);
         setBatchingValidations(false);
+        setValidationsFinished(true);
     }
 
     useEffect(() => {
@@ -212,7 +215,11 @@ export function CourseUpdateInterface({
             />
             <hr/>
 
-            <Button onClick={runValidations()} disabled={runValidationsDisabled}>{batchingValidations ? 'Loading Validations...' : 'Run Validations'}</Button>
+            <div className="d-flex align-items-center gap-2">
+                <Button onClick={runValidations()} disabled={runValidationsDisabled}>{batchingValidations ? 'Loading Validations...' : 'Run Validations'}</Button>
+                {error && <div className={'alert alert-danger mb-0 py-2 px-2'}>Error running validations: {error}</div>}
+                {validationsFinished && <div className={'alert alert-success mb-0 py-2 px-2'}>Validations Finished!</div>}
+            </div>
             {affectedItems.length > 0 && <h3>Fixes Succeeded</h3>}
             {urlRows(affectedItems, 'lxd-cu-success')}
             {failedItems.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
