@@ -24,7 +24,7 @@ export async function getResizedBlob(src: string, width: number, height: number 
             canvas.width = width;
             canvas.height = height;
             ctx.drawImage(image, 0, 0, width, height);
-            canvas.toBlob(resolve);
+            canvas.toBlob(resolve, 'image/jpeg', 0.8);
         }
     })
 }
