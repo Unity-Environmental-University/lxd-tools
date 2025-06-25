@@ -5,7 +5,7 @@ import {CanvasData} from "@/canvas/canvasDataDefs";
 import assert from "assert";
 import {deepObjectMerge, formDataify, ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
-import {getResizedBlob} from "@/canvas/image";
+import {getResizedBlob, changeExtension} from "@/canvas/image";
 import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
 import {ContentKind} from "@/canvas/content/ContentKind";
 import {NotImplementedException} from "@/canvas/NotImplementedException";
@@ -164,6 +164,12 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return el;
     }
 
+    /**
+     * This function resizes the banner image of the content item to a maximum width.
+     * If the image is already smaller than the maximum width, it does nothing.
+     * @param maxWidth A constant that defines the maximum width of the banner image.
+     * @returns A promise that resolves to the uploaded file data if the image was resized and uploaded successfully.
+     */
     async resizeBanner(maxWidth = SAFE_MAX_BANNER_WIDTH) {
         const bannerImg = getBannerImage(this);
         if (!bannerImg) throw new Error("No banner");
@@ -171,9 +177,9 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         if (!fileData) throw new Error("File not found");
         if (bannerImg.naturalWidth < maxWidth) return; //Dont resize image unless we're shrinking it
         const resizedImageBlob = await getResizedBlob(bannerImg.src, maxWidth);
-        const fileName = fileData.filename;
+        if (!resizedImageBlob) throw new Error("Failed to resize image");
+        const fileName = changeExtension(fileData.filename, 'jpg'); //Change extension to jpg
         const fileUploadUrl = `/api/v1/courses/${this.courseId}/files`
-        assert(resizedImageBlob);
         const file = new File([resizedImageBlob], fileName)
         return await uploadFile(file, fileData.folder_id, fileUploadUrl);
     }
