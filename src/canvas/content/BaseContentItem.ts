@@ -164,6 +164,12 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return el;
     }
 
+    /**
+     * This function resizes the banner image of the content item to a maximum width.
+     * If the image is already smaller than the maximum width, it does nothing.
+     * @param maxWidth A constant that defines the maximum width of the banner image.
+     * @returns A promise that resolves to the uploaded file data if the image was resized and uploaded successfully.
+     */
     async resizeBanner(maxWidth = SAFE_MAX_BANNER_WIDTH) {
         const bannerImg = getBannerImage(this);
         if (!bannerImg) throw new Error("No banner");
