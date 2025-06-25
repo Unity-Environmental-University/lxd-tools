@@ -74,7 +74,7 @@ export function CourseUpdateInterface({
     const runValidations = () => async () => {
         if(batchingValidations) return;
         setBatchingValidations(true);
-        await batchValidationsOverTime(allValidations, 10, 2);
+        await batchValidationsOverTime(allValidations);
         setBatchingValidations(false);
     }
 
