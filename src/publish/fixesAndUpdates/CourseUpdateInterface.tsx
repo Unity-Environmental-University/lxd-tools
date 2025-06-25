@@ -47,7 +47,13 @@ export function CourseUpdateInterface({
 
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
-
+    /**
+     * This function batches validations over time, allowing for a smoother UI experience
+     * by processing a limited number of validations at a time with a delay in between.
+     * @param inValidations The array of validations to process
+     * @param batchSize The number of validations to process in each batch. Defaults to 10.
+     * @param delay The delay in seconds between each batch processing. If not specified, defaults to 2 seconds.
+     */
     const batchValidationsOverTime = async (inValidations: CourseValidation<Course, any, any>[], batchSize:number = 10, delay=2) => {
         let localValidations = [...validations];
         inValidations = inValidations.filter(courseSpecificTestFilter);
@@ -61,6 +67,10 @@ export function CourseUpdateInterface({
         }
     }
 
+    /**
+     * This function is designed to be called when the user clicks the "Run Validations"
+     * @returns  A function that runs all validations in batches over time.
+     */
     const runValidations = () => async () => {
         if(batchingValidations) return;
         setBatchingValidations(true);
@@ -73,6 +83,12 @@ export function CourseUpdateInterface({
         onChangeMode && onChangeMode(mode)
     }, [mode]);
 
+    /**
+     * This function filters validations based on the course code.
+     * @param validation  The validation to filter by course code
+     * @returns Boolean indicating whether the validation applies to the current course.
+     * If the validation has no course codes specified, it returns true.
+     */
     const courseSpecificTestFilter = (validation: CourseValidation<Course, any, any>) => {
         if (!validation.courseCodes) return true;
         for (const code of validation.courseCodes) {
@@ -95,7 +111,11 @@ export function CourseUpdateInterface({
         }
         }, [course]);
 
-    /* increment and decrement is loading just in case we end up setting it asynchronously somehow */
+    /**
+     * This function starts the loading process for the course update interface.
+     * It initializes the loading count, clears the lists of affected, unaffected, and failed items.
+     * increment and decrement is loading just in case we end up setting it asynchronously somehow.
+     */
     function startLoading() {
         setLoadingCount(1);
         setFailedItems([]);
@@ -103,21 +123,35 @@ export function CourseUpdateInterface({
         setUnaffectedItems([]);
     }
 
+    /**
+     * This function checks if the course update interface is disabled.
+     * It returns true if the course is not defined or if the course is neither a blueprint or a development course.
+     * @returns  Boolean indicating whether the course update interface is disabled.
+     */
     function isDisabled() {
         if(!course) return true;
         return !(course.isBlueprint() || course.isDev);
     }
 
+    /**
+     * This function ends the loading process for the course update interface.
+     */
     function endLoading() {
         setLoadingCount(0);
         console.log(deannotatingCount, '-');
         if (deannotatingCount < 0) throw new MismatchedUnloadError();
     }
 
+    /**
+     * This function increments the deannotating count, which is used to track the number of ongoing annotation removals.
+     */
     function isRemovingAnnotations() {
         return deannotatingCount > 0;
     }
 
+    /**
+     * This function removes Learning Material annotations from the course.
+     */
     async function removeLmAnnotations() {
         assert(course);
         startLoading();
@@ -133,7 +167,12 @@ export function CourseUpdateInterface({
         endLoading();
     }
 
-
+    /**
+     * This function generates rows of links for the course update interface.
+     * @param links An array of React elements representing links to course content.
+     * @param className A CSS class name to apply to each row of links, defaulting to 'lxd-cu'.
+     * @returns An array of React elements, each representing a row of links.
+     */
     function urlRows(links: React.ReactElement[], className = 'lxd-cu') {
         return links.map((link, i) =>
             <div key={i} className={['row', className].join(' ')}>
@@ -141,6 +180,11 @@ export function CourseUpdateInterface({
             </div>)
     }
 
+    /**
+     * A function that sets the outcome of the start date update operation.
+     * If the outcome is 'success', it sets the start date set mode to true.
+     * @param outcome  The outcome of the start date update operation.
+     */
     function setStartDateOutcome(outcome: string) {
         if (outcome === 'success') {
             setStartDateSetMode(true);
@@ -176,6 +220,11 @@ export function CourseUpdateInterface({
         </>
     }
 
+    /**
+     * This function renders a section for removing annotations from Learning Material pages.
+     * It is only displayed if the course is a blueprint course.
+     * @returns A React element representing the section for removing annotations.
+     */
     function RemoveAnnotationsSection() {
         return (course?.isBlueprint() && <div className={'row'}>
             <div className={'col-sm-4'}>
