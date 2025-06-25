@@ -79,6 +79,7 @@ export function CourseUpdateInterface({
         await batchValidationsOverTime(allValidations);
         setBatchingValidations(false);
         setValidationsFinished(true);
+        await refreshCourse();
     }
 
     useEffect(() => {
