@@ -195,12 +195,13 @@ export function UpdateStartDate(
     return <>
         <div className={'row'}>
             {error && <Alert variant="danger"><h2>{error}</h2></Alert>}
-        </div>
+        </div>{!showStartDatePicker &&
             <Button 
                 onClick={handleShowChangeStartDate}
                 disabled={loading}>
                 { loading ? 'Loading Components...' : 'Show Change Start Date'}
             </Button>
+     }
         {workingStartDate && showStartDatePicker && <div className={'row'}>
 
             <div className={'col-sm-4'}>
