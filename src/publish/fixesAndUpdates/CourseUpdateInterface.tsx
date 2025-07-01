@@ -33,19 +33,55 @@ export function CourseUpdateInterface({
     onChangeMode,
 }: CourseUpdateInterfaceProps) {
 
-    const [validations, setValidations] = useState<CourseValidation<Course, any, any>[]>(allValidations);
+    const [validations, setValidations] = useState<CourseValidation<Course, any, any>[]>([]);
     const [show, setShow] = useState(false)
     const [buttonText, setButtonText] = useState('Content Fixes');
     const [affectedItems, setAffectedItems] = useState<React.ReactElement[]>([])
-    const [unaffectedItems, setUnaffectedItems] = useState<React.ReactElement[]>([])
+    const [_, setUnaffectedItems] = useState<React.ReactElement[]>([])
     const [failedItems, setFailedItems] = useState<React.ReactElement[]>([])
     const [loadingCount, setLoadingCount] = useState(0);
-    const [mode, setMode] = useState<InterfaceMode>('fix')
+    const [error, setError] = useState<string | null>(null);
+    const [mode, setMode] = useState<InterfaceMode>('fix');
+    const [startDateSetMode, setStartDateSetMode] = useState(false);
+    const [batchingValidations, setBatchingValidations] = useState(false);
+
+    const runValidationsDisabled = !course && !isLoading() && !batchingValidations;
+
+
+    const batchValidationsOverTime = async (inValidations: CourseValidation<Course, any, any>[], batchSize:number = 10, delay=2) => {
+        let localValidations = [...validations];
+        inValidations = inValidations.filter(courseSpecificTestFilter);
+
+        for(let i = 0; i < inValidations.length; i+= batchSize) {
+            const batch = inValidations.slice(i, i + batchSize);
+            localValidations = [...localValidations, ...batch];
+            setValidations(localValidations);
+
+            await new Promise(resolve => setTimeout(resolve, delay * 1000));
+        }
+    }
+
+    const runValidations = () => async () => {
+        if(batchingValidations) return;
+        setBatchingValidations(true);
+        await batchValidationsOverTime(allValidations, 10, 2);
+        setBatchingValidations(false);
+    }
 
     useEffect(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         onChangeMode && onChangeMode(mode)
     }, [mode]);
+
+    const courseSpecificTestFilter = (validation: CourseValidation<Course, any, any>) => {
+        if (!validation.courseCodes) return true;
+        for (const code of validation.courseCodes) {
+            if (course?.parsedCourseCode?.toUpperCase().includes(code.toLocaleUpperCase('en-US'))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     useEffectAsync(async () => {
         if (!course) return;
@@ -57,17 +93,7 @@ export function CourseUpdateInterface({
         } else {
             setButtonText("Can Only Fix from BP or DEV")
         }
-
-        setValidations(allValidations.filter(validation => {
-            if(!validation.courseCodes) return true;
-            for(const code of validation.courseCodes) {
-                if ( course.parsedCourseCode?.toUpperCase().includes(code.toLocaleUpperCase('en-US'))) {
-                    return true;
-                }
-            }
-            return false;
-        }))
-    }, [course]);
+        }, [course]);
 
     /* increment and decrement is loading just in case we end up setting it asynchronously somehow */
     function startLoading() {
@@ -115,26 +141,36 @@ export function CourseUpdateInterface({
             </div>)
     }
 
+    function setStartDateOutcome(outcome: string) {
+        if (outcome === 'success') {
+            setStartDateSetMode(true);
+        } else {
+            setError(outcome);
+        }
+    }
+
 
     function FixesMode({course}: { course: Course }) {
         return <>
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint() && <RemoveAnnotationsSection/>}
+            {batchingValidations && <div className={'ui-alert'}>Loading Validations...</div>}
+
             <UpdateStartDate
                 setAffectedItems={setAffectedItems}
                 setUnaffectedItems={setUnaffectedItems}
                 setFailedItems={setFailedItems}
                 refreshCourse={refreshCourse}
                 course={course}
+                setStartDateOutcome={setStartDateOutcome}
                 isDisabled={loadingCount > 0}
                 startLoading={startLoading}
                 endLoading={endLoading}
             />
             <hr/>
+            <Button onClick={runValidations()} disabled={runValidationsDisabled}>Run Validations</Button>
             {affectedItems.length > 0 && <h3>Fixes Succeeded</h3>}
             {urlRows(affectedItems, 'lxd-cu-success')}
-            {unaffectedItems.length > 0 && <h3>Fix not Needed</h3>}
-            {urlRows(unaffectedItems, 'lxd-cu-fail')}
             {failedItems.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
             {urlRows(failedItems, 'lxd-cu-fail')}
         </>

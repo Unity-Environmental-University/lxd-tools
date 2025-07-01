@@ -1,28 +1,29 @@
 import React, {ChangeEvent, useState} from "react";
 import {Temporal} from "temporal-polyfill";
 import {useEffectAsync} from "@/ui/utils";
-import {Button} from "react-bootstrap";
+import {Button, Row} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 
 import {
-    getStartDateAssignments, MalformedSyllabusError,
+    getModuleUnlockStartDate,
+    getStartDateAssignments, getStartDateFromSyllabus, MalformedSyllabusError,
     updatedDateSyllabusHtml
-} from "@/canvas/course/changeStartDate";
-import {changeModuleLockDate, moduleGenerator} from "@/canvas/course/modules";
+} from "@canvas/course/changeStartDate";
+import {changeModuleLockDate, moduleGenerator} from "@canvas/course/modules";
 import {oldDateToPlainDate} from "@/date";
 
-import {Course} from "@/canvas/course/Course";
-import {assignmentDataGen, updateAssignmentDueDates} from "@/canvas/content/assignments";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {Discussion} from "@/canvas/content/discussions/Discussion";
+import {Course} from "@canvas/course/Course";
+import {assignmentDataGen, updateAssignmentDueDates} from "@canvas/content/assignments";
+import {getPagedDataGenerator} from "@canvas/fetch/getPagedDataGenerator";
+import {BaseContentItem} from "@canvas/content/BaseContentItem";
+import {Discussion} from "@canvas/content/discussions/Discussion";
 
-import {IModuleData} from "@/canvas/canvasDataDefs";
+import {IModuleData} from "@canvas/canvasDataDefs";
 import {renderAsyncGen} from "@canvas/canvasUtils";
 
 
-import {IDiscussionData} from "@canvas/content/types";
+import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
 import {Assignment} from "@canvas/content/assignments/Assignment";
 
 type UpdateStartDateProps = {
@@ -34,6 +35,7 @@ type UpdateStartDateProps = {
     isDisabled: boolean,
     startLoading: () => void,
     endLoading: () => void
+    setStartDateOutcome?: (outcome: string) => void
 }
 export function UpdateStartDate(
     {
@@ -44,19 +46,63 @@ export function UpdateStartDate(
         refreshCourse,
         setAffectedItems,
         setUnaffectedItems,
-        setFailedItems
+        setFailedItems,
+        setStartDateOutcome,
     }: UpdateStartDateProps) {
 
     const [startDate, setStartDate] = useState<Temporal.PlainDate | null>();
     const [workingStartDate, setWorkingStartDate] = useState<Temporal.PlainDate | null>();
+    const [modules, setModules] = useState<IModuleData[]|undefined>();
+    const [syllabusText, setSyllabusText] = useState<string | null>(null);
+    const [assignments, setAssignments] = useState<IAssignmentData[] | undefined>();
+    const [error, setError] = useState<string | null>(null);
+
+    const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
+    const [moduleStartDate, setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
+    const [assignmentsStartDate, setAssignmentsStartDate] = useState<Temporal.PlainDate | null>(null);
+
+
+
     useEffectAsync(async () => {
-        let date = await course.getStartDateFromModules();
-        if (!date) date = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(course.id)))
+        const localAssignments = assignments ?? await renderAsyncGen(assignmentDataGen(course.id));
+        if(assignments === undefined) setAssignments(localAssignments);
 
-        setStartDate(date);
-        setWorkingStartDate(date);
+        const localSyllabusText = syllabusText ?? await course.getSyllabus();
+        if(!syllabusText) {setSyllabusText(localSyllabusText)}
+
+        const _syllabusStartDate = getStartDateFromSyllabus(localSyllabusText);
+        console.log("Syllabus Start Date", _syllabusStartDate.toLocaleString());
+        setSyllabusStartDate(_syllabusStartDate);
+
+        const localModules = modules ?? await renderAsyncGen(moduleGenerator(course.id));
+        if(modules === undefined) setModules(localModules);
+        const _moduleStartDate = getModuleUnlockStartDate(localModules);
+        console.log("Module Start Date", _moduleStartDate?.toLocaleString());
+        setModuleStartDate(_moduleStartDate);
+
+        const _assignmentsStartDate = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(course.id)));
+        console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
+        setAssignmentsStartDate(_assignmentsStartDate);
+        const errors: string[] = [];
+
+
+        if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment start date mismatch");
+        if(_syllabusStartDate.until(_assignmentsStartDate).days != 0) errors.push("Syllabus start date mismatch");
+        if(_moduleStartDate?.until(_syllabusStartDate).days != 0) errors.push("Module start date mismatch");
+        if(errors.length > 0) {
+
+            const errorString = "Start date mismatch: Syllabus: " + _syllabusStartDate.toLocaleString() +
+                ", Module: " + _moduleStartDate?.toLocaleString() + ", Assignments: " + _assignmentsStartDate.toLocaleString();
+            setError(errorString)
+            setStartDateOutcome?.(errorString);
+            return;
+        }
+
+        console.log("Start Date", _assignmentsStartDate?.toLocaleString());
+        setStartDate(_assignmentsStartDate);
+        setWorkingStartDate(_assignmentsStartDate);
+        setStartDateOutcome?.("success");
     }, [course]);
-
 
     async function changeStartDate() {
         startLoading();
@@ -91,18 +137,18 @@ export function UpdateStartDate(
             }
 
             if (!syllabusText) throw new MalformedSyllabusError();
-            const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, startDate, modules);
+            const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, startDate);
             if (syllabusChanges) affectedItems.concat(syllabusChanges);
 
 
-            setAffectedItems && setAffectedItems(affectedItems)
+            setAffectedItems?.(affectedItems)
             await refreshCourse(true);
             setStartDate(workingStartDate);
 
         } catch (error: any) {
             console.log(error);
-            setAffectedItems && setAffectedItems(affectedItems)
-            setFailedItems && setFailedItems([<div className={'ui-alert'}><h2>{error.toString()}</h2>
+            setAffectedItems?.(affectedItems)
+            setFailedItems?.([<div className={'ui-alert'}><h2>{error.toString()}</h2>
                 <p>{error.stack}</p></div>]);
             console.error(error);
         }
@@ -115,10 +161,20 @@ export function UpdateStartDate(
     }
 
 
+    const _isDisabledLocally = isDisabled
+        || !course || !course.id || !workingStartDate
+        || (startDate && workingStartDate.equals(startDate))
+        || startDate === null || error !== null;
+
+
     return <>
         <div className={'row'}>
+            {error && <div className={'ui-alert'}><h2>{error}</h2></div>}
+        </div>
+        {workingStartDate && <div className={'row'}>
+
             <div className={'col-sm-4'}>
-                <Button onClick={changeStartDate} disabled={isDisabled}>
+                <Button onClick={changeStartDate} disabled={_isDisabledLocally}>
                     Change Start Date
                 </Button>
                 <label>Current: {startDate?.toLocaleString('default', {
@@ -138,8 +194,10 @@ export function UpdateStartDate(
                 {startDate && workingStartDate &&
                     <label>{'\u0394'} days: {startDate.until(workingStartDate).days}</label>}
             </div>
+        </div>}
+        <Row>
             <div className={'col-sm-4'}>Update dates of assignments, announcements, and on syllabus</div>
-        </div>
+        </Row>
     </>
 }
 
@@ -147,9 +205,11 @@ class StartDateNotSetError extends Error {
     name = "StartDateNotSetError"
 }
 
-async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate, course: Course, startDate: Temporal.PlainDate | null, modules: IModuleData[]) {
+async function updateSyllabus(syllabusText: string, updateStartDate: Temporal.PlainDate, course: Course, startDate: Temporal.PlainDate | null) {
     const affectedItems: React.ReactElement[] = [];
-    const results = updatedDateSyllabusHtml(syllabusText, updateStartDate);
+    const [courseNum] = course.courseCode?.match(/\d{3}/ig) ?? [""];
+    const isGrad = parseInt(courseNum) >= 500;
+    const results = updatedDateSyllabusHtml(syllabusText, updateStartDate, isGrad);
     if (syllabusText !== results.html) {
         await course.changeSyllabus(results.html);
         if (updateStartDate != startDate) {
@@ -166,15 +226,7 @@ type PlainDate = Temporal.PlainDate;
 
 async function updateAssignmentDates(courseId: number, startDate: PlainDate, workingStartDate: PlainDate) {
     const assignments = await renderAsyncGen(assignmentDataGen(courseId))
-    const affectedItems = [];
-    const startOfFirstWeek = getStartDateAssignments(assignments);
-    let contentDateOffset = startDate.until(workingStartDate).days;
-    const startOfFirstWeekOffset = startOfFirstWeek.until(workingStartDate).days;
-
-    if (contentDateOffset != startOfFirstWeekOffset) {
-        affectedItems.push(<div>Note: start date mismatch. Offsetting content based on </div>)
-        contentDateOffset = startDate.until(startOfFirstWeek).days;
-    }
+    const contentDateOffset = startDate.until(workingStartDate).days;
     return await updateAssignmentDueDates(contentDateOffset, assignments, {courseId});
 }
 

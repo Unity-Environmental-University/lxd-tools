@@ -28,4 +28,10 @@ dist/
 *.d.ts
 .env.dev
 .env.prod
+<<<<<<< HEAD
 package-lock.json
+=======
+/.vs/lxd-tools/copilot-chat/d67dcb05/sessions/01faad3c-c74e-4a73-95d9-f091b26db37c
+/.vs
+/package-lock.json
+>>>>>>> greg

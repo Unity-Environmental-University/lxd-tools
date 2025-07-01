@@ -7,6 +7,7 @@ import footerOnFrontPageTest from "@publish/fixesAndUpdates/validations/courseCo
 import {
     moduleElementsAreRequiredValidation
 } from "@publish/fixesAndUpdates/validations/courseContent/moduleElementsAreRequired";
+import {updateSupportPage} from "@publish/fixesAndUpdates/validations/courseContent/updateSupportPage";
 
 
 export default [
@@ -17,4 +18,5 @@ export default [
     removeGradeTable,
     footerOnFrontPageTest,
     moduleElementsAreRequiredValidation,
+    updateSupportPage,
 ]

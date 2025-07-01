@@ -39,7 +39,7 @@ export function CourseValidator({course, tests, refreshCourse, showOnlyFailures 
         {showOnlyFailures || <h2 data-testid="header">Course Settings and Content Tests</h2>}
 
         {tests.map((test, i) => <ValidationRow
-            key={`${course.id}${test.name}${i}`}
+            key={`${course.id}${test.name}`}
             course={course}
             test={test}
             showOnlyFailures={showOnlyFailures}

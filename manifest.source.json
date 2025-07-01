@@ -40,6 +40,7 @@
         "js/pageFixes.js.map",
         "js/speedGrader.js.map",
         "js/publish.js.map",
+        "js/rubricOrganize.js.map",
         "js/ui/module.js.map",
         "js/ui/course.js.map",
         "js/ui/account.js.map"
@@ -101,7 +102,16 @@
         "js/reporting.js"
       ],
       "run_at": "document_end"
-    }
+    },
+    {
+      "matches": [
+        "*://*.instructure.com/courses/*/rubrics/*"
+      ],
+      "js": [
+        "js/rubricOrganize.js"
+      ],
+      "run_at":"document_end"
+    }    
   ],
   "permissions": [
     "activeTab",

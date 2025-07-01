@@ -3,10 +3,8 @@ import {ICourseData, SectionData} from "@canvas/courseTypes";
 import {getCourseData, getCourseDataGenerator, getSingleCourse} from "@canvas/course";
 import {MessageResult, testResult, ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 import {Course} from "@canvas/course/Course";
-import {courseHasUnusedAssignments} from "@publish/fixesAndUpdates/validations/assignments/courseHasUnusedAssignments";
-import {sectionDataGenerator} from "@canvas/course/blueprint";
+
 import {batchify, renderAsyncGen} from "@canvas/canvasUtils";
-import {courseHasDoubleQuizzes} from "@publish/fixesAndUpdates/validations/assignments/courseHasDoubleQuizzes";
 import {
     courseHasUnlimitedAttemptQuizzes
 } from "@publish/fixesAndUpdates/validations/courseContent/courseHasUnlimitedAttemptQuizzes";

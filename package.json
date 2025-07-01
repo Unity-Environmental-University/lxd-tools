@@ -1,7 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "2.8.4",
-
+  "version": "2.8.7",
   "private": true,
   "main": "src/publish/index.tsx",
   "dependencies": {
@@ -25,6 +24,7 @@
     "react-select": "^5.10.0",
     "redux-persist": "^6.0.0",
     "temporal-polyfill": "^0.2.4",
+    "ueu_canvas": "file:../ueu_canvas",
     "uuid": "^10.0.0",
     "webextension-polyfill": "^0.10.0"
   },

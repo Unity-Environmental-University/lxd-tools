@@ -81,7 +81,7 @@ export function findDateRange(textToSearch: string, locale = 'en-US') {
     const dateRegex = new RegExp(dateRegExString, 'i')
 
     const matchRange = textToSearch.match(searchRegex);
-    if (!matchRange) return null; //No date range found in syllabus
+    if (!matchRange) throw new MalformedDateError('Cannot find date range in syllabus'); //No date range found in syllabus
 
     let start, end;
     for(const separator of ['-', 'to']) {

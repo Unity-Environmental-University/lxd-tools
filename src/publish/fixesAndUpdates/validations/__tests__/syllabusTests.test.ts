@@ -6,9 +6,11 @@ import {
     classInclusiveNoDateHeaderTest,
     communication24HoursTest,
     courseCreditsInSyllabusTest,
-    finalNotInGradingPolicyParaTest,
+    finalNotInGradingPolicyParaTest, 
+    fixSupportEmailTest,
     gradeTableHeadersCorrectTest,
-    removeSameDayPostRestrictionTest
+    removeSameDayPostRestrictionTest,
+    honorCodeLanguageText
 } from "../syllabusTests";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
 import assert from "assert";
@@ -27,10 +29,11 @@ describe('Syllabus validation', () => {
     test('Grade table headers correct', syllabusTestTest(gradeTableHeadersCorrectTest))
     test('Class Inclusive Dates Test', syllabusTestTest(classInclusiveNoDateHeaderTest))
     test('Remove same day post restriction test', syllabusTestTest(removeSameDayPostRestrictionTest))
-
+    
     test('Add apa language to grading policy test', syllabusTestTest(addApaNoteToGradingPoliciesTest))
     test('Add generative ai language', syllabusTestTest(addAiGenerativeLanguageTest))
-
+    test('Fix support email', syllabusTestTest(fixSupportEmailTest))
+    test('Fix Honor Code langauge', syllabusTestTest(honorCodeLanguageText));
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
