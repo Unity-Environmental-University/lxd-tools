@@ -28,3 +28,4 @@ dist/
 *.d.ts
 .env.dev
 .env.prod
+package-lock.json
