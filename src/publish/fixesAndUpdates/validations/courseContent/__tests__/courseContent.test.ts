@@ -15,6 +15,7 @@ import {
     overviewDiscMornToNightTest
 } from "@publish/fixesAndUpdates/validations/courseContent/overviewDiscMornToNightTest";
 import studentHandbookTest from "../studentHanbookTest";
+import technologyLinkTest from "@publish/fixesAndUpdates/validations/courseContent/technologyForSuccess";
 
 jest.mock('@canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
@@ -162,6 +163,23 @@ describe("Replace old student handbook link", () => {
 
     test('Fix Works', badContentTextValidationFixTest(
         studentHandbookTest,
+        (badText: string, goodText: string) => [
+            mockContentHaver(goodText, [new Page({
+                ...mockPageData,
+                name: 'Course Overview',
+                body: badText,
+            }, 0)], 'Course Overview Haver')
+        ]
+    ))
+})
+
+describe("Replace old technology link", () => {
+    for (const [bad, good] of technologyLinkTest.beforeAndAfters) {
+        test(`Text works ${bad}, ${good}`, badContentTextValidationTest(technologyLinkTest, bad, good));
+    }
+
+    test('Fix Works', badContentTextValidationFixTest(
+        technologyLinkTest,
         (badText: string, goodText: string) => [
             mockContentHaver(goodText, [new Page({
                 ...mockPageData,
