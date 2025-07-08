@@ -8,6 +8,7 @@ import {
     moduleElementsAreRequiredValidation
 } from "@publish/fixesAndUpdates/validations/courseContent/moduleElementsAreRequired";
 import {updateSupportPage} from "@publish/fixesAndUpdates/validations/courseContent/updateSupportPage";
+import studentHandbookTest from "./studentHanbookTest";
 
 
 export default [
@@ -15,6 +16,7 @@ export default [
     weeklyObjectivesTest,
     codeAndCodeOfCodeTest,
     overviewDiscMornToNightTest,
+    studentHandbookTest,
     removeGradeTable,
     footerOnFrontPageTest,
     moduleElementsAreRequiredValidation,
