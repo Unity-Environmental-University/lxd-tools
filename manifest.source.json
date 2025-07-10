@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "LXD Browser Extension REACT version for Chrome and Firefox",
-  "description": "Firefox adaptation",
+  "name": "LXD Browser Extension",
+  "description": "Extension for LXD team",
   "browser_specific_settings": {
     "gecko": {
       "id": "lxd-extension@unity.edu",
