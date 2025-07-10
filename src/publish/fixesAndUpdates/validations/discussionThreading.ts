@@ -9,7 +9,7 @@ import {CourseFixValidation, RunTestFunction} from "@publish/fixesAndUpdates/val
 import {IDiscussionData} from "@canvas/content/types";
 
 
-const run: RunTestFunction<Course, IDiscussionData[]> = async (course)  => {
+const run: RunTestFunction<{ id: number }, IDiscussionData[]> = async (course)  => {
         const discussionGen = DiscussionKind.dataGenerator(course.id);
         const affectedDiscussions = [] as IDiscussionData[];
         for await (const discussionData of discussionGen) {
@@ -26,7 +26,7 @@ const run: RunTestFunction<Course, IDiscussionData[]> = async (course)  => {
         })
     }
 
-export const discussionThreadingValidation: CourseFixValidation<Course, IDiscussionData[], IDiscussionData[]> = {
+export const discussionThreadingValidation: CourseFixValidation<{ id:number }, IDiscussionData[], IDiscussionData[]> = {
     name: "Discussion Threading Turned on",
     description: `Discussion Threading is turned on for all discussions in this course'`,
     run,
