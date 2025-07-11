@@ -12,7 +12,8 @@ type MessageHandler<T, Output> = (
   ) => void | boolean | Promise<boolean | void>
 
 const messageHandlers: Record<string, MessageHandler<any, any>> = {
-  searchForCourse: async (queryString:string) => {
+  searchForCourse: async ( params: { queryString:string, subAccount: number} ) => {
+    const {queryString, subAccount} = params;
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
       return;
@@ -21,7 +22,7 @@ const messageHandlers: Record<string, MessageHandler<any, any>> = {
       target: {tabId: activeTab.id},
       files: ['./js/content.js']
     });
-    await tabs.sendMessage(activeTab.id, {'queryString': queryString});
+    await tabs.sendMessage(activeTab.id, {'queryString': queryString, 'subAccount': subAccount});
   },
 
 
