@@ -30,20 +30,35 @@ function PopUpApp() {
 function CourseNavigation() {
     const [isDisabled, setIsDisabled] = useState<boolean>(false)
     const [queryString, setQueryString] = useState<string | null>(null)
+    const [subAccount, setSubAccount] = useState<number | null>(null)
 
-    async function submitQuery(queryString: string | null) {
+    async function submitQuery(queryString: string | null, subAccount: number | null) {
         setIsDisabled(true);
-        await runtime.sendMessage({
-            searchForCourse: queryString
+        const response = await runtime.sendMessage({
+            searchForCourse: { queryString, subAccount }
         });
+        console.log(response);
         setIsDisabled(false);
+        //If submitQuery does not receive a true back from sendMessage, alert the user
+        if(!response.success) {
+            alert("Search was not successful.");
+        }
     }
 
     return <div className="col card-body search-box">
         <h1>Course Navigation</h1>
         <form onSubmit={async (e) => {
             e.preventDefault();
-            await submitQuery(queryString)
+            //Catch a user if they don't have a queryString or subAccount selected
+            //Currently, if you run into this, it breaks the course nav popup
+            if(!queryString) {
+                alert("Please enter a search query.");
+                return;
+            } else if(!subAccount) {
+                alert("Please select a subaccount.");
+                return;
+            }
+            await submitQuery(queryString, subAccount)
         }}>
             <div className="row">
                 <input
@@ -54,6 +69,20 @@ function CourseNavigation() {
                     placeholder='Enter search here'
                     onChange={(e) => setQueryString(e.target.value)}
                 ></input>
+                <select
+                    disabled={isDisabled}
+                    value={subAccount ?? ""}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        setSubAccount(val === "" ? null : parseInt(val, 10));
+                    }}
+                >
+                    <option value="">Pick account/subaccount</option>
+                    <option value="169877">Distance Education</option>
+                    <option value="170329">Distance Education Development</option>
+                    <option value="98244">Unity College</option>
+                </select>
+
             </div>
             <div className={'col'}>
 

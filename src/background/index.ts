@@ -9,19 +9,32 @@ type MessageHandler<T, Output> = (
       params: T,
       sender: Runtime.MessageSender,
       sendResponse: (output: Output) => void
-  ) => void | boolean | Promise<boolean | void>
+  ) => void | boolean | Promise<void> | Promise<boolean>;
 
 const messageHandlers: Record<string, MessageHandler<any, any>> = {
-  searchForCourse: async (queryString:string) => {
+  searchForCourse: async ( params: { queryString:string, subAccount: number}, _sender, sendResponse ) => {
+    const {queryString, subAccount} = params;
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
-      return;
+      //if there isn't an activeTab id, send a response of false
+      sendResponse({ success: false, error: "Please open a new tab and try again."});
+      //This is supposed to keep the channel open?
+      return true;
     }
-    await scripting.executeScript({
-      target: {tabId: activeTab.id},
-      files: ['./js/content.js']
-    });
-    await tabs.sendMessage(activeTab.id, {'queryString': queryString});
+    //a try block that executes the script, responds true it works, responds false if it doesn't
+    try {
+      await scripting.executeScript({
+        target: { tabId: activeTab.id },
+        files: ['./js/content.js'],
+      });
+
+      await tabs.sendMessage(activeTab.id, { queryString, subAccount });
+      sendResponse({ success: true });
+    } catch (e: any) {
+      sendResponse({ success: false, error: e.message || 'Unknown error' });
+    }
+
+    return true;
   },
 
 
