@@ -11,10 +11,18 @@ import {ICourseData} from "@/canvas/courseTypes";
 runtime.onMessage.addListener(async(
     message: Record<string, any>,
     sender,
-    sendResponse
+    sendResponse: (output: any) => void
 ) => {
         if(message.hasOwnProperty('queryString')) {
-            await openTargetCourse(message.queryString, message.subAccount);
+            try {
+                await openTargetCourse(message.queryString, message.subAccount);
+                sendResponse({success: true});
+                return true;
+            } catch (e: any) {
+                sendResponse({ success: false, error: e.message || 'Unknown error' });
+                return true;
+            }
+            return true;
     }
 })
 

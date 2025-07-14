@@ -5,7 +5,7 @@ import "./PopUpApp.scss"
 import 'bootstrap'
 import {useEffectAsync} from "../ui/utils";
 import { Form } from "react-bootstrap";
-import {OPEN_AI_API_KEY_KEY} from "../consts";
+import {OPEN_AI_API_KEY_KEY, SUB_ACCOUNT} from "../consts";
 
 function PopUpApp() {
     const [advanced, setAdvanced] = useState(false);
@@ -30,20 +30,31 @@ function PopUpApp() {
 function CourseNavigation() {
     const [isDisabled, setIsDisabled] = useState<boolean>(false)
     const [queryString, setQueryString] = useState<string | null>(null)
-    const [subAccount, setSubAccount] = useState<number | null>(null)
+    const [subAccount, setSubAccount] = useState<number>(169877)
+    const [error, setError] = useState<string | null>(null)
 
     async function submitQuery(queryString: string | null, subAccount: number | null) {
         setIsDisabled(true);
-        await runtime.sendMessage({
+        const response = await runtime.sendMessage({
             searchForCourse: { queryString, subAccount }
         });
+        console.log(response);
         setIsDisabled(false);
+        //If submitQuery does not receive a true back from sendMessage, alert the user
+        if(!response.success) {
+            setError(response.error);
+        }
     }
 
     return <div className="col card-body search-box">
         <h1>Course Navigation</h1>
+        {error && <div className="alert alert-warning">{error}</div>}
         <form onSubmit={async (e) => {
             e.preventDefault();
+            setError(null);
+            if(!queryString) {
+                setError("Please enter a search query.")
+            }
             await submitQuery(queryString, subAccount)
         }}>
             <div className="row">
@@ -60,7 +71,7 @@ function CourseNavigation() {
                     value={subAccount ?? ""}
                     onChange={(e) => {
                         const val = e.target.value;
-                        setSubAccount(val === "" ? null : parseInt(val, 10));
+                        setSubAccount(parseInt(val, 10));
                     }}
                 >
                     <option value="">Pick account/subaccount</option>
