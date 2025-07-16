@@ -11,23 +11,31 @@ import {ICourseData} from "@/canvas/courseTypes";
 runtime.onMessage.addListener(async(
     message: Record<string, any>,
     sender,
-    sendResponse
+    sendResponse: (output: any) => void
 ) => {
-    if(message.hasOwnProperty('queryString')) {
-        await openTargetCourse(message.queryString);
+        if(message.hasOwnProperty('queryString')) {
+            try {
+                await openTargetCourse(message.queryString, message.subAccount);
+                sendResponse({success: true});
+                return true;
+            } catch (e: any) {
+                sendResponse({ success: false, error: e.message || 'Unknown error' });
+                return true;
+            }
+            return true;
     }
 })
 
-async function openTargetCourse(queryString: string) {
-    console.log(queryString);
+async function openTargetCourse(queryString: string, subAccount: number) {
+    console.log(queryString, subAccount);
     const params = queryString.split('|');
     const searchCode = params.length > 0 ? params[0] : null;
 
     if (!searchCode) return;
 
-    let queryUrl = `/api/v1/accounts/98244/courses?search_term=${searchCode}`;
+    let queryUrl = `/api/v1/accounts/${subAccount}/courses?search_term=${searchCode}`;
     if (!document.documentURI.includes(".instructure.com")) {
-        queryUrl = `https://unity.instructure.com/accounts/98244?search_term=${searchCode}`;
+        queryUrl = `https://unity.instructure.com/accounts/${subAccount}?search_term=${searchCode}`;
         window.open(queryUrl, "_blank");
         return;
     }
@@ -66,7 +74,7 @@ async function openTargetCourse(queryString: string) {
 
     if (!searchCode && !course) return;
 
-    let url = `/accounts/98244?search_term=${searchCode}`;
+    let url = `/accounts/${subAccount}?search_term=${searchCode}`;
     let potentialUrls: string[] = [];
     if (course && (!courses || courses.length < 4)) {
         url = `/courses/${course.id}`;

@@ -5,7 +5,7 @@ import "./PopUpApp.scss"
 import 'bootstrap'
 import {useEffectAsync} from "../ui/utils";
 import { Form } from "react-bootstrap";
-import {OPEN_AI_API_KEY_KEY} from "../consts";
+import {OPEN_AI_API_KEY_KEY, SUB_ACCOUNT} from "../consts";
 
 function PopUpApp() {
     const [advanced, setAdvanced] = useState(false);
@@ -30,7 +30,8 @@ function PopUpApp() {
 function CourseNavigation() {
     const [isDisabled, setIsDisabled] = useState<boolean>(false)
     const [queryString, setQueryString] = useState<string | null>(null)
-    const [subAccount, setSubAccount] = useState<number | null>(null)
+    const [subAccount, setSubAccount] = useState<number>(169877)
+    const [error, setError] = useState<string | null>(null)
 
     async function submitQuery(queryString: string | null, subAccount: number | null) {
         setIsDisabled(true);
@@ -41,22 +42,18 @@ function CourseNavigation() {
         setIsDisabled(false);
         //If submitQuery does not receive a true back from sendMessage, alert the user
         if(!response.success) {
-            alert("Search was not successful.");
+            setError(response.error);
         }
     }
 
     return <div className="col card-body search-box">
         <h1>Course Navigation</h1>
+        {error && <div className="alert alert-warning">{error}</div>}
         <form onSubmit={async (e) => {
             e.preventDefault();
-            //Catch a user if they don't have a queryString or subAccount selected
-            //Currently, if you run into this, it breaks the course nav popup
+            setError(null);
             if(!queryString) {
-                alert("Please enter a search query.");
-                return;
-            } else if(!subAccount) {
-                alert("Please select a subaccount.");
-                return;
+                setError("Please enter a search query.")
             }
             await submitQuery(queryString, subAccount)
         }}>
@@ -74,7 +71,7 @@ function CourseNavigation() {
                     value={subAccount ?? ""}
                     onChange={(e) => {
                         const val = e.target.value;
-                        setSubAccount(val === "" ? null : parseInt(val, 10));
+                        setSubAccount(parseInt(val, 10));
                     }}
                 >
                     <option value="">Pick account/subaccount</option>
