@@ -15,6 +15,7 @@ const referencePageExistsValidation: CourseFixValidation<Course, RefPageValidati
     description: 'Does this course have a learning materials references page?',
     async run(course, config) {
         const lmPageData = await PageKind.getByString(course.id, REFERENCES_PAGE_URL_NAME);
+        console.log(lmPageData);
 
         return testResult(!('message' in lmPageData), {
             failureMessage: 'Learning Materials Page not found',

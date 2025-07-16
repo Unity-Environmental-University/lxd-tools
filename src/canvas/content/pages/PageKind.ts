@@ -1,6 +1,7 @@
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {IPageData} from "@/canvas/content/pages/types";
+import { fetchJson } from "@/canvas/fetch/fetchJson";
+import { getPagedDataGenerator } from "@/canvas/fetch/getPagedDataGenerator";
+import {ICanvasCallConfig, renderAsyncGen} from "@/canvas/canvasUtils";
+import { IPageData } from "@/canvas/content/pages/types";
 import {
     ContentKind,
     contentUrlFuncs,
@@ -28,12 +29,39 @@ const PageKind: Required<
     getId: page => page.id,
     get: (id, courseId, config) =>
         fetchJson(PageUrlFuncs.getApiUrl(courseId, id), config),
-    getByString: (courseId, contentId, config) =>
-        fetchJson<IPageData|{message: string}>(getStringApiUrl(courseId, contentId), config),
-    dataGenerator: (courseId, config = { queryParams: {include: ['body']}}) =>
-        getPagedDataGenerator(PageUrlFuncs.getAllApiUrl(courseId), config),
+    getByString: async (
+        courseId: number,
+        contentId: string,
+        config?: ICanvasCallConfig<GetPageOptions>
+    ): Promise<IPageData | { message: string; }> => {
+        // 1) try an exact match
+        const res = await fetchJson<IPageData | { message: string; }>(
+            getStringApiUrl(courseId, contentId),
+            config
+        );
+
+        // 2) if not found, fall back to any URL that *starts* with contentId
+        if ("message" in res) {
+            const allPages = await renderAsyncGen(
+                // <-- tell the pager that each item is IPageData
+                getPagedDataGenerator<IPageData>(
+                    PageUrlFuncs.getAllApiUrl(courseId),
+                    {queryParams: {include: ["body"]}}
+                )
+            );
+
+            const hit = allPages.find((p) => p.url.startsWith(contentId));
+            if (hit) return hit;
+        }
+
+        return res;
+    },
+    dataGenerator: (courseId, config = {queryParams: {include: ["body"]}}) => getPagedDataGenerator(PageUrlFuncs.getAllApiUrl(courseId), config),
     put: putContentFunc(PageUrlFuncs.getApiUrl),
     post: postContentFunc(PageUrlFuncs.getAllApiUrl),
-}
+    get: function (courseId: number, contentId: number, config?: ICanvasCallConfig<GetPageOptions> | undefined): Promise<IPageData> {
+        throw new Error("Function not implemented.");
+    }
+};
 
 export default PageKind;
