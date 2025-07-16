@@ -51,7 +51,7 @@ const PageKind: Required<
                     {queryParams: {include: ["body"]}});
 
                 for await (const page of pageGen) {
-                    if(page.url.includes(contentId)) return page;
+                    if(page.url.startsWith(contentId)) return page;
                 }
         }
 
