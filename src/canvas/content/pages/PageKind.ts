@@ -13,7 +13,9 @@ import {
 export const PageUrlFuncs = contentUrlFuncs('pages')
 export type GetPageOptions = Record<string, any>;
 export type SavePageOptions = Record<string, any>;
-
+export type GetByStringIdOptions = {
+    allowPartialMatch?: boolean
+}
 
 const getStringApiUrl = courseContentUrlFunc<string>(`/api/v1/courses/{courseId}/pages/{contentId}`)
 
@@ -32,8 +34,10 @@ const PageKind: Required<
     getByString: async (
         courseId: number,
         contentId: string,
-        config?: ICanvasCallConfig<GetPageOptions>
+        config?: ICanvasCallConfig<GetPageOptions>,
+        options?: GetByStringIdOptions
     ): Promise<IPageData | { message: string; }> => {
+        const {allowPartialMatch} = options ?? {};
         // 1) try an exact match
         const res = await fetchJson<IPageData | { message: string; }>(
             getStringApiUrl(courseId, contentId),
@@ -41,17 +45,14 @@ const PageKind: Required<
         );
 
         // 2) if not found, fall back to any URL that *starts* with contentId
-        if ("message" in res) {
-            const allPages = await renderAsyncGen(
-                // <-- tell the pager that each item is IPageData
-                getPagedDataGenerator<IPageData>(
+        if ("message" in res && allowPartialMatch) {
+                const pageGen = getPagedDataGenerator<IPageData>(
                     PageUrlFuncs.getAllApiUrl(courseId),
-                    {queryParams: {include: ["body"]}}
-                )
-            );
+                    {queryParams: {include: ["body"]}});
 
-            const hit = allPages.find((p) => p.url.startsWith(contentId));
-            if (hit) return hit;
+                for await (const page of pageGen) {
+                    if(page.url.includes(contentId)) return page;
+                }
         }
 
         return res;
