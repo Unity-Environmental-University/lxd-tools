@@ -60,9 +60,6 @@ const PageKind: Required<
     dataGenerator: (courseId, config = {queryParams: {include: ["body"]}}) => getPagedDataGenerator(PageUrlFuncs.getAllApiUrl(courseId), config),
     put: putContentFunc(PageUrlFuncs.getApiUrl),
     post: postContentFunc(PageUrlFuncs.getAllApiUrl),
-    get: function (courseId: number, contentId: number, config?: ICanvasCallConfig<GetPageOptions> | undefined): Promise<IPageData> {
-        throw new Error("Function not implemented.");
-    }
 };
 
 export default PageKind;

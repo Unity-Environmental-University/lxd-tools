@@ -44,6 +44,7 @@ export function CourseUpdateInterface({
     const [mode, setMode] = useState<InterfaceMode>('fix');
     const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
+    const [showUpdateStartDate, setShowUpdateStartDate] = useState(false);
 
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
@@ -155,7 +156,12 @@ export function CourseUpdateInterface({
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint() && <RemoveAnnotationsSection/>}
 
-            <UpdateStartDate
+            <Button onClick={() => setShowUpdateStartDate(true)}>Update Start Date</Button>
+
+            <hr/>
+
+            {showUpdateStartDate && (
+                <UpdateStartDate
                 setAffectedItems={setAffectedItems}
                 setUnaffectedItems={setUnaffectedItems}
                 setFailedItems={setFailedItems}
@@ -165,7 +171,9 @@ export function CourseUpdateInterface({
                 isDisabled={deannotatingCount > 0}
                 startLoading={startLoading}
                 endLoading={endLoading}
-            />
+                />
+            )}
+
             <hr/>
 
             <Button onClick={runValidations()} disabled={runValidationsDisabled}>{batchingValidations ? 'Loading Validations...' : 'Run Validations'}</Button>
