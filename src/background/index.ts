@@ -9,37 +9,59 @@ type MessageHandler<T, Output> = (
       params: T,
       sender: Runtime.MessageSender,
       sendResponse: (output: Output) => void
-  ) => void | boolean | Promise<boolean | void>
+  ) => void | boolean | Promise<void> | Promise<boolean>;
 
 const messageHandlers: Record<string, MessageHandler<any, any>> = {
-  searchForCourse: async (queryString:string) => {
+  searchForCourse: async ( params: { queryString:string, subAccount: number}, _sender, sendResponse ) => {
+    const {queryString, subAccount} = params;
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
-      return;
+      //if there isn't an activeTab id, send a response of false
+      sendResponse({ success: false, error: "Please open a new tab and try again."});
+      //This is supposed to keep the channel open?
+      return true;
     }
-    await scripting.executeScript({
-      target: {tabId: activeTab.id},
-      files: ['./js/content.js']
-    });
-    await tabs.sendMessage(activeTab.id, {'queryString': queryString});
+    //a try block that executes the script, responds true it works, responds false if it doesn't
+    try {
+      await scripting.executeScript({
+        target: { tabId: activeTab.id },
+        files: ['./js/content.js'],
+      });
+
+      await tabs.sendMessage(activeTab.id, { queryString, subAccount });
+      sendResponse({ success: true });
+      return true;
+    } catch (e: any) {
+      if (e.message === "Cannot access a chrome:// URL"){
+        sendResponse({ success: false, error: "Please open a new tab and try again."});
+      } else {
+        sendResponse({success: false, error: e.message || 'Unknown error'});
+        console.log(e.message);
+        return true;
+      }
+    }
+
+    return true;
   },
 
 
 }
 
 runtime.onMessage.addListener((
-    message: Record<string, any>,
-    sender,
-    sendResponse
+  message: Record<string, any>,
+  sender,
+  sendResponse
 ) => {
-  for(const messageKey in messageHandlers) {
-    if(message.hasOwnProperty(messageKey)) {
-      const handler = messageHandlers[messageKey];
-      const params = message[messageKey];
-      handler(params, sender, sendResponse);
+  for (const messageKey in messageHandlers) {
+    if (message.hasOwnProperty(messageKey)) {
+      // fire off the handler; it will call sendResponse(...) when it's done
+      messageHandlers[messageKey](message[messageKey], sender, sendResponse);
+      // return the *literal* true here so the channel stays open
+      return true;
     }
   }
-})
+  // if no handler matched, we simply return void
+});
 
 runtime.onMessage.addListener((message: { downloadImage : string }, sender, sendResponse:(value:any) => void) => {
   if (message.downloadImage) {
@@ -70,4 +92,3 @@ async function getActiveTab() {
   const [tab] = windowTabs.filter(tab => tab.active)
   return tab
 }
-
