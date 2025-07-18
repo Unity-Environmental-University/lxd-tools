@@ -46,6 +46,7 @@ export function SelectValidations({
                         onSelectionChange={setValidationsToRun}></MultiSelect>
                     <button onClick={runValidations}>Run Tests</button>
                 </Col>
+                {/*Clear button doesn't currently work*/}
                 <Col>
                     <button
                         onClick={() => setCoursesToRunOn([])}
