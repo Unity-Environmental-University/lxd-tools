@@ -18,7 +18,7 @@ export function CustomSearchValidation({
   // 1) New state to toggle the success message
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // 2) Auto‐hide after 3s whenever we show it
+  // 2) Auto‐hide after 3 s whenever we show it
   useEffect(() => {
     if (!showSuccess) return;
     const timer = window.setTimeout(() => setShowSuccess(false), 3000);
@@ -105,6 +105,9 @@ export function CustomSearchValidation({
             </Col>
           </Row>
         )}
+        {parseRegex && <Row><Col>
+          <a href={'https://regexone.com/'}>This site</a> has a tutorial on how to use regular expressions.
+        </Col></Row>}
       </Form>
 
       {/* Render the success alert */}
