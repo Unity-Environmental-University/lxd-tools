@@ -41,6 +41,7 @@
     "@types/chrome": "^0.0.263",
     "@types/jest": "^29.5.12",
     "@types/jquery": "^3.5.29",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^22.10.2",
     "@types/react": "^18.2.63",
     "@types/react-datepicker": "^6.2.0",

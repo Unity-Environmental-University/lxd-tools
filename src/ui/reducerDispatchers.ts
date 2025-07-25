@@ -34,7 +34,7 @@ export interface ILutAction<KeyType extends RecordKeyType, DataType> {
     clear?: boolean,
 }
 
-type LutSetAction<KeyType extends RecordKeyType, ValueType> = [key:KeyType, value:ValueType] | { [key in KeyType] : ValueType}
+export type LutSetAction<KeyType extends RecordKeyType, ValueType> = [key:KeyType, value:ValueType] | { [key in KeyType] : ValueType}
 
 
 
