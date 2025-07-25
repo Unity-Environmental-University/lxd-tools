@@ -64,9 +64,15 @@ export function UpdateStartDate(
 
 
     useEffectAsync(async () => {
+        //Assignment
         const localAssignments = assignments ?? await renderAsyncGen(assignmentDataGen(course.id));
         if(assignments === undefined) setAssignments(localAssignments);
 
+        const _assignmentsStartDate = getStartDateAssignments(localAssignments);
+        console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
+        setAssignmentsStartDate(_assignmentsStartDate);
+
+        //Syllabus
         const localSyllabusText = syllabusText ?? await course.getSyllabus();
         if(!syllabusText) {setSyllabusText(localSyllabusText)}
 
@@ -74,15 +80,14 @@ export function UpdateStartDate(
         console.log("Syllabus Start Date", _syllabusStartDate.toLocaleString());
         setSyllabusStartDate(_syllabusStartDate);
 
+        //Modules
         const localModules = modules ?? await renderAsyncGen(moduleGenerator(course.id));
         if(modules === undefined) setModules(localModules);
+
         const _moduleStartDate = getModuleUnlockStartDate(localModules);
         console.log("Module Start Date", _moduleStartDate?.toLocaleString());
         setModuleStartDate(_moduleStartDate);
 
-        const _assignmentsStartDate = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(course.id)));
-        console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
-        setAssignmentsStartDate(_assignmentsStartDate);
         const errors: string[] = [];
 
         const syllabusStartMonth = _syllabusStartDate.month;

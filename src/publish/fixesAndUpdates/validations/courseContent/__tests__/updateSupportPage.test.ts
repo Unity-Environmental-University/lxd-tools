@@ -1,8 +1,8 @@
 import clearAllMocks = jest.clearAllMocks;
 
 
-const badUrl = "https://online.unity.edu/support";
-const goodUrl = "https://unity.edu/distance-education/academic-and-career-support/";
+const badUrl = "https://online.unity.edu/support/";
+const goodUrl = "https://unity.edu/distance-education/student-resources/";
 
 
 jest.mock('@canvas/content/pages/PageKind', () => {
@@ -14,10 +14,11 @@ jest.mock('@canvas/content/pages/PageKind', () => {
     };
 });
 import PageKind from "@canvas/content/pages/PageKind";
-import {updateSupportPage} from "@publish/fixesAndUpdates/validations/courseContent/updateSupportPage";
+import {updateSupportPage} from "../updateSupportPage";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
 import {mockAsyncGen} from "@/__mocks__/utils";
+import pageKind from "@canvas/content/pages/PageKind";
 
 const pageKindMock = PageKind as jest.Mocked<typeof PageKind>;
 
@@ -115,4 +116,31 @@ describe('updateSupportPage', () => {
 
 });
 
+describe("updateSupportPage.run", () => {
+  const course = { id: 42 };
 
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it("returns unknown when the support page has no links", async () => {
+    const fakePage = {
+      page_id: 123,
+      body: "<div>No links on this page</div>",
+    };
+
+    // Mock getByString to return our fake page
+    jest.spyOn(pageKind, "getByString").mockResolvedValue(fakePage as any);
+    // Pretend that dataIsThisKind always recognizes our fakePage
+    jest.spyOn(pageKind, "dataIsThisKind").mockReturnValue(true);
+
+    const result = await updateSupportPage.run(course);
+
+    expect(result).toEqual(
+      testResult("unknown", {
+        failureMessage: "Support page has no links",
+        userData: fakePage,
+      })
+    );
+  });
+});
