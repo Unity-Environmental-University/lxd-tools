@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState} from "react";
+import React, {ChangeEvent, useEffect, useState} from "react";
 import {Temporal} from "temporal-polyfill";
 import {useEffectAsync} from "@/ui/utils";
 import {Button, Row} from "react-bootstrap";
@@ -55,7 +55,7 @@ export function UpdateStartDate(
     const [modules, setModules] = useState<IModuleData[]|undefined>();
     const [syllabusText, setSyllabusText] = useState<string | null>(null);
     const [assignments, setAssignments] = useState<IAssignmentData[] | undefined>();
-    const [error, setError] = useState<string | null>(null);
+    const [mismatchError, setMismatchError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
@@ -64,8 +64,8 @@ export function UpdateStartDate(
 
 
 
-    useEffectAsync(async () => {
-        setIsLoading(true);
+    const recalculateStartDate = async () => {
+                setIsLoading(true);
         //Assignment
         const localAssignments = assignments ?? await renderAsyncGen(assignmentDataGen(course.id));
         if(assignments === undefined) setAssignments(localAssignments);
@@ -99,11 +99,12 @@ export function UpdateStartDate(
         if(syllabusStartMonth != _moduleStartDate?.month || syllabusStartDay != _moduleStartDate?.day) errors.push("Syllabus and module lock do not match");
 
 
+
         if(errors.length > 0) {
 
             const errorString = "Start date mismatch: Syllabus: " + _syllabusStartDate.toLocaleString() +
                 ", Module: " + _moduleStartDate?.toLocaleString() + ", Assignments: " + _assignmentsStartDate.toLocaleString();
-            setError(errorString)
+            setMismatchError(errorString)
             setStartDateOutcome?.(errorString);
             return;
         }
@@ -114,7 +115,15 @@ export function UpdateStartDate(
         setStartDateOutcome?.("success");
 
         setIsLoading(false);
-    }, [course]);
+    }
+
+    useEffect(() => {
+        if(isLoading) return;
+        if (!course || !course.id) return;
+        if (!assignmentsStartDate || !syllabusStartDate || !moduleStartDate) {
+            recalculateStartDate().catch(console.error);
+        }
+    }, [recalculateStartDate, course, isLoading]);
 
     async function changeStartDate() {
         startLoading();
@@ -156,6 +165,7 @@ export function UpdateStartDate(
             setAffectedItems?.(affectedItems)
             await refreshCourse(true);
             setStartDate(workingStartDate);
+            await recalculateStartDate();
 
         } catch (error: any) {
             console.log(error);
@@ -176,13 +186,13 @@ export function UpdateStartDate(
     const _isDisabledLocally = isDisabled
         || !course || !course.id || !workingStartDate
         || (startDate && workingStartDate.equals(startDate))
-        || startDate === null || error !== null;
+        || startDate === null || mismatchError !== null;
 
     return <>
         {isLoading && <div className="alert alert-info">Loading...</div>}
-        <div className={'row'}>
-            {error && <div className={'ui-alert'}><h2>{error}</h2></div>}
-        </div>
+        {!isLoading && <div className={'row'}>
+            {mismatchError && <div className={'ui-alert'}><h2>{mismatchError}</h2></div>}
+        </div>}
         {workingStartDate && <div className={'row'}>
 
             <div className={'col-sm-4'}>
