@@ -62,6 +62,11 @@ function CourseNavigation() {
             setError(null);
             if(!queryString) {
                 setError("Please enter a search query.")
+                return;
+            }
+            if(!subAccount) {
+                setError("Please select a subaccount.")
+                return;
             }
             await submitQuery(queryString, subAccount)
         }}>

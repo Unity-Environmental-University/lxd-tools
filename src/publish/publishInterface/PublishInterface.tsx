@@ -310,10 +310,10 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                             onClick={e => publishCourses(e, sections)} style={{marginLeft: '8px'}}>
                         Publish all
                     </Button>
-                    <Button className="btn" disabled={sectionsListIdentical || selectedSectionsEmpty || loading || !(course?.isBlueprint)}
+                    {!sectionsListIdentical && <Button className="btn" disabled={selectedSectionsEmpty || loading || !(course?.isBlueprint)}
                             onClick={e => publishCourses(e, sectionsToPublish)} style={{marginLeft: '8px'}}>
                         Publish selected
-                    </Button>
+                    </Button>}
                 </div>
                 <div className={'col-xs-12'} style={{marginTop: '5px'}}>
                     {user && course &&
