@@ -117,7 +117,7 @@
         "*://*.instructure.com/*"
       ],
       "js": [
-        "src/content/index.ts"
+        "src/content/index.js"
       ]
     }
   ],
