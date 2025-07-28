@@ -17,13 +17,11 @@ runtime.onMessage.addListener(async(
             try {
                 await openTargetCourse(message.queryString, message.subAccount);
                 sendResponse({success: true});
-                return true;
             } catch (e: any) {
                 sendResponse({ success: false, error: e.message || 'Unknown error' });
-                return true;
             }
-            return true;
     }
+    return true;
 })
 
 async function openTargetCourse(queryString: string, subAccount: number) {
