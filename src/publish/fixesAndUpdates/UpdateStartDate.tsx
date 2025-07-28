@@ -56,6 +56,7 @@ export function UpdateStartDate(
     const [syllabusText, setSyllabusText] = useState<string | null>(null);
     const [assignments, setAssignments] = useState<IAssignmentData[] | undefined>();
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
     const [moduleStartDate, setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
@@ -64,6 +65,7 @@ export function UpdateStartDate(
 
 
     useEffectAsync(async () => {
+        setIsLoading(true);
         //Assignment
         const localAssignments = assignments ?? await renderAsyncGen(assignmentDataGen(course.id));
         if(assignments === undefined) setAssignments(localAssignments);
@@ -110,6 +112,8 @@ export function UpdateStartDate(
         setStartDate(_assignmentsStartDate);
         setWorkingStartDate(_assignmentsStartDate);
         setStartDateOutcome?.("success");
+
+        setIsLoading(false);
     }, [course]);
 
     async function changeStartDate() {
@@ -174,8 +178,8 @@ export function UpdateStartDate(
         || (startDate && workingStartDate.equals(startDate))
         || startDate === null || error !== null;
 
-
     return <>
+        {isLoading && <div className="alert alert-info">Loading...</div>}
         <div className={'row'}>
             {error && <div className={'ui-alert'}><h2>{error}</h2></div>}
         </div>
