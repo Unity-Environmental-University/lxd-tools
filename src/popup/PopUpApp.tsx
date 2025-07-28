@@ -30,11 +30,18 @@ function PopUpApp() {
 function CourseNavigation() {
     const [isDisabled, setIsDisabled] = useState<boolean>(false)
     const [queryString, setQueryString] = useState<string | null>(null)
-    const [subAccount, setSubAccount] = useState<number>(169877)
+    const [subAccount, setSubAccount] = useState<number>(() => {
+        const saved = localStorage.getItem(SUB_ACCOUNT);
+        return saved ? parseInt(saved, 10) : 169877;
+    })
     const [error, setError] = useState<string | null>(null)
 
     async function submitQuery(queryString: string | null, subAccount: number | null) {
         setIsDisabled(true);
+        if(!navigator.onLine) {
+            setError("Check internet connection and try again.");
+            return;
+        }
         const response = await runtime.sendMessage({
             searchForCourse: { queryString, subAccount }
         });
@@ -51,6 +58,7 @@ function CourseNavigation() {
         {error && <div className="alert alert-warning">{error}</div>}
         <form onSubmit={async (e) => {
             e.preventDefault();
+            localStorage.setItem(SUB_ACCOUNT, subAccount.toString());
             setError(null);
             if(!queryString) {
                 setError("Please enter a search query.")
