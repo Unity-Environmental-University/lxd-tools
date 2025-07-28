@@ -111,7 +111,15 @@
         "js/rubricOrganize.js"
       ],
       "run_at":"document_end"
-    }    
+    },
+    {
+      "matches": [
+        "*://*.instructure.com/*"
+      ],
+      "js": [
+        "src/content/index.ts"
+      ]
+    }
   ],
   "permissions": [
     "activeTab",
