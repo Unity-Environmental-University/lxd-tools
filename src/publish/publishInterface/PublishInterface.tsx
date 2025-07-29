@@ -19,7 +19,7 @@ import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
 import {getCourseData} from "@canvas/course";
 import {sleep} from "@/utils/toolbox";
 import {IProfile, IProfileWithUser} from "@canvas/type";
-import isEqual from "lodash/fp/isEqual";
+import isEqual from "lodash/isEqual";
 
 
 export interface IPublishInterfaceProps {
