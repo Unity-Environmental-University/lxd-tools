@@ -106,6 +106,7 @@ export function UpdateStartDate(
                 ", Module: " + _moduleStartDate?.toLocaleString() + ", Assignments: " + _assignmentsStartDate.toLocaleString();
             setMismatchError(errorString)
             setStartDateOutcome?.(errorString);
+            setIsLoading(false);
             return;
         }
 
