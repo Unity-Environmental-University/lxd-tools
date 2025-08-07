@@ -1,13 +1,12 @@
 import { ContentTextReplaceFix } from "./types";
 import { IIdHaver } from "@/canvas/course/courseTypes";
 import { testResult } from "./utils";
-// import { Course } from "@/canvas/course/Course";
 import { assignmentDataGen } from "@/canvas/content/assignments";
 import PageKind from "@/canvas/content/pages/PageKind";
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 import { BaseContentItem, IAssignmentData } from "@/canvas";
 import { IPageData } from "@/canvas/content/pages/types";
-// import { getAssignmentData } from "@/canvas/content/assignments/legacy";
+
 
 
 type UserData = {
@@ -21,7 +20,7 @@ type _ValidationType = ContentTextReplaceFix<IIdHaver, BaseContentItem, UserData
 // Regex to find two sibling <p> tags inside a <div> and replace the second <p> with <h1>
 // Example: <div><p>Title</p><p>Subtitle</p></div> => <div><p>Title</p><h1>Subtitle</h1></div>
 const replaceSecondPWithH1Regex = new RegExp(
-    /(<div[^>]*class=["']cbt-banner-header["'][^>]*>[\s\S]*?<div[^>]*>[\s\S]*?<p>[\s\S]*?<\/p>[\s\S]*?)(<p>([\s\S]*?)<\/p>)/gis
+    /(<div[^>]+class=["'][^"']*\bcbt-banner-header\b[^"']*["'][^>]*>\s*<div>\s*<p>[^<]*<\/p>\s*)(<p>([^<]*)<\/p>)/i
 );
 
 // Regex to find <span> tags inside <h1> tags within a div with class "cbt-banner-header" and remove them
@@ -41,9 +40,10 @@ const beforeAndAfters: _ValidationType['beforeAndAfters'] = [
             <div>
                 <p>Week 1 Overview</p>
                 <h1><span>Indicators of Health and Disease and Diagnostic Procedures</span></h1>
-            </div>`,
+            </div>
+    </div>`,
 `<div id="cbt-banner-header" class="cbt-banner-header flexbox">
-<div>
+            <div>
                 <p>Week 1 Overview</p>
                 <h1>Indicators of Health and Disease and Diagnostic Procedures</h1>
             </div>
@@ -51,15 +51,17 @@ const beforeAndAfters: _ValidationType['beforeAndAfters'] = [
 </div>`
 ],
     [`<div id="cbt-banner-header" class="cbt-banner-header flexbox">
-        <div>
+            <div>
                 <p>Week 1 Overview</p>
                 <h1><span>Indicators of Health and Disease and Diagnostic Procedures</span></h1>
-            </div>`,
-`            <div>
+            </div>
+    <div>`,
+`   <div id="cbt-banner-header" class="cbt-banner-header flexbox">
+            <div>
                 <p>Week 1 Overview</p>
                 <p>Indicators of Health and Disease and Diagnostic Procedures</p>
             </div>
-</div>`
+    </div>`
 ]
 ]
 
@@ -101,6 +103,8 @@ export const bannerHeadingValidation: _ValidationType = {
     },
 
     async fix(course, validationResult) {
+        // check if validation has been run, and get result if not
+        validationResult = validationResult ?? await this.run(course, {});
         const {userData, success} = validationResult ?? {};
         if (success) { 
             return testResult("not run", {
@@ -121,9 +125,12 @@ export const bannerHeadingValidation: _ValidationType = {
                 assignment.body = assignment.body.replace(replaceSpanInH1Regex, '$1$2$3');
                 assignment.body = assignment.body.replace(replaceStrongInH1Regex, '$1$2$3');
                 // Update the assignment with the fixed body
-                // look at updateSupportPage.ts for how to error handle this
                await AssignmentKind.put(course.id, assignment.id, {assignment});
             }
+            return testResult(true, {
+                notFailureMessage: "Banner heading updated successfully.",   
+                userData: validationResult?.userData
+            });  
         }
         for (const page of brokenPages) {
             if (page.body) {
@@ -133,6 +140,10 @@ export const bannerHeadingValidation: _ValidationType = {
                 // Update the page with the fixed body
                 await PageKind.put(course.id, page.id, {page});
             }
+            return testResult(true, {
+            notFailureMessage: "Banner heading updated successfully.",
+            userData: validationResult?.userData
+        });
         }
         return testResult(false, {
             notFailureMessage: "Banner not implemented yet.",
@@ -140,6 +151,4 @@ export const bannerHeadingValidation: _ValidationType = {
         });
     },
 };
-
-// export default  bannerHeadingValidation;
 
