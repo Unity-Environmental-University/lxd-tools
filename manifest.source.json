@@ -111,7 +111,7 @@
         "js/rubricOrganize.js"
       ],
       "run_at":"document_end"
-    }    
+    }
   ],
   "permissions": [
     "activeTab",
