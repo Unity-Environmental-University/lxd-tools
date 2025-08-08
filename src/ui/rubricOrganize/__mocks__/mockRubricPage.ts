@@ -105,10 +105,22 @@ export function createMockRubricPage(document: Document = window.document): HTML
   table.appendChild(thead);
   table.appendChild(tbody);
 
-  // Create save button
+  // Create save and cancel buttons
   const saveButton = document.createElement('button');
-  saveButton.className = 'btn save_button btn-primary';
+  saveButton.className = 'Button save_button btn-primary';
   saveButton.textContent = 'Save Rubric';
+
+  const cancelButton = document.createElement('button');
+  cancelButton.className = 'Button cancel_button btn-primary';
+  cancelButton.textContent = 'Cancel';
+
+  const editButton = document.createElement('button');
+  editButton.className = 'edit_rubric_link Button button-sidebar-wide';
+  editButton.textContent = 'Edit Rubric';
+
+  const deleteButton = document.createElement('button');
+  deleteButton.className = 'delete_rubric_link Button button-sidebar-wide';
+  deleteButton.textContent = 'Delete Rubric';
 
   // Assemble the entire structure
   rubricContainer.appendChild(rubricTitle);
@@ -117,11 +129,4 @@ export function createMockRubricPage(document: Document = window.document): HTML
   rubrics.appendChild(rubricContainer);
 
   return rubrics;
-}
-
-// Optional: Create a function to inject the mock rubric into the document
-export function injectMockRubric(document: Document = window.document): HTMLElement {
-  const mockRubric = createMockRubricPage(document);
-  document.body.appendChild(mockRubric);
-  return mockRubric;
 }

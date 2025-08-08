@@ -31,7 +31,9 @@ export interface RubricOrganizeContext {
 export function createRubricOrganize(
     document: Document = window.document,
     setTimeout: typeof window.setTimeout = window.setTimeout,
+    location: Location | null = window.location,
 ): RubricOrganizeContext {
+    const currentPathname = location?.pathname || '';
 
     function waitForEdit(mutations?: MutationRecord[], observer?: MutationObserver): void {
         const parent: HTMLElement | null = document.getElementById('rubrics');
@@ -224,13 +226,13 @@ export function createRubricOrganize(
     }
 
 
-    if(!pageRegex.test(document.location.pathname)) {
+    if(!pageRegex.test(currentPathname)) {
         return {
-            waitForEdit,
-            handleUpdateClick,
-            handleCancelClick,
-            attachRowSorter,
-            observeCriterionBtn
+            waitForEdit: () => {},
+            handleUpdateClick: () => {},
+            handleCancelClick: () => {},
+            attachRowSorter: () => {},
+            observeCriterionBtn: () => {}
         };
     }
 
