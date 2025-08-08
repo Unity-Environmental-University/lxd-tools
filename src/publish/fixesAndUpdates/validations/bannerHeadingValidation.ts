@@ -53,17 +53,18 @@ const beforeAndAfters: _ValidationType['beforeAndAfters'] = [
     [`<div id="cbt-banner-header" class="cbt-banner-header flexbox">
             <div>
                 <p>Week 1 Overview</p>
-                <h1><span>Indicators of Health and Disease and Diagnostic Procedures</span></h1>
+                <p>Indicators of Health and Disease and Diagnostic Procedures</p>
             </div>
     <div>`,
 `   <div id="cbt-banner-header" class="cbt-banner-header flexbox">
             <div>
                 <p>Week 1 Overview</p>
-                <p>Indicators of Health and Disease and Diagnostic Procedures</p>
+                <h1>Indicators of Health and Disease and Diagnostic Procedures</h1>
             </div>
     </div>`
 ]
 ]
+console.log('beforeAndAfters:', beforeAndAfters);
 
 export const bannerHeadingValidation: _ValidationType = {
     name: "Banner heading validation",
@@ -103,7 +104,6 @@ export const bannerHeadingValidation: _ValidationType = {
     },
 
     async fix(course, validationResult) {
-        // check if validation has been run, and get result if not
         validationResult = validationResult ?? await this.run(course, {});
         const {userData, success} = validationResult ?? {};
         if (success) { 
@@ -137,7 +137,6 @@ export const bannerHeadingValidation: _ValidationType = {
                 page.body = page.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
                 page.body = page.body.replace(replaceSpanInH1Regex, '$1$2$3');
                 page.body = page.body.replace(replaceStrongInH1Regex, '$1$2$3');
-                // Update the page with the fixed body
                 await PageKind.put(course.id, page.id, {page});
             }
             return testResult(true, {
