@@ -182,7 +182,7 @@ describe('syllabusHeaderName', () => {
     })
     it('handles outside the tags colon', () => {
         expect(syllabusHeaderName(fakeHeader('<strong>Course</strong> <strong>Inclusive Dates</strong>:'))).toEqual('Course Inclusive Dates')
-       expect(syllabusHeaderName(fakeHeader('<strong>Credits</strong>:'))).toEqual('Credits')
+        expect(syllabusHeaderName(fakeHeader('<strong>Credits</strong>:'))).toEqual('Credits')
 
     })
     it('return undefined when : not found', () => {
@@ -190,6 +190,6 @@ describe('syllabusHeaderName', () => {
 
     })
 
-})
+});
 
 
