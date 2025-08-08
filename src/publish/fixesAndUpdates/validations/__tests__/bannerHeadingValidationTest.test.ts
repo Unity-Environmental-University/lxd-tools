@@ -2,29 +2,27 @@ import { bannerHeadingValidation } from '../bannerHeadingValidation';
 import PageKind from '@/canvas/content/pages/PageKind';
 import { assignmentDataGen } from "@/canvas/content/assignments";
 import { mockAsyncGen } from "@/__mocks__/utils";
-import { IPageData } from "@/canvas/content/pages/types";
+// import { IPageData } from "@/canvas/content/pages/types";
 import { mockPageData } from "@/canvas/content/__mocks__/mockContentData";
-import { IAssignmentData } from "@/canvas";
+// import { IAssignmentData } from "@/canvas";
+// import technologyLinkTest from "../courseContent/technologyForSuccess";
+import { badContentTextValidationTest } from "../__mocks__/validations";
+import { badContentTextValidationFixTest } from "../__mocks__/validations";
+import { mockContentHaver } from "../__mocks__/validations";
+import { Page } from "@/canvas/content/pages/Page";
 
 jest.mock('@/canvas/content/pages/PageKind');
 jest.mock('@/canvas/content/assignments/AssignmentKind');
 jest.mock('../utils', () => ({
     testResult: jest.fn((success, data) => ({ success, ...data })),
+     badContentRunFunc: jest.fn(),
+    badContentFixFunc: jest.fn(),
+    run: jest.fn(),
+    fix: jest.fn(),
 }));
 
 const mockCourse = { id: 1 };
 const mockConfig = {}; // why?
-
-   const mockNewPageData = (partial: Partial<IPageData> & {id: number})  => ({
-                ...mockPageData,
-                ...partial,
-            });
-
-const mockAssignmentData = (partial: Partial<IAssignmentData> & {id: number}) => ({
-    ...mockAssignmentData,
-    ...partial,
-});
-
 
 describe('bannerHeadingValidation', () => {
     beforeEach(() => {
@@ -93,51 +91,23 @@ describe('bannerHeadingValidation', () => {
             const result = await bannerHeadingValidation.fix(mockCourse, validationResult);
             expect(result.success).toBe('not run');            
         });
-            
-        it('fixes broken assignments and pages', async () => {
-            const brokenAssignments = [
-                { id: 1, body: '<div class="cbt-banner-header"><div><p>Week 1 Overview</p><p>Indicators of Health and Disease and Diagnostic Procedures</strong></p></div></div>' }
-            ];
-            const brokenPages = [
-                { id: 2, body: '<div class="cbt-banner-header"><div><p>Week 1 Overview</p><p>Indicators of Health and Disease and Diagnostic Procedures</p></div></div>' }
-            ];
-            
-            const validationResult = {
-                success: false,
-                userData: {
-                    brokenAssignments: brokenAssignments.map(mockAssignmentData) as IAssignmentData[],
-                    brokenPages: brokenPages.map(mockNewPageData) as IPageData[]
-                },
-                messages: []
-            };
-            const result = await bannerHeadingValidation.fix(mockCourse, validationResult);
 
-            
-            expect(result.userData).toEqual({
-                fixedAssignments: brokenAssignments.map(mockAssignmentData),
-                fixedPages: brokenPages.map(mockNewPageData)
-            });
-            expect(result.success).toBe(true);
-            expect(result.messages).toEqual([
-               "Banner heading updated successfully."
-            ]);
-            expect(result.userData?.brokenAssignments ?? []).toHaveLength(0);
-            expect(result.userData?.brokenPages ?? []).toHaveLength(0);     
+
+    describe("Replace old banner heading", () => {
+      for (const [bad, good] of bannerHeadingValidation.beforeAndAfters) {
+          test(`Text works ${bad}, ${good}`, badContentTextValidationTest(bannerHeadingValidation, bad, good));
+      }
+  
+            test('Fix Works', badContentTextValidationFixTest(
+                bannerHeadingValidation,
+                (badText: string, goodText: string) => [
+                    mockContentHaver(goodText, [new Page({
+                        ...mockPageData,
+                        name: 'Course Overview',
+                        body: badText,
+                    }, 0)], 'Course Overview Haver')
+                ]
+            ))
         });
     });
 });
-
-// do i need to show the fixed headings in the test?
-/**
-Issues:
-
-the test suite is failing to run for bannerHeadingValidationTest.test.ts
- - The error may be related to the `fix` function in the `bannerHeadingValidation` module
- - The `ValidationResult` type is not being correctly handled in the `fix` function...maybe? The types of userData.brokenAssignments are not incompatible with IAssignmentData? 
-
- The types of userData.brokenAssignments are incompatible between these types
- validationResult is throwing a type error in the fix function test. 
- - Types of property 'name' are incompatible.
-          - Type 'string | undefined' is not assignable to type 'string'.
-          - Type 'undefined' is not assignable to type 'string'.
-*/
