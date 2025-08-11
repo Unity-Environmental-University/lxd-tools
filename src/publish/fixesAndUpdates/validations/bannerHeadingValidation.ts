@@ -122,7 +122,6 @@ export const bannerHeadingValidation: _ValidationType = {
     const fixedAssignments = [];
     const fixedPages = [];
     
-    // Process all assignments
     for (const assignment of brokenAssignments) {
         if (assignment.body) {
             assignment.body = assignment.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
@@ -133,7 +132,6 @@ export const bannerHeadingValidation: _ValidationType = {
         }
     }
     
-    // Process all pages
     for (const page of brokenPages) {
         if (page.body) {
             page.body = page.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
@@ -144,7 +142,7 @@ export const bannerHeadingValidation: _ValidationType = {
         }
     }
 
-    // Return final result after processing all items
+    // return final result after processing all items
     const anyFixed = fixedAssignments.length > 0 || fixedPages.length > 0;
     return testResult(anyFixed, {
         notFailureMessage: anyFixed 
