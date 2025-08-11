@@ -7,9 +7,11 @@ const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const packageJson = require('./package.json');
 const {TsconfigPathsPlugin} = require("tsconfig-paths-webpack-plugin");
-//const dotenv = require('dotenv').config({path: __dirname + '/.env'})
+const dotenv = require('dotenv').config({path: __dirname + '/.env'})
 const isDevelopment = process.env.NODE_ENV !== 'production'
-const outputPath = path.resolve(__dirname, "../dist");
+//const outputPath = path.resolve(__dirname, "../dist");
+const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
+const outputPath = path.resolve(__dirname, relativeOutputDir);
 
 const entry = {
     'popup': './src/popup',
@@ -181,6 +183,6 @@ module.exports = {
         filename:
             '[name].js',
         chunkFilename:
-            '[name]/.js'
+            '[name].js'
     }
 }

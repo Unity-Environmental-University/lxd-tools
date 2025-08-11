@@ -170,11 +170,13 @@
 
   // The update handler cleans the sorting UI and then reengages edit detection.
   function handleUpdateClick(): void {
+    // eslint-disable-next-line @/no-undef
     const sortBtns: NodeListOf<HTMLElement> = document.querySelectorAll('.rubric_container.rubric.editing .rubric_table .rubric-move-btns');
     sortBtns.forEach(btnCell => {
       btnCell.remove();
     });
 
+    // eslint-disable-next-line @/no-undef
     const sortHeaders: NodeListOf<HTMLElement> = document.querySelectorAll('.rubric_container.rubric.editing .rubric_table thead .rubric-sort-header');
     sortHeaders.forEach(th => {
       th.remove();
@@ -225,3 +227,5 @@
 
   observeCriterionBtn();
 })();
+
+export * from './rubricOrganize';
