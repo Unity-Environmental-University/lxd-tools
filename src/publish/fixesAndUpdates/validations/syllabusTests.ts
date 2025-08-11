@@ -262,7 +262,7 @@ name: "Add Late Policy table",
 beforeAndAfters: [
     [
         '<div><h2>Grading</h2><h3>Grading Policies</h3><p>Lorem</p><h3>Grading Scale</h3><div class="cbt-table"><table></table></div><p>ipsum</p></div>',
-        `<div><h2>Grading</h2><h3>Grading Policies</h3><p>Lorem</p><h3>Grading Scale</h3><div class="cbt-table"><table></table></div>${tableHtml}<p>ipsum</p></div>`,
+        `<div><h2>Grading</h2><h3>Grading Policies</h3><p>Lorem</p>${tableHtml}<h3>Grading Scale</h3><div class="cbt-table"><table></table></div><p>ipsum</p></div>`,
         ]
 ],
 description: `Add the late policy table to the grading section of the syllabus. The table should look like this: ${tableHtml}`,
@@ -279,8 +279,7 @@ fix: async (course: ISyllabusHaver) => {
     const gradingHeaderEl = Array.from(gradingHeader).find(h3 => h3.textContent?.includes(gradingHeaderText));
 
     //grab the next table after that header
-    const existingGradeTableDiv = gradingHeaderEl?.nextElementSibling as HTMLDivElement | undefined;
-    if (!gradingHeaderEl || !existingGradeTableDiv) {
+    if (!gradingHeaderEl) {
         // If the table doesn't exist, add it after the grading header
         return testResult(false, {
             failureMessage: "Grading Policies section not found or grading table not found.",
@@ -288,7 +287,7 @@ fix: async (course: ISyllabusHaver) => {
         })
     }
     // If the table exists, insert the new table after main grading table
-    existingGradeTableDiv.insertAdjacentHTML('afterend', tableHtml);
+    gradingHeaderEl.insertAdjacentHTML('beforebegin', tableHtml);
     try {
         await course.changeSyllabus(el.innerHTML);
         return testResult(true, {
