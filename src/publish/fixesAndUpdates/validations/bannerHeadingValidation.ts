@@ -26,13 +26,13 @@ const replaceSecondPWithH1Regex = new RegExp(
 // Regex to find <span> tags inside <h1> tags within a div with class "cbt-banner-header" and remove them
 // Example: <div><p>Title</p><p>Subtitle</p></div> => <div><p>Title</p><h1>Subtitle</h1></div>
 const replaceSpanInH1Regex = new RegExp(
-    /(<div[^>]*class=["'][^"']*cbt-banner-header[^"']*["'][^>]*>[\s\S]*?<h1>)([\s\S]*?<span>([\s\S]*?)<\/span>[\s\S]*?)(<\/h1>)/gis
+   /(<div[^>]+class=["'][^"']*\bcbt-banner-header\b[^"']*["'][^>]*>[\s\S]*?<h1>)<span>([\s\S]*?)<\/span>(<\/h1>)/gi
 );
 
 // Regex to find <strong> tags inside <h1> tags within a div with class "cbt-banner-header" and remove them
 // Example: <div><p>Title</p><p>Subtitle</p></div> => <div><p>Title</p><h1>Subtitle</h1></div>
 const replaceStrongInH1Regex = new RegExp(
-    /(<div[^>]*class=["'][^"']*cbt-banner-header[^"']*["'][^>]*>[\s\S]*?<h1>)([\s\S]*?<strong>([\s\S]*?)<\/strong>[\s\S]*?)(<\/h1>)/gis
+        /(<div[^>]+class=["'][^"']*\bcbt-banner-header\b[^"']*["'][^>]*>[\s\S]*?<h1>)<strong>([\s\S]*?)<\/strong>(<\/h1>)/gi
 );
 
 const beforeAndAfters: _ValidationType['beforeAndAfters'] = [
@@ -64,7 +64,6 @@ const beforeAndAfters: _ValidationType['beforeAndAfters'] = [
     </div>`
 ]
 ]
-console.log('beforeAndAfters:', beforeAndAfters);
 
 export const bannerHeadingValidation: _ValidationType = {
     name: "Banner heading validation",
@@ -104,50 +103,59 @@ export const bannerHeadingValidation: _ValidationType = {
     },
 
     async fix(course, validationResult) {
-        validationResult = validationResult ?? await this.run(course, {});
-        const {userData, success} = validationResult ?? {};
-        if (success) { 
-            return testResult("not run", {
-                notFailureMessage: "Fix not needed, validation passed.",
-            });
-        }
-
-        if (!userData) {
-            return testResult("unknown", {
-                notFailureMessage: "No user data to fix.",
-            });
-        }
-
-        const {brokenAssignments = [], brokenPages = []} = userData;
-        for (const assignment of brokenAssignments) {
-            if (assignment.body) {
-                assignment.body = assignment.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
-                assignment.body = assignment.body.replace(replaceSpanInH1Regex, '$1$2$3');
-                assignment.body = assignment.body.replace(replaceStrongInH1Regex, '$1$2$3');
-                // Update the assignment with the fixed body
-               await AssignmentKind.put(course.id, assignment.id, {assignment});
-            }
-            return testResult(true, {
-                notFailureMessage: "Banner heading updated successfully.",   
-                userData: validationResult?.userData
-            });  
-        }
-        for (const page of brokenPages) {
-            if (page.body) {
-                page.body = page.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
-                page.body = page.body.replace(replaceSpanInH1Regex, '$1$2$3');
-                page.body = page.body.replace(replaceStrongInH1Regex, '$1$2$3');
-                await PageKind.put(course.id, page.id, {page});
-            }
-            return testResult(true, {
-            notFailureMessage: "Banner heading updated successfully.",
-            userData: validationResult?.userData
+    validationResult = validationResult ?? await this.run(course, {});
+    const {userData, success} = validationResult ?? {};
+    
+    if (success) { 
+        return testResult("not run", {
+            notFailureMessage: "Fix not needed, validation passed.",
         });
-        }
-        return testResult(false, {
-            notFailureMessage: "Banner not implemented yet.",
-            userData: validationResult?.userData
+    }
+
+    if (!userData) {
+        return testResult("unknown", {
+            notFailureMessage: "No user data to fix.",
         });
-    },
+    }
+
+    const {brokenAssignments = [], brokenPages = []} = userData;
+    const fixedAssignments = [];
+    const fixedPages = [];
+    
+    // Process all assignments
+    for (const assignment of brokenAssignments) {
+        if (assignment.body) {
+            assignment.body = assignment.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
+            assignment.body = assignment.body.replace(replaceSpanInH1Regex, '$1$2$3');
+            assignment.body = assignment.body.replace(replaceStrongInH1Regex, '$1$2$3');
+            await AssignmentKind.put(course.id, assignment.id, {assignment});
+            fixedAssignments.push(assignment);
+        }
+    }
+    
+    // Process all pages
+    for (const page of brokenPages) {
+        if (page.body) {
+            page.body = page.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
+            page.body = page.body.replace(replaceSpanInH1Regex, '$1$2$3');
+            page.body = page.body.replace(replaceStrongInH1Regex, '$1$2$3');
+            await PageKind.put(course.id, page.id, {page});
+            fixedPages.push(page);
+        }
+    }
+
+    // Return final result after processing all items
+    const anyFixed = fixedAssignments.length > 0 || fixedPages.length > 0;
+    return testResult(anyFixed, {
+        notFailureMessage: anyFixed 
+            ? `Banner headings updated successfully (${fixedAssignments.length} assignments, ${fixedPages.length} pages).`
+            : "No banner headings needed fixing.",
+        userData: {
+            ...userData,
+            fixedAssignments,
+            fixedPages
+        }
+    })
+},
 };
 
