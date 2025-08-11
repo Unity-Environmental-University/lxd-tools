@@ -94,7 +94,9 @@ describe('bannerHeadingValidation', () => {
 
 
     describe("Replace old banner heading", () => {
-      for (const [bad, good] of bannerHeadingValidation.beforeAndAfters) {
+    expect(Array.isArray(bannerHeadingValidation.beforeAndAfters)).toBe(true);
+      
+    for (const [bad, good] of bannerHeadingValidation.beforeAndAfters) {
           test(`Text works ${bad}, ${good}`, badContentTextValidationTest(bannerHeadingValidation, bad, good));
       }
   
