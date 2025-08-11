@@ -3,6 +3,7 @@ import {CanvasData} from "@/canvas/canvasDataDefs";
 import {ContentData} from "@/canvas/content/types";
 import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {postContentConfig, putContentConfig} from "@/canvas/content/BaseContentItem";
+import {GetByStringIdOptions} from "@canvas/content/pages/PageKind";
 
 
 export type ContentKind<
@@ -17,7 +18,7 @@ export type ContentKind<
     getName: (data: DataType) => string,
     getBody: (data: DataType) => string | undefined,
     get: (courseId: number, contentId: number, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType>
-    getByString?: (courseId: number, contentId: string, config?: ICanvasCallConfig<GetQueryOptions>) => Promise<DataType|{ message: string}>
+    getByString?: (courseId: number, contentId: string, config?: ICanvasCallConfig<GetQueryOptions>, options?: GetByStringIdOptions) => Promise<DataType|{ message: string}>
     dataGenerator: (courseId: number, config?: ICanvasCallConfig<GetQueryOptions>) => AsyncGenerator<DataType>
     put: (courseId: number, contentId: number, data: PutDataType) => Promise<DataType>,
     post?: (courseId: number, data: PostDataType) => Promise<DataType>,

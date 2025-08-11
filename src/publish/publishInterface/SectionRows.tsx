@@ -10,7 +10,9 @@ export interface ISectionRows {
     frontPageProfilesByCourseId: Record<number, IProfile>,
     potentialProfilesByCourseId: Record<number, IProfile[]>,
     errorsByCourseId: Record<number, ICourseRowProps["errors"]>,
-    setWorkingSection: (section: Course) => void
+    setWorkingSection: (section: Course) => void,
+    sectionPublishRecord?: Record<number, Course>,
+    sectionPublishToggle?: (course: Course, publish: boolean) => void,
 }
 
 export function SectionRows({
@@ -21,6 +23,8 @@ export function SectionRows({
     potentialProfilesByCourseId,
     errorsByCourseId,
     setWorkingSection,
+    sectionPublishRecord,
+    sectionPublishToggle,
 }: ISectionRows) {
 
     function openAll(e: FormEvent) {
@@ -30,8 +34,8 @@ export function SectionRows({
 
     return (<div className={'course-table'}>
         <div className={'row'}>
-            <div className={'col-sm-6'}>
-
+            <div className={'col-xs-1'}><strong style={{textAlign: 'center'}}>Publish?</strong></div>
+            <div className={'col-sm-5'}>
                 <div><strong>Code</strong></div>
                 <a href={'#'} onClick={openAll}>Open All</a>
             </div>
@@ -47,6 +51,8 @@ export function SectionRows({
                 key={course.id}
                 errors={errorsByCourseId[course.id]}
                 onSelectSection={(section) => setWorkingSection(section)}
-                course={course}/>))}
+                course={course}
+                selected={Boolean(sectionPublishRecord?.[course.id])}
+                sectionPublishToggle={sectionPublishToggle}/>))}
     </div>)
 }

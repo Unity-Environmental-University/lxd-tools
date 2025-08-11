@@ -11,6 +11,7 @@ import '@testing-library/jest-dom';
 import {PublishInterface, IPublishInterfaceProps, OpenButton} from '../PublishInterface';
 import {IUserData} from '@/canvas/canvasDataDefs';
 import {Course} from "@/canvas/course/Course";
+import isEqual from "lodash/fp/isEqual";
 
 
 import fetchMock from "jest-fetch-mock";
@@ -73,7 +74,7 @@ describe('PublishInterface Component', () => {
         });
         fetchMock.mockResponse(JSON.stringify(mockCourseData))
         await act(async () => {
-            fireEvent.click(screen.getByText('Publish'));
+            fireEvent.click(screen.getByText('Publish all'));
         });
         await waitFor(() => screen.getByRole('alert'));
         expect(screen.getByText('Publishing')).toBeInTheDocument();

@@ -44,6 +44,7 @@ export function CourseUpdateInterface({
     const [mode, setMode] = useState<InterfaceMode>('fix');
     const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
+    const [showUpdateStartDate, setShowUpdateStartDate] = useState(false);
 
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
@@ -149,23 +150,33 @@ export function CourseUpdateInterface({
         }
     }
 
+    const toggleStartDateUI = () => {
+        setShowUpdateStartDate(current => !current);
+    };
+
     // This is the styling of the course update interface
     function FixesMode({course}: { course: Course }) {
         return <>
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint() && <RemoveAnnotationsSection/>}
 
-            <UpdateStartDate
-                setAffectedItems={setAffectedItems}
-                setUnaffectedItems={setUnaffectedItems}
-                setFailedItems={setFailedItems}
-                refreshCourse={refreshCourse}
-                course={course}
-                setStartDateOutcome={setStartDateOutcome}
-                isDisabled={deannotatingCount > 0}
-                startLoading={startLoading}
-                endLoading={endLoading}
-            />
+            <Button onClick={() => toggleStartDateUI()}>Update Start Date</Button>
+
+            <hr/>
+
+            { showUpdateStartDate && (<UpdateStartDate
+                    setAffectedItems={setAffectedItems}
+                    setUnaffectedItems={setUnaffectedItems}
+                    setFailedItems={setFailedItems}
+                    refreshCourse={refreshCourse}
+                    course={course}
+                    setStartDateOutcome={setStartDateOutcome}
+                    isDisabled={deannotatingCount > 0}
+                    startLoading={startLoading}
+                    endLoading={endLoading}
+                />
+                )}
+
             <hr/>
 
             <Button onClick={runValidations()} disabled={runValidationsDisabled}>{batchingValidations ? 'Loading Validations...' : 'Run Validations'}</Button>

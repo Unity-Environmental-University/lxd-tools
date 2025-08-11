@@ -15,7 +15,10 @@ type AffectedModuleItem = IModuleItemData & { completion_requirement: undefined 
 export type CheckModuleCourse = { id: number };
 export type CheckModuleResult = AffectedModuleItem[];
 
-function isAffectedModuleItem(mi: IModuleItemData): mi is AffectedModuleItem {
+export function isAffectedModuleItem(mi: IModuleItemData, moduleName: string): mi is AffectedModuleItem {
+    if(mi.title.toLocaleLowerCase().match(/how do i earn it\?/ig) || moduleName.toLocaleLowerCase().match(/claim badge/ig)) {
+        return false;
+    }
     return typeof mi.completion_requirement === 'undefined';
 }
 
@@ -27,7 +30,7 @@ const run = async (course: CheckModuleCourse) => {
     for await (let mod of modGen) {
         if (!mod.published) continue;
         const {items} = mod;
-        const badItems = items.filter(isAffectedModuleItem);
+        const badItems = items.filter(item => isAffectedModuleItem(item, mod.name));
         affectedModuleItems.push(...badItems);
     }
 
