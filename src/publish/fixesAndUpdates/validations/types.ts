@@ -4,9 +4,9 @@ import {ICanvasCallConfig} from "@canvas/canvasUtils";
 import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 
 
-export type RunTestFunction<T, UserDataType> = (course: T, config?: ICanvasCallConfig) => Promise<ValidationResult<UserDataType>>
+export type RunTestFunction<T, UserDataType> =
+    (course: T, config?: ICanvasCallConfig) => Promise<ValidationResult<UserDataType>>
 export type FixTestFunction<T, UserDataType, FixUserDataType = UserDataType> = (course: T, result?: ValidationResult<UserDataType>) => Promise<ValidationResult<FixUserDataType>>
-
 
 export type CourseValidation<
     T = Course,

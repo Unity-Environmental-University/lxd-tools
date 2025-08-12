@@ -19,7 +19,7 @@ import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
 import {getCourseData} from "@canvas/course";
 import {sleep} from "@/utils/toolbox";
 import {IProfile, IProfileWithUser} from "@canvas/type";
-import isEqual from "lodash/fp/isEqual";
+import isEqual from "lodash/isEqual";
 
 
 export interface IPublishInterfaceProps {
@@ -110,6 +110,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         inform('Publishing')
         setLoading(true);
         const toPublish = Object.values(sections);
+        const numToPublish = toPublish.length;
         await Course.publishAll(toPublish, accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
@@ -122,7 +123,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
             dispatchSections({set: Object.fromEntries(newAssocCourses.map(a => [ a.id, a]))});
             setLoading(false);
-            success('Published');
+            success('Published ' + numToPublish + ' sections');
         }, 500);
     }
 
@@ -310,10 +311,10 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                             onClick={e => publishCourses(e, sections)} style={{marginLeft: '8px'}}>
                         Publish all
                     </Button>
-                    <Button className="btn" disabled={sectionsListIdentical || selectedSectionsEmpty || loading || !(course?.isBlueprint)}
+                    {!sectionsListIdentical && <Button className="btn" disabled={selectedSectionsEmpty || loading || !(course?.isBlueprint)}
                             onClick={e => publishCourses(e, sectionsToPublish)} style={{marginLeft: '8px'}}>
                         Publish selected
-                    </Button>
+                    </Button>}
                 </div>
                 <div className={'col-xs-12'} style={{marginTop: '5px'}}>
                     {user && course &&

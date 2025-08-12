@@ -24,11 +24,9 @@ const messageHandlers: Record<string, MessageHandler<any, any>> = {
         target: { tabId: activeTab.id },
         files: ['./js/content.js'],
       });
-
       const contentResult = await tabs.sendMessage(activeTab.id, { queryString, subAccount });
-
+      
       sendResponse(contentResult);
-      return true;
     } catch (e: any) {
       sendResponse({
       success: false,
@@ -78,8 +76,6 @@ action.onClicked.addListener(async (tab) => {
   if (!id) { return }
 
 });
-
-
 
 
 async function getActiveTab() {

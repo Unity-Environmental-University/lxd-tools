@@ -1,7 +1,7 @@
 import {moduleGenerator} from "@canvas/course/modules";
 import {IModuleItemData} from "@canvas/canvasDataDefs";
 import {
-    moduleElementsAreRequiredValidation
+    moduleElementsAreRequiredValidation, isAffectedModuleItem
 } from "@publish/fixesAndUpdates/validations/courseContent/moduleElementsAreRequired";
 import {mockModuleItemData} from "@canvas/course/__mocks__/mockModuleData";
 import {mockAll} from "@/utils/testUtls";
@@ -37,7 +37,7 @@ describe("moduleElementsAreRequiredValidation", () => {
         const mockModuleItems = [...baseMockModuleItems];
 
         (moduleGenerator as jest.Mock).mockImplementation(function* () {
-            yield {published:true,  items: mockModuleItems};
+            yield {published:true,  items: mockModuleItems, name:"Some Module"};
         });
 
         // Act
@@ -100,7 +100,7 @@ describe("moduleElementsAreRequiredValidation", () => {
         ], mockModuleItemData);
 
         (moduleGenerator as jest.Mock).mockImplementation(function* () {
-            yield {published:true, items: mockModuleItems};
+            yield {published:true, items: mockModuleItems, name:"Some Module"};
         });
 
         // Act
@@ -119,6 +119,107 @@ describe("moduleElementsAreRequiredValidation", () => {
             ])
         );
     });
+
+    describe('isAffectedModuleItem', () => {
+    it('should ignore items with "How do I earn it?" in title regardless of completion requirement', () => {
+        const items: IModuleItemData[] = mockAll([
+            {
+                title: "How do I earn it?",
+                completion_requirement: undefined
+            },
+            {
+                title: "Something How do I earn it? something",
+                completion_requirement: { type: "must_submit" }
+            }
+        ], mockModuleItemData);
+
+        const results = items.map(item => isAffectedModuleItem(item, "Some Module"));
+        expect(results).toEqual([false, false]);
+    });
+
+    it('should ignore items in Claim Badge module', () => {
+        const items: IModuleItemData[] = mockAll([
+            {
+                title: "Frameworks of Sustainability",
+                completion_requirement: undefined
+            },
+            {
+                title: "Test Badge",
+                completion_requirement: { type: "must_submit" }
+            }
+        ], mockModuleItemData);
+        const moduleNames = ["Claim Badge - Frameworks of Sustainability", "Claim Badge"];
+
+        const results = items.map(item => isAffectedModuleItem(item, moduleNames[items.indexOf(item)]));
+        expect(results).toEqual([false, false]);
+    });
+
+    it('should ignore items with both patterns', () => {
+        const items: IModuleItemData[] = mockAll([
+            {
+                title: "How do I earn it?",
+                completion_requirement: undefined
+            },
+            {
+                title: "How do I earn it?",
+                completion_requirement: undefined
+            },
+            {
+                title: "Test Badge",
+                completion_requirement: undefined
+            },
+            {
+                title: "Test Badge",
+                completion_requirement: undefined
+            }
+        ], mockModuleItemData);
+        const moduleNames = ["Claim Badge", "Frameworks - How Do I Earn It?", "Claim Badge", "Frameworks - How Do I Earn It?"];
+
+        const results = items.map(item => isAffectedModuleItem(item, moduleNames[items.indexOf(item)]));
+        expect(results).toEqual([false, false, false, true]);
+    });
+
+    it('should flag normal items without completion requirements', () => {
+        const items: IModuleItemData[] = mockAll([
+            {
+                title: "Normal Module Item",
+                completion_requirement: undefined
+            }
+        ], mockModuleItemData);
+
+        const results = items.map(item => isAffectedModuleItem(item, "Some Module"));
+        expect(results).toEqual([true]);
+    });
+
+    it('should handle case insensitivity', () => {
+        const items: IModuleItemData[] = mockAll([
+            {
+                title: "HOW DO I EARN IT?",
+                completion_requirement: undefined
+            },
+            {
+                title: "how do i earn it?",
+                completion_requirement: undefined
+            }
+        ], mockModuleItemData);
+        const moduleNames = ["how do i earn it?", "CLAIM BADGE"];
+        const results = items.map(item => isAffectedModuleItem(item, moduleNames[items.indexOf(item)]));
+        expect(results).toEqual([false, false]);
+    });
+
+    it('should pass normal items with completion requirements', () => {
+        const items: IModuleItemData[] = mockAll([
+            {
+                title: "Normal Module Item",
+                completion_requirement: { type: "must_submit" }
+            }
+        ], mockModuleItemData);
+
+        const results = items.map(item => isAffectedModuleItem(item, "Some Module"));
+        expect(results).toEqual([false]);
+    });
+});
+
 
     // skip("should fix requirements on assignments, discussions, anmd", async () => {
     //     // Arrange

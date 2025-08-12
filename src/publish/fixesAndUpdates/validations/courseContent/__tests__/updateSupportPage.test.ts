@@ -123,7 +123,7 @@ describe("updateSupportPage.run", () => {
     jest.resetAllMocks();
   });
 
-  it("returns unknown when the support page has no links", async () => {
+  it("returns failure when the support page has no links", async () => {
     const fakePage = {
       page_id: 123,
       body: "<div>No links on this page</div>",
@@ -137,8 +137,8 @@ describe("updateSupportPage.run", () => {
     const result = await updateSupportPage.run(course);
 
     expect(result).toEqual(
-      testResult("unknown", {
-        failureMessage: "Support page has no links",
+      testResult(false, {
+        failureMessage: "Support page has no links, needs attention",
         userData: fakePage,
       })
     );

@@ -16,6 +16,7 @@ runtime.onMessage.addListener(async(
         if(message.hasOwnProperty('queryString')) {
             try {
                 await openTargetCourse(message.queryString, message.subAccount);
+                sendResponse({ success: true });
             } catch (e: any) {
                 sendResponse({ success: false, error: e.message || 'Unknown error' });
             }

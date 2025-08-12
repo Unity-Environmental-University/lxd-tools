@@ -192,4 +192,36 @@ describe('syllabusHeaderName', () => {
 
 });
 
+describe('Term Name Year Extraction', () => {
+    describe('New Style Term Names (DE5W06.11.25)', () => {
+        const testCases = [
+            { syllabus: baseSyllabus, expectedYear: 2024 },
+            { syllabus: gradSyllabus, expectedYear: 2024 },
+        ];
+
+        testCases.forEach(({ syllabus, expectedYear }) => {
+            it(`extracts year ${expectedYear} from syllabus`, () => {
+                const startDate = getStartDateFromSyllabus(syllabus);
+                expect(startDate.year).toBe(expectedYear);
+            });
+        });
+    });
+
+    describe('Year Preservation in Date Range', () => {
+        it('preserves the extracted year across the entire date range', () => {
+            const startDate = getStartDateFromSyllabus(baseSyllabus);
+            expect(startDate.year).toBe(2024);
+            expect(startDate.month).toBeGreaterThan(0);
+            expect(startDate.day).toBeGreaterThan(0);
+        });
+
+        it('preserves the extracted year for grad syllabus', () => {
+            const startDate = getStartDateFromSyllabus(gradSyllabus);
+            expect(startDate.year).toBe(2024);
+            expect(startDate.month).toBeGreaterThan(0);
+            expect(startDate.day).toBeGreaterThan(0);
+        });
+    });
+});
+
 
