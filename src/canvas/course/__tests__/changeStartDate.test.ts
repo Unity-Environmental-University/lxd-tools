@@ -9,6 +9,7 @@ import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData";
 import {range} from "@canvas/canvasUtils";
 import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
 import {Assignment} from "@canvas/content/assignments/Assignment";
+
 const baseSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.gallant.html')
 const gradSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.grad.html')
 
