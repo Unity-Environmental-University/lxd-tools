@@ -175,7 +175,7 @@ const createPlugins = () => [
     ...getHtmlPlugins(["popup"]),
     new ZipPlugin({
         path: outputPath,
-        filename: `lxd-extension-${packageJson.version}.xpi`,
+        filename: `lxd-extension-${packageJson.version}`,
         fileOptions: {
             mtime: new Date(),
             mode: 0o100644,
@@ -183,7 +183,8 @@ const createPlugins = () => [
         zipOptions: {
             forceZip64: false,
             zlib: {level: 9},
-        }
+        },
+        extension: 'xpi',
     })
 ];
 
