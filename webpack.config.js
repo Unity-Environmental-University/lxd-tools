@@ -12,6 +12,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
+const ZipPlugin = require("zip-webpack-plugin");
 
 const entry = {
     'popup': './src/popup',
@@ -116,6 +117,27 @@ const transformManifest = (content) => {
     return JSON.stringify(manifest, null, 2);
 }
 
+const transformUpdates = (content) => {
+    let updates = JSON.parse(content.toString());
+
+    if(!updates.addons) {
+        updates.addons = {};
+    }
+
+    if (!updates.addons['lxd-extension@unity.edu']) {
+        updates.addons['lxd-extension@unity.edu'] = { updates: [] };
+    }
+
+    if (updates.addons['lxd-extension@unity.edu'].updates.length === 0) {
+        updates.addons['lxd-extension@unity.edu'].updates.push({});
+    }
+
+    updates.addons['lxd-extension@unity.edu'].updates[0].version = packageJson.version;
+    updates.addons['lxd-extension@unity.edu'].updates[0].update_link = `https://raw.githubusercontent.com/Unity-Environmental-University/lxd-tools-build/stable/lxd-extension-${packageJson.version}.xpi`;
+
+    return JSON.stringify(updates, null, 2);
+}
+
 const createPlugins = () => [
     new webpack.ProvidePlugin({
         process: require.resolve('process/browser'),
@@ -134,6 +156,11 @@ const createPlugins = () => [
                 to: "manifest.json",
                 transform: transformManifest,
             },
+            {
+                from: path.resolve(__dirname, 'updates.source.json'),
+                to : "updates.json",
+                transform: transformUpdates,
+            },
             {from: "./img/*", to: 'img/[name][ext]'}
         ]
     }),
@@ -146,6 +173,18 @@ const createPlugins = () => [
         }
     }),
     ...getHtmlPlugins(["popup"]),
+    new ZipPlugin({
+        path: outputPath,
+        filename: `lxd-extension-${packageJson.version}.xpi`,
+        fileOptions: {
+            mtime: new Date(),
+            mode: 0o100644,
+        },
+        zipOptions: {
+            forceZip64: false,
+            zlib: {level: 9},
+        }
+    })
 ];
 
 module.exports = {
