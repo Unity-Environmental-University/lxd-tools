@@ -1,4 +1,4 @@
-import React, {useReducer, useState} from "react";
+import React, {useEffect, useReducer, useState} from "react";
 import {IMultiSelectOption, optionize, optionizeOne} from "@/ui/widgets/MuliSelect";
 import Modal from "@/ui/widgets/Modal/index";
 import {Button, Col, Container, Form, Row} from "react-bootstrap";
@@ -22,13 +22,18 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     const [foundCourses, setFoundCourses] = useState<(Course & IMultiSelectOption)[]>([]);
-    const [coursesToRunOn, setCoursesToRunOn] = useState<(Course & IMultiSelectOption)[]>(
-        course ? optionize([course]) : [])
+    const [coursesToRunOn, setCoursesToRunOn] = useState<(Course & IMultiSelectOption)[]>([]);
+    useEffect(() => {
+        if (course) {
+            setCoursesToRunOn(optionize([course]));
+        }
+    }, [course]);
+
 
     const [validationsToRun, setValidationsToRun] = useState<(CourseValidation & IMultiSelectOption)[]>([])
     const [validationResults, setValidationResults] = useState<IIncludesTestAndCourseId[]>([])
 
-    const [onlySearchBlueprints, setOnlySearchBlueprints] = useState(true);
+    const [onlySearchBlueprints, setOnlySearchBlueprints] = useState(false);
 
     const [
         validationResultsLut,
@@ -46,7 +51,6 @@ export function AdminApp({course, allValidations}: IAdminAppProps) {
         , dispatchParentCourseLut
     ] = useReducer(lutDispatcher<number, Course | null>, {});
     const [sectionLut, dispatchSectionLut] = useReducer(listLutDispatcher<number, Course>, {})
-
 
     function cacheAssociatedCourses(bpId: number, toAdd: Course[] | Course) {
         const sections = Array.isArray(toAdd) ? toAdd : [toAdd];

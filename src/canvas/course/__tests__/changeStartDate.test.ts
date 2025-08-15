@@ -9,6 +9,7 @@ import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData";
 import {range} from "@canvas/canvasUtils";
 import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
 import {Assignment} from "@canvas/content/assignments/Assignment";
+
 const baseSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.gallant.html')
 const gradSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.grad.html')
 
@@ -182,7 +183,7 @@ describe('syllabusHeaderName', () => {
     })
     it('handles outside the tags colon', () => {
         expect(syllabusHeaderName(fakeHeader('<strong>Course</strong> <strong>Inclusive Dates</strong>:'))).toEqual('Course Inclusive Dates')
-       expect(syllabusHeaderName(fakeHeader('<strong>Credits</strong>:'))).toEqual('Credits')
+        expect(syllabusHeaderName(fakeHeader('<strong>Credits</strong>:'))).toEqual('Credits')
 
     })
     it('return undefined when : not found', () => {
@@ -190,6 +191,38 @@ describe('syllabusHeaderName', () => {
 
     })
 
-})
+});
+
+describe('Term Name Year Extraction', () => {
+    describe('New Style Term Names (DE5W06.11.25)', () => {
+        const testCases = [
+            { syllabus: baseSyllabus, expectedYear: 2024 },
+            { syllabus: gradSyllabus, expectedYear: 2024 },
+        ];
+
+        testCases.forEach(({ syllabus, expectedYear }) => {
+            it(`extracts year ${expectedYear} from syllabus`, () => {
+                const startDate = getStartDateFromSyllabus(syllabus);
+                expect(startDate.year).toBe(expectedYear);
+            });
+        });
+    });
+
+    describe('Year Preservation in Date Range', () => {
+        it('preserves the extracted year across the entire date range', () => {
+            const startDate = getStartDateFromSyllabus(baseSyllabus);
+            expect(startDate.year).toBe(2024);
+            expect(startDate.month).toBeGreaterThan(0);
+            expect(startDate.day).toBeGreaterThan(0);
+        });
+
+        it('preserves the extracted year for grad syllabus', () => {
+            const startDate = getStartDateFromSyllabus(gradSyllabus);
+            expect(startDate.year).toBe(2024);
+            expect(startDate.month).toBeGreaterThan(0);
+            expect(startDate.day).toBeGreaterThan(0);
+        });
+    });
+});
 
 

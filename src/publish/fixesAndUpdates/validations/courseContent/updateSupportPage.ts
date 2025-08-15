@@ -8,8 +8,8 @@ type CourseInterface = {
     id: number;
 }
 
-const badUrl = "https://online.unity.edu/support";
-const goodUrl = "https://unity.edu/distance-education/academic-and-career-support/";
+const badUrl = "https://online.unity.edu/support/";
+const goodUrl = "https://unity.edu/distance-education/student-resources/";
 
 const run: CourseFixValidation<CourseInterface>['run'] = async ({id}) => {
 
@@ -34,6 +34,14 @@ const run: CourseFixValidation<CourseInterface>['run'] = async ({id}) => {
 
     const links = pageEl.querySelectorAll("a");
     let foundBadUrl = false;
+
+    if(links.length === 0) {
+        return testResult(false, {
+            failureMessage: "Support page has no links, needs attention",
+            userData: page,
+        });
+    }
+
     links.forEach(link => {
         if (link.href.toLocaleLowerCase() === badUrl.toLocaleLowerCase()) {
             foundBadUrl = true;
@@ -92,7 +100,7 @@ if (!page || !pageKind.dataIsThisKind(page)) {
 
 export const updateSupportPage: CourseFixValidation<CourseInterface> = {
     name: "Update Support Page",
-    description: "Updates the support page for the course.",
+    description: "Updates the link in the support page.",
     run,
     fix,
 }

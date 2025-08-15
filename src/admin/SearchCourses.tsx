@@ -2,7 +2,7 @@ import {getCourseGenerator} from "../canvas/course/index";
 import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
 import React, {FormEventHandler, useEffect, useState} from "react";
 import {bpify} from "./index";
-import {Form} from "react-bootstrap";
+import {Form, Spinner} from "react-bootstrap";
 import {Course} from "../canvas/course/Course";
 import {Account, RootAccountNotFoundError} from "@/canvas/Account";
 
@@ -76,6 +76,16 @@ export function SearchCourses({
     return <Form onSubmit={search}>
         <input type={'text'} value={courseSearchString}
                onChange={(e) => setCourseSearchString(e.target.value)}></input>
-        <button>Get Courses</button>
+        <button type="submit" disabled={isSearching}>
+            {isSearching ? (
+                <>
+                    <Spinner animation="border" size="sm" role="status" aria-hidden="true" />
+                    &nbsp;Searching…
+                </>
+            ) : (
+                "Get Courses"
+            )}
+        </button>
+
     </Form>
 }

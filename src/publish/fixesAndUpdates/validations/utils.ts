@@ -402,10 +402,24 @@ export enum AddPosition {
     DirectlyAfterHeader
 }
 
+export enum SpecialPosition {
+    BeforeHeader,
+
+
+}
+
+
+
+/**
+ * Adds a new subsection to a syllabus section in a course.
+ * @param run
+ * @param newSubSectionHtml
+ * @param position
+ */
 export function addSyllabusSectionFix(
     run: (course:ISyllabusHaver & ICourseDataHaver) => Promise<ValidationResult<InSyllabusSectionFuncUserData>>,
     newSubSectionHtml: string,
-    position: AddPosition = AddPosition.AtEnd,
+    position: AddPosition | [SpecialPosition, string] = AddPosition.AtEnd,
 ) {
     return async (course: ISyllabusHaver & ICourseDataHaver, result: ValidationResult<InSyllabusSectionFuncUserData> | undefined
     )  => {
@@ -413,6 +427,31 @@ export function addSyllabusSectionFix(
         if(!result.userData || isErrorUserData(result.userData)) return result;
         const { sectionEl, syllabusEl, headerEl } =  result.userData;
         if(!sectionEl) return testResult(false, {failureMessage : "Section El to fix not found", userData: undefined})
+
+        if (Array.isArray(position)) {
+            const [specialPosition, headerSearch] = position;
+            if(specialPosition === SpecialPosition.BeforeHeader) {
+                const beforeHeaderEl = queryFindFirst(syllabusEl, 'h2,h3,h4', isCorrectSectionFunc(headerSearch));
+                if(!beforeHeaderEl) {
+                    return testResult(false, { failureMessage: `Could not find header to insert before ${headerSearch}`, userData: undefined });
+                }
+                beforeHeaderEl.insertAdjacentHTML('beforebegin', newSubSectionHtml);
+                const changeResponse = await course.changeSyllabus( syllabusEl.innerHTML) as ICourseData;
+
+                const success = changeResponse.syllabus_body?.includes(newSubSectionHtml);
+
+                return testResult(success, {
+                    userData: {sectionEl, syllabusEl},
+                    failureMessage: success ? [] : [{bodyLines: ["Failed to update syllabus"]}],
+                });
+            } else {
+                throw Error("Special Position Not Handled")
+            }
+        }
+
+
+
+
         if (position == AddPosition.AtEnd) {
             sectionEl.insertAdjacentHTML('beforeend', newSubSectionHtml)
         } else if (position == AddPosition.AtBeginning) {

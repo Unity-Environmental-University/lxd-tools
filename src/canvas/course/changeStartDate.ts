@@ -59,9 +59,39 @@ export function getStartDateFromSyllabus(syllabusHtml:string, locale=DEFAULT_LOC
     const strongParas = paras.filter((para) => para.querySelector('strong'));
     if (strongParas.length < 5) throw new MalformedSyllabusError(`Missing syllabus headers\n${strongParas}`);
 
+    const termNameEl = strongParas[1];
     const datesEl = strongParas[2];
-    const dateRange = findDateRange(datesEl.innerHTML, locale);
+    let dateRange = findDateRange(datesEl.innerHTML, locale);
     if (!dateRange) throw new MalformedSyllabusError("Date range not found in syllabus");
+
+    const termName = termNameEl.textContent || '';
+    let yearToUse: number | undefined;
+
+    const yearMatchNew = termName.match(/\.(\d{2})$/);
+    if(yearMatchNew) {
+        yearToUse = 2000 + parseInt(yearMatchNew[1]);
+    } else {
+        const yearMatchOld = termName.match(/DE-(\d{2})-/);
+        if(yearMatchOld) {
+            yearToUse = 2000 + parseInt(yearMatchOld[1]);
+        }
+    }
+
+    if (yearToUse) {
+        dateRange = {
+            start: Temporal.PlainDate.from({
+                year: yearToUse,
+                month: dateRange.start.month,
+                day: dateRange.start.day
+            }),
+            end: Temporal.PlainDate.from({
+                year: yearToUse,
+                month: dateRange.end.month,
+                day: dateRange.end.day
+            })
+        };
+    }
+
     return dateRange.start;
 }
 

@@ -9,37 +9,55 @@ type MessageHandler<T, Output> = (
       params: T,
       sender: Runtime.MessageSender,
       sendResponse: (output: Output) => void
-  ) => void | boolean | Promise<boolean | void>
+  ) => void | boolean | Promise<void> | Promise<boolean>;
 
 const messageHandlers: Record<string, MessageHandler<any, any>> = {
-  searchForCourse: async (queryString:string) => {
+  searchForCourse: async ( params: { queryString:string, subAccount: number}, _sender, sendResponse ) => {
+    const {queryString, subAccount} = params;
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
-      return;
+      sendResponse({ success: false, error: "Please open a new tab and try again."});
+      return true;
     }
-    await scripting.executeScript({
-      target: {tabId: activeTab.id},
-      files: ['./js/content.js']
+    try {
+      await scripting.executeScript({
+        target: { tabId: activeTab.id },
+        files: ['./js/content.js'],
+      });
+      const contentResult = await tabs.sendMessage(activeTab.id, { queryString, subAccount });
+      
+      sendResponse(contentResult);
+    } catch (e: any) {
+      sendResponse({
+      success: false,
+      error: e.message === "Cannot access a chrome:// URL"
+        ? "Please open a new tab and try again."
+        : e.message || "Unknown error",
     });
-    await tabs.sendMessage(activeTab.id, {'queryString': queryString});
+
+    }
+
+    return true;
   },
 
 
 }
 
 runtime.onMessage.addListener((
-    message: Record<string, any>,
-    sender,
-    sendResponse
+  message: Record<string, any>,
+  sender,
+  sendResponse
 ) => {
-  for(const messageKey in messageHandlers) {
-    if(message.hasOwnProperty(messageKey)) {
-      const handler = messageHandlers[messageKey];
-      const params = message[messageKey];
-      handler(params, sender, sendResponse);
+  for (const messageKey in messageHandlers) {
+    if (message.hasOwnProperty(messageKey)) {
+      // fire off the handler; it will call sendResponse(...) when it's done
+      messageHandlers[messageKey](message[messageKey], sender, sendResponse);
+      // return the *literal* true here so the channel stays open
+      return true;
     }
   }
-})
+  // if no handler matched, we simply return void
+});
 
 runtime.onMessage.addListener((message: { downloadImage : string }, sender, sendResponse:(value:any) => void) => {
   if (message.downloadImage) {
@@ -60,8 +78,6 @@ action.onClicked.addListener(async (tab) => {
 });
 
 
-
-
 async function getActiveTab() {
   const windowTabs = await tabs.query({lastFocusedWindow: true})
   const activeTabs = await tabs.query({active:true});
@@ -70,4 +86,3 @@ async function getActiveTab() {
   const [tab] = windowTabs.filter(tab => tab.active)
   return tab
 }
-
