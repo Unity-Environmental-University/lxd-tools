@@ -38,8 +38,7 @@ const mockCourse: Course = new Course({
     ...mockCourseData,
     blueprint: false,
     course_code: "DEV_TEST000",
-    name: 'DEV_TEST000: The Testening',
-    getSyllabus: jest.fn().mockResolvedValue('<div>Mocked Syllabus</div>')
+    name: 'DEV_TEST000: The Testening'
 
 })
 const mockBlueprintCourse: Course = new Course({...mockCourseData, blueprint: true})
@@ -89,15 +88,13 @@ jest.mock('@/canvas/fetch/fetchJson', () => ({
       return Promise.resolve({
         id: 0,
         name: 'Test Course',
-        syllabus_body: '<div class="cbt-callout-box"><p>Some content</p><p><strong>Term Name</strong></p><p><strong></strong></p></div>'
+        syllabus_body: '<div class="cbt-callout-box"><p>Some content</p><p><strong>Term Name: </strong>DE5W06.04.20</p><p><strong></strong></p></div>'
       });
     }
 
     return Promise.resolve({});
   })
 }));
-
-
 
 jest.mock('@/canvas/course/migration', () => {
     const originalModule = jest.requireActual('@canvas/course/migration');
@@ -127,6 +124,12 @@ import {getSections} from "@canvas/course/getSections";
 
 jest.mock('@canvas/course/retireBlueprint',() => ({ retireBlueprint: jest.fn() }));
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
+
+const mockSyllabus =
+    `<div class="cbt-callout-box">
+        <div class="content">
+            <p><strong>Course Number and Title:</strong> TEST101: Testing</p>
+            <p><strong>Year/Term/Session:</strong><span> DE5W06.04.20</span></p></div>`;
 
 describe('MakeBp Component', () => {
     beforeEach(() => {
@@ -160,7 +163,21 @@ describe('MakeBp Component', () => {
         expect(screen.getByText(/Archive/)).toBeDisabled();
     });
 
-})
+    it('pulls the term name from the syllabus if no sections are available', async () => {
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{
+            ...mockBlueprintCourse,
+            id: 101,
+            getSyllabus:
+                jest.fn().mockResolvedValue(mockSyllabus)
+        }]);
+
+        const { getByPlaceholderText } = await renderComponent();
+
+        const termNameInput = getByPlaceholderText(TERM_NAME_PLACEHOLDER);
+        expect(termNameInput).toHaveValue('DE5W06.04.20');
+    });
+});
+
 describe('Retirement and updates', () => {
     const cachedCourseMigrationSpy = jest.spyOn(cacheMigrationApi, 'loadCachedCourseMigrations')
 
@@ -176,11 +193,8 @@ describe('Retirement and updates', () => {
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{
             ...mockBlueprintCourse,
             id: 101,
-            term_name: 'DE5W06.04.20',
-            getSyllabus: jest.fn().mockResolvedValue('<div>Mocked Syllabus</div>'),
-            isLoading: false,
-            activeMigrations: ['migration1', 'migration2'],
-            blueprint: true,
+            getSyllabus:
+                jest.fn().mockResolvedValue(mockSyllabus)
         }]);
 
         (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([{
@@ -190,7 +204,6 @@ describe('Retirement and updates', () => {
 
         (getTermNameFromSections as jest.Mock).mockResolvedValue('DE5W06.04.1980');
         (retireBlueprint as jest.Mock).mockResolvedValue(undefined);
-
         await renderComponent();
 
         (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([]);
