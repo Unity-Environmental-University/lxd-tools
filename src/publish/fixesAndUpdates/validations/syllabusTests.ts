@@ -255,7 +255,7 @@ const tableHtml = `
 // but we are adding it to the end of the grading section, so it will go in the right place.
 // and will continue to work if the grading policies section is moved to its own section.
 
-const runLatePolicyTableCheck = inSyllabusSectionFunc(/grading/i,/<tr><td>0.01 to 1/i)
+const runLatePolicyTableCheck = inSyllabusSectionFunc(/grading/i,/<tr>\s*<td>0\.01 to 1/i)
 
 export const latePolicyTableTest  = {
 name: "Add Late Policy table",
