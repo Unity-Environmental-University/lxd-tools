@@ -24,6 +24,7 @@ import assert from "assert";
 import {Temporal} from "temporal-polyfill";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {SectionData} from "@/canvas/courseTypes";
+import userEvent from '@testing-library/user-event';
 
 jest.mock('@/canvas/course/blueprint');
 import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
@@ -218,6 +219,29 @@ describe('Retirement and updates', () => {
         await waitFor(() => expect(screen.queryByText(/New BP/)).toBeDisabled());
 
     })
+
+    it('prevents multiple archives from a double click', async () => {
+    (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([mockBlueprintCourse]);
+    (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(
+        mockAsyncGen<SectionData>([{
+            ...mockSectionData,
+            term_name: 'DE5W06.04.20',
+        }])
+    );
+    (getTermNameFromSections as jest.Mock).mockResolvedValue('DE5W06.04.20');
+    (retireBlueprint as jest.Mock).mockImplementation(async () => await new Promise((r) => setTimeout(r, 20)));
+
+    await renderComponent();
+
+    const archiveButton = screen.getByRole('button', { name: /Archive/i });
+
+    await waitFor(() => expect(archiveButton).not.toBeDisabled());
+
+    const user = userEvent.setup();
+    await user.click(archiveButton);
+    await user.click(archiveButton);
+    expect(retireBlueprint).toHaveBeenCalledTimes(1);
+});
 
 
 });

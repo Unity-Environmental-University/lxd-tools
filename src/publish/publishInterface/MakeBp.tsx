@@ -31,7 +31,7 @@ import {retireBlueprint} from "@canvas/course/retireBlueprint";
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
-        onChange && onChange(value);
+        if (typeof onChange === "function" ) onChange(value);
     }, [value]];
     return returnValue;
 }
@@ -62,6 +62,7 @@ export function MakeBp({
     const [isLocking, setIsLocking] = useState(false);
     const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
     const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
+    const [isProcessing, setIsProcessing] = useState(false);
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
@@ -154,23 +155,30 @@ export function MakeBp({
 
     async function onArchive(e: FormEvent) {
         e.preventDefault();
+
+        if (isProcessing) return;
         if (!devCourse.parsedCourseCode) throw Error("Trying to archive without a valid course code");
         if (!currentBp) return false;
         if (termName.length === 0) return false;
+    
         const termDate = dateFromTermName(termName);
-        if(termDate) {
+        if (termDate) {
             const daysLeft = termDate.until(Temporal.Now.plainDateISO()).days;
             if (daysLeft <= 5) {
-                const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`)
+                const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`);
                 if (!confirmFinish) return;
-
             }
         }
-
+    
+        setIsProcessing(true);
         setIsLoading(true);
-        await retireBlueprint(currentBp, termName);
-        await updateBpInfo(devCourse, devCourse.parsedCourseCode);
-        setIsLoading(false);
+        try {
+            await retireBlueprint(currentBp, termName);
+            await updateBpInfo(devCourse, devCourse.parsedCourseCode);
+        } finally {
+            setIsLoading(false);
+            setIsProcessing(false);
+        }
     }
 
     async function onCloneIntoBp(e: FormEvent) {
