@@ -154,11 +154,12 @@ return el;
 
 
 function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
-const discussExpectEl = [...syllabusEl.querySelectorAll('h3')]
-    .find(h3 => (h3.innerText ?? h3.textContent ?? '').includes('Discussion Expectations'))
+const discussExpectH3 = [...syllabusEl.querySelectorAll('h3')]
+    .find(h3 => (h3.innerText ?? h3.textContent ?? '').includes('Discussion Expectations'));
+if (!discussExpectH3) return undefined;
+const discussExpectEl = discussExpectH3.closest('td');
 if (!discussExpectEl) return undefined;
 return discussExpectEl.querySelectorAll('p')[1] as HTMLParagraphElement | undefined;
-
 }
 
 
