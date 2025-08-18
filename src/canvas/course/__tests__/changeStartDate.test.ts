@@ -9,6 +9,7 @@ import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData";
 import {range} from "@canvas/canvasUtils";
 import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
 import {Assignment} from "@canvas/content/assignments/Assignment";
+
 const baseSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.gallant.html')
 const gradSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.grad.html')
 
@@ -182,7 +183,7 @@ describe('syllabusHeaderName', () => {
     })
     it('handles outside the tags colon', () => {
         expect(syllabusHeaderName(fakeHeader('<strong>Course</strong> <strong>Inclusive Dates</strong>:'))).toEqual('Course Inclusive Dates')
-       expect(syllabusHeaderName(fakeHeader('<strong>Credits</strong>:'))).toEqual('Credits')
+        expect(syllabusHeaderName(fakeHeader('<strong>Credits</strong>:'))).toEqual('Credits')
 
     })
     it('return undefined when : not found', () => {
@@ -190,7 +191,7 @@ describe('syllabusHeaderName', () => {
 
     })
 
-})
+});
 
 describe('Term Name Year Extraction', () => {
     describe('New Style Term Names (DE5W06.11.25)', () => {
