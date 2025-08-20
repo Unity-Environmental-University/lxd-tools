@@ -9,8 +9,13 @@ import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData";
 import {range} from "@canvas/canvasUtils";
 import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
 import {Assignment} from "@canvas/content/assignments/Assignment";
+import * as assignments from "@canvas/content/assignments";
+import {assignmentDataGen} from "@canvas/content/assignments";
 const baseSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.gallant.html')
 const gradSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.grad.html')
+declare const global: {
+    fetch: jest.Mock;
+}
 
 describe('Syllabus date changes', () => {
 
@@ -106,28 +111,54 @@ describe('getCurrentStartDate', () => {
 })
 
 describe('getStartDateAssignments', () => {
-    function datesToAssignment([year, month, day]: [string, string, string]) {
-        return new Assignment({
-            ...mockAssignmentData,
-            due_at: `${year}-${month}-${day}T00:00:00Z`
-        }, 0)
-    }
+    beforeAll(() => {
+        // Mock global fetch
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve([]),
+                ok: true,
+                headers: new Headers({
+                    'Link': ''
+                })
+            })
+        );
+    });
 
-    it('gets the first assignment due and returns the monday of that week', () => {
-        const assignments = ([
-            ['2024', '07', '19'],
-            ['2024', '08', '19'],
-            ['2024', '07', '18'],
-            ['2024', '09', '19'],
-        ] as [string, string, string][]).map(datesToAssignment);
+    afterAll(() => {
+        jest.restoreAllMocks();
+    });
 
-        expect(getStartDateAssignments(assignments)).toEqual(new Temporal.PlainDate(2024, 7, 15))
+    it('gets the first assignment due and returns the monday of that week', async () => {
+        // Wednesday Jan 15, 2025 assignment
+        const mockAssignment = {
+            due_at: '2025-01-15T23:59:59Z'
+        };
+
+        // Setup mock generator
+        const mockGen = (function* () {
+            yield mockAssignment;
+        })();
+
+        jest.spyOn(assignments, 'assignmentDataGen').mockImplementation(() => mockGen);
+
+        const result = await getStartDateAssignments(12345);
+
+        // Should return Monday Jan 13, 2025
+        const expected = Temporal.PlainDate.from({ year: 2025, month: 1, day: 13 });
+        expect(result.equals(expected)).toBe(true);
+    });
+
+    it('throws an error if there are no assignments with due dates', async () => {
+        jest.spyOn({ assignmentDataGen }, 'assignmentDataGen').mockImplementation(function* () {
+            yield {
+                ...mockAssignmentData,
+                due_at: null
+            };
+        });
+
+        await expect(getStartDateAssignments(123)).rejects.toThrow(NoAssignmentsWithDueDatesError)
     })
-
-    it('throws an error if there are no assignments with due dates', () => {
-        const assignments = ([new Assignment({...mockAssignmentData, due_at: null}, 0)])
-        expect(() => getStartDateAssignments(assignments)).toThrow(NoAssignmentsWithDueDatesError)
-    })
+})
 
     describe('getNewTermName', () => {
         const newTermStart = new Temporal.PlainDate(2024, 12, 1);
@@ -149,7 +180,6 @@ describe('getStartDateAssignments', () => {
             expect(getOldUgTermName(new Temporal.PlainDate(2024, 12, 24))).toEqual('DE-24-Dec')
         })
     })
-})
 
 //April 8 - May 12
 describe('getStartDateSyllabus', () => {

@@ -65,13 +65,12 @@ export function UpdateStartDate(
 
 
     const recalculateStartDate = async () => {
-                setIsLoading(true);
-        //Assignment
-        const localAssignments = assignments ?? await renderAsyncGen(assignmentDataGen(course.id));
-        if(assignments === undefined) setAssignments(localAssignments);
+        setIsLoading(true);
 
-        const _assignmentsStartDate = getStartDateAssignments(localAssignments);
-        console.log("Assignment Start Date", _assignmentsStartDate.toLocaleString());
+        //Assignment
+
+        const _assignmentsStartDate = await getStartDateAssignments(course.id);
+        console.log("Assignment Start Date", _assignmentsStartDate?.toLocaleString());
         setAssignmentsStartDate(_assignmentsStartDate);
 
         //Syllabus

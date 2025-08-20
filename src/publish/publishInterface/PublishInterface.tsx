@@ -231,7 +231,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 if (!sectionStartSet) {
                     actualStart = await section.getStartDateFromModules();
                     if (!actualStart) {
-                        actualStart = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(section.id)))
+                        actualStart = await getStartDateAssignments(section.id)
                     }
 
                     sectionStartSet = true;
