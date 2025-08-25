@@ -24,8 +24,6 @@ export class MismatchedUnloadError extends Error {
 
 export type InterfaceMode = 'fix' | 'unitTest'
 
-
-
 export function CourseUpdateInterface({
     course,
     refreshCourse,
@@ -47,6 +45,21 @@ export function CourseUpdateInterface({
 
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
+    // Prevent page unload when processing
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            if (deannotatingCount > 0 || batchingValidations) {
+                event.preventDefault();
+                event.returnValue = "beforeUnload - browser will show its own msg";
+                return event.returnValue;
+            }
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [deannotatingCount, batchingValidations]);
 
     const batchValidationsOverTime = async (inValidations: CourseValidation<Course, any, any>[], batchSize:number = 10, delay=2) => {
         let localValidations = [...validations];
@@ -93,9 +106,8 @@ export function CourseUpdateInterface({
         } else {
             setButtonText("Can Only Fix from BP or DEV")
         }
-        }, [course]);
+    }, [course]);
 
-    /* increment and decrement is loading just in case we end up setting it asynchronously somehow */
     function startLoading() {
         setLoadingCount(1);
         setFailedItems([]);
@@ -133,7 +145,6 @@ export function CourseUpdateInterface({
         endLoading();
     }
 
-
     function urlRows(links: React.ReactElement[], className = 'lxd-cu') {
         return links.map((link, i) =>
             <div key={i} className={['row', className].join(' ')}>
@@ -149,7 +160,6 @@ export function CourseUpdateInterface({
         }
     }
 
-    // This is the styling of the course update interface
     function FixesMode({course}: { course: Course }) {
         return <>
             <h2>Content Fixes for {course.name}</h2>
@@ -205,4 +215,3 @@ export function CourseUpdateInterface({
         </Modal>
     </>)
 }
-
