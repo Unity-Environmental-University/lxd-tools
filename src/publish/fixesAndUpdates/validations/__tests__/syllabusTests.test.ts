@@ -10,7 +10,7 @@ import {
     fixSupportEmailTest,
     gradeTableHeadersCorrectTest,
     removeSameDayPostRestrictionTest,
-    honorCodeLanguageText, addApaNoteToGradingPoliciesTest
+    honorCodeLanguageText, addApaNoteToGradingPoliciesTest, titleIXPolicyTest
 } from "../syllabusTests";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
 import assert from "assert";
@@ -36,6 +36,7 @@ describe('Syllabus validation', () => {
     test('Fix support email', syllabusTestTest(fixSupportEmailTest))
     test('Fix Honor Code langauge', syllabusTestTest(honorCodeLanguageText));
     test('Late policy text replace', syllabusTestTest(latePolicyTableTest));
+    test('Title IX policy update', syllabusTestTest(titleIXPolicyTest));
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {

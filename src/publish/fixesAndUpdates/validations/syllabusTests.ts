@@ -340,7 +340,6 @@ run: badSyllabusRunFunc(badSupportEmailRegex),
 fix: badSyllabusFixFunc(badSupportEmailRegex, goodSupportEmail)
 }
 
-//Attempt at creating a honor code language fix
 const badHCLanguage = 'Any student found to be responsible for violating the Unity Environmental University Honor Code may be suspended or dismissed from the university.';
 const goodHCLanguage = 'Penalties may include, but are not limited to, grade penalty or a failing grade for the work in question or a failing grade for the course.';
 
@@ -358,6 +357,81 @@ run: badSyllabusRunFunc(badHCRegex),
 fix: badSyllabusFixFunc(badHCRegex, goodHCLanguage)
 }
 
+const runTitleIXPolicyCheck = inSyllabusSectionFunc(/Title IX/i,/Please note that instructors are mandatory/i)
+
+export const titleIXPolicyTest  = {
+name: "Add Title IX Policy to Syllabus",
+beforeAndAfters: [
+    [
+        `<tr style="height: 274px;">
+                    <td style="width: 99.8918%; height: 274px;">
+                        <h3><strong>Statement on Fair Practices</strong></h3>
+                        <p>Unity Environmental University prohibits discrimination on the basis of race, color, creed or religion, national origin, sex, sexual orientation, age, marital status, pregnancy, veteran&rsquo;s status, or disability in regard to treatment, access to, or employment in its programs and activities, in accordance with federal and state laws and regulations. &nbsp;In compliance with the Americans with Disabilities Act (ADA), individuals with disabilities needing accommodation should contact the ADA compliance officer.</p>
+                        <p>For further explanation on this topic, please contact the Dean.</p>
+                        <p>This syllabus constitutes the agreement between the instructor and student.</p>
+                        <p>Any modifications to this syllabus will be identified during the course.</p>
+                    </td>
+                </tr>`,
+        `<tr style="height: 274px;">
+                    <td style="width: 99.8918%; height: 274px;">
+                        <h3><strong>Statement on Fair Practices</strong></h3>
+                        <p>Unity Environmental University prohibits discrimination on the basis of race, color, creed or religion, national origin, sex, sexual orientation, age, marital status, pregnancy, veteran&rsquo;s status, or disability in regard to treatment, access to, or employment in its programs and activities, in accordance with federal and state laws and regulations. &nbsp;In compliance with the Americans with Disabilities Act (ADA), individuals with disabilities needing accommodation should contact the ADA compliance officer.</p>
+                        <p>For further explanation on this topic, please contact the Dean.</p>
+                        <p>This syllabus constitutes the agreement between the instructor and student.</p>
+                        <p>Any modifications to this syllabus will be identified during the course.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h3><strong>Title IX Mandatory Reporting</strong></h3>
+                        <p>Please note that instructors are mandatory reporters under Title IX. If you share information about sexual harassment, assault, relationship violence, stalking, or gender-based discrimination that involves another Unity student or employee, they are required to notify the University&rsquo;s Title IX office so they can offer you support and resources.</p>
+                    </td>
+                </tr>`
+        ]
+],
+description: `Add the Title IX policy to the syllabus below the Statement on Fair Practices.`,
+run: runTitleIXPolicyCheck,
+fix: async (course: ISyllabusHaver) => {
+    const results = await runTitleIXPolicyCheck(course);
+    if(results.success) return testResult("not run", {notFailureMessage: "Title IX policy cell already exists."});
+    const syllabus = await course.getSyllabus();
+    const el = htmlDiv(syllabus);
+    const fairPracticesText = 'Statement on Fair Practices';
+
+    const fairPracticesTr = Array.from(el.querySelectorAll('tr'))
+        .find(tr => tr.querySelector('h3')?.textContent?.includes(fairPracticesText));
+
+    if (!fairPracticesTr) {
+        return testResult(false, {
+            failureMessage: "Statement on Fair Practices section not found.",
+            links: [`/courses/${course.id}/assignments/syllabus`]
+        })
+    }
+
+    const titleIXTr = document.createElement('tr');
+    titleIXTr.innerHTML = `
+        <td>
+            <h3><strong>Title IX Mandatory Reporting</strong></h3>
+            <p>Please note that instructors are mandatory reporters under Title IX. If you share information about sexual harassment, assault, relationship violence, stalking, or gender-based discrimination that involves another Unity student or employee, they are required to notify the University&rsquo;s Title IX office so they can offer you support and resources.</p>
+        </td>
+    `;
+
+    fairPracticesTr.insertAdjacentElement('afterend', titleIXTr);
+
+    try {
+        await course.changeSyllabus(el.innerHTML);
+        return testResult(true, {
+            links: [`/courses/${course.id}/assignments/syllabus`]
+        });
+    } catch (e) {
+        return errorMessageResult(e);
+    }
+}} as TextReplaceValidation<
+ISyllabusHaver,
+InSyllabusSectionFuncUserData,
+InSyllabusSectionFuncUserData | undefined
+>
+
 export default [
 addAiGenerativeLanguageTest,
 removeSameDayPostRestrictionTest,
@@ -373,5 +447,6 @@ secondDiscussionParaOff,
 fixSupportEmailTest,
 honorCodeLanguageText,
 addApaNoteToGradingPoliciesTest,
+titleIXPolicyTest,
 ]
 
