@@ -44,13 +44,14 @@ export function CourseUpdateInterface({
     const [batchingValidations, setBatchingValidations] = useState(false);
 
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
+    const workInProgress = deannotatingCount > 0 || batchingValidations;
 
     // Prevent page unload when processing
     useEffect(() => {
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-            if (deannotatingCount > 0 || batchingValidations) {
+            if (workInProgress) {
                 event.preventDefault();
-                event.returnValue = "beforeUnload - browser will show its own msg";
+                event.returnValue = "Changes are still being processed. Are you sure you want to leave?";
                 return event.returnValue;
             }
         };
@@ -59,7 +60,18 @@ export function CourseUpdateInterface({
         return () => {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
-    }, [deannotatingCount, batchingValidations]);
+    }, [workInProgress]);
+
+    // Intercept modal close with confirmation if work is in progress
+    const attemptCloseModal = () => {
+        if (workInProgress) {
+            if (window.confirm("Changes are still being processed. Are you sure you want to close?")) {
+                setShow(false);
+            }
+        } else {
+            setShow(false);
+        }
+    };
 
     const batchValidationsOverTime = async (inValidations: CourseValidation<Course, any, any>[], batchSize:number = 10, delay=2) => {
         let localValidations = [...validations];
@@ -163,6 +175,11 @@ export function CourseUpdateInterface({
     function FixesMode({course}: { course: Course }) {
         return <>
             <h2>Content Fixes for {course.name}</h2>
+            {workInProgress && (
+                <div className="alert alert-warning mb-3">
+                    Please wait. Changes are being processed.
+                </div>
+            )}
             {course.isBlueprint() && <RemoveAnnotationsSection/>}
 
             <UpdateStartDate
@@ -200,7 +217,7 @@ export function CourseUpdateInterface({
     return (course && <>
         <Button disabled={isDisabled()} role={'button'} className={"ui-button"} onClick={(e) => setShow(true)}
         >{buttonText}</Button>
-        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!deannotatingCount}>
+        <Modal isOpen={show} requestClose={attemptCloseModal} canClose={true}>
             <div className={'d-flex justify-content-end'}>
                 {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Show All Tests</Button>}
                 {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}
