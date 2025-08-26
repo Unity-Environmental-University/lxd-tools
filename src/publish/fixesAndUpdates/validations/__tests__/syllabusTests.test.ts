@@ -44,6 +44,7 @@ export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextRe
 
 
         const beforeAndAfters = 'beforeAndAfters' in test? test.beforeAndAfters : [[goofusSyllabusHtml, gallantSyllabusHtml]];
+        console.log(beforeAndAfters);
 
         for (const [goofusHtml, gallantHtml] of beforeAndAfters) {
             const gallantCourse: ISyllabusHaver = mockSyllabusHaver(gallantHtml);
