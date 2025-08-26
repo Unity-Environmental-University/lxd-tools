@@ -11,6 +11,7 @@ import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
 import {Assignment} from "@canvas/content/assignments/Assignment";
 import * as assignments from "@canvas/content/assignments";
 import {assignmentDataGen} from "@canvas/content/assignments";
+import {mockAsyncGen} from "@/__mocks__/utils";
 const baseSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.gallant.html')
 const gradSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.grad.html')
 declare const global: {
@@ -135,11 +136,9 @@ describe('getStartDateAssignments', () => {
         };
 
         // Setup mock generator
-        const mockGen = (function* () {
-            yield mockAssignment;
-        })();
+        const mockGen = mockAsyncGen([{...mockAssignmentData, ...mockAssignment}]);
 
-        jest.spyOn(assignments, 'assignmentDataGen').mockImplementation(() => mockGen);
+        jest.spyOn(assignments, 'assignmentDataGen').mockReturnValue(mockGen);
 
         const result = await getStartDateAssignments(12345);
 
@@ -149,12 +148,7 @@ describe('getStartDateAssignments', () => {
     });
 
     it('throws an error if there are no assignments with due dates', async () => {
-        jest.spyOn({ assignmentDataGen }, 'assignmentDataGen').mockImplementation(function* () {
-            yield {
-                ...mockAssignmentData,
-                due_at: null
-            };
-        });
+        jest.spyOn({ assignmentDataGen }, 'assignmentDataGen').mockReturnValue(mockAsyncGen([mockAssignmentData]));
 
         await expect(getStartDateAssignments(123)).rejects.toThrow(NoAssignmentsWithDueDatesError)
     })
