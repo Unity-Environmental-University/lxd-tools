@@ -31,7 +31,7 @@ describe("referencePageExistsValidation", () => {
 
             expect(result.success).toBe(true);
             expect(result.userData).toBe(pageDataMock);
-            expect(PageKind.getByString).toHaveBeenCalledWith(courseMock.id, REFERENCES_PAGE_URL_NAME, null, {
+            expect(PageKind.getByString).toHaveBeenCalledWith(courseMock.id, REFERENCES_PAGE_URL_NAME, undefined, {
                 allowPartialMatch: true,
             });
         });

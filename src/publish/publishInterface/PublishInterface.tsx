@@ -13,12 +13,13 @@ import {Course} from "@/canvas/course/Course";
 import {Term} from "@/canvas/term/Term";
 import {getStartDateAssignments} from "@/canvas/course/changeStartDate";
 import {assignmentDataGen} from "@/canvas/content/assignments";
-import {IListAction, lutDispatcher} from "@/ui/reducerDispatchers";
+import {IListAction, lutDispatcher, LutSetAction} from "@/ui/reducerDispatchers";
 import {sectionDataGenerator} from "@/canvas/course/blueprint";
 import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
 import {getCourseData} from "@canvas/course";
 import {sleep} from "@/utils/toolbox";
 import {IProfile, IProfileWithUser} from "@canvas/type";
+import isEqual from "lodash/isEqual";
 
 
 export interface IPublishInterfaceProps {
@@ -35,7 +36,11 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     const [show, setShow] = useState<boolean>(false)
     const [info, setInfo] = useState<string | null | boolean>(null);
     const [coursesLoading, setCoursesLoading] = useState(false);
-    const [sections, dispatchSections] = useReducer(lutDispatcher<number, Course>, {} as Record<number, Course>)
+    const [sections, dispatchSections] = useReducer(lutDispatcher<number, Course>, {} as Record<number, Course>);
+    const [sectionsToPublish, setSectionsToPublish] = useReducer(
+        lutDispatcher<number, Course>,
+        {} as Record<number, Course>
+    );
     const [term, setTerm] = useState<Term | null>();
     const [sectionStart, setSectionStart] = useState<Temporal.PlainDateTime>();
     const [isBlueprint, setIsBlueprint] = useState<boolean>(false);
@@ -99,12 +104,13 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
     //-----
     // EVENTS
     //-----
-    async function publishCourses(event: React.MouseEvent) {
+    async function publishCourses(event: React.MouseEvent, sections: Record<number, Course> = sectionsToPublish) {
         const accountId = course?.getItem<number>('account_id');
         if (typeof accountId === 'undefined') throw new Error('Course has no account Id');
         inform('Publishing')
         setLoading(true);
         const toPublish = Object.values(sections);
+        const numToPublish = toPublish.length;
         await Course.publishAll(toPublish, accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
@@ -117,7 +123,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
             dispatchSections({set: Object.fromEntries(newAssocCourses.map(a => [ a.id, a]))});
             setLoading(false);
-            success('Published');
+            success('Published ' + numToPublish + ' sections');
         }, 500);
     }
 
@@ -225,7 +231,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 if (!sectionStartSet) {
                     actualStart = await section.getStartDateFromModules();
                     if (!actualStart) {
-                        actualStart = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(section.id)))
+                        actualStart = await getStartDateAssignments(section.id)
                     }
 
                     sectionStartSet = true;
@@ -238,6 +244,11 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 }
 
                 dispatchSections({set: [section.id, section]});
+                if (frontPageProfile) dispatchFrontPageProfilesByCourseId({
+                    set: [section.id, frontPageProfile]
+                })
+
+                setSectionsToPublish({set: [section.id, section]});
                 if (frontPageProfile) dispatchFrontPageProfilesByCourseId({
                     set: [section.id, frontPageProfile]
                 })
@@ -259,6 +270,14 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         }
     }
 
+    const sectionPublishToggle = (course: Course, publish: boolean) => {
+      const payload: LutSetAction<number, Course> = {
+        // map‐style LutSetAction: each key ∈ RecordKeyType mapped to a single Course
+        [course.id]: publish ? course : (undefined as any)
+      } as LutSetAction<number, Course>;
+
+      setSectionsToPublish({ set: payload });
+    };
 
     //-----
     // RENDER
@@ -269,41 +288,52 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         user: IUserData | undefined,
     }
 
+    console.log(sectionsToPublish);
+
     function RenderBpInterface({course, user}: BpSectionInterface) {
+        const sectionsListIdentical = isEqual(sections, sectionsToPublish);
+        const selectedSectionsEmpty = Object.values(sectionsToPublish).every(v => v === undefined);
 
         return <>{!workingSection && (<div>
             <div className='row'>
                 <div className={'col-xs-12'}>
                     <h3>Sections</h3>
                 </div>
-                <div className={'col-xs-12 col-sm-12'}>
+                <div className={'col-xs-12 col-sm-12'} style={{marginBottom: '5px'}}>
                     Publish sections associated with this blueprint
                 </div>
-                <div className={'col-xs-2'}>
+                <div className={'col-xs-2'} style={{display: 'contents'}}>
                     <Button className="btn" disabled={loading || !(course?.isBlueprint)}
-                            onClick={applySectionProfiles}>
+                            onClick={applySectionProfiles} style={{marginLeft: '8px'}}>
                         Set Bios
                     </Button>
-                    <Button className="btn" disabled={loading || !(course?.isBlueprint)} onClick={publishCourses}>
-                        Publish
+                    <Button className="btn" disabled={loading || !(course?.isBlueprint)}
+                            onClick={e => publishCourses(e, sections)} style={{marginLeft: '8px'}}>
+                        Publish all
                     </Button>
-
+                    {!sectionsListIdentical && <Button className="btn" disabled={selectedSectionsEmpty || loading || !(course?.isBlueprint)}
+                            onClick={e => publishCourses(e, sectionsToPublish)} style={{marginLeft: '8px'}}>
+                        Publish selected
+                    </Button>}
                 </div>
-                <div className={'col-xs-12'}>
+                <div className={'col-xs-12'} style={{marginTop: '5px'}}>
                     {user && course &&
                         <EmailLink user={user} emails={emails} course={course} sectionStart={sectionStart}
                                    termData={term?.rawData}/>}
                 </div>
                 <div className='col-xs-12'>
-                    {SectionRows({
-                        sections: Object.values(sections),
-                        onOpenAll: openAll,
-                        instructorsByCourseId,
-                        errorsByCourseId,
-                        frontPageProfilesByCourseId,
-                        potentialProfilesByCourseId,
-                        setWorkingSection
-                    })}
+                    <SectionRows
+                        sections={Object.values(sections /* or however you get your list */)}
+                        onOpenAll={openAll}
+                        instructorsByCourseId={instructorsByCourseId}
+                        frontPageProfilesByCourseId={frontPageProfilesByCourseId}
+                        potentialProfilesByCourseId={potentialProfilesByCourseId}
+                        errorsByCourseId={errorsByCourseId}
+                        setWorkingSection={setWorkingSection}
+                        // ← HERE: pass your local variable into the prop
+                        sectionPublishRecord={sectionsToPublish}
+                        sectionPublishToggle={sectionPublishToggle}
+                    />
                 </div>
 
             </div>

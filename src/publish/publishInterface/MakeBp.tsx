@@ -96,7 +96,7 @@ export function MakeBp({
     useEffect(() => {
         const isDisabled = isLoading || !currentBp || !termName || termName.length === 0 || activeMigrations.length > 0;
         setIsArchiveDisabled(isDisabled);
-    }, [isLoading, currentBp, termName, activeMigrations])
+    }, [isLoading, currentBp, termName, activeMigrations]);
 
 
     useEffect( () => {
@@ -144,9 +144,31 @@ export function MakeBp({
         if (currentBp && currentBp.isBlueprint()) {
             const sections:SectionData[] = [];
             const sectionGen = sectionDataGenerator(currentBp.id);
-            for await (const sectionData of sectionGen ) {
-                sections.push(sectionData);
-                if(sectionData.term_name) setTermName(sectionData.term_name)
+            if(sections.length > 0) {
+                for await (const sectionData of sectionGen) {
+                    sections.push(sectionData);
+                    if (sectionData.term_name) setTermName(sectionData.term_name);
+                }
+            } else {
+                const syllabusBody = document.createElement('div');
+                let currentBpSyllabus = '';
+
+                if(typeof currentBp.getSyllabus === 'function') {
+                    currentBpSyllabus = await currentBp.getSyllabus();
+                } else {
+                    console.warn('Current BP does not have a getSyllabus function');
+                    return;
+                }
+
+                syllabusBody.innerHTML = currentBpSyllabus;
+                const syllabusCalloutBox = syllabusBody.querySelector('div.cbt-callout-box');
+                if (syllabusCalloutBox) {
+                    const paras = Array.from(syllabusCalloutBox.querySelectorAll('p'));
+                    const strongParas = paras.filter((para) => para.querySelector('strong'));
+                    const termNameEl = strongParas[1];
+
+                    setTermName(termNameEl.textContent?.trim().replace(/^.*:\s*/, '') ?? '');
+                }
             }
             setSections(sections);
         }

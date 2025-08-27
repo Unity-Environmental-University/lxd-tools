@@ -5,6 +5,7 @@ import {findDateRange, oldDateToPlainDate} from "@/date";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 import {IAssignmentData} from "@canvas/content/types";
+import {assignmentDataGen} from "@canvas/content/assignments";
 
 const DEFAULT_LOCALE = 'en-US';
 
@@ -17,6 +18,7 @@ export function getModuleUnlockStartDate(modules: IModuleData[]) {
     return oldDateToPlainDate(oldDate);
 }
 
+//This may be unnecessary, as the API call is now pulling by due_at date.
 export function sortAssignmentsByDueDate(assignments:Assignment[]|IAssignmentData[]) {
     return assignments
         .toSorted((a, b) =>
@@ -37,12 +39,27 @@ export function sortAssignmentsByDueDate(assignments:Assignment[]|IAssignmentDat
 
 }
 
-export function getStartDateAssignments(assignments:Assignment[]|IAssignmentData[]) {
-    const sorted = sortAssignmentsByDueDate(assignments).map(a => a.rawData ?? a).filter(a => a.due_at);
-    if (sorted.length == 0) throw new NoAssignmentsWithDueDatesError();
-    const firstAssignmentDue = new Date(sorted[0].due_at);
+export async function getStartDateAssignments(courseId: number) {
+    const assignmentGen = assignmentDataGen(courseId, {
+        queryParams: {
+            order_by: "due_at",
+            per_page: 2,
+        }
+    })
+
+    let assignmentDueAt: string | undefined;
+
+    for await (const assignment of assignmentGen) {
+        if(assignment.due_at){
+            assignmentDueAt = assignment.due_at;
+            break
+        }
+    }
+
+    if(!assignmentDueAt) throw new NoAssignmentsWithDueDatesError();
 
     //Set to monday of that week.
+    const firstAssignmentDue = new Date(assignmentDueAt);
     const plainDateDue = oldDateToPlainDate(firstAssignmentDue);
     const dayOfWeekOffset = 1 - plainDateDue.dayOfWeek;
     return plainDateDue.add({days: dayOfWeekOffset});
@@ -59,9 +76,39 @@ export function getStartDateFromSyllabus(syllabusHtml:string, locale=DEFAULT_LOC
     const strongParas = paras.filter((para) => para.querySelector('strong'));
     if (strongParas.length < 5) throw new MalformedSyllabusError(`Missing syllabus headers\n${strongParas}`);
 
+    const termNameEl = strongParas[1];
     const datesEl = strongParas[2];
-    const dateRange = findDateRange(datesEl.innerHTML, locale);
+    let dateRange = findDateRange(datesEl.innerHTML, locale);
     if (!dateRange) throw new MalformedSyllabusError("Date range not found in syllabus");
+
+    const termName = termNameEl.textContent || '';
+    let yearToUse: number | undefined;
+
+    const yearMatchNew = termName.match(/\.(\d{2})$/);
+    if(yearMatchNew) {
+        yearToUse = 2000 + parseInt(yearMatchNew[1]);
+    } else {
+        const yearMatchOld = termName.match(/DE-(\d{2})-/);
+        if(yearMatchOld) {
+            yearToUse = 2000 + parseInt(yearMatchOld[1]);
+        }
+    }
+
+    if (yearToUse) {
+        dateRange = {
+            start: Temporal.PlainDate.from({
+                year: yearToUse,
+                month: dateRange.start.month,
+                day: dateRange.start.day
+            }),
+            end: Temporal.PlainDate.from({
+                year: yearToUse,
+                month: dateRange.end.month,
+                day: dateRange.end.day
+            })
+        };
+    }
+
     return dateRange.start;
 }
 

@@ -150,29 +150,32 @@ export function CourseUpdateInterface({
         }
     }
 
+    const toggleStartDateUI = () => {
+        setShowUpdateStartDate(current => !current);
+    };
+
     // This is the styling of the course update interface
     function FixesMode({course}: { course: Course }) {
         return <>
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint() && <RemoveAnnotationsSection/>}
 
-            <Button onClick={() => setShowUpdateStartDate(true)}>Update Start Date</Button>
+            <Button onClick={() => toggleStartDateUI()}>Update Start Date</Button>
 
             <hr/>
 
-            {showUpdateStartDate && (
-                <UpdateStartDate
-                setAffectedItems={setAffectedItems}
-                setUnaffectedItems={setUnaffectedItems}
-                setFailedItems={setFailedItems}
-                refreshCourse={refreshCourse}
-                course={course}
-                setStartDateOutcome={setStartDateOutcome}
-                isDisabled={deannotatingCount > 0}
-                startLoading={startLoading}
-                endLoading={endLoading}
+            { showUpdateStartDate && (<UpdateStartDate
+                    setAffectedItems={setAffectedItems}
+                    setUnaffectedItems={setUnaffectedItems}
+                    setFailedItems={setFailedItems}
+                    refreshCourse={refreshCourse}
+                    course={course}
+                    setStartDateOutcome={setStartDateOutcome}
+                    isDisabled={deannotatingCount > 0}
+                    startLoading={startLoading}
+                    endLoading={endLoading}
                 />
-            )}
+                )}
 
             <hr/>
 

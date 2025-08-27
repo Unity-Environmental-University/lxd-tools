@@ -16,29 +16,25 @@ const messageHandlers: Record<string, MessageHandler<any, any>> = {
     const {queryString, subAccount} = params;
     const activeTab = await getActiveTab();
     if(!activeTab?.id) {
-      //if there isn't an activeTab id, send a response of false
       sendResponse({ success: false, error: "Please open a new tab and try again."});
-      //This is supposed to keep the channel open?
       return true;
     }
-    //a try block that executes the script, responds true it works, responds false if it doesn't
     try {
       await scripting.executeScript({
         target: { tabId: activeTab.id },
         files: ['./js/content.js'],
       });
-
-      await tabs.sendMessage(activeTab.id, { queryString, subAccount });
-      sendResponse({ success: true });
-      return true;
+      const contentResult = await tabs.sendMessage(activeTab.id, { queryString, subAccount });
+      
+      sendResponse(contentResult);
     } catch (e: any) {
-      if (e.message === "Cannot access a chrome:// URL"){
-        sendResponse({ success: false, error: "Please open a new tab and try again."});
-      } else {
-        sendResponse({success: false, error: e.message || 'Unknown error'});
-        console.log(e.message);
-        return true;
-      }
+      sendResponse({
+      success: false,
+      error: e.message === "Cannot access a chrome:// URL"
+        ? "Please open a new tab and try again."
+        : e.message || "Unknown error",
+    });
+
     }
 
     return true;
@@ -80,8 +76,6 @@ action.onClicked.addListener(async (tab) => {
   if (!id) { return }
 
 });
-
-
 
 
 async function getActiveTab() {

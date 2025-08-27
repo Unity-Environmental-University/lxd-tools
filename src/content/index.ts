@@ -16,14 +16,12 @@ runtime.onMessage.addListener(async(
         if(message.hasOwnProperty('queryString')) {
             try {
                 await openTargetCourse(message.queryString, message.subAccount);
-                sendResponse({success: true});
-                return true;
+                sendResponse({ success: true });
             } catch (e: any) {
                 sendResponse({ success: false, error: e.message || 'Unknown error' });
-                return true;
             }
-            return true;
     }
+    return true;
 })
 
 async function openTargetCourse(queryString: string, subAccount: number) {
@@ -31,7 +29,7 @@ async function openTargetCourse(queryString: string, subAccount: number) {
     const params = queryString.split('|');
     const searchCode = params.length > 0 ? params[0] : null;
 
-    if (!searchCode) return;
+    if (!searchCode) throw new Error("No search code provided");
 
     let queryUrl = `/api/v1/accounts/${subAccount}/courses?search_term=${searchCode}`;
     if (!document.documentURI.includes(".instructure.com")) {
@@ -72,7 +70,7 @@ async function openTargetCourse(queryString: string, subAccount: number) {
         }
     }
 
-    if (!searchCode && !course) return;
+    if (!searchCode && !course) throw new Error("No course found");
 
     let url = `/accounts/${subAccount}?search_term=${searchCode}`;
     let potentialUrls: string[] = [];
