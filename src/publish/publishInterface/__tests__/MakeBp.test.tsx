@@ -39,6 +39,7 @@ const mockCourse: Course = new Course({
     blueprint: false,
     course_code: "DEV_TEST000",
     name: 'DEV_TEST000: The Testening'
+
 })
 const mockBlueprintCourse: Course = new Course({...mockCourseData, blueprint: true})
 
@@ -60,10 +61,10 @@ async function renderComponent(props: Partial<IMakeBpProps> = {}) {
     return await act(async() => render(<MakeBp {...defaultProps} />));
 }
 
-
 jest.mock('@/canvas/course', () => ({
     Course: jest.requireActual('@/canvas/course').Course,
     getCourseName: jest.requireActual('@/canvas/course').getCourseName,
+    getCourseData: jest.requireActual('@/canvas/course').getCourseData,
     createNewCourse: jest.fn(async (code: string, accountId: number) => {
         return {
             ...mockCourseData,
@@ -73,6 +74,27 @@ jest.mock('@/canvas/course', () => ({
     }),
 }));
 
+jest.mock('@/canvas/fetch/fetchJson', () => ({
+  fetchJson: jest.fn().mockImplementation((url) => {
+    console.log('Mocked fetchJson called with URL:', url);
+
+    if (url.includes('/syllabus')) {
+      return Promise.resolve({
+        syllabus_body: '<div class="cbt-callout-box"><p>Some content</p><p><strong>Term Name</strong></p><p><strong></strong></p></div>'
+      });
+    }
+
+    if (url.includes('/courses/')) {
+      return Promise.resolve({
+        id: 0,
+        name: 'Test Course',
+        syllabus_body: '<div class="cbt-callout-box"><p>Some content</p><p><strong>Term Name: </strong>DE5W06.04.20</p><p><strong></strong></p></div>'
+      });
+    }
+
+    return Promise.resolve({});
+  })
+}));
 
 jest.mock('@/canvas/course/migration', () => {
     const originalModule = jest.requireActual('@canvas/course/migration');
@@ -102,6 +124,12 @@ import {getSections} from "@canvas/course/getSections";
 
 jest.mock('@canvas/course/retireBlueprint',() => ({ retireBlueprint: jest.fn() }));
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
+
+const mockSyllabus =
+    `<div class="cbt-callout-box">
+        <div class="content">
+            <p><strong>Course Number and Title:</strong> TEST101: Testing</p>
+            <p><strong>Year/Term/Session:</strong><span> DE5W06.04.20</span></p></div>`;
 
 describe('MakeBp Component', () => {
     beforeEach(() => {
@@ -135,10 +163,23 @@ describe('MakeBp Component', () => {
         expect(screen.getByText(/Archive/)).toBeDisabled();
     });
 
-})
+    it('pulls the term name from the syllabus if no sections are available', async () => {
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{
+            ...mockBlueprintCourse,
+            id: 101,
+            getSyllabus:
+                jest.fn().mockResolvedValue(mockSyllabus)
+        }]);
+
+        const { getByPlaceholderText } = await renderComponent();
+
+        const termNameInput = getByPlaceholderText(TERM_NAME_PLACEHOLDER);
+        expect(termNameInput).toHaveValue('DE5W06.04.20');
+    });
+});
+
 describe('Retirement and updates', () => {
     const cachedCourseMigrationSpy = jest.spyOn(cacheMigrationApi, 'loadCachedCourseMigrations')
-
 
 
     beforeEach(() => {
@@ -149,7 +190,12 @@ describe('Retirement and updates', () => {
 
 
     it('calls retireBlueprint and updates blueprint info on archive', async () => {
-        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{...mockBlueprintCourse, id: 101}]);
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{
+            ...mockBlueprintCourse,
+            id: 101,
+            getSyllabus:
+                jest.fn().mockResolvedValue(mockSyllabus)
+        }]);
 
         (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([{
             ...mockSectionData,
@@ -202,6 +248,10 @@ describe('Retirement and updates', () => {
         }]))
 
         await renderComponent({devCourse: mockCourse});
+
+        const termNameInput = screen.getByPlaceholderText('Fill in term name here to archive.');
+        fireEvent.change(termNameInput, {target: {value: termName}});
+
         await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())
 
         window.confirm = jest.fn(() => false);
@@ -218,10 +268,7 @@ describe('Retirement and updates', () => {
         await waitFor(() => expect(screen.queryByText(/New BP/)).toBeDisabled());
 
     })
-
-
-});
-
+})
 
 describe('Migrations', () => {
 
@@ -260,7 +307,12 @@ describe('Migrations', () => {
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
 
         (createNewCourse as jest.Mock).mockResolvedValue(mockBlueprintCourse);
-        (loadCachedCourseMigrations as jest.Mock).mockReturnValue([{...mockMigrationData, id: mockBlueprintCourse.id, workflow_state: 'queued', tracked: true}]);
+        (loadCachedCourseMigrations as jest.Mock).mockReturnValue([{
+            ...mockMigrationData,
+            id: mockBlueprintCourse.id,
+            workflow_state: 'queued',
+            tracked: true
+        }]);
 
         await act(async () => fireEvent.click(screen.getByLabelText(/New BP/)));
 

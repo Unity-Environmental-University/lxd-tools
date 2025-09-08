@@ -170,11 +170,13 @@
 
   // The update handler cleans the sorting UI and then reengages edit detection.
   function handleUpdateClick(): void {
+    // eslint-disable-next-line @/no-undef
     const sortBtns: NodeListOf<HTMLElement> = document.querySelectorAll('.rubric_container.rubric.editing .rubric_table .rubric-move-btns');
     sortBtns.forEach(btnCell => {
       btnCell.remove();
     });
 
+    // eslint-disable-next-line @/no-undef
     const sortHeaders: NodeListOf<HTMLElement> = document.querySelectorAll('.rubric_container.rubric.editing .rubric_table thead .rubric-sort-header');
     sortHeaders.forEach(th => {
       th.remove();
@@ -198,4 +200,32 @@
       waitForEdit();
     }, 1000);
   }
+
+  // Observe for the appearance of the criterion save button and attach the event listener when it appears.
+  function observeCriterionBtn(): void {
+    console.log("observeCriterionBtn running");
+    let attached = false;
+    const observer = new MutationObserver(() => {
+      if (attached) return;
+      console.log("MutationObserver running");
+      const criterionBtn = document.querySelector('.btn.save_button.btn-primary');
+      if (criterionBtn && !criterionBtn.hasAttribute('data-rubric-organize-listener')) {
+        console.log("criterionBtn detected");
+        criterionBtn.addEventListener('click', () => {
+          console.log("criterionBtn click event heard");
+          handleUpdateClick();
+          attachRowSorter();
+        });
+        criterionBtn.setAttribute('data-rubric-organize-listener', 'true');
+        attached = true;
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  observeCriterionBtn();
 })();
+
+export * from './rubricOrganize';

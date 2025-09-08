@@ -31,7 +31,9 @@ describe("referencePageExistsValidation", () => {
 
             expect(result.success).toBe(true);
             expect(result.userData).toBe(pageDataMock);
-            expect(PageKind.getByString).toHaveBeenCalledWith(courseMock.id, REFERENCES_PAGE_URL_NAME);
+            expect(PageKind.getByString).toHaveBeenCalledWith(courseMock.id, REFERENCES_PAGE_URL_NAME, undefined, {
+                allowPartialMatch: true,
+            });
         });
 
         it("should return a failure test result when the references page is not found", async () => {

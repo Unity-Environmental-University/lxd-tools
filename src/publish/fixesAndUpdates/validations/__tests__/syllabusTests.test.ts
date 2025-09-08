@@ -1,16 +1,16 @@
 import {
     addAiGenerativeLanguageTest,
-    addApaNoteToGradingPoliciesTest,
+    latePolicyTableTest,
     aiPolicyInSyllabusTest,
     bottomOfSyllabusLanguageTest,
     classInclusiveNoDateHeaderTest,
     communication24HoursTest,
     courseCreditsInSyllabusTest,
-    finalNotInGradingPolicyParaTest, 
+    finalNotInGradingPolicyParaTest,
     fixSupportEmailTest,
     gradeTableHeadersCorrectTest,
     removeSameDayPostRestrictionTest,
-    honorCodeLanguageText
+    honorCodeLanguageText, addApaNoteToGradingPoliciesTest, titleIXPolicyTest
 } from "../syllabusTests";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
 import assert from "assert";
@@ -19,6 +19,7 @@ import {mockSyllabusHaver} from "@publish/fixesAndUpdates/validations/__mocks__/
 
 import  gallantSyllabusHtml from '@canvas/course/__mocks__/syllabus.gallant.html'
 import  goofusSyllabusHtml from '@canvas/course/__mocks__/syllabus.goofus.html'
+import {latePolicyTest} from "@publish/fixesAndUpdates/validations/courseSettings";
 
 describe('Syllabus validation', () => {
     test('AI policy present test correct', syllabusTestTest(aiPolicyInSyllabusTest))
@@ -34,6 +35,8 @@ describe('Syllabus validation', () => {
     test('Add generative ai language', syllabusTestTest(addAiGenerativeLanguageTest))
     test('Fix support email', syllabusTestTest(fixSupportEmailTest))
     test('Fix Honor Code langauge', syllabusTestTest(honorCodeLanguageText));
+    test('Late policy text replace', syllabusTestTest(latePolicyTableTest));
+    test('Title IX policy update', syllabusTestTest(titleIXPolicyTest));
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
@@ -41,6 +44,7 @@ export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextRe
 
 
         const beforeAndAfters = 'beforeAndAfters' in test? test.beforeAndAfters : [[goofusSyllabusHtml, gallantSyllabusHtml]];
+        console.log(beforeAndAfters);
 
         for (const [goofusHtml, gallantHtml] of beforeAndAfters) {
             const gallantCourse: ISyllabusHaver = mockSyllabusHaver(gallantHtml);
