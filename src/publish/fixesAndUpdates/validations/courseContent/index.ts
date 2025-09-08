@@ -17,6 +17,7 @@ export default [
     weeklyObjectivesTest,
     codeAndCodeOfCodeTest,
     overviewDiscMornToNightTest,
+    studentHandbookTest,
     removeGradeTable,
     footerOnFrontPageTest,
     moduleElementsAreRequiredValidation,
