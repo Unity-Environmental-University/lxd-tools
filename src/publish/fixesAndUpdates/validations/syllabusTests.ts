@@ -340,7 +340,6 @@ run: badSyllabusRunFunc(badSupportEmailRegex),
 fix: badSyllabusFixFunc(badSupportEmailRegex, goodSupportEmail)
 }
 
-//Attempt at creating a honor code language fix
 const badHCLanguage = 'Any student found to be responsible for violating the Unity Environmental University Honor Code may be suspended or dismissed from the university.';
 const goodHCLanguage = 'Penalties may include, but are not limited to, grade penalty or a failing grade for the work in question or a failing grade for the course.';
 
@@ -358,6 +357,56 @@ run: badSyllabusRunFunc(badHCRegex),
 fix: badSyllabusFixFunc(badHCRegex, goodHCLanguage)
 }
 
+const titleIXHTML = `<tr><td><h3><strong>Title IX Mandatory Reporting</strong></h3><p>Please note that instructors are mandatory reporters under Title IX. If you share information about sexual harassment, assault, relationship violence, stalking, or gender-based discrimination that involves another Unity student or employee, they are required to notify the University&rsquo;s Title IX office so they can offer you support and resources.</p></td></tr>`
+
+const runTitleIXPolicyCheck = inSyllabusSectionFunc(/Title IX/i,/Please note that instructors are mandatory/i)
+
+export const titleIXPolicyTest  = {
+name: "Add Title IX Policy to Syllabus",
+beforeAndAfters: [
+    [
+        `<table><p>communication</p></tr></tbody></table>`,
+        `<table><p>communication</p></tr>${titleIXHTML}</tbody></table>`
+        ]
+],
+description: `Add the Title IX policy to the bottom of the Syllabus table.`,
+run: runTitleIXPolicyCheck,
+fix: async (course: ISyllabusHaver) => {
+    const results = await runTitleIXPolicyCheck(course);
+    if(results.success) return testResult("not run", {notFailureMessage: "Title IX policy cell already exists."});
+    const syllabus = await course.getSyllabus();
+    const el = htmlDiv(syllabus);
+
+    const syllabusTableArray = Array.from(el.querySelectorAll('table'));
+
+    const syllabusTable = syllabusTableArray.find(tbl =>
+        tbl.textContent?.includes('communication')) || null;
+
+    if (!syllabusTable) {
+        throw new Error("Couldn't find syllabus table");
+    }
+
+    const titleIXRow = syllabusTable.insertRow(-1);
+    titleIXRow.innerHTML =
+        `<td>
+            <h3><strong>Title IX Mandatory Reporting</strong></h3>
+            <p>Please note that instructors are mandatory reporters under Title IX. If you share information about sexual harassment, assault, relationship violence, stalking, or gender-based discrimination that involves another Unity student or employee, they are required to notify the University&rsquo;s Title IX office so they can offer you support and resources.</p>
+        </td>`;
+
+    try {
+        await course.changeSyllabus(el.innerHTML);
+        return testResult(true, {
+            links: [`/courses/${course.id}/assignments/syllabus`]
+        });
+    } catch (e) {
+        return errorMessageResult(e);
+    }
+}} as TextReplaceValidation<
+ISyllabusHaver,
+InSyllabusSectionFuncUserData,
+InSyllabusSectionFuncUserData | undefined
+>
+
 export default [
 addAiGenerativeLanguageTest,
 removeSameDayPostRestrictionTest,
@@ -373,5 +422,6 @@ secondDiscussionParaOff,
 fixSupportEmailTest,
 honorCodeLanguageText,
 addApaNoteToGradingPoliciesTest,
+titleIXPolicyTest,
 ]
 
