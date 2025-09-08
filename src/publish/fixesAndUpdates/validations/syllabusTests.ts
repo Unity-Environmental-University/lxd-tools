@@ -375,26 +375,22 @@ fix: async (course: ISyllabusHaver) => {
     const results = await runTitleIXPolicyCheck(course);
     if(results.success) return testResult("not run", {notFailureMessage: "Title IX policy cell already exists."});
     const syllabus = await course.getSyllabus();
-    const el = htmlDiv(syllabus);
 
-    const syllabusTableArray = Array.from(el.querySelectorAll('table'));
-
-    const syllabusTable = syllabusTableArray.find(tbl =>
-        tbl.textContent?.includes('communication')) || null;
-
-    if (!syllabusTable) {
-        throw new Error("Couldn't find syllabus table");
+    let newHtml: string;
+    if(/<\/tbody>/i.test(syllabus)) {
+        newHtml = syllabus.replace(
+            /<\/tbody>/i,
+            `${titleIXHTML}</tbody>`
+        );
+    } else {
+        newHtml = syllabus.replace(
+            /<\/table>/i,
+            match => `${titleIXHTML}${match}`
+        );
     }
 
-    const titleIXRow = syllabusTable.insertRow(-1);
-    titleIXRow.innerHTML =
-        `<td>
-            <h3><strong>Title IX Mandatory Reporting</strong></h3>
-            <p>Please note that instructors are mandatory reporters under Title IX. If you share information about sexual harassment, assault, relationship violence, stalking, or gender-based discrimination that involves another Unity student or employee, they are required to notify the University&rsquo;s Title IX office so they can offer you support and resources.</p>
-        </td>`;
-
     try {
-        await course.changeSyllabus(el.innerHTML);
+        await course.changeSyllabus(newHtml);
         return testResult(true, {
             links: [`/courses/${course.id}/assignments/syllabus`]
         });
