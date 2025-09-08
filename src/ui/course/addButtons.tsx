@@ -8,6 +8,7 @@ import {BpButton} from "@/ui/course/BpButton";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {getExternalLinks, getFileLinks} from "@/canvas/content/getContentFuncs";
 import {ContentKinds} from "@/canvas/content/determineContent";
+import {ChangeLogReminder} from "@/ui/course/ChangeLogReminder";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
@@ -100,4 +101,11 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
         );
         document.body.append(root);
     }
+}
+
+export function addedChangeLogReminder(){
+    const root = document.createElement("div")
+    const rootDiv = ReactDOM.createRoot(root);
+    rootDiv.render(<ChangeLogReminder/>);
+    document.body.append(root);
 }

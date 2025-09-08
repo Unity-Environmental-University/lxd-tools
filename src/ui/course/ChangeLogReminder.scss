@@ -1,0 +1,30 @@
+.modal-bottom-right {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  margin: 0;
+  padding: 10px;
+  max-width: 400px;
+  z-index: 1051;
+  background-color: #d6d6d6;
+  border-radius: 5px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+.hide-button {
+  margin-left: .5rem;
+}
+
+.changes-button {
+  background-color: #5f8b36;
+  color: white;
+}
+
+.changes-button:hover {
+  background-color: #6ca538;
+  color: white;
+}
+
+body.modal-open {
+  overflow: auto !important;
+}
