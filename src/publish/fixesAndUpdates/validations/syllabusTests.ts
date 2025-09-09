@@ -365,8 +365,8 @@ export const titleIXPolicyTest  = {
 name: "Add Title IX Policy to Syllabus",
 beforeAndAfters: [
     [
-        `<table><p>communication</p></tr></tbody></table>`,
-        `<table><p>communication</p></tr>${titleIXHTML}</tbody></table>`
+        `<table><p>course.</p></td></tr></tbody></table>`,
+        `<table><p>course.</p></td></tr>${titleIXHTML}</tbody></table>`
         ]
 ],
 description: `Add the Title IX policy to the bottom of the Syllabus table.`,
@@ -377,15 +377,15 @@ fix: async (course: ISyllabusHaver) => {
     const syllabus = await course.getSyllabus();
 
     let newHtml: string;
-    if(/<\/tbody>/i.test(syllabus)) {
+    if(/course\.\s*<\/p>\s*<\/td>\s*<\/tr>\s*<\/tbody>\s*<\/table>/i.test(syllabus)) {
         newHtml = syllabus.replace(
-            /<\/tbody>/i,
-            `${titleIXHTML}</tbody>`
+            /course\.\s*<\/p>\s*<\/td>\s*<\/tr>\s*<\/tbody>\s*<\/table>/i,
+            `course.</p></td></tr>${titleIXHTML}</tbody></table>`
         );
     } else {
         newHtml = syllabus.replace(
-            /<\/table>/i,
-            match => `${titleIXHTML}${match}`
+            /course\.<\/p>\s*<\/td>\s*<\/tr>\s*<\/table>/i,
+            `course.</p></td></tr>${titleIXHTML}</table>`
         );
     }
 
