@@ -24,7 +24,7 @@ function checkDistTag(packageTag) {
 
 }
 
-//import  nodePackage from './package.json' assert { type: 'json'}
+//import nodePackage from './package.json' assert { type: 'json'}
 // import manifest from './manifest.source.json' assert {type: 'json'}
 
 // Main function
