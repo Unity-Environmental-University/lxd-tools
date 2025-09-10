@@ -151,18 +151,21 @@ const createPlugins = () => [
 module.exports = {
     mode: isDevelopment ? 'development' : 'production',
     performance: {
-        hints: isDevelopment ? false : 'warning'
+        hints: false
     },
     optimization: {
-        minimize: false,
-
+        minimize: !isDevelopment,
+        usedExports: true,
+        concatenateModules: false,
+        innerGraph: false,
+        splitChunks: false,
     },
     cache: {
         type: 'filesystem',
         allowCollectingMemory: true,
     },
     entry,
-    devtool: 'source-map',
+    devtool: isDevelopment ? 'cheap-source-map' : 'nosources-source-map',
     module: _module,
     plugins: createPlugins(),
     resolve: {
@@ -180,9 +183,8 @@ module.exports = {
     ,
     output: {
         path: outputPath,
-        filename:
-            '[name].js',
-        chunkFilename:
-            '[name].js'
+        filename: '[name].js',
+        chunkFilename: '[name].js',
+        globalObject: 'this',
     }
 }

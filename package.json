@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "2.9.2",
+  "version": "2.9.3",
   "private": true,
   "main": "src/publish/index.tsx",
   "dependencies": {
@@ -51,6 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
     "copy-webpack-plugin": "^12.0.2",
+    "cross-env": "^10.0.0",
     "css-loader": "^6.10.0",
     "eslint": "^8.57.1",
     "eslint-plugin-react": "^7.37.2",
@@ -83,7 +84,7 @@
     "postcss": "^8.4.41"
   },
   "scripts": {
-    "build": "webpack --config webpack.config.js",
+    "build": "cross-env NODE_ENV=production webpack --config webpack.config.js",
     "watch": "webpack -w --config webpack.config.js",
     "publish": "node publish.mjs",
     "test": "jest"
