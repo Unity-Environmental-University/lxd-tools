@@ -165,7 +165,7 @@ module.exports = {
         allowCollectingMemory: true,
     },
     entry,
-    devtool: false,
+    devtool: isDevelopment ? 'cheap-module-source-map' : false,
     module: _module,
     plugins: createPlugins(),
     resolve: {
