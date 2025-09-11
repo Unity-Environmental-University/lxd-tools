@@ -176,8 +176,7 @@ module.exports = {
     },
     stats: {
         errorDetails: true,
-    }
-    ,
+    },
     output: {
         path: outputPath,
         filename:
