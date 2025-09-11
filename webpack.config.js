@@ -165,7 +165,7 @@ module.exports = {
         allowCollectingMemory: true,
     },
     entry,
-    devtool: isDevelopment ? 'cheap-source-map' : 'nosources-source-map',
+    devtool: false,
     module: _module,
     plugins: createPlugins(),
     resolve: {
@@ -179,8 +179,7 @@ module.exports = {
     },
     stats: {
         errorDetails: true,
-    }
-    ,
+    },
     output: {
         path: outputPath,
         filename: '[name].js',
