@@ -3,11 +3,17 @@ import { Button, Modal } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 import './changeLogReminder.scss'
 
-export function ChangeLogReminder() {
-    const [courseEdited, setCourseEdited] = React.useState<boolean>(localStorage.getItem('showChangeLogReminder') === 'true');
-    const [popupHidden, setPopupHidden] = React.useState<boolean>(localStorage.getItem('hideChangeLogReminder') === 'true');
+//Break out local storage and state into separate variables
+const editedLocalStorage = localStorage.getItem('showChangeLogReminder') === 'true';
+const hiddenLocalStorage = localStorage.getItem('hideChangeLogReminder') === 'true';
 
-    //Switch this for something more reliable(API call for edits?)
+//Events API
+
+export function ChangeLogReminder() {
+    const [courseEdited, setCourseEdited] = React.useState<boolean>(editedLocalStorage);
+    const [popupHidden, setPopupHidden] = React.useState<boolean>(hiddenLocalStorage);
+
+    //Switch this for something more reliable(API call for POST)
     const onEditPage = /edit/.test(document.URL);
 
     if(onEditPage && !courseEdited) {
@@ -41,7 +47,7 @@ export function ChangeLogReminder() {
     return <>
             <Modal
                 //Need to figure out what courseEdited is never changing
-                show={true}
+                show= {courseEdited && !popupHidden}
                 dialogClassName="modal-bottom-right"
                 backdrop={false}
                 autoFocus={false}
@@ -67,7 +73,7 @@ export function ChangeLogReminder() {
                     </Button>
                 </Modal.Footer>
             </Modal>
-            <Modal show={true}>
+            <Modal show={courseEdited && popupHidden}>
                 <Button variant="secondary" className="modal-button hide-button" onClick={handleUnhide}>!</Button>
             </Modal>
         </>

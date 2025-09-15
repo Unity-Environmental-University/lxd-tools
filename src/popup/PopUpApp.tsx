@@ -121,7 +121,7 @@ function SetOpenAiKey() {
         <h1>OpenAI API Key</h1>
         <form onSubmit={async (e) => {
             e.preventDefault();
-            saveKey(key);
+            await saveKey(key);
         }}>
             <div className="row">
                 <input

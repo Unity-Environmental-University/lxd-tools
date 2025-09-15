@@ -102,10 +102,3 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
         document.body.append(root);
     }
 }
-
-export function addedChangeLogReminder(){
-    const root = document.createElement("div")
-    const rootDiv = ReactDOM.createRoot(root);
-    rootDiv.render(<ChangeLogReminder/>);
-    document.body.append(root);
-}
