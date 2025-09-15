@@ -1,0 +1,16 @@
+// TODO: Greg - Add your changelog-specific styles here
+
+.changelog-app {
+    margin: 20px 0;
+
+    .changelog-entry {
+        transition: all 0.2s ease-in-out;
+
+        &:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+    }
+
+    // TODO: Add styles for different change types, loading states, etc.
+}
