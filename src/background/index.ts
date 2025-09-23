@@ -86,3 +86,21 @@ async function getActiveTab() {
   const [tab] = windowTabs.filter(tab => tab.active)
   return tab
 }
+
+// eslint-disable-next-line @/no-undef
+const extensionAPI = typeof browser !== "undefined" ? browser : chrome;
+const url = "https://*.instructure.com/*";
+
+console.log("API Tracker is running.")
+
+extensionAPI.webRequest.onBeforeRequest.addListener(
+    (details: any) => {
+        console.log(details.method);
+        if(["POST", "PUT", "PUSH"].includes(details.method)) {
+            console.log("Change detected.");
+            console.log(details);
+        }
+    },
+    { urls: [url] },
+    ["requestBody"]
+);

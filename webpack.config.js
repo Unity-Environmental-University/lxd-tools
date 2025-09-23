@@ -26,7 +26,7 @@ const entry = {
     'js/ui/account': './src/ui/account',
     'js/ui/module': './src/ui/module',
 
-    'js/rubricOrganize': './src/ui/rubricOrganize/rubricOrganize.ts',
+    'js/rubricOrganize': './src/ui/rubricOrganize/rubricOrganize.ts'
 };
 
 const postcssLoader = {

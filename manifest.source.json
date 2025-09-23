@@ -117,7 +117,9 @@
     "activeTab",
     "scripting",
     "storage",
-    "downloads"
+    "downloads",
+    "webRequest",
+    "webRequestBlocking"
   ],
   "host_permissions": [
     "*://*.inscloudgate.com/*",
