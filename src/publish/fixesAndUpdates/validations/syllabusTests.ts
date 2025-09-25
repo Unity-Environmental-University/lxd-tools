@@ -403,8 +403,7 @@ InSyllabusSectionFuncUserData,
 InSyllabusSectionFuncUserData | undefined
 >
 
-// Working on grading dealing language fix
-const gradingDeadlineLanguage = "Any graded work that is a discussion will have two formal deadlines. The initial post is due Thursday at 3 AM ET, and responses to classmates are due on the Sunday deadline listed below. Full instructions are listed at the top of the discussion assignment details.";
+const gradingDeadlineLanguage = `Any graded work that is a <em>Discussion</em> will have two formal deadlines. The initial post is due Thursday at 3 AM ET, and responses to classmates are due on the deadline listed below (Monday at 3am ET). Full instructions are listed at the top of the Discussion assignment details.`;
 
 const gradingDeadlineRun = async (course: ISyllabusHaver) => {
     const parser = new DOMParser();
