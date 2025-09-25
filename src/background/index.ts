@@ -1,6 +1,6 @@
 // drawing from https://hackernoon.com/how-to-create-a-chrome-extension-with-react
 
-import {runtime, action, scripting, Runtime, Downloads, tabs} from 'webextension-polyfill'
+import browser, {runtime, action, scripting, Runtime, Downloads, tabs} from 'webextension-polyfill'
 import {backgroundDownloadImage} from "../canvas/image";
 import {ResizeImageMessage} from "@canvas/type";
 
@@ -87,18 +87,31 @@ async function getActiveTab() {
   return tab
 }
 
-// eslint-disable-next-line @/no-undef
-const extensionAPI = typeof browser !== "undefined" ? browser : chrome;
 const url = "https://*.instructure.com/*";
 
 console.log("API Tracker is running.")
 
-extensionAPI.webRequest.onBeforeRequest.addListener(
+browser.webRequest.onBeforeRequest.addListener(
     (details: any) => {
         console.log(details.method);
         if(["POST", "PUT", "PUSH"].includes(details.method)) {
             console.log("Change detected.");
-            console.log(details);
+            if(details.requestBody?.raw && details.requestBody.raw.length > 0) {
+                try {
+                    const decoder = new TextDecoder("utf-8");
+                    const body = decoder.decode(details.requestBody.raw[0].bytes);
+                    const payload = JSON.parse(body);
+                    //const variables = JSON.parse(payload.variables);
+                    console.log(`Operation Name: ${payload.operationName} Location: ${JSON.stringify(payload.variables.title)}`);
+                    // TODO: Figure out a way to handle the calls we want to handle
+                    if(["UpdateDiscussionTopic"].includes(payload.operationName)) {
+                    }
+                } catch (e) {
+                console.error("Error parsing request body:", e)
+                }
+            } else {
+                console.warn("No request body detected.");
+            }
         }
     },
     { urls: [url] },
