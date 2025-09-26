@@ -3,6 +3,7 @@
 import browser, {runtime, action, scripting, Runtime, Downloads, tabs} from 'webextension-polyfill'
 import {backgroundDownloadImage} from "../canvas/image";
 import {ResizeImageMessage} from "@canvas/type";
+import getCourseIdFromUrl from "@canvas/course/getCourseIdFromUrl";
 
 
 type MessageHandler<T, Output> = (
@@ -93,24 +94,62 @@ console.log("API Tracker is running.")
 
 browser.webRequest.onBeforeRequest.addListener(
     (details: any) => {
+        // TODO: Switch the if and else if positioning because the else if is currently catching more
+        // TODO: Pull course id from url
+        let courseID: number | undefined;
         console.log(details.method);
         if(["POST", "PUT", "PUSH"].includes(details.method)) {
-            console.log("Change detected.");
-            if(details.requestBody?.raw && details.requestBody.raw.length > 0) {
-                try {
-                    const decoder = new TextDecoder("utf-8");
-                    const body = decoder.decode(details.requestBody.raw[0].bytes);
-                    const payload = JSON.parse(body);
-                    //const variables = JSON.parse(payload.variables);
-                    console.log(`Operation Name: ${payload.operationName} Location: ${JSON.stringify(payload.variables.title)}`);
-                    // TODO: Figure out a way to handle the calls we want to handle
-                    if(["UpdateDiscussionTopic"].includes(payload.operationName)) {
+            //console.log("Change detected.");
+            try {
+                let bodyText: string | undefined;
+
+                if(details.requestBody?.formData) {
+                    // Check if the request body is a form data object
+                    bodyText = JSON.stringify(details.requestBody.formData);
+                    if(bodyText) {
+                        const payload = JSON.parse(bodyText);
+                        console.log("Form Data:")
+                        console.log(payload);
+                        if(payload.includes("syllabus_body")) {
+                            // Syllabus Edited
+                            // TODO: Get this pulling the data we want to save
+                            console.log("Syllabus Body Detected");
+                        }
                     }
-                } catch (e) {
-                console.error("Error parsing request body:", e)
+                } else if (details.requestBody?.raw && details.requestBody.raw.length > 0) {
+                    // Check if the request body is a raw object
+                    const decoder = new TextDecoder("utf-8");
+                    bodyText = decoder.decode(details.requestBody.raw[0].bytes);
+                    if(bodyText) {
+                        const payload = JSON.parse(bodyText);
+                        console.log("Request Body:")
+                        console.log(payload);
+                        if(payload.operationName) {
+                            if(!["GetDiscussionTopic", "Selective_Release_GetStudentsQuery", "GetDiscussionQuery", "GetCourseQuery"].includes(payload.operationName)) {
+                                // Discussion/Announcement Edited
+                                // TODO: Save this to local storage, with course id as key
+                                console.log(`Operation Name: ${payload.operationName}, Title: ${payload.variables.title}, URL: /courses/${courseID}/discussion_topics/${payload.variables.discussionTopicId}`);
+                            }
+                        } else if(payload.assignment) {
+                            // Assignment Edited
+                            // TODO: Get all below pulling the right data to save
+                            console.log("Assignment:", payload.assignment);
+                        } else if(payload.wiki_body) {
+                            // Home Page/Other pages? edited
+                            console.log("Wiki Body Detected");
+                        } else if(payload.context_module) {
+                            // Module edited
+                            console.log("context_module");
+                        } else if(payload.quiz_type) {
+                            // Quiz Edited
+                            console.log("Quiz Edited");
+                        }
+                    }
+                } else {
+                    console.warn("No request body detected.");
                 }
-            } else {
-                console.warn("No request body detected.");
+            } catch (e) {
+                console.error("Error parsing request body:", e);
             }
         }
     },

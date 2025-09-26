@@ -84,6 +84,7 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
+    "build:dev": "cross-env BUILD_OUTPUT_DIR=../lxd-extension-build webpack --config webpack.config.js",
     "watch": "webpack -w --config webpack.config.js",
     "publish": "node publish.mjs",
     "test": "jest"
