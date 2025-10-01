@@ -7,7 +7,10 @@ import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {getExternalLinks, getFileLinks} from "@/canvas/content/getContentFuncs";
-import {ContentKinds} from "@/canvas/content/determineContent";
+import {ContentKinds, getContentKindFromUrl} from "@/canvas/content/determineContent";
+import {IPageData} from "@canvas/content/pages/types";
+import {ContentKind, IAssignmentData} from "@/canvas";
+import {RubricButton} from "@/ui/course/RubricButton";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
@@ -99,5 +102,26 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
                                 resizeTo={1200}/>
         );
         document.body.append(root);
+    }
+}
+
+export async function addRubricButton(header: HTMLElement) {
+    const page = document.documentURI;
+    const course = await Course.getFromUrl(page);
+    if(!course) return;
+
+    //This is currently this way because I couldn't figure out how to handle what I got back from
+    //getContentKindFromUrl & there isn't a RubricKind
+    if(
+        (page.includes('assignments/') && !page.includes('assignments/syllabus'))
+        || page.includes('discussion_topics/')
+        || page.includes('rubrics/')
+    ) {
+        const rootDiv = document.createElement('div');
+        header.append(rootDiv);
+        const rubricButtonRoot = ReactDOM.createRoot(rootDiv);
+        rubricButtonRoot.render(
+            <RubricButton course={course}/>
+        );
     }
 }

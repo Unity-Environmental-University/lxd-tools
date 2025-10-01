@@ -5,10 +5,13 @@ import {
     addDevButton,
     addHighlightBigImageResizer,
     addHomeTileButton,
-    addOpenAllLinksButton,
+    addOpenAllLinksButton, addRubricButton,
     addSectionsButton
 } from "@/ui/course/addButtons";
 import {getSingleCourse} from "@/canvas/course";
+import {IPageData} from "@canvas/content/pages/types";
+import {getContentKindFromUrl} from "@/canvas/content/determineContent";
+import {ContentKind} from "@/canvas";
 
 export async function main() {
     const currentCourse = await Course.getFromUrl(document.documentURI);
@@ -27,6 +30,8 @@ export async function main() {
     if (bp) {
         await addBpButton(header, currentCourse, bp);
         await addSectionsButton(header, bp, currentCourse);
+        //Only line I added to course/main.tsx
+        await addRubricButton(header);
     }
 
     if (currentContentItem) {
