@@ -93,30 +93,14 @@ const url = "https://*.instructure.com/*";
 console.log("API Tracker is running.")
 
 browser.webRequest.onBeforeRequest.addListener(
-    (details: any) => {
-        // TODO: Switch the if and else if positioning because the else if is currently catching more
-        // TODO: Pull course id from url
-        let courseID: number | undefined;
+    (details) => {
         console.log(details.method);
         if(["POST", "PUT", "PUSH"].includes(details.method)) {
             //console.log("Change detected.");
             try {
                 let bodyText: string | undefined;
 
-                if(details.requestBody?.formData) {
-                    // Check if the request body is a form data object
-                    bodyText = JSON.stringify(details.requestBody.formData);
-                    if(bodyText) {
-                        const payload = JSON.parse(bodyText);
-                        console.log("Form Data:")
-                        console.log(payload);
-                        if(payload.includes("syllabus_body")) {
-                            // Syllabus Edited
-                            // TODO: Get this pulling the data we want to save
-                            console.log("Syllabus Body Detected");
-                        }
-                    }
-                } else if (details.requestBody?.raw && details.requestBody.raw.length > 0) {
+                if (details.requestBody?.raw && details.requestBody.raw.length > 0) {
                     // Check if the request body is a raw object
                     const decoder = new TextDecoder("utf-8");
                     bodyText = decoder.decode(details.requestBody.raw[0].bytes);
@@ -125,26 +109,43 @@ browser.webRequest.onBeforeRequest.addListener(
                         console.log("Request Body:")
                         console.log(payload);
                         if(payload.operationName) {
-                            if(!["GetDiscussionTopic", "Selective_Release_GetStudentsQuery", "GetDiscussionQuery", "GetCourseQuery"].includes(payload.operationName)) {
-                                // Discussion/Announcement Edited
-                                // TODO: Save this to local storage, with course id as key
-                                console.log(`Operation Name: ${payload.operationName}, Title: ${payload.variables.title}, URL: /courses/${courseID}/discussion_topics/${payload.variables.discussionTopicId}`);
+                            if(!["GetDiscussionTopic", "Selective_Release_GetStudentsQuery", "GetDiscussionQuery", "GetCourseQuery", "GetCourseName"].includes(payload.operationName)) {
+                                // Discussion/Announcement Edited, working, pulling the information as expected
+                                // This is a GraphQL operation
+                                console.log(`Operation Name: ${payload.operationName}, Title: ${payload.variables.title}, ID:${payload.variables.discussionTopicId}`);
                             }
                         } else if(payload.assignment) {
-                            // Assignment Edited
-                            // TODO: Get all below pulling the right data to save
-                            console.log("Assignment:", payload.assignment);
-                        } else if(payload.wiki_body) {
-                            // Home Page/Other pages? edited
-                            console.log("Wiki Body Detected");
+                            // Assignment Edited, working, pulling the information as expected
+                            console.log(`Course ID: ${payload.assignment.course_id}, Title: ${payload.assignment.name}, URL: ${payload.assignment.html_url}`)
+                            console.log(payload.assignment.description);
+                        } else if(payload.wiki_page) {
+                            // Pages edited, working, pulling the information as expected
+                            console.log(`Title: ${payload.wiki_page.title}, URL: ${payload.wiki_page.html_url}`);
+                            console.log(payload.wiki_page.body);
                         } else if(payload.context_module) {
                             // Module edited
-                            console.log("context_module");
-                        } else if(payload.quiz_type) {
-                            // Quiz Edited
-                            console.log("Quiz Edited");
+                            // The context_module object doesn't give us any useful information
+                            // TODO: Figure out what to pass when a module is edited
+                            console.log("Module Edited");
                         }
                     }
+                } else if(details.requestBody?.formData) {
+                    // Check if the request body is a form data object
+                    bodyText = JSON.stringify(details.requestBody.formData);
+                    if(bodyText) {
+                        const payload = JSON.parse(bodyText);
+                        console.log("Form Data:")
+                        console.log(payload);
+                        if(payload.syllabus_body) {
+                            // Syllabus Edited
+                            // TODO: The syllabus information comes in the response, not in the payload
+                            // console.log(`Course: ${payload.course_id}, id: ${payload.id}`);
+                            // console.log(payload.syllabus_body);
+                        } else if(payload.quiz_type) {
+                            // Quiz Edited, working, pulling the information as expected
+                            console.log(`Title: ${payload.title}`);
+                        }
+                        }
                 } else {
                     console.warn("No request body detected.");
                 }
@@ -155,4 +156,35 @@ browser.webRequest.onBeforeRequest.addListener(
     },
     { urls: [url] },
     ["requestBody"]
+);
+
+//Is this what we need to do to get the syllabus information?
+browser.webRequest.onBeforeRequest.addListener(
+    (details: any) => {
+        if(details.method === "POST") {
+            const filter = browser.webRequest.filterResponseData(details.requestId);
+            const decoder = new TextDecoder("utf-8");
+            let responseData = "";
+
+            filter.ondata = (event: any) => {
+                responseData += decoder.decode(event.data, { stream: true });
+                filter.write(event.data);
+            };
+
+            filter.onstop = () => {
+                responseData += decoder.decode();
+
+                try {
+                    const jsonResponse = JSON.parse(responseData);
+                    console.log(`Parsed Response Body: ${jsonResponse}`);
+                } catch (e) {
+                    console.error("Error parsing response body:", e);
+                }
+
+                filter.disconnect();
+            };
+        }
+    },
+    { urls: [url] },
+    ["blocking"]
 );
