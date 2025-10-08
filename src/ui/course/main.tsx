@@ -9,9 +9,6 @@ import {
     addSectionsButton
 } from "@/ui/course/addButtons";
 import {getSingleCourse} from "@/canvas/course";
-import {IPageData} from "@canvas/content/pages/types";
-import {getContentKindFromUrl} from "@/canvas/content/determineContent";
-import {ContentKind} from "@/canvas";
 
 export async function main() {
     const currentCourse = await Course.getFromUrl(document.documentURI);
