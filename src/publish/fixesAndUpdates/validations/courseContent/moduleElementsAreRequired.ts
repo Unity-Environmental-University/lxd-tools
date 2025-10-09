@@ -22,7 +22,7 @@ export function isAffectedModuleItem(mi: IModuleItemData, moduleName: string): m
 
     const req = (mi as any).completion_requirement;
     if(typeof req === 'undefined') return true;
-    return req.type === 'min_score' && (req.min_score ?? 0) !== 1;
+    return req.type === 'min_score' && !moduleName.toLocaleLowerCase().match(/how do i earn it\?/ig) && (req.min_score ?? 0) !== 1;
 }
 
 const run = async (course: CheckModuleCourse) => {
