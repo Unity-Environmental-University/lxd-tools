@@ -1,10 +1,19 @@
 import {Course} from "@canvas/course/Course";
 import {getRubric, IRubricData, NotImplementedException, rubricAssociationUrl, updateRubricAssociation} from "@/canvas";
-import {getContentKindFromUrl} from "@canvas/content/__mocks__/determineContent";
+import {getContentKindFromUrl} from "@/canvas";
+import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
+import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
+
 
 interface RubricButtonProps {
     course: Course,
 }
+
+//genBlueprintDataForCode is a function that takes a course code and an array of account ids and returns a generator that yields course data.
+    //Would be useful here.
+//openMainBp is a function that takes a course and opens the main blueprint version of that course.
+//Only put this on assignment/discussion pages, don't need to have it on rubric pages.
+//This needs to be a two-way mirror for BP/DEV.
 
 export function RubricButton({course}: RubricButtonProps) {
     async function rubricPull(course: Course) {
@@ -27,7 +36,7 @@ export function RubricButton({course}: RubricButtonProps) {
             
             const contentKind = getContentKindFromUrl(document.documentURI);
             //TODO: Correctly handle kinds
-            if (contentKind === "AssignmentKind" || contentKind === "DiscussionKind") {
+            if (contentKind === AssignmentKind || contentKind === DiscussionKind) {
                 //Get the rubric association
                 const rubricAssociation = rubricAssociationUrl(course.id, /*TODO: assignmentID*/);
                 //turn rubricAssociation into a number(id)
