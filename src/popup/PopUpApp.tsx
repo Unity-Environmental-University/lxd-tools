@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {runtime, storage} from "webextension-polyfill";
 import "../css/source.scss"
 import "./PopUpApp.scss"
@@ -6,6 +6,7 @@ import 'bootstrap'
 import {useEffectAsync} from "../ui/utils";
 import { Form } from "react-bootstrap";
 import {OPEN_AI_API_KEY_KEY, SUB_ACCOUNT} from "../consts";
+import browser from "webextension-polyfill";
 
 function PopUpApp() {
     const [advanced, setAdvanced] = useState(false);
@@ -20,6 +21,7 @@ function PopUpApp() {
                 />
             </div>
             <CourseNavigation></CourseNavigation>
+            <SalesforceNavigation></SalesforceNavigation>
             {advanced && <>
                 <SetOpenAiKey></SetOpenAiKey>
             </>}
@@ -99,6 +101,99 @@ function CourseNavigation() {
                 <button disabled={isDisabled} className="btn">Search</button>
             </div>
         </form>
+    </div>
+}
+
+function SalesforceNavigation() {
+    const [ isDisabled, setIsDisabled ] = useState<boolean>(false);
+    const [ option, setOption ] = useState<string>(" ");
+    const [ queryString, setQueryString ] = useState<string | null>(null);
+    const [ textEntryEnabled, setTextEntryEnabled ] = useState<boolean>(false);
+    const [ error, setError ] = useState<string | null>(null);
+
+    /*This isn't currently working, but I'm leaving it because it's closer than not and would be a nice feature to have.
+    async function getCourseCodeFromCanvas() {
+        // Get the active tab's URL to check if we're on a Canvas course page
+        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+        const activeTab = tabs[0];
+        if(!activeTab?.url) return;
+
+        if(activeTab.url.includes("unity.instructure.com/courses")) {
+
+        }
+    }*/
+
+    return <div className="col card-body search-box">
+        <h1>Salesforce Navigation</h1>
+        {error && <div className="alert alert-warning">{error}</div>}
+        <div className="row">
+            <select
+                disabled={isDisabled}
+                value={option ?? " "}
+                onChange={(e) => {
+                    setIsDisabled(true);
+                    setOption(e.target.value);
+                    if (e.target.value === "section-check") {
+                        window.open("https://unityenvironmentaluniversity.lightning.force.com/lightning/r/Report/00OUH000004JNrR2AW/view?queryScope=userFolders", "_blank");
+                    } else if(e.target.value === "course-offerings") {
+                        window.open("https://unityenvironmentaluniversity.lightning.force.com/lightning/r/Report/00OUH000004Undh2AC/view?queryScope=userFolders", "_blank");
+                    } else if (["learning-course", "course-material"].includes(e.target.value)) {
+                        /*getCourseCodeFromCanvas().then(r => {
+                            if(r) {
+                                setQueryString(r);
+                            }
+                        });*/
+                        setTextEntryEnabled(true);
+                    } else {
+                        setError("Invalid Salesforce page selected");
+                    }
+                    setIsDisabled(false);
+                }}
+            >
+                <option value="">Pick Salesforce page:</option>
+                <option value="section-check">Section Check</option>
+                <option value="course-offerings">Unique Course Offerings by Term</option>
+                {/* Commenting these out because they're going to require API calls to Salesforce, which we're still working on.
+                <option value="learning-course">Learning Course</option>
+                <option value="course-material">Course Material</option>*/}
+            </select>
+        </div>
+        {/*This is scaffolding for the text entry box, which still needs some work to be functional. Uncomment when we want to implement learning course and course material search
+        {textEntryEnabled &&
+            <form onSubmit={async (e) => {
+                if(!navigator.onLine) {
+                    setError("Check internet connection and try again.");
+                    return;
+                }
+                e.preventDefault();
+                setIsDisabled(true);
+                setError("Not implemented yet");
+                if(!queryString) {
+                    setError("Please enter a search query.")
+                }
+                //Search for matching course in Salesforce
+                //if found, pull that course's Salesforce ID
+                    //if value===learning-course, open learning course page in Salesforce
+                    //if value===course-material, open course material page in Salesforce
+                //if not found, tell user
+                setIsDisabled(false);
+            }}>
+                <div className="row">
+                    <input
+                        disabled={isDisabled}
+                        id="search-box"
+                        type='text'
+                        //Implement placeholder text to be the course code if the user is on a Canvas course page
+                        value={queryString ?? ''}
+                        placeholder='Enter course code here'
+                        onChange={(e) => setQueryString(e.target.value)}
+                    ></input>
+                    <div className={'col'}>
+                        <button disabled={isDisabled} className="btn">Search</button>
+                    </div>
+                </div>
+            </form>
+        }.*/}
     </div>
 }
 
