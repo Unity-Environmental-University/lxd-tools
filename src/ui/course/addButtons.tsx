@@ -7,10 +7,10 @@ import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {getExternalLinks, getFileLinks} from "@/canvas/content/getContentFuncs";
-import {ContentKinds, getContentKindFromUrl} from "@/canvas/content/determineContent";
-import {IPageData} from "@canvas/content/pages/types";
-import {ContentKind, IAssignmentData} from "@/canvas";
+import {getContentKindFromUrl} from "@/canvas/content/determineContent";
 import {RubricButton} from "@/ui/course/RubricButton";
+import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
+import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
@@ -108,15 +108,11 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
 export async function addRubricButton(header: HTMLElement) {
     const page = document.documentURI;
     const course = await Course.getFromUrl(page);
+    const contentKind = getContentKindFromUrl(page);
+
     if(!course) return;
 
-    //This is currently this way because I couldn't figure out how to handle what I got back from
-    //getContentKindFromUrl & there isn't a RubricKind
-    if(
-        (page.includes('assignments/') && !page.includes('assignments/syllabus'))
-        || page.includes('discussion_topics/')
-        || page.includes('rubrics/')
-    ) {
+    if(contentKind === AssignmentKind || contentKind === DiscussionKind) {
         const rootDiv = document.createElement('div');
         header.append(rootDiv);
         const rubricButtonRoot = ReactDOM.createRoot(rootDiv);

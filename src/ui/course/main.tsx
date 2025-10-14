@@ -27,7 +27,9 @@ export async function main() {
     if (bp) {
         await addBpButton(header, currentCourse, bp);
         await addSectionsButton(header, bp, currentCourse);
-        //Only line I added to course/main.tsx
+    }
+
+    if(bp || currentCourse.isDev) {
         await addRubricButton(header);
     }
 
