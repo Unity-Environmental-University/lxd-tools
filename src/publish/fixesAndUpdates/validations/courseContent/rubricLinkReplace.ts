@@ -6,7 +6,7 @@ import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 
 export const rubricLinkReplace: CourseValidation<IDiscussionsHaver> = {
     name: "Rubric Link Replacer",
-    description: "Finds 'View Rubric' buttons with a link to the rubric and replaces them with a #. Will still correctly link to rubric.",
+    description: "Finds 'View Rubric' buttons with a link to the rubric and replaces them with a #. Will still correctly link to rubric. NOTE: After running this validation, the View Rubric button may not work temporarily. This is a caching issue with your browser and will not effect the course in any way.",
     run: async (course) => {
         const rubricLinkHaver: IDiscussionData[] = [];
 
@@ -43,18 +43,21 @@ export const rubricLinkReplace: CourseValidation<IDiscussionsHaver> = {
         if(!result) result = await rubricLinkReplace.run(course);
         if(result?.success) return testResult('not run', {notFailureMessage: "No rubrics to fix"});
         if(!result?.userData) return testResult(false, { failureMessage: "Unable to find bad rubrics. Failed to fix."})
-        //Maybe superfluous
         const fixedDiscussions = [] as IDiscussionData[];
-        const hrefRegex = /(<a[^>]*href=")(?!#")([^"#]+?)("[^>]*>View rubric<\/a>)/gi;
-        const dataApiRegex = /(<a[^>]*data-api-endpoint=")(?!#")([^"#]+?)("[^>]*>View rubric<\/a>)/gi;
         for (const discussion of result.userData) {
             if(discussion.message) {
-                discussion.message = discussion.message.replace(hrefRegex, `$1#$3`).replace(dataApiRegex, `$1#$3`);
+                discussion.message = discussion.message.replace(
+                    /(<a[^>]*)(href=")(?!#")[^"#]+?(".*?>View rubric<\/a>)/gi,
+                    '$1$2#$3'
+                );
+                discussion.message = discussion.message.replace(
+                    /(<a[^>]*)(data-api-endpoint=")(?!#")[^"#]+?(".*?>View rubric<\/a>)/gi,
+                    '$1$2#$3'
+                );
                 await DiscussionKind.put(course.id, discussion.id, {
                     message: discussion.message,
-                })
+                });
             }
-            //Maybe superfluous
             fixedDiscussions.push(discussion);
         }
         return testResult(true, {
