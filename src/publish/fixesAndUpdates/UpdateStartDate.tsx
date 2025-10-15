@@ -85,11 +85,13 @@ export function UpdateStartDate(
         const localModules = modules ?? await renderAsyncGen(moduleGenerator(course.id));
         if(modules === undefined) setModules(localModules);
 
+        /*This isn't necessary anymore because the module start date is hard-set and doesn't flag any problems.
+          Leaving it in incase something changes in the future.
         if(localModules[0].unlock_at) {
             const _moduleStartDate = getModuleUnlockStartDate(localModules);
             console.log("Module Start Date", _moduleStartDate?.toLocaleString());
             setModuleStartDate(_moduleStartDate);
-        }
+        }*/
 
         const errors: string[] = [];
 
