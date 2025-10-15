@@ -133,7 +133,9 @@ function SalesforceNavigation() {
                 onChange={(e) => {
                     setIsDisabled(true);
                     setOption(e.target.value);
-                    if (e.target.value === "section-check") {
+                    if(e.target.value === "section-check-ug") {
+                        window.open("https://unityenvironmentaluniversity.lightning.force.com/lightning/r/Report/00OUH000006CnKr2AK/view?queryScope=userFolderss", "_blank");
+                    } else if (e.target.value === "section-check-grad") {
                         window.open("https://unityenvironmentaluniversity.lightning.force.com/lightning/r/Report/00OUH000004JNrR2AW/view?queryScope=userFolders", "_blank");
                     } else if(e.target.value === "course-offerings") {
                         window.open("https://unityenvironmentaluniversity.lightning.force.com/lightning/r/Report/00OUH000004Undh2AC/view?queryScope=userFolders", "_blank");
@@ -151,7 +153,8 @@ function SalesforceNavigation() {
                 }}
             >
                 <option value="">Pick Salesforce page:</option>
-                <option value="section-check">Section Check</option>
+                <option value="section-check-ug">Undergrad Section Check</option>
+                <option value="section-check-grad">Grad Section Check</option>
                 <option value="course-offerings">Unique Course Offerings by Term</option>
                 {/* Commenting these out because they're going to require API calls to Salesforce, which we're still working on.
                 <option value="learning-course">Learning Course</option>
