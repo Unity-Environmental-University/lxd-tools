@@ -29,7 +29,7 @@ export async function main() {
         await addSectionsButton(header, bp, currentCourse);
     }
 
-    if(bp || currentCourse.isDev) {
+    if(currentCourse.isBlueprint() || currentCourse.isDev) {
         await addRubricButton(header);
     }
 

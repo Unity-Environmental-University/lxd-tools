@@ -106,7 +106,7 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
 }
 
 export async function addRubricButton(header: HTMLElement) {
-    const page = document.documentURI;
+    const page = window.document.URL;
     const course = await Course.getFromUrl(page);
     const contentKind = getContentKindFromUrl(page);
 
