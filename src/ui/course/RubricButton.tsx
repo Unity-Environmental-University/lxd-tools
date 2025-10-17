@@ -90,9 +90,8 @@ export function RubricButton({course}: RubricButtonProps) {
                     if(association.association_type === "Assignment") {
                         rubricAssociation = association;
                     }
-
-                    if(!rubricAssociation) throw new Error("Assignment Rubric does not have an association to the assignment to use");
                 }
+                if(!rubricAssociation) throw new Error("Assignment Rubric does not have an association to the assignment to use");
             }
 
             if(assignmentRubric && rubricAssociation) {
