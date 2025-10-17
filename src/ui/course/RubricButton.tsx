@@ -167,9 +167,9 @@ export function RubricButton({course}: RubricButtonProps) {
 
             if (result && (result.id || result.rubric)) {
                     if(relatedRubric.points_possible === assignment.points_possible) {
-                        alert("Rubric updated successfully!");
+                        if(confirm("Rubric updated successfully! Do you want to refresh the page to see the changes?")) location.reload();
                     } else {
-                        alert("Rubric updated successfully, but the assignment points are different from the rubric points. You may need to update the points manually.");
+                        if(confirm("Rubric updated successfully, but the assignment points are different from the rubric points. You may need to update the points manually. Do you want to refresh the page to see the changes?")) location.reload();
                     }
                 } else {
                     throw new Error("Update failed: " + JSON.stringify(result));
