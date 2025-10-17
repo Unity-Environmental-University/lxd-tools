@@ -85,24 +85,29 @@ export function UpdateStartDate(
         const localModules = modules ?? await renderAsyncGen(moduleGenerator(course.id));
         if(modules === undefined) setModules(localModules);
 
-        const _moduleStartDate = getModuleUnlockStartDate(localModules);
-        console.log("Module Start Date", _moduleStartDate?.toLocaleString());
-        setModuleStartDate(_moduleStartDate);
+        /*This isn't necessary anymore because the module start date is hard-set and doesn't flag any problems.
+          Leaving it in incase something changes in the future.
+        if(localModules[0].unlock_at) {
+            const _moduleStartDate = getModuleUnlockStartDate(localModules);
+            console.log("Module Start Date", _moduleStartDate?.toLocaleString());
+            setModuleStartDate(_moduleStartDate);
+        }*/
 
         const errors: string[] = [];
 
         const syllabusStartMonth = _syllabusStartDate.month;
         const syllabusStartDay = _syllabusStartDate.day;
 
-        if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment and module lock do not match");
-        if(syllabusStartMonth != _moduleStartDate?.month || syllabusStartDay != _moduleStartDate?.day) errors.push("Syllabus and module lock do not match");
+        //if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment and module lock do not match");
+        //if(syllabusStartMonth != _moduleStartDate?.month || syllabusStartDay != _moduleStartDate?.day) errors.push("Syllabus and module lock do not match");
+        if(syllabusStartMonth != _assignmentsStartDate.month || syllabusStartDay != _assignmentsStartDate.day) errors.push("Syllabus and assignment dates do not match");
 
 
 
         if(errors.length > 0) {
 
             const errorString = "Start date mismatch: Syllabus: " + _syllabusStartDate.toLocaleString() +
-                ", Module: " + _moduleStartDate?.toLocaleString() + ", Assignments: " + _assignmentsStartDate.toLocaleString();
+                ", Assignments: " + _assignmentsStartDate.toLocaleString();
             setMismatchError(errorString)
             setStartDateOutcome?.(errorString);
             setIsLoading(false);
@@ -120,7 +125,7 @@ export function UpdateStartDate(
     useEffect(() => {
         if(isLoading) return;
         if (!course || !course.id) return;
-        if (!assignmentsStartDate || !syllabusStartDate || !moduleStartDate) {
+        if (!assignmentsStartDate || !syllabusStartDate) {
             recalculateStartDate().catch(console.error);
         }
     }, [recalculateStartDate, course, isLoading]);
