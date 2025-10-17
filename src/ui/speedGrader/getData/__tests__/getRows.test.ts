@@ -61,7 +61,14 @@ const mockSubmission: IAssignmentSubmission = {
                     {...mockRubCriterion, id: '_d', points: 50}
                 ]
             },
-        ], rubric_settings: {id: 'rubric1'}
+        ], rubric_settings: {
+            free_form_criterion_comments: true,
+            hide_points: false,
+            hide_score_total: false,
+            id: 1,
+            points_possible: 100,
+            title: 'Rubric 1'
+        }
     } as IAssignmentData,
     body: 'Submission Body',
     grade: 'A-',
@@ -97,7 +104,14 @@ const mockSubmission: IAssignmentSubmission = {
 const mockAssignments = [
     {
         ...mockAssignmentData,
-        id: 1, name: 'Assignment 1', points_possible: 100, rubric: [], rubric_settings: {id: 'rubric1'}
+        id: 1, name: 'Assignment 1', points_possible: 100, rubric: [], rubric_settings: {
+            free_form_criterion_comments: true,
+            hide_points: false,
+            hide_score_total: false,
+            id: 1,
+            points_possible: 100,
+            title: 'Rubric 1'
+        }
     } as IAssignmentData,
 
 ];
@@ -160,7 +174,7 @@ describe('getRows', () => {
     ].join(',') + '\n';
 
     const expectedRows = [
-        row(['Assignment 1','rubric1','Total','Total','A-','100']),
+        row(['Assignment 1','1','Total','Total','A-','100']),
         row(['Assignment 1','crit1','1','Criteria 1','50','50']),
         row(['Assignment 1','crit2','2','Criteria 2','25','50']),
     ]
