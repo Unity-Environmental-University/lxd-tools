@@ -137,8 +137,8 @@ describe("updateSupportPage.run", () => {
     const result = await updateSupportPage.run(course);
 
     expect(result).toEqual(
-      testResult("unknown", {
-        failureMessage: "Support page has no links",
+      testResult(false, {
+        failureMessage: "Support page has no links, needs attention",
         userData: fakePage,
       })
     );
