@@ -23,16 +23,10 @@ export function RubricButton({course}: RubricButtonProps) {
 
     async function insertRubric(course: Course) {
         setIsLoading(true);
-        if(!confirm("This will try to update the rubric for the assignment based on the related assignment in DEV/BP. Are you sure you want to do this?")) {
+        if(!confirm("This will try to update the rubric for the assignment based on the same assignment in DEV/BP. Confirm?")) {
             setIsLoading(false);
             return;
         }
-        console.log(
-            "Inserting rubric for assignment",
-            course.name,
-            "in course",
-            course.name
-        )
         try {
             let relatedCourse: Course | undefined;
             if (course.isDev) {
@@ -183,7 +177,6 @@ export function RubricButton({course}: RubricButtonProps) {
         } catch (e) {
             console.error("Rubric update error:", e);
             alert("Failed to update rubric: " + (e as Error).message);
-            throw new Error("Failed to update assignment rubric");
         }
         setIsLoading(false);
     }
@@ -252,6 +245,3 @@ export function RubricButton({course}: RubricButtonProps) {
         </div>
     </>
 }
-
-//User feedback needed
-    //Are you sure?

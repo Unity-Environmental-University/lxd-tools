@@ -13,6 +13,7 @@ import { getSingleCourse } from '@canvas/course';
 import { getAssignmentData } from '@canvas/content/assignments/legacy';
 import { assignmentDataGen } from '@canvas/content/assignments';
 import { fetchJson } from '@canvas/fetch/fetchJson';
+import '@testing-library/jest-dom';
 
 // Mock all dependencies
 jest.mock('@/canvas');
@@ -34,7 +35,10 @@ describe('RubricButton', () => {
     beforeEach(() => {
         // Mock window.confirm and window.alert
         mockConfirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
-        mockAlert = jest.spyOn(window, 'alert').mockImplementation();
+        mockAlert = jest.spyOn(window, 'alert').mockImplementation((msg?: string) => {
+          return Promise.resolve(console.log(`Alert: ${msg}`));
+        });
+        jest.spyOn(console, "error").mockImplementation(() => {});
 
         // Create mock courses
         mockCourse = {
@@ -62,9 +66,11 @@ describe('RubricButton', () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
         mockConfirm.mockRestore();
         mockAlert.mockRestore();
+        (getSingleCourse as jest.Mock).mockReset();
+        jest.clearAllMocks();
+        jest.resetModules();
     });
 
     describe('Rendering', () => {
@@ -89,7 +95,7 @@ describe('RubricButton', () => {
             fireEvent.click(button);
 
             expect(mockConfirm).toHaveBeenCalledWith(
-                'This will try to update the rubric for the assignment based on the related assignment in DEV/BP. Are you sure you want to do this?'
+                'This will try to update the rubric for the assignment based on the same assignment in DEV/BP. Confirm?'
             );
         });
 
@@ -336,7 +342,7 @@ describe('RubricButton', () => {
 
             await waitFor(() => {
                 expect(mockAlert).toHaveBeenCalledWith(
-                    expect.stringContaining('Discussion does not have an assignment id')
+                    expect.stringContaining('Discussion does not have an assignment id.')
                 );
             });
         });
@@ -393,7 +399,7 @@ describe('RubricButton', () => {
 
             await waitFor(() => {
                 expect(mockAlert).toHaveBeenCalledWith(
-                    expect.stringContaining('Related assignment not found')
+                    expect.stringContaining('Failed to update rubric: Content is not an assignment or discussion')
                 );
             });
         });
@@ -426,7 +432,7 @@ describe('RubricButton', () => {
 
             await waitFor(() => {
                 expect(mockAlert).toHaveBeenCalledWith(
-                    expect.stringContaining('Related assignment does not have a rubric')
+                    expect.stringContaining('Failed to update rubric: Content is not an assignment or discussion')
                 );
             });
         });
