@@ -101,7 +101,7 @@ export function RubricButton({course}: RubricButtonProps) {
                     'rubric_association_id': rubricAssociation.id,
 
                     // Rubric-level fields
-                    'rubric[title]': decodeHtmlEntities(relatedRubric.title),
+                    'rubric[title]': cleanText(relatedRubric.title),
                     'rubric[free_form_criterion_comments]': (relatedRubric.free_form_criterion_comments ?? true) ? 1 : 0,
                     'rubric[skip_updating_points_possible]': 0,
 
@@ -116,15 +116,15 @@ export function RubricButton({course}: RubricButtonProps) {
                 // Add criteria and ratings (Canvas requires indexed hash-style keys)
                 (relatedRubric.data ?? []).forEach((criterion: any, i: number) => {
                     updatedRubric[`rubric[criteria][${i}][id]`] = criterion.id ?? `new_${i}`;
-                    updatedRubric[`rubric[criteria][${i}][description]`] = decodeHtmlEntities(criterion.description) ?? '';
-                    updatedRubric[`rubric[criteria][${i}][long_description]`] = decodeHtmlEntities(criterion.long_description) ?? '';
+                    updatedRubric[`rubric[criteria][${i}][description]`] = cleanText(criterion.description) ?? '';
+                    updatedRubric[`rubric[criteria][${i}][long_description]`] = cleanText(criterion.long_description) ?? '';
                     updatedRubric[`rubric[criteria][${i}][points]`] = criterion.points ?? 0;
 
                     // Ratings must be fully expanded
                     (criterion.ratings ?? []).forEach((rating: any, j: number) => {
                         updatedRubric[`rubric[criteria][${i}][ratings][${j}][id]`] = rating.id ?? `new_${i}_${j}`;
-                        updatedRubric[`rubric[criteria][${i}][ratings][${j}][description]`] = decodeHtmlEntities(rating.description) ?? '';
-                        updatedRubric[`rubric[criteria][${i}][ratings][${j}][long_description]`] = decodeHtmlEntities(rating.long_description) ?? '';
+                        updatedRubric[`rubric[criteria][${i}][ratings][${j}][description]`] = cleanText(rating.description) ?? '';
+                        updatedRubric[`rubric[criteria][${i}][ratings][${j}][long_description]`] = cleanText(rating.long_description) ?? '';
                         updatedRubric[`rubric[criteria][${i}][ratings][${j}][points]`] = rating.points ?? 0;
                     });
                 });
@@ -137,7 +137,7 @@ export function RubricButton({course}: RubricButtonProps) {
             } else {
                 //Create a rubric
                 const newRubric: Record<string, string | number | boolean > = {
-                    'rubric[title]': decodeHtmlEntities(relatedRubric.title),
+                    'rubric[title]': cleanText(relatedRubric.title),
                     'rubric[free_form_criterion_comments]': (relatedRubric.free_form_criterion_comments ?? true) ? 1 : 0,
 
                     'rubric_association[association_id]': assignment.id,
@@ -149,15 +149,15 @@ export function RubricButton({course}: RubricButtonProps) {
 
                 (relatedRubric.data ?? []).forEach((criterion: any, i: number) => {
                     newRubric[`rubric[criteria][${i}][id]`] = criterion.id ?? `new_${i}`;
-                    newRubric[`rubric[criteria][${i}][description]`] = decodeHtmlEntities(criterion.description) ?? '';
-                    newRubric[`rubric[criteria][${i}][long_description]`] = decodeHtmlEntities(criterion.long_description) ?? '';
+                    newRubric[`rubric[criteria][${i}][description]`] = cleanText(criterion.description) ?? '';
+                    newRubric[`rubric[criteria][${i}][long_description]`] = cleanText(criterion.long_description) ?? '';
                     newRubric[`rubric[criteria][${i}][points]`] = criterion.points ?? 0;
 
                     // Ratings must be fully expanded
                     (criterion.ratings ?? []).forEach((rating: any, j: number) => {
                         newRubric[`rubric[criteria][${i}][ratings][${j}][id]`] = rating.id ?? `new_${i}_${j}`;
-                        newRubric[`rubric[criteria][${i}][ratings][${j}][description]`] = decodeHtmlEntities(rating.description) ?? '';
-                        newRubric[`rubric[criteria][${i}][ratings][${j}][long_description]`] = decodeHtmlEntities(rating.long_description) ?? '';
+                        newRubric[`rubric[criteria][${i}][ratings][${j}][description]`] = cleanText(rating.description) ?? '';
+                        newRubric[`rubric[criteria][${i}][ratings][${j}][long_description]`] = cleanText(rating.long_description) ?? '';
                         newRubric[`rubric[criteria][${i}][ratings][${j}][points]`] = rating.points ?? 0;
                     });
                 });
@@ -226,12 +226,13 @@ export function RubricButton({course}: RubricButtonProps) {
         }
     }
 
-    const decodeHtmlEntities = (text: string): string => {
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = text;
-        return textarea.value;
+    const cleanText = (text: string): string => {
+        if (typeof text !== 'string') return text;
+        const parser = new DOMParser();
+        const decoded = parser.parseFromString(`<!doctype html><body>${text}`, 'text/html').body.textContent;
+        return decoded || text;
     };
-
+    
     return <>
         <div className="relative inline-block">
           <button
