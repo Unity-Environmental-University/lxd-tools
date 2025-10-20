@@ -28,6 +28,7 @@ async function openTargetCourse(queryString: string, subAccount: number) {
     console.log(queryString, subAccount);
     const params = queryString.split('|');
     const searchCode = params.length > 0 ? params[0] : null;
+    let didOpen = false;
 
     if (!searchCode) throw new Error("No search code provided");
 
@@ -38,57 +39,70 @@ async function openTargetCourse(queryString: string, subAccount: number) {
         return;
     }
 
-    const courses = stringIsCourseCode(searchCode) ? await getJson(queryUrl) : null;
-    const course: Course = courses ? getCourseToNavTo(searchCode, courses) : await Course.getFromUrl();
+    try {
+        const courses = stringIsCourseCode(searchCode) ? await getJson(queryUrl) : null;
+        const course: Course = courses ? getCourseToNavTo(searchCode, courses) : await Course.getFromUrl();
 
 
-    let targetType: string | null = null;
-    let targetModuleWeekNumber: number = NaN;
-    let targetIndex: number = NaN;
-    let contentSearchString: string | null = null;
-    const paramTypeLut: Record<string, string> = {
-        a: "Assignment",
-        d: "Discussion",
-        q: "Quiz",
-        p: "Page"
-    }
-
-    for (const param of params) {
-        //Test for assignment matching
-        let match = /w(\d+)([adq])(\d+)?$/.exec(param);
-        if (match) {
-            targetModuleWeekNumber = parseInt(match[1]);
-            targetType = paramTypeLut[match[2]];
-            targetIndex = parseInt(match[3]);
+        let targetType: string | null = null;
+        let targetModuleWeekNumber: number = NaN;
+        let targetIndex: number = NaN;
+        let contentSearchString: string | null = null;
+        const paramTypeLut: Record<string, string> = {
+            a: "Assignment",
+            d: "Discussion",
+            q: "Quiz",
+            p: "Page"
         }
 
-        //test for page search
-        match = /p (.*)/.exec(param);
-        if (match) {
-            targetType = "page";
-            contentSearchString = match[1];
+        for (const param of params) {
+            //Test for assignment matching
+            let match = /w(\d+)([adq])(\d+)?$/.exec(param);
+            if (match) {
+                targetModuleWeekNumber = parseInt(match[1]);
+                targetType = paramTypeLut[match[2]];
+                targetIndex = parseInt(match[3]);
+            }
+
+            //test for page search
+            match = /p (.*)/.exec(param);
+            if (match) {
+                targetType = "page";
+                contentSearchString = match[1];
+            }
         }
+
+        if (!searchCode && !course) throw new Error("No course found");
+
+        let url = `/accounts/${subAccount}?search_term=${searchCode}`;
+        let potentialUrls: string[] = [];
+        if (course && (!courses || courses.length < 4)) {
+            url = `/courses/${course.id}`;
+            if (targetModuleWeekNumber) {
+                potentialUrls = await course.getModuleItemLinks(targetModuleWeekNumber, {
+                    type: targetType as ModuleItemType,
+                    index: targetIndex,
+                    search: contentSearchString
+                });
+            }
+        }
+
+        if (potentialUrls.length > 0) {
+            for(const url of potentialUrls) {
+                window.open(url, "_blank");
+                didOpen = true;
+            }
+        } else {
+            window.open(url, "_blank");
+            didOpen = true;
+        }
+    } catch (e: any) {
+        console.warn("In-page navigation failed:", e);
     }
 
-    if (!searchCode && !course) throw new Error("No course found");
-
-    let url = `/accounts/${subAccount}?search_term=${searchCode}`;
-    let potentialUrls: string[] = [];
-    if (course && (!courses || courses.length < 4)) {
-        url = `/courses/${course.id}`;
-        if (targetModuleWeekNumber) {
-            potentialUrls = await course.getModuleItemLinks(targetModuleWeekNumber, {
-                type: targetType as ModuleItemType,
-                index: targetIndex,
-                search: contentSearchString
-            });
-        }
-    }
-
-    if (potentialUrls.length > 0) {
-        for(const url of potentialUrls) window.open(url, "_blank")
-    } else {
-        window.open(url, "_blank");
+    if (!didOpen) {
+        window.open(`https://unity.instructure.com/accounts/${subAccount}?search_term=${encodeURIComponent(queryString)}`
+            , "_blank");
     }
 }
 

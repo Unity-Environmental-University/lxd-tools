@@ -25,7 +25,7 @@ const messageHandlers: Record<string, MessageHandler<any, any>> = {
         files: ['./js/content.js'],
       });
       const contentResult = await tabs.sendMessage(activeTab.id, { queryString, subAccount });
-
+      
       sendResponse(contentResult);
     } catch (e: any) {
       sendResponse({
@@ -34,6 +34,7 @@ const messageHandlers: Record<string, MessageHandler<any, any>> = {
         ? "Please open a new tab and try again."
         : e.message || "Unknown error",
     });
+
     }
 
     return true;

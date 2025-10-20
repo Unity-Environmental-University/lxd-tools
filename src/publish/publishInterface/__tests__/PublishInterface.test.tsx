@@ -80,7 +80,7 @@ describe('PublishInterface Component', () => {
         expect(screen.getByText('Publishing')).toBeInTheDocument();
         // Simulate delay for publishing
         await waitFor(() => screen.getByText(/Published/i));
-        expect(screen.getByText('Published')).toBeInTheDocument();
+        expect(screen.getByText(/Published \d+ sections/)).toBeInTheDocument();
     });
 
     it('calls applySectionProfiles when "Set Bios" button is clicked', async () => {

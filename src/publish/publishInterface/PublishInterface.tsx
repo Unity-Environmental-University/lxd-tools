@@ -110,6 +110,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         inform('Publishing')
         setLoading(true);
         const toPublish = Object.values(sections);
+        const numToPublish = toPublish.length;
         await Course.publishAll(toPublish, accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
@@ -122,7 +123,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
 
             dispatchSections({set: Object.fromEntries(newAssocCourses.map(a => [ a.id, a]))});
             setLoading(false);
-            success('Published');
+            success('Published ' + numToPublish + ' sections');
         }, 500);
     }
 
@@ -230,7 +231,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 if (!sectionStartSet) {
                     actualStart = await section.getStartDateFromModules();
                     if (!actualStart) {
-                        actualStart = getStartDateAssignments(await renderAsyncGen(assignmentDataGen(section.id)))
+                        actualStart = await getStartDateAssignments(section.id)
                     }
 
                     sectionStartSet = true;
