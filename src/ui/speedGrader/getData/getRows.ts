@@ -88,7 +88,7 @@ export async function getRows(args: IGetRowsConfig) {
 
         const out = [
             ...rows,
-            submissionHeader(submissionBaseRow, submission, assignment, rubricId),
+            submissionHeader(submissionBaseRow, submission, assignment, rubricId.toString()),
             ...criteriaAssessmentRows(rubricAssessment, criteriaInfo, submissionBaseRow)
         ]
         return out;

@@ -100,15 +100,15 @@ fix: badSyllabusFixFunc(badDiscussionPostOrderLanguage, '')
 
 
 export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
-name: "AI Policy in Syllabus Test",
-description: "The AI policy is present in the syllabus",
-run: async (course: ISyllabusHaver) => {
-    const text = await course.getSyllabus();
-    const success = text.includes('Generative Artificial Intelligence');
-    const links = [`/courses/${course.id}/assignments/syllabus`];
-    const failureMessage = `Can't find AI boilerplate in syllabus`
-    return testResult(success, {links, failureMessage})
-}
+    name: "AI Policy in Syllabus Test",
+    description: "The AI policy is present in the syllabus",
+    run: async (course: ISyllabusHaver) => {
+        const text = await course.getSyllabus();
+        const success = text.includes('Generative Artificial Intelligence');
+        const links = [`/courses/${course.id}/assignments/syllabus`];
+        const failureMessage = `Can't find AI boilerplate in syllabus`
+        return testResult(success, {links, failureMessage})
+    }
 }
 
 
@@ -403,6 +403,60 @@ InSyllabusSectionFuncUserData,
 InSyllabusSectionFuncUserData | undefined
 >
 
+const gradingDeadlineLanguage = `Any graded work that is a <em>Discussion</em> will have two formal deadlines. The initial post is due Thursday at 3 AM ET, and responses to classmates are due on the deadline listed below (Monday at 3am ET). Full instructions are listed at the top of the Discussion assignment details.`;
+
+const gradingDeadlineRun = async (course: ISyllabusHaver) => {
+    const parser = new DOMParser();
+    const syllabus = await course.getSyllabus();
+    const parsedSyllabus = parser.parseFromString(syllabus, "text/html");
+
+    const pTags = Array.from(parsedSyllabus.querySelectorAll('p'));
+    const courseP = pTags.find(p => p.textContent?.trim().startsWith("Course Number and Title:"));
+
+    if(!courseP) return testResult("not run", { notFailureMessage: "Course number and title not found." });
+
+    const content = courseP.textContent?.split("Course Number and Title:")[1].trim();
+    const courseCodeMatch = content?.match(/\b([A-Za-z]{4})\s*([0-9]{3})\b/);
+
+    if(!courseCodeMatch) return testResult("not run", { notFailureMessage: "Course code not found." });
+
+    const numericPart = parseInt(courseCodeMatch[2], 10);
+    const isUndergrad = numericPart < 500;
+
+    if (isUndergrad) {
+        if(syllabus.toString().includes("Any graded")) return testResult(true, {
+            notFailureMessage: "Syllabus already has language about grading deadlines."
+        });
+        return testResult(false, {
+            failureMessage: "Syllabus does not have language about grading deadlines.",
+            links: [`/courses/${course.id}/assignments/syllabus`]
+        },
+        )
+    } else {
+        return testResult(true, { notFailureMessage: "Not run because course is not undergrad." })
+    }
+}
+
+const gradingDeadlineFix = async (course: ISyllabusHaver) => {
+    const syllabus = await course.getSyllabus();
+    const syllabusText = syllabus.toString();
+const fixedText = syllabusText.replace(/<\/div>\s*<\/div>\s*$/, '');
+const newSyllabus = fixedText + `<br /><p><strong>${gradingDeadlineLanguage}</strong></p></div><div>`;
+    try {
+        course.changeSyllabus(newSyllabus);
+        return testResult(true);
+    } catch (e) {
+        return errorMessageResult(e);
+    }
+}
+
+export const gradingDeadlineLanguageTest: CourseFixValidation<ISyllabusHaver> = {
+    name: "UG Grading Deadline Language",
+    description: "Adds clarifying language about the discussion deadlines to the bottom of the syllabus",
+    run: gradingDeadlineRun,
+    fix: gradingDeadlineFix
+}
+
 export default [
 addAiGenerativeLanguageTest,
 removeSameDayPostRestrictionTest,
@@ -419,5 +473,6 @@ fixSupportEmailTest,
 honorCodeLanguageText,
 addApaNoteToGradingPoliciesTest,
 titleIXPolicyTest,
+gradingDeadlineLanguageTest,
 ]
 
