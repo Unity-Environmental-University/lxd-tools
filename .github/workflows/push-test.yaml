@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout lxd-tools
         uses: actions/checkout@v4
@@ -32,7 +32,13 @@ jobs:
       
       - name: Install lxd-tools dependencies
         working-directory: lxd-tools
-        run: npm install
+        run: |
+          npm install --legacy-peer-deps
+          npm install @testing-library/react --save-dev
+      
+      - name: Force symlink to ueu_canvas
+        working-directory: lxd-tools
+        run: ln -s ../ueu_canvas node_modules/ueu_canvas
       
       - name: Run tests
         working-directory: lxd-tools
