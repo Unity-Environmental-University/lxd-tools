@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout lxd-tools
         uses: actions/checkout@v4
@@ -36,8 +36,7 @@ jobs:
       
       - name: Force symlink to ueu_canvas
         working-directory: lxd-tools
-        run: |
-          New-Item -Path node_modules/ueu_canvas SymbolicLink -Value ../ueu_canvas
+        run: ln -s ../ueu_canvas node_modules/ueu_canvas
       
       - name: Run tests
         working-directory: lxd-tools
