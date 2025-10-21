@@ -32,13 +32,13 @@ jobs:
       
       - name: Install lxd-tools dependencies
         working-directory: lxd-tools
-        run: npm install
+        run: npm install --legacy-peer-deps
       
-      - name: Create symlink to ueu_canvas
+      - name: Force symlink to ueu_canvas
         working-directory: lxd-tools
         run: |
-          if (Test-Path node_modules/ueu_canvas) { Remove-Item -Recurse -Force node_modules/ueu_canvas }
-          New-Item -ItemType SymbolicLink -Path node_modules/ueu_canvas -Target ..\ueu_canvas
+          Remove-Item -Recurse -Force node_modules/ueu_canvas -ErrorAction SilentlyContinue
+          New-Item -ItemType Junction -Path node_modules/ueu_canvas -Target ..\ueu_canvas
       
       - name: Run tests
         working-directory: lxd-tools
