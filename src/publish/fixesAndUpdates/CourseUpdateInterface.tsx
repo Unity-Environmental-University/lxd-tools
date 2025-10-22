@@ -69,6 +69,8 @@ export function CourseUpdateInterface({
         setBatchingValidations(false);
     }
 
+    //Testing stuff, dawg
+
     useEffect(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         onChangeMode && onChangeMode(mode)
