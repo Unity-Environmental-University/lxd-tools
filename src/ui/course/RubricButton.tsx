@@ -13,7 +13,6 @@ import {deepObjectMerge, formDataify} from "@canvas/canvasUtils";
 import {useState} from "react";
 
 
-
 interface RubricButtonProps {
     course: Course,
 }
