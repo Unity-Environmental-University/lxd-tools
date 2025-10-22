@@ -225,7 +225,10 @@ describe('RubricButton', () => {
                 );
             });
 
-            expect(mockAlert).toHaveBeenCalledWith('Rubric updated successfully!');
+            expect(mockConfirm).toHaveBeenNthCalledWith(
+                2,
+                'Rubric updated successfully! Do you want to refresh the page to see the changes?'
+            );
         });
 
         it('should create new rubric if assignment has no rubric', async () => {
@@ -250,7 +253,10 @@ describe('RubricButton', () => {
                 );
             });
 
-            expect(mockAlert).toHaveBeenCalledWith('Rubric updated successfully!');
+            expect(mockConfirm).toHaveBeenNthCalledWith(
+                2,
+                'Rubric updated successfully! Do you want to refresh the page to see the changes?'
+            );
         });
 
         it('should warn when assignment points differ from rubric points', async () => {
@@ -267,8 +273,9 @@ describe('RubricButton', () => {
             fireEvent.click(button);
 
             await waitFor(() => {
-                expect(mockAlert).toHaveBeenCalledWith(
-                    'Rubric updated successfully, but the assignment points are different from the rubric points. You may need to update the points manually.'
+                expect(mockConfirm).toHaveBeenNthCalledWith(
+                    2,
+                    'Rubric updated successfully, but the assignment points are different from the rubric points. You may need to update the points manually. Do you want to refresh the page to see the changes?'
                 );
             });
         });
