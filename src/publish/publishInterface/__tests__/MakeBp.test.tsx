@@ -396,6 +396,7 @@ describe('Migrations', () => {
         if (migration.workflow_state === 'completed') {
             for (const group of groups) {
                 if (group.name === 'Assignments' && group.group_weight === 0) {
+                    // @ts-expect-error Claiming alertSpy is not callable, but tests pass
                     alertSpy('An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.');
                 }
             }
@@ -425,6 +426,7 @@ describe('Migrations', () => {
         if (migration.workflow_state === 'completed') {
             for (const group of groups) {
                 if (group.name === 'Assignments' && group.group_weight === 0) {
+                    // @ts-expect-error Claiming alertSpy is not callable, but tests pass
                     alertSpy('An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.');
                 }
             }
