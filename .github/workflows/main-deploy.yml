@@ -1,0 +1,55 @@
+name: Deploying to Test Branch
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [ closed ]
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout lxd-tools (main repo)
+      - name: Checkout lxd-tools
+        uses: actions/checkout@v4
+
+      # Download the build artifact from the build workflow
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lxd-tools
+          path: build
+
+      # Check out the target repo (lxd-tools-build)
+      - name: Checkout lxd-tools-build
+        uses: actions/checkout@v4
+        with:
+          repository: your-org/lxd-tools-build
+          token: ${{ secrets.BUILD_REPO_TOKEN }} # TODO; Need to set this up
+          path: lxd-tools-build
+
+      # Copy the downloaded build into the target repo
+      - name: Copy build output to lxd-tools-build
+        run: |
+          rm -rf lxd-tools-build/*
+          cp -r build/* lxd-tools-build/
+
+      # Commit and push changes to test branch
+      - name: Commit and push to test branch
+        run: |
+          cd lxd-tools-build
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B test
+          git add .
+          git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}"
+          git push origin test --force
+
+      # Create or update beta tag
+      - name: Tag beta
+        run: |
+          cd lxd-tools-build
+          git tag -f beta
+          git push origin -f beta
