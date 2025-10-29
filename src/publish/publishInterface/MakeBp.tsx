@@ -1,4 +1,4 @@
-import {createNewCourse, getCourseName} from "@/canvas/course";
+import {createNewCourse, getCourseById, getCourseName} from "@/canvas/course";
 import {Alert, Button, Col, FormControl, FormText, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
@@ -26,6 +26,8 @@ import {jsonRegex} from "ts-loader/dist/constants";
 import {getSections} from "@canvas/course/getSections";
 import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
+import {getModules} from "@/canvas-redux/modulesSlice";
+import {fetchJson} from "@canvas/fetch/fetchJson";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
@@ -214,14 +216,37 @@ export function MakeBp({
         }
         const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId, bpName);
         setCurrentBp(new Course(newBpShell));
-        const migration = await startMigration(devCourse.id, newBpShell.id) as SavedMigration;
-        migration.tracked = true;
-        migration.cleanedUp = false;
-        cacheCourseMigrations(newBpShell.id, [migration])
-        allMigrationDispatcher({
-            add: migration,
-        });
+        const startedMigration = await startMigration(devCourse.id, newBpShell.id) as SavedMigration;
+        startedMigration.tracked = true;
+        startedMigration.cleanedUp = false;
+        cacheCourseMigrations(newBpShell.id, [startedMigration]);
+        allMigrationDispatcher({ add: startedMigration });
         await updateMigrations();
+
+        console.log("Waiting for migration to complete...");
+        const migration = await waitForMigrationCompletion(newBpShell.id, startedMigration.id);
+        console.log("Migration finished with state:", migration.workflow_state);
+        //Get assignment groups in BP
+        //For each, if there's one with name Assignments, check if it's empty, if it is, kill it and stop.
+        if (migration.workflow_state === "completed") {
+            console.log("We be in the completed state, baby.");
+            try {
+                const bpCourse = await getCourseById(newBpShell.id);
+                if (!bpCourse) throw new Error("We couldn't get the BP course");
+                console.log("BP Course ", bpCourse);
+                const bpAssignmentGroups = await bpCourse.getAssignmentGroups();
+                if (!bpAssignmentGroups) throw new Error("We couldn't get the BP assignment groups");
+                console.log("BP Modules ", bpAssignmentGroups);
+
+                for (const group of bpAssignmentGroups) {
+                    if (group.name === "Assignments" && group.group_weight === 0) {
+                        alert("An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.");
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
     }
 
     async function finishMigration(migration:SavedMigration) {
@@ -295,6 +320,25 @@ export function MakeBp({
             </Row>
         </>}
     </div>
+}
+
+export async function waitForMigrationCompletion(courseId: number, migrationId: number, intervalMs = 5000, timeoutMs = 300000) {
+    const start = Date.now();
+
+    while (true) {
+        const migration = await fetchJson(`/api/v1/courses/${courseId}/content_migrations/${migrationId}`);
+
+        if (migration.workflow_state === "completed" || migration.workflow_state === "failed") {
+            return migration;
+        }
+
+        if (Date.now() - start > timeoutMs) {
+            throw new Error("Migration wait timed out after 5 minutes.");
+        }
+
+        console.log(`Migration still ${migration.workflow_state}... waiting ${intervalMs / 1000}s`);
+        await new Promise(res => setTimeout(res, intervalMs));
+    }
 }
 
 
