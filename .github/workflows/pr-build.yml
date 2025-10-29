@@ -20,6 +20,7 @@ jobs:
       - name: Checkout ueu_canvas
         uses: actions/checkout@v4
         with:
+          repository: Unity-Environmental-University/ueu_canvas
           path: ueu_canvas
 
       - name: Setup Node.js
