@@ -76,7 +76,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lxd-tools
-          path: lxd-tools/build
+          path: dist
+          if-no-files-found: 'error'
 
       - name: Comment download link on PR
         uses: marocchino/sticky-pull-request-comment@v2
