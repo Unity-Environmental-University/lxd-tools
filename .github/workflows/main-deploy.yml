@@ -14,13 +14,12 @@ jobs:
       # Checkout lxd-tools (main repo)
       - name: Checkout lxd-tools
         uses: actions/checkout@v4
+        with:
+          path: lxd-tools
 
       # Download the build artifact from the build workflow
       - name: Download build artifact
         uses: actions/download-artifact@v4
-        with:
-          name: lxd-tools
-          path: build
 
       # Check out the target repo (lxd-tools-build)
       - name: Checkout lxd-tools-build
