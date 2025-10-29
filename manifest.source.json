@@ -43,7 +43,8 @@
         "js/rubricOrganize.js.map",
         "js/ui/module.js.map",
         "js/ui/course.js.map",
-        "js/ui/account.js.map"
+        "js/ui/account.js.map",
+        "js/ui/syllabus.js.map"
       ]
     }
   ],
@@ -90,6 +91,15 @@
       ],
       "js": [
         "js/ui/course.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://*.instructure.com/courses/*/assignments/syllabus"
+      ],
+      "js": [
+        "js/ui/syllabus.js"
       ],
       "run_at": "document_end"
     },
