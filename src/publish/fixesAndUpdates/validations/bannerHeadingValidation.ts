@@ -26,13 +26,13 @@ const replaceSecondPWithH1Regex = new RegExp(
 // Regex to find <span> tags inside <h1> tags within a div with class "cbt-banner-header" and remove them
 // Example: <div><p>Title</p><p>Subtitle</p></div> => <div><p>Title</p><h1>Subtitle</h1></div>
 const replaceSpanInH1Regex = new RegExp(
-   /(<div[^>]+class=["'][^"']*\bcbt-banner-header\b[^"']*["'][^>]*>[\s\S]*?<h1>)<span>([\s\S]*?)<\/span>(<\/h1>)/gi
+    /(<div[^>]+class=["'][^"']*\bcbt-banner-header\b[^"']*["'][^>]*>[\s\S]*?<h1>)<span>([\s\S]*?)<\/span>(<\/h1>)/gi
 );
 
 // Regex to find <strong> tags inside <h1> tags within a div with class "cbt-banner-header" and remove them
 // Example: <div><p>Title</p><p>Subtitle</p></div> => <div><p>Title</p><h1>Subtitle</h1></div>
 const replaceStrongInH1Regex = new RegExp(
-        /(<div[^>]+class=["'][^"']*\bcbt-banner-header\b[^"']*["'][^>]*>[\s\S]*?<h1>)<strong>([\s\S]*?)<\/strong>(<\/h1>)/gi
+    /(<div[^>]+class=["'][^"']*\bcbt-banner-header\b[^"']*["'][^>]*>)[\s\S]*?(<strong>([\s\S]*?)<\/strong>)/gi
 );
 
 const beforeAndAfters: _ValidationType['beforeAndAfters'] = [
@@ -73,38 +73,68 @@ export const bannerHeadingValidation: _ValidationType = {
         const assignments = await assignmentDataGen(course.id, config);
         const pages = PageKind.dataGenerator(course.id, config);
 
-        let secondPWithH1Matches: RegExpMatchArray | null = null;
-        let spanInH1Matches: RegExpMatchArray | null = null;
-        let strongInH1Matches: RegExpMatchArray | null = null;
+        //let secondPWithH1Matches: RegExpMatchArray | null = null;
+        //let spanInH1Matches: RegExpMatchArray | null = null;
+        //let strongInH1Matches: RegExpMatchArray | null = null;
+
+        const brokenAssignments: IAssignmentData[] = [];
+        const brokenPages: IPageData[] = [];
 
         for await (const assignment of assignments) {
             if (assignment.body) {
-                secondPWithH1Matches = assignment.body.match(replaceSecondPWithH1Regex);
-                spanInH1Matches = assignment.body.match(replaceSpanInH1Regex);
-                strongInH1Matches = assignment.body.match(replaceStrongInH1Regex);
+                //secondPWithH1Matches = assignment.body.match(replaceSecondPWithH1Regex);
+                //spanInH1Matches = assignment.body.match(replaceSpanInH1Regex);
+                //strongInH1Matches = assignment.body.match(replaceStrongInH1Regex);
+
+                if(
+                    assignment.body.match(replaceSecondPWithH1Regex) ||
+                    assignment.body.match(replaceSpanInH1Regex) ||
+                    assignment.body.match(replaceStrongInH1Regex)
+                ) {
+                    brokenAssignments.push(assignment);
+                }
             }
         }
+
+        console.log("Broken assignments: ", brokenAssignments);
 
         for await (const page of pages) {
             if (page.body) {
-                secondPWithH1Matches ||= page.body.match(replaceSecondPWithH1Regex);
-                spanInH1Matches ||= page.body.match(replaceSpanInH1Regex);
-                strongInH1Matches ||= page.body.match(replaceStrongInH1Regex);
+                //secondPWithH1Matches ||= page.body.match(replaceSecondPWithH1Regex);
+                //spanInH1Matches ||= page.body.match(replaceSpanInH1Regex);
+                //strongInH1Matches ||= page.body.match(replaceStrongInH1Regex);
+
+                if(
+                    page.body.match(replaceSecondPWithH1Regex) ||
+                    page.body.match(replaceSpanInH1Regex) ||
+                    page.body.match(replaceStrongInH1Regex)
+                ) {
+                    brokenPages.push(page);
+                }
             }
         }
 
+        console.log("Broken pages: ", brokenPages);
+
         const userData: UserData = {
-            brokenAssignments: [],
-            brokenPages: []
+            brokenAssignments,
+            brokenPages
         };
 
-        const success = !secondPWithH1Matches && !spanInH1Matches && !strongInH1Matches;
+        console.log("User data: ", userData);
+
+        const success = brokenAssignments.length === 0 && brokenPages.length === 0;
+
+        console.log("Success: ", success);
+
         return testResult(success, {userData});
     },
 
     async fix(course, validationResult) {
     validationResult = validationResult ?? await this.run(course, {});
+    console.log("Validation result: ", validationResult);
     const {userData, success} = validationResult ?? {};
+    console.log("User data: ", userData);
     
     if (success) { 
         return testResult("not run", {
@@ -124,9 +154,11 @@ export const bannerHeadingValidation: _ValidationType = {
     
     for (const assignment of brokenAssignments) {
         if (assignment.body) {
+            console.log("Assignment body: ", assignment.body);
             assignment.body = assignment.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
             assignment.body = assignment.body.replace(replaceSpanInH1Regex, '$1$2$3');
             assignment.body = assignment.body.replace(replaceStrongInH1Regex, '$1$2$3');
+            console.log("Fixed assignment body: ", assignment.body);
             await AssignmentKind.put(course.id, assignment.id, {assignment});
             fixedAssignments.push(assignment);
         }
@@ -134,9 +166,11 @@ export const bannerHeadingValidation: _ValidationType = {
     
     for (const page of brokenPages) {
         if (page.body) {
+            console.log("Page body: ", page.body);
             page.body = page.body.replace(replaceSecondPWithH1Regex, '$1<h1>$3</h1>');
             page.body = page.body.replace(replaceSpanInH1Regex, '$1$2$3');
             page.body = page.body.replace(replaceStrongInH1Regex, '$1$2$3');
+            console.log("Fixed page body: ", page.body);
             await PageKind.put(course.id, page.id, {page});
             fixedPages.push(page);
         }
