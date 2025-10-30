@@ -78,6 +78,7 @@ jobs:
           name: lxd-tools
           path: dist
           if-no-files-found: 'error'
+          retention-days: 30
 
       - name: Comment download link on PR
         uses: marocchino/sticky-pull-request-comment@v2
