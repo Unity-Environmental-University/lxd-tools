@@ -13,7 +13,8 @@ import {
     honorCodeLanguageText,
     addApaNoteToGradingPoliciesTest,
     titleIXPolicyTest,
-    gradingDeadlineLanguageTest
+    gradingDeadlineLanguageTest,
+    aiPolicyMediaTest
 } from "../syllabusTests";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
 import assert from "assert";
@@ -41,6 +42,7 @@ describe('Syllabus validation', () => {
     test('Late policy text replace', syllabusTestTest(latePolicyTableTest));
     test('Title IX policy update', syllabusTestTest(titleIXPolicyTest));
     test('Grading Deadline Language', syllabusTestTest(gradingDeadlineLanguageTest))
+    test('AI Policy Media', syllabusTestTest(aiPolicyMediaTest));
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
