@@ -11,7 +11,6 @@ import {updateSupportPage} from "@publish/fixesAndUpdates/validations/courseCont
 import technologyForSuccess from "@publish/fixesAndUpdates/validations/courseContent/technologyForSuccess";
 import studentHandbookTest from "@publish/fixesAndUpdates/validations/courseContent/studentHanbookTest";
 import {changelogPageTest} from "@publish/fixesAndUpdates/validations/courseContent/changeLogPageTest";
-import {rubricLinkReplace} from "@publish/fixesAndUpdates/validations/courseContent/rubricLinkReplace";
 
 
 export default [
@@ -26,5 +25,4 @@ export default [
     technologyForSuccess,
     studentHandbookTest,
     changelogPageTest,
-    rubricLinkReplace
 ]
