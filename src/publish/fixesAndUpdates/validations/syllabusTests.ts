@@ -507,6 +507,10 @@ const aiPolicyMediaFix = async (course: ISyllabusHaver) => {
         });
     }
 
+    if(aiPolicyTd.innerHTML.includes("<h3><strong>&nbsp;</strong></h3>")) {
+        aiPolicyTd.innerHTML = aiPolicyTd.innerHTML.replace("<h3><strong>&nbsp;</strong></h3>", "");
+    }
+
     aiPolicyTd.innerHTML += aiPolicyMediaText;
     const container = document.createElement('div');
     container.innerHTML = parsedSyllabus.body.innerHTML || parsedSyllabus.documentElement.innerHTML;
