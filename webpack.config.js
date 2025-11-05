@@ -162,7 +162,7 @@ module.exports = {
         allowCollectingMemory: true,
     },
     entry,
-    devtool: 'source-map',
+    devtool: 'cheap-module-source-map',
     module: _module,
     plugins: createPlugins(),
     resolve: {
