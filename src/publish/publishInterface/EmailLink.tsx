@@ -5,8 +5,11 @@ import {Course} from "../../canvas/course/Course";
 import {useEffectAsync} from "@/ui/utils";
 import {Alert} from "react-bootstrap";
 import {ITermData} from "@/canvas/term/Term";
-import {baseCourseCode} from "@/canvas/course/code";
-import {DOCUMENTATION_TOC_URL, DOCUMENTATION_TOPICS_URL, PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/publish/consts";
+import {PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/publish/consts";
+import pageKind from "@canvas/content/pages/PageKind";
+import {fetchJson} from "@canvas/fetch/fetchJson";
+import {IPageData} from "@canvas/content/pages/types";
+import PageKind from "@canvas/content/pages/PageKind";
 
 type EmailLinkProps = {
     user: IUserData,
@@ -17,20 +20,27 @@ type EmailLinkProps = {
 }
 
 
-export async function getAdditionsTemplate(courseCode: string) {
-    const templates = await getSpecificTemplates();
-    const baseCode = baseCourseCode(courseCode);
-    if (!templates) return;
-    if (!baseCode) return;
-    const topic = templates && baseCode && templates.find(topic =>
-        topic.toLocaleLowerCase().includes(baseCode.toLocaleLowerCase()));
-    const url = `${DOCUMENTATION_TOPICS_URL}/${topic}`
-    if (!topic || !url) return;
-    const response = await fetch(url);
-    if (!response.ok) throw new TemplateNotFoundError(courseCode);
-    const additionsTemplate = await response.text();
-    return additionsTemplate.split('\n').slice(1).join('\n')
+export async function getAdditionsTemplate(course: Course) {
+    const devCourse = await course.getParentCourse();
 
+    const additionPage = await getAdditionPage(course, devCourse);
+
+    async function getAdditionPage(course: Course, devCourse: Course | undefined) {
+        const bpAdditionPage = await PageKind.getByString(course.id, 'publish-form-email-addition') as IPageData;
+        if(PageKind.dataIsThisKind(bpAdditionPage)) return bpAdditionPage;
+        if(devCourse) {
+            const devAdditionPage = await PageKind.getByString(devCourse.id, 'publish-form-email-addition') as IPageData;
+            if(PageKind.dataIsThisKind(devAdditionPage)) return devAdditionPage;
+        }
+        return null;
+    }
+
+    console.log("Addendum page: ", additionPage);
+
+    if(additionPage) {
+        console.log("Returning: ", additionPage.body);
+        return additionPage.body
+    }
 }
 
 
@@ -46,7 +56,7 @@ export async function getAdditionsTemplate(courseCode: string) {
 export function EmailLink({user, emails, course, termData, sectionStart}: EmailLinkProps) {
 
 
-    const bcc = emails.join(';');
+    const bcc = emails.join(',');
     const subject = encodeURIComponent(course.name?.replace('BP_', '') + ' Section(s) Ready Notification');
     const [emailTemplate, setEmailTemplate] = useState<string | undefined>();
     const [additionsTemplate, setAdditionsTemplate] = useState<string | undefined>();
@@ -54,21 +64,55 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
 
     useEffectAsync(async () => {
         if (emailTemplate) return;
-        const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
-        if (!emailResponse.ok) {
-            setErrorMessages([emailResponse.statusText, await emailResponse.text()])
-            return;
-        }
-        const template = await emailResponse.text();
 
-        setEmailTemplate(template);
+        try {
+            if(course.courseCode) {
+                const parsedCourseCode = course.courseCode.match(/\d+/g);
+                if (!parsedCourseCode) throw new Error(`Course code ${course.courseCode} does not contain a number`);
+                const courseCodeNumber = parseInt(parsedCourseCode[0]);
+                //const pageUrlId = encodeURIComponent('publish-form-email');
+
+                let devCourseId: 7773747 | 7775658 | null = null;
+
+
+                if (courseCodeNumber >= 500) {
+                    devCourseId = 7773747;
+                } else if (courseCodeNumber < 500) {
+                    devCourseId = 7775658;
+                }
+
+                if (devCourseId) {
+                    //Get the publish email from the page in the DEV course
+                    const templateEmailPage = await PageKind.getByString(devCourseId, 'publish-form-email') as IPageData;
+                    console.log(templateEmailPage);
+                    setEmailTemplate(templateEmailPage.body);
+                    console.log(templateEmailPage.body);
+                } else {
+                    const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
+                    if (!emailResponse.ok) {
+                        setErrorMessages([emailResponse.statusText, await emailResponse.text()])
+                        return;
+                    }
+                    setEmailTemplate(await emailResponse.text());
+                }
+            }
+        } catch (e: unknown) {
+            console.error(e);
+            const msg = e instanceof Error ? e.message : String(e);
+            setErrorMessages([msg])
+        }
     }, [])
 
 
     useEffectAsync(async () => {
-        if (course.baseCode) {
-            const _additionsTemplate = await getAdditionsTemplate(course.baseCode);
-            setAdditionsTemplate(additionsTemplate);
+        try{
+            console.log("Getting additions template");
+            const _additionsTemplate = await getAdditionsTemplate(course);
+            setAdditionsTemplate(_additionsTemplate);
+        } catch(e: unknown) {
+            console.error(e);
+            const msg = e instanceof Error ? e.message : String(e);
+            setErrorMessages([msg])
         }
     }, [course])
 
@@ -77,10 +121,17 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             setErrorMessages([`Can't find template email to fill at ` + PUBLISH_FORM_EMAIL_TEMPLATE_URL]);
             return;
         }
+        console.log(emailTemplate);
         const additionsTemplates = [] as string[];
-        if (course.baseCode) {
-            const courseSpecificTemplate = await getAdditionsTemplate(course.baseCode);
-            if (courseSpecificTemplate) additionsTemplates.push(courseSpecificTemplate)
+        if (additionsTemplate) {
+            additionsTemplates.push(
+                additionsTemplate
+            )
+        } else {
+            if (course.baseCode) {
+                const courseSpecificTemplate = await getAdditionsTemplate(course);
+                if (courseSpecificTemplate) additionsTemplates.push(courseSpecificTemplate)
+            }
         }
         const body = renderEmailTemplate(emailTemplate, {
             userName: user.name,
@@ -134,38 +185,12 @@ export type EmailTextProps = {
 }
 
 export function renderEmailTemplate(emailTemplate: string, props: EmailTextProps, additions?: string[]) {
-    let renderedTemplate = emailTemplate.split('\n').slice(1).join('\n')
+    let renderedTemplate = emailTemplate;
     additions ??= [];
     const additionsString = additions.join('\n');
     renderedTemplate = renderedTemplate.replace('{additions}', additionsString)
     return Object.entries(props).reduce((accumulator, [key, value]) => accumulator.replaceAll(`{{${key}}}`, value), renderedTemplate)
 }
-
-let topicCache: string[] | undefined;
-
-async function getSpecificTemplates() {
-
-    if (topicCache) return topicCache;
-    const tocResponse = await fetch(DOCUMENTATION_TOC_URL);
-    if (!tocResponse.ok) {
-        console.log(`Documentation not found at ${DOCUMENTATION_TOPICS_URL}`)
-        return [] as string[];
-    }
-    const text = await tocResponse.text();
-    const tocXml = new DOMParser().parseFromString(text, 'text/xml') as XMLDocument;
-
-    const tocItems = [...tocXml.getElementsByTagName('toc-element')];
-    const formEmailTemplate = tocItems.find(a => a.getAttribute('topic') == ('Form-Email-Template.md'))
-    const children = formEmailTemplate?.getElementsByTagName('toc-element') ?? [];
-    const topics: string[] = [];
-    for (const node of children) {
-        const topic = node.getAttribute('topic');
-        if (topic) topics.push(topic);
-    }
-    topicCache = topics;
-    return topics;
-}
-
 
 export class TemplateNotFoundError extends Error {
     name = 'TemplateNotFoundError'
