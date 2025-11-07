@@ -26,10 +26,10 @@ export async function getAdditionsTemplate(course: Course) {
     const additionPage = await getAdditionPage(course, devCourse);
 
     async function getAdditionPage(course: Course, devCourse: Course | undefined) {
-        const bpAdditionPage = await PageKind.getByString(course.id, 'publish-form-email-addition') as IPageData;
+        const bpAdditionPage = await PageKind.getByString(course.id, 'publish-form-email-addition');
         if(PageKind.dataIsThisKind(bpAdditionPage)) return bpAdditionPage;
         if(devCourse) {
-            const devAdditionPage = await PageKind.getByString(devCourse.id, 'publish-form-email-addition') as IPageData;
+            const devAdditionPage = await PageKind.getByString(devCourse.id, 'publish-form-email-addition');
             if(PageKind.dataIsThisKind(devAdditionPage)) return devAdditionPage;
         }
         return null;
@@ -61,11 +61,16 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
     const [emailTemplate, setEmailTemplate] = useState<string | undefined>();
     const [additionsTemplate, setAdditionsTemplate] = useState<string | undefined>();
     const [errorMessages, setErrorMessages] = useState<string[]>([]);
+    const [isFetchingBaseEmail, setIsFetchingBaseEmail] = useState(false);
+    const [isFetchingAdditions, setIsFetchingAdditions] = useState(false);
+    const [textCopied, setTextCopied] = useState(false);
 
     useEffectAsync(async () => {
+
         if (emailTemplate) return;
 
         try {
+            setIsFetchingBaseEmail(true);
             if(course.courseCode) {
                 const parsedCourseCode = course.courseCode.match(/\d+/g);
                 if (!parsedCourseCode) throw new Error(`Course code ${course.courseCode} does not contain a number`);
@@ -87,6 +92,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
                     console.log(templateEmailPage);
                     setEmailTemplate(templateEmailPage.body);
                     console.log(templateEmailPage.body);
+                    setIsFetchingBaseEmail(false);
                 } else {
                     const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
                     if (!emailResponse.ok) {
@@ -94,6 +100,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
                         return;
                     }
                     setEmailTemplate(await emailResponse.text());
+                    setIsFetchingBaseEmail(false);
                 }
             }
         } catch (e: unknown) {
@@ -105,22 +112,20 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
 
 
     useEffectAsync(async () => {
-        try{
-            console.log("Getting additions template");
-            const _additionsTemplate = await getAdditionsTemplate(course);
-            setAdditionsTemplate(_additionsTemplate);
-        } catch(e: unknown) {
-            console.error(e);
-            const msg = e instanceof Error ? e.message : String(e);
-            setErrorMessages([msg])
-        }
+        setIsFetchingAdditions(true);
+        const _additionsTemplate = await getAdditionsTemplate(course);
+        setAdditionsTemplate(_additionsTemplate);
+        setIsFetchingAdditions(false);
     }, [course])
 
     async function copyToClipboard() {
-        if (!emailTemplate) {
+        if (!emailTemplate && errorMessages.length > 0) {
+            return;
+        } else if (!emailTemplate) {
             setErrorMessages([`Can't find template email to fill at ` + PUBLISH_FORM_EMAIL_TEMPLATE_URL]);
             return;
         }
+
         console.log(emailTemplate);
         const additionsTemplates = [] as string[];
         if (additionsTemplate) {
@@ -141,11 +146,22 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             courseStart: getCourseStart(),
             publishDate: getPublishDate(),
         }, additionsTemplates)
-        await navigator.clipboard.write([
-            new ClipboardItem({
-                'text/html': new Blob([body], {type: 'text/html'})
-            })
-        ])
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    'text/html': new Blob([body], {type: 'text/html'})
+                })
+            ]);
+            setTextCopied(true);
+            setTimeout(() => setTextCopied(false), 1150);
+
+        } catch (e) {
+            console.error(e);
+            setErrorMessages(prev => [
+                ...prev,
+                "Unable to copy to clipboard. Please try again."
+            ]);
+        }
         console.log(body);
     }
 
@@ -169,8 +185,13 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
 
     return <>
         <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join('; ')}</a>
-        {termData && <button onClick={copyToClipboard}>Copy Form Email to Clipboard</button>}
+        {termData &&
+            <button disabled={isFetchingBaseEmail && isFetchingAdditions} onClick={copyToClipboard}>
+                {isFetchingBaseEmail && isFetchingAdditions ? 'Loading...' : 'Copy Form Email to Clipboard'}
+            </button>
+        }
         {errorMessages.map(msg => <Alert>{msg}</Alert>)}
+        {textCopied && <Alert variant={'success'}>Copied to clipboard!</Alert>}
     </>
 }
 
