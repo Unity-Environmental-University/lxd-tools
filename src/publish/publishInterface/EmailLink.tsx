@@ -1,13 +1,11 @@
-import {IUserData} from "../../canvas/canvasDataDefs";
+import {IUserData} from "@canvas/canvasDataDefs";
 import {Temporal} from "temporal-polyfill";
 import React, {useState} from "react";
-import {Course} from "../../canvas/course/Course";
+import {Course} from "@canvas/course/Course";
 import {useEffectAsync} from "@/ui/utils";
 import {Alert} from "react-bootstrap";
 import {ITermData} from "@/canvas/term/Term";
 import {PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/publish/consts";
-import pageKind from "@canvas/content/pages/PageKind";
-import {fetchJson} from "@canvas/fetch/fetchJson";
 import {IPageData} from "@canvas/content/pages/types";
 import PageKind from "@canvas/content/pages/PageKind";
 
@@ -45,7 +43,7 @@ export async function getAdditionsTemplate(course: Course) {
 
 
 /**
- * Section start needed because the data based term start in Canvas is frustratingly wrong
+ * Section start needed because the data-based term start in Canvas is frustratingly wrong
  * @param user
  * @param emails
  * @param course
@@ -61,21 +59,16 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
     const [emailTemplate, setEmailTemplate] = useState<string | undefined>();
     const [additionsTemplate, setAdditionsTemplate] = useState<string | undefined>();
     const [errorMessages, setErrorMessages] = useState<string[]>([]);
-    const [isFetchingBaseEmail, setIsFetchingBaseEmail] = useState(false);
-    const [isFetchingAdditions, setIsFetchingAdditions] = useState(false);
     const [textCopied, setTextCopied] = useState(false);
 
     useEffectAsync(async () => {
-
         if (emailTemplate) return;
 
         try {
-            setIsFetchingBaseEmail(true);
             if(course.courseCode) {
                 const parsedCourseCode = course.courseCode.match(/\d+/g);
                 if (!parsedCourseCode) throw new Error(`Course code ${course.courseCode} does not contain a number`);
                 const courseCodeNumber = parseInt(parsedCourseCode[0]);
-                //const pageUrlId = encodeURIComponent('publish-form-email');
 
                 let devCourseId: 7773747 | 7775658 | null = null;
 
@@ -92,7 +85,6 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
                     console.log(templateEmailPage);
                     setEmailTemplate(templateEmailPage.body);
                     console.log(templateEmailPage.body);
-                    setIsFetchingBaseEmail(false);
                 } else {
                     const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
                     if (!emailResponse.ok) {
@@ -100,7 +92,6 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
                         return;
                     }
                     setEmailTemplate(await emailResponse.text());
-                    setIsFetchingBaseEmail(false);
                 }
             }
         } catch (e: unknown) {
@@ -112,17 +103,17 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
 
 
     useEffectAsync(async () => {
-        setIsFetchingAdditions(true);
+        if(additionsTemplate) return;
+
         const _additionsTemplate = await getAdditionsTemplate(course);
         setAdditionsTemplate(_additionsTemplate);
-        setIsFetchingAdditions(false);
-    }, [course])
+    }, [])
 
     async function copyToClipboard() {
         if (!emailTemplate && errorMessages.length > 0) {
             return;
         } else if (!emailTemplate) {
-            setErrorMessages([`Can't find template email to fill at ` + PUBLISH_FORM_EMAIL_TEMPLATE_URL]);
+            setErrorMessages([`Can't find template email to fill.`]);
             return;
         }
 
@@ -186,8 +177,8 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
     return <>
         <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join('; ')}</a>
         {termData &&
-            <button disabled={isFetchingBaseEmail && isFetchingAdditions} onClick={copyToClipboard}>
-                {isFetchingBaseEmail && isFetchingAdditions ? 'Loading...' : 'Copy Form Email to Clipboard'}
+            <button disabled={!emailTemplate} onClick={copyToClipboard}>
+                {!emailTemplate ? 'Loading...' : 'Copy Form Email to Clipboard'}
             </button>
         }
         {errorMessages.map(msg => <Alert>{msg}</Alert>)}
@@ -211,14 +202,4 @@ export function renderEmailTemplate(emailTemplate: string, props: EmailTextProps
     const additionsString = additions.join('\n');
     renderedTemplate = renderedTemplate.replace('{additions}', additionsString)
     return Object.entries(props).reduce((accumulator, [key, value]) => accumulator.replaceAll(`{{${key}}}`, value), renderedTemplate)
-}
-
-export class TemplateNotFoundError extends Error {
-    name = 'TemplateNotFoundError'
-    code: string
-
-    constructor(code: string, message?: string) {
-        super(message ?? code);
-        this.code = code;
-    }
 }
