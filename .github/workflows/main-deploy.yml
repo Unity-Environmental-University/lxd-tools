@@ -10,6 +10,10 @@ jobs:
   if_merged:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
     steps:
       # Checkout lxd-tools (main repo)
       - name: Checkout lxd-tools
@@ -17,36 +21,49 @@ jobs:
         with:
           path: lxd-tools
 
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh unzip
+
+      - name: Authenticate with GitHub CLI
+        run: gh auth login --with-token < ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find pr-build run ID
+        id: find_run
+        run: |
+          PR_SHA=${{ github.event.pull_request.head.sha }}
+          RUN_ID=$(gh run list --workflow "lxd-tools pr-build" --json databaseId,headSha --limit 5 \ | jq --raw-output ".[] | select(.headSha==\"$PR_SHA\") | .databaseId" \ | head -n1)
+          echo "run_id=$RUN_ID" >> $GITHUB_ENV
+
       # Download the build artifact from the build workflow
       - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: lxd-tools
-          path: dist
+        run: |
+          mkdir dist
+          gh run download ${{ steps.find_run.outputs.run_id }} \
+             --name lxd-tools \
+             --dir dist \
 
       # Check out the target repo (lxd-tools-build)
       - name: Checkout lxd-tools-build
-        uses: actions/checkout@v4
-        with:
-          repository: Unity-Environmental-University/lxd-tools-build
-          path: lxd-tools-build
+        run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
+          cd lxd-tools-build
+          git checkout -B beta
 
-      # Copy the downloaded build into the target repo
-      - name: Copy build output to lxd-tools-build
+
+      # Unzip the build artifact into the target repo and commit
+      - name: Unpack & commit build
         run: |
           rm -rf lxd-tools-build/*
           cp -r dist/* lxd-tools-build/
-
-      # Commit and push changes to test branch
-      - name: Commit and push to test branch
-        run: |
           cd lxd-tools-build
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B test
           git add .
-          git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}"
-          git push origin test --force
+          git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}" || echo "No changes"
+          git push origin beta --force
+
 
       # Create or update beta tag
       - name: Tag beta
