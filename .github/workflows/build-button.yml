@@ -39,6 +39,15 @@ jobs:
           npm install --legacy-peer-deps
           npm install @testing-library/react --save-dev
 
+      - name: Force symlink to ueu_canvas
+        run: |
+          # Only create the symlink if it doesn't already exist
+          if [ ! -e node_modules/ueu_canvas ]; then
+            ln -s ../ueu_canvas node_modules/ueu_canvas
+          else
+            echo "Symlink already exists, skipping"
+          fi
+
       - name: Run tests
         run: npm test
 
