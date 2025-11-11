@@ -9,7 +9,6 @@ import courseSpecific from "@publish/fixesAndUpdates/validations/courseSpecific"
 import references from "@publish/fixesAndUpdates/validations/references";
 import aiLinkValidation from "@publish/fixesAndUpdates/validations/aiLinkValidation";
 import technologyForSuccess from "@publish/fixesAndUpdates/validations/courseContent/technologyForSuccess";
-import {bannerHeadingValidation} from "./bannerHeadingValidation";
 //import {dontUseThisValidation} from "@publish/fixesAndUpdates/dontUseThis";
 
 export default [
@@ -23,6 +22,5 @@ export default [
     proxyServerLinkValidation,
     aiLinkValidation,
     discussionThreading,
-    bannerHeadingValidation
 //   dontUseThisValidation
 ]

@@ -36,11 +36,6 @@ jest.mock('@/canvas/course/blueprint', () => ({
     sectionDataGenerator: jest.fn(() => mockAsyncGen([] as SectionData[])),
 }))
 
-jest.mock(
-  '@/publish/publishInterface/EmailLink',
-  () => ({ EmailLink: () => null })
-);
-
 
 const mockUser: IUserData = {
     id: 1,

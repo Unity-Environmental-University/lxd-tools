@@ -7,10 +7,6 @@ import publishEmailMock, {
     mockFilled, mockFilledSpecific, mockTocXml,
     mockValues
 } from "@/publish/publishInterface/__mocks__/publishEmailMock";
-import {Course} from "@canvas/course/Course";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
-import PageKind from "@canvas/content/pages/PageKind";
-
 window.fetch = jest.fn();
 const fetchMock = fetch as jest.Mock;
 
@@ -21,18 +17,9 @@ describe('Renders Email template', () => {
 
     test('render email with course specific info', async() => {
 
-        jest.spyOn(Course.prototype, 'getParentCourse')
-            .mockResolvedValue(undefined);
         fetchMock.mockResolvedValueOnce( { ok: true, text: async () => mockTocXml });
         fetchMock.mockResolvedValueOnce({ ok: true, text: async () => mockCourseSpecificContent })
-        jest.spyOn(PageKind, "getByString")
-            .mockResolvedValueOnce({ body: mockCourseSpecificContent } as any);
-        jest.spyOn(PageKind, 'dataIsThisKind').mockReturnValue(true);
-
-        const mockCourse: Course = new Course({
-            ...mockCourseData
-        })
-        const additionsTemplate = await getAdditionsTemplate(mockCourse) as string;
+        const additionsTemplate = await getAdditionsTemplate('DE-24-APR _TEST000') as string;
 
         expect(renderEmailTemplate(
             publishEmailMock,
