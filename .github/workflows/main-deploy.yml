@@ -47,24 +47,30 @@ jobs:
              --dir ../dist
 
       # Check out the target repo (lxd-tools-build)
-      - name: Checkout lxd-tools-build
+      - name: Checkout lxd-tools-build & create/update beta branch
         run: |
           git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
           cd lxd-tools-build
-          git checkout -B beta
+          if git show-ref --quiet refs/heads/beta; then
+            git checkout beta
+            git pull origin beta
+          else
+            git checkout -b beta
+            git push -u origin beta
+          fi
 
 
       # Unzip the build artifact into the target repo and commit
       - name: Unpack & commit build
         run: |
-          rm -rf lxd-tools-build/*
-          cp -r dist/* lxd-tools-build/
           cd lxd-tools-build
+          rm -rf ./*
+          cp -r ../dist/* .
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
+          git add --all
           git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}" || echo "No changes"
-          git push origin beta --force
+          git push origin beta
 
 
       # Create or update beta tag
@@ -74,5 +80,9 @@ jobs:
           VERSION=$(jq -r .version manifest.json)
           TAG="beta-$VERSION"
           echo "Tagging as $TAG"
-          git tag -f $TAG
-          git push origin refs/tags/"$TAG":refs/tags/"$TAG" --force
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            git tag -f $TAG
+            git push origin "$TAG"
+          else
+            echo "Tag already exists, skipping"
+          fi
