@@ -1,0 +1,60 @@
+name: build-button.yml
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Checkout ueu_canvas
+        uses: actions/checkout@v4
+        with:
+          repository: Unity-Environmental-University/ueu_canvas
+          path: ueu_canvas
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build ueu_canvas
+        working-directory: ueu_canvas
+        run: |
+          npm install
+          npm run build
+
+      - name: Install lxd-tools dependencies
+        working-directory: lxd-tools
+        run: |
+          npm install --legacy-peer-deps
+          npm install @testing-library/react --save-dev
+
+      - name: Force symlink to ueu_canvas
+        working-directory: lxd-tools
+        run: ln -s ../ueu_canvas node_modules/ueu_canvas
+
+      - name: Run tests
+        working-directory: lxd-tools
+        run: npm test
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lxd-tools-extension-test
+          path: |
+            dist/
+            build/
