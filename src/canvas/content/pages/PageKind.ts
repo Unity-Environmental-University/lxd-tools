@@ -28,7 +28,7 @@ const PageKind: Required<
     },
     getName: page => page.title,
     getBody: page => page.body,
-    getId: page => page.page_id,
+    getId: page => page.id,
     get: (id, courseId, config) =>
         fetchJson(PageUrlFuncs.getApiUrl(courseId, id), config),
     getByString: async (

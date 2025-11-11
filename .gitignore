@@ -35,4 +35,4 @@ dist/
 /src/.vs
 **/.vs
 /src/.vscode
-/.claude
+.claude/

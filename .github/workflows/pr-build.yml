@@ -1,0 +1,87 @@
+name: lxd-tools build
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout lxd-tools
+        uses: actions/checkout@v4
+        with:
+          path: lxd-tools
+
+      - name: Checkout ueu_canvas
+        uses: actions/checkout@v4
+        with:
+          repository: Unity-Environmental-University/ueu_canvas
+          path: ueu_canvas
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build ueu_canvas
+        working-directory: ueu_canvas
+        run: |
+          npm install
+          npm run build
+
+      - name: Install lxd-tools dependencies
+        working-directory: lxd-tools
+        run: |
+          npm install --legacy-peer-deps
+          npm install @testing-library/react --save-dev
+
+      - name: Force symlink to ueu_canvas
+        working-directory: lxd-tools
+        run: ln -s ../ueu_canvas node_modules/ueu_canvas
+
+      - name: Run ESLint
+        working-directory: lxd-tools
+        run: |
+          if npm run lint --if-present; then
+            echo "✅ ESLint passed"
+          else
+            echo "❌ ESLint failed"
+            exit 1
+          fi
+
+      - name: Check TypeScript types
+        working-directory: lxd-tools
+        run: |
+          if npm run typecheck --if-present; then
+            echo "✅ TypeScript compilation passed"
+          else
+            echo "❌ TypeScript compilation failed"
+            exit 1
+          fi
+
+      - name: Run tests
+        working-directory: lxd-tools
+        run: npm test
+
+      - name: Build lxd-tools
+        working-directory: lxd-tools
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lxd-tools
+          path: dist
+          if-no-files-found: 'error'
+          retention-days: 30
+
+      - name: Comment download link on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: build
+          message: "✅ Build artifact available: [Download here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
