@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
+          path: lxd-tools
 
       - name: Checkout ueu_canvas
         uses: actions/checkout@v4
@@ -35,16 +36,27 @@ jobs:
           npm run build
 
       - name: Install lxd-tools dependencies
+        working-directory: lxd-tools
         run: |
           npm install --legacy-peer-deps
           npm install @testing-library/react --save-dev
 
       - name: Force symlink to ueu_canvas
-        run: |
-          rm -rf node_modules/ueu_canvas
-          ln -s ../ueu_canvas node_modules/ueu_canvas
+        working-directory: lxd-tools
+        run: ln -s ../ueu_canvas node_modules/ueu_canvas
 
-      - name: Build extension
+      - name: Run ESLint
+        working-directory: lxd-tools
+        run: |
+          if npm run link --if-present; then
+            echo "✅ ESLint passed"
+          else
+            echo "❌ ESLint failed"
+            exit 1
+          fi
+
+      - name: Build extension'
+        working-directory: lxd-tools
         run: npm run build
 
       - name: Upload build artifact
@@ -54,3 +66,5 @@ jobs:
           path: |
             dist/
             build/
+          if-no-files-found: 'error'
+          retention-days: 7
