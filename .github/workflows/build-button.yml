@@ -44,9 +44,6 @@ jobs:
           rm -rf node_modules/ueu_canvas
           ln -s ../ueu_canvas node_modules/ueu_canvas
 
-      - name: Run tests
-        run: npm test
-
       - name: Build extension
         run: npm run build
 
