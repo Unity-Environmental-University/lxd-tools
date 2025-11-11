@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "2.9.4.631",
+  "version": "2.9.4.64",
   "private": true,
   "main": "src/publish/index.tsx",
   "dependencies": {
