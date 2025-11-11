@@ -20,6 +20,9 @@ jobs:
       # Download the build artifact from the build workflow
       - name: Download build artifact
         uses: actions/download-artifact@v4
+        with:
+          name: lxd-tools
+          path: dist
 
       # Check out the target repo (lxd-tools-build)
       - name: Checkout lxd-tools-build
@@ -32,7 +35,7 @@ jobs:
       - name: Copy build output to lxd-tools-build
         run: |
           rm -rf lxd-tools-build/*
-          cp -r build/* lxd-tools-build/
+          cp -r dist/* lxd-tools-build/
 
       # Commit and push changes to test branch
       - name: Commit and push to test branch
