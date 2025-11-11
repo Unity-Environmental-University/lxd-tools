@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "2.9.4",
+  "version": "2.9.4.6",
   "private": true,
   "main": "src/publish/index.tsx",
   "dependencies": {
@@ -89,7 +89,9 @@
     "watch": "webpack -w --config webpack.config.js",
     "watch:dev": "cross-env BUILD_OUTPUT_DIR=../lxd-extension-build webpack -w --config webpack.config.js",
     "publish": "node publish.mjs",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": [
