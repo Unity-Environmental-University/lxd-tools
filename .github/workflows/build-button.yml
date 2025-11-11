@@ -45,11 +45,9 @@ jobs:
           ln -s ../ueu_canvas node_modules/ueu_canvas
 
       - name: Run tests
-        working-directory: lxd-tools
         run: npm test
 
       - name: Build extension
-        working-directory: lxd-tools
         run: npm run build
 
       - name: Upload build artifact
