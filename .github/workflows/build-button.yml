@@ -40,7 +40,6 @@ jobs:
           npm install @testing-library/react --save-dev
 
       - name: Force symlink to ueu_canvas
-        working-directory: lxd-tools
         run: |
           rm -rf node_modules/ueu_canvas
           ln -s ../ueu_canvas node_modules/ueu_canvas
