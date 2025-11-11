@@ -30,7 +30,7 @@ export interface CourseFixValidation<T = Course,
 export type TextReplaceValidation<T, UserData = any, FixUserDataType = UserData> = {
     beforeAndAfters: [string, string][],
     positiveExemplars?: string[],
-} & CourseFixValidation<T, UserData, FixUserDataType>
+} & CourseValidation<T, UserData, FixUserDataType>
 
 
 export type ContentTextReplaceFix<
