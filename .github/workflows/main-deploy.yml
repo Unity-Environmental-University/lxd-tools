@@ -51,9 +51,11 @@ jobs:
         run: |
           git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
           cd lxd-tools-build
-          if git show-ref --quiet refs/heads/beta; then
+          git fetch origin
+          # If origin/beta exists, reset local to match it; otherwise create a new beta
+          if git ls-remote --exit-code --heads origin beta; then
             git checkout beta
-            git pull origin beta
+            git reset --hard origin/beta
           else
             git checkout -b beta
             git push -u origin beta
