@@ -26,8 +26,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gh unzip
 
-      - name: Authenticate with GitHub CLI
-        run: gh auth login --with-token < ${{ secrets.GITHUB_TOKEN }}
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Find pr-build run ID
         id: find_run
