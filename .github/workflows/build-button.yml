@@ -40,18 +40,17 @@ jobs:
           npm install @testing-library/react --save-dev
 
       - name: Force symlink to ueu_canvas
+        working-directory: lxd-tools
         run: |
-          # Only create the symlink if it doesn't already exist
-          if [ ! -e node_modules/ueu_canvas ]; then
-            ln -s ../ueu_canvas node_modules/ueu_canvas
-          else
-            echo "Symlink already exists, skipping"
-          fi
+          rm -rf node_modules/ueu_canvas
+          ln -s ../ueu_canvas node_modules/ueu_canvas
 
       - name: Run tests
+        working-directory: lxd-tools
         run: npm test
 
       - name: Build extension
+        working-directory: lxd-tools
         run: npm run build
 
       - name: Upload build artifact
