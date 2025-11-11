@@ -25,8 +25,7 @@ jobs:
       - name: Checkout lxd-tools-build
         uses: actions/checkout@v4
         with:
-          repository: your-org/lxd-tools-build
-          token: ${{ secrets.BUILD_REPO_TOKEN }} # TODO; Need to set this up
+          repository: Unity-Environmental-University/lxd-tools-build
           path: lxd-tools-build
 
       # Copy the downloaded build into the target repo
