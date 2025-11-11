@@ -40,10 +40,12 @@ jobs:
       # Download the build artifact from the build workflow
       - name: Download build artifact
         run: |
-          mkdir dist
+          cd lxd-tools
+          mkdir -p dist
           gh run download ${{ steps.find_run.outputs.run_id }} \
              --name lxd-tools \
-             --dir dist \
+             --dir ../dist
+        working-directory: lxd-tools
 
       # Check out the target repo (lxd-tools-build)
       - name: Checkout lxd-tools-build
