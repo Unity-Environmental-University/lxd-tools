@@ -71,5 +71,8 @@ jobs:
       - name: Tag beta
         run: |
           cd lxd-tools-build
-          git tag -f beta
-          git push origin -f beta
+          VERSION=$(jq -r '.version' package.json)
+          TAG="beta-$VERSION"
+          echo "Tagging as $TAG"
+          git tag -f $TAG
+          git push origin refs/tags/"$TAG":refs/tags/"$TAG" --force
