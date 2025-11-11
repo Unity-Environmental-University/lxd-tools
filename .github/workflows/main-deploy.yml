@@ -68,10 +68,10 @@ jobs:
 
 
       # Create or update beta tag
-      - name: Tag beta
+      - name: Tag beta with version
         run: |
           cd lxd-tools-build
-          VERSION=$(jq -r '.version' package.json)
+          VERSION=$(jq -r .version manifest.json)
           TAG="beta-$VERSION"
           echo "Tagging as $TAG"
           git tag -f $TAG
