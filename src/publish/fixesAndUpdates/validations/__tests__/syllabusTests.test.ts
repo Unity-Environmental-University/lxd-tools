@@ -14,7 +14,8 @@ import {
     addApaNoteToGradingPoliciesTest,
     titleIXPolicyTest,
     gradingDeadlineLanguageTest,
-    aiPolicyMediaTest
+    aiPolicyMediaTest,
+    supportPhoneNumberFix
 } from "../syllabusTests";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
 import assert from "assert";
@@ -43,6 +44,7 @@ describe('Syllabus validation', () => {
     test('Title IX policy update', syllabusTestTest(titleIXPolicyTest));
     test('Grading Deadline Language', syllabusTestTest(gradingDeadlineLanguageTest))
     test('AI Policy Media', syllabusTestTest(aiPolicyMediaTest));
+    test('Support Phone Number Fix', syllabusTestTest(supportPhoneNumberFix));
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
