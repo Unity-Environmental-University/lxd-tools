@@ -533,6 +533,17 @@ export const aiPolicyMediaTest: CourseFixValidation<ISyllabusHaver> = {
     fix: aiPolicyMediaFix
 }
 
+
+const badSupportNumber = "207-509-7277";
+const goodSupportNumber = "207-509-7110";
+
+export const supportPhoneNumberFix: CourseFixValidation<ISyllabusHaver> = {
+    name: "Support Phone Number Fix",
+    description: "Checks for incorrect support phone number in syllabus",
+    run: badSyllabusRunFunc(new RegExp(badSupportNumber, "ig")),
+    fix: badSyllabusFixFunc(new RegExp(badSupportNumber, "ig"), goodSupportNumber)
+}
+
 export default [
     addAiGenerativeLanguageTest,
     removeSameDayPostRestrictionTest,
@@ -550,6 +561,7 @@ export default [
     addApaNoteToGradingPoliciesTest,
     titleIXPolicyTest,
     gradingDeadlineLanguageTest,
-    aiPolicyMediaTest
+    aiPolicyMediaTest,
+    supportPhoneNumberFix
 ]
 
