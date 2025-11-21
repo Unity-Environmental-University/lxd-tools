@@ -24,7 +24,7 @@ const run: CourseFixValidation<CourseInterface>['run'] = async ({id}) => {
             page = value;
         } else {
             return testResult("unknown", {
-                notFailureMessage: "Support page not found",
+                notFailureMessage: "Support page not found. ",
             });
         }
     }
@@ -38,19 +38,19 @@ const run: CourseFixValidation<CourseInterface>['run'] = async ({id}) => {
 
     if (links.length === 0) {
         success = false;
-        errorMessage += "No links found on support page, needs attention";
+        errorMessage += "No links found on support page, needs attention. ";
     }
 
     links.forEach(link => {
         if (link.href.toLocaleLowerCase() === badUrl.toLocaleLowerCase()) {
             success = false;
-            errorMessage += `Support page has link ${badUrl}`;
+            errorMessage += `Support page has link ${badUrl}. `;
         }
     });
 
     if (page.body.toLocaleLowerCase().includes("college")) {
         success = false
-        errorMessage += "Support page mentions 'college', needs attention";
+        errorMessage += "Support page mentions 'college.' ";
     }
 
     return testResult(success, {
@@ -104,8 +104,8 @@ const fix: CourseFixValidation<CourseInterface>['fix'] = async (course, result) 
 
 
 export const updateSupportPage: CourseFixValidation<CourseInterface> = {
-    name: "Update Support Link",
-    description: "Updates the link in the support page.",
+    name: "Update Support Page",
+    description: "Checks for errors on the support page and fixes them.",
     run,
     fix,
 }
