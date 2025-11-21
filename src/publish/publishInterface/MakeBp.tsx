@@ -28,9 +28,15 @@ import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
 import {getModules} from "@/canvas-redux/modulesSlice";
 import {fetchJson} from "@canvas/fetch/fetchJson";
+import {formDataify, IModuleData, NotImplementedException} from "../../../../ueu_canvas";
+import {renderAsyncGen} from "@canvas/canvasUtils";
+import {moduleGenerator} from "@canvas/course/modules";
+import {IModuleItemData} from "@canvas/canvasDataDefs";
+import {IPageData} from "@canvas/content/pages/types";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
+
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
         onChange && onChange(value);
@@ -49,11 +55,11 @@ export interface IMakeBpProps {
 }
 
 export function MakeBp({
-    devCourse,
-    onBpSet,
-    onTermNameSet,
-    onSectionsSet,
-}: IMakeBpProps) {
+                           devCourse,
+                           onBpSet,
+                           onTermNameSet,
+                           onSectionsSet,
+                       }: IMakeBpProps) {
     const [isDev, setIsDev] = useState(devCourse.isDev);
     const [currentBp, setCurrentBp] = useState<Course | null>();
     const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +70,9 @@ export function MakeBp({
     const [isLocking, setIsLocking] = useState(false);
     const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
     const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
+    const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);
+    const [isCloningBp, setCloningBp] = useState(false);
+    const academicIntegrityText = isRunningIntegritySetup ? 'Setting up...' : `Setup Academic Integrity`;
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
@@ -79,7 +88,7 @@ export function MakeBp({
     useEffect(() => {
         const activeMigrations = allMigrations.filter(migration => migration.tracked && !migration.cleanedUp);
         activeMigrationDispatcher({
-          set: activeMigrations
+            set: activeMigrations
         })
     }, [allMigrations])
 
@@ -101,14 +110,13 @@ export function MakeBp({
     }, [isLoading, currentBp, termName, activeMigrations]);
 
 
-    useEffect( () => {
+    useEffect(() => {
         const isDisabled = isLoading ||
-                        !!currentBp ||
-                        !devCourse.parsedCourseCode ||
-                        devCourse.parsedCourseCode.length == 0
+            !!currentBp ||
+            !devCourse.parsedCourseCode ||
+            devCourse.parsedCourseCode.length == 0
         setIsNewBpDisabled(isDisabled);
     }, [isLoading, currentBp, devCourse])
-
 
     async function updateMigrations() {
         if (!currentBp) return;
@@ -144,9 +152,9 @@ export function MakeBp({
 
     useEffectAsync(async () => {
         if (currentBp && currentBp.isBlueprint()) {
-            const sections:SectionData[] = [];
+            const sections: SectionData[] = [];
             const sectionGen = sectionDataGenerator(currentBp.id);
-            if(sections.length > 0) {
+            if (sections.length > 0) {
                 for await (const sectionData of sectionGen) {
                     sections.push(sectionData);
                     if (sectionData.term_name) setTermName(sectionData.term_name);
@@ -155,7 +163,7 @@ export function MakeBp({
                 const syllabusBody = document.createElement('div');
                 let currentBpSyllabus = '';
 
-                if(typeof currentBp.getSyllabus === 'function') {
+                if (typeof currentBp.getSyllabus === 'function') {
                     currentBpSyllabus = await currentBp.getSyllabus();
                 } else {
                     console.warn('Current BP does not have a getSyllabus function');
@@ -182,7 +190,7 @@ export function MakeBp({
         if (!currentBp) return false;
         if (termName.length === 0) return false;
         const termDate = dateFromTermName(termName);
-        if(termDate) {
+        if (termDate) {
             const daysLeft = termDate.until(Temporal.Now.plainDateISO()).days;
             if (daysLeft <= 5) {
                 const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`)
@@ -199,6 +207,7 @@ export function MakeBp({
 
     async function onCloneIntoBp(e: FormEvent) {
         e.preventDefault();
+        setCloningBp(true);
         if (currentBp) {
             console.warn("Tried to clone while current BP exists")
             return;
@@ -211,7 +220,7 @@ export function MakeBp({
         const accountId = devCourse.accountId;
         const bpCode = bpify(devCourse.parsedCourseCode);
         let bpName = `${bpCode}: ${getCourseName(devCourse.rawData)}`;
-        if(devCourse.courseCode && devCourse.name.match(devCourse.courseCode)) {
+        if (devCourse.courseCode && devCourse.name.match(devCourse.courseCode)) {
             bpName = devCourse.name.replace(devCourse.courseCode, bpCode)
         }
         const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId, bpName);
@@ -220,7 +229,7 @@ export function MakeBp({
         startedMigration.tracked = true;
         startedMigration.cleanedUp = false;
         cacheCourseMigrations(newBpShell.id, [startedMigration]);
-        allMigrationDispatcher({ add: startedMigration });
+        allMigrationDispatcher({add: startedMigration});
         await updateMigrations();
 
         console.log("Waiting for migration to complete...");
@@ -247,9 +256,10 @@ export function MakeBp({
                 console.error(e);
             }
         }
+        setCloningBp(false);
     }
 
-    async function finishMigration(migration:SavedMigration) {
+    async function finishMigration(migration: SavedMigration) {
         assert(currentBp);
         setIsLocking(true);
         await setAsBlueprint(currentBp.id);
@@ -259,7 +269,7 @@ export function MakeBp({
         const [newBp] = await getBlueprintsFromCode(
             devCourse.parsedCourseCode ?? '',
             [devCourse.accountId]
-            ) ?? [];
+        ) ?? [];
         setIsLocking(false);
         window.open(newBp.htmlContentUrl);
         location.reload();
@@ -267,6 +277,245 @@ export function MakeBp({
 
     }
 
+    async function academicIntegritySetup() {
+        setIsRunningIntegritySetup(true);
+        // Get BP
+        const bp = currentBp;
+        if (!bp) {
+            alert("No BP found.");
+            return;
+        }
+
+        const modules = await bp.getModules();
+        if (!modules) {
+            alert("No modules found in BP.");
+            setIsRunningIntegritySetup(false);
+            return;
+        }
+
+        // Check if academic integrity module exists, find instructor guide module
+        for (const module of modules) {
+            if (module.name === 'Academic Integrity') {
+                // If academic integrity module already exists, alert the use and stop
+                alert("Academic integrity module already exists in BP.");
+                setIsRunningIntegritySetup(false);
+                return;
+            }
+        }
+
+        const assignmentGroups = await bp.getAssignmentGroups();
+        let assignmentGroupId: number | null = null;
+
+        console.log("Assignment Groups: ", JSON.stringify(assignmentGroups));
+
+        for (const group of assignmentGroups) {
+            if (group.name.toLocaleLowerCase().includes("assignment")) {
+                assignmentGroupId = group.id;
+                break;
+            }
+        }
+
+        console.log("Integrity Assignment Group ID after for loop: ", assignmentGroupId);
+
+        if (!assignmentGroupId) {
+            assignmentGroupId = assignmentGroups[0]?.id || 0;
+        }
+
+        console.log("Integrity Assignment Group ID after if loop: ", assignmentGroupId);
+
+        const academicIntegrityCourse = await getCourseById(7724480);
+        const academicIntegrityModules = await academicIntegrityCourse.getModules();
+        const academicIntegrityPages = await academicIntegrityCourse.getPages();
+        const academicIntegrityModuleIds: number[] = [];
+        const aiInstructorGuideItemIds = [];
+
+        if (!academicIntegrityCourse) {
+            alert("Academic integrity course not found.");
+            setIsRunningIntegritySetup(false);
+            return;
+        }
+
+        for (const module of academicIntegrityModules) {
+            if (module.name === 'Academic Integrity') {
+                academicIntegrityModuleIds.push(module.id);
+                break;
+            }
+        }
+
+        for (const page of academicIntegrityPages) {
+            if (page.name.toLocaleLowerCase().includes("academic integrity")) {
+                aiInstructorGuideItemIds.push(page.id);
+            }
+        }
+
+        console.log("AI Instructor Guide Item IDs: ", aiInstructorGuideItemIds);
+
+        if (!academicIntegrityModules) {
+            alert("No modules found in academic integrity course.");
+            setIsRunningIntegritySetup(false);
+            return;
+        }
+
+        // Get module/pages from academic integrity course
+        const academicIntegrityMigration = await startMigration(academicIntegrityCourse.id, bp.id,
+            {
+                fetchInit: {
+                    body: formDataify({
+                        migration_type: 'course_copy_importer',
+                        settings: {
+                            source_course_id: academicIntegrityCourse.id,
+                            move_to_assignment_group_id: assignmentGroupId,
+                        },
+                        select: {
+                            modules: academicIntegrityModuleIds,
+                            pages: aiInstructorGuideItemIds,
+                        }
+                    })
+                }
+            });
+
+        await waitForMigrationCompletion(bp.id, academicIntegrityMigration.id);
+
+        if (academicIntegrityMigration.workflow_state === "failed") {
+            alert("There was a problem in the migration process. Check the BP to make sure the modules imported correctly.");
+            setIsRunningIntegritySetup(false);
+            return;
+        }
+
+        // Create academic integrity section in BP
+        const createSection = await fetchJson(
+            `/api/v1/courses/${bp.id}/sections`,
+            {
+                fetchInit: {
+                    method: 'POST',
+                    body: formDataify({
+                        course_section: {
+                            name: 'Academic Integrity',
+                        },
+                        enable_sis_reactivation: true,
+                    }),
+                }
+            });
+
+        if (createSection.errors) {
+            alert("Failed to create academic integrity section in BP.");
+            setIsRunningIntegritySetup(false);
+            return;
+        }
+
+        // Get the updated list of modules in the BP after the migration
+        const updatedModulesGen = moduleGenerator(bp.id);
+        const updatedModules: IModuleData[] = [];
+        let bpAcademicIntegrityModule: IModuleData | undefined = undefined;
+        let instructorResourcesModule: IModuleData | undefined = undefined;
+
+        for await (const module of updatedModulesGen) {
+            updatedModules.push(module);
+            if (module.name === "Academic Integrity") {
+                bpAcademicIntegrityModule = module;
+            } else if (module.name.toLocaleLowerCase().includes("leave unpublished")) {
+                instructorResourcesModule = module;
+            }
+        }
+
+        if (!bpAcademicIntegrityModule) {
+            alert("There was an error finding the Academic Integrity module in the BP after migration.");
+            setIsRunningIntegritySetup(false);
+            return;
+        }
+
+        if (!instructorResourcesModule) {
+            alert("There was a problem finding the Instructor Resources module.");
+            setIsRunningIntegritySetup(false);
+            return;
+        }
+
+        const updatedAssignmentGroups = await bp.getAssignmentGroups();
+
+        for (const group of updatedAssignmentGroups) {
+            if (group.name.toLocaleLowerCase().includes("imported")) {
+                const deleteGroup = await fetchJson(
+                    `/api/v1/courses/${bp.id}/assignment_groups/${group.id}`,
+                    {
+                        fetchInit: {
+                            method: 'DELETE',
+                        }
+                    }
+                );
+
+                if (!deleteGroup.ok) {
+                    alert("Failed to delete imported assignment group in BP. You will need to remove it manually.");
+                }
+            }
+        }
+
+        const pages = await bp.getPages();
+        const aiInstructorGuideItems = pages?.filter(page => page.name.toLocaleLowerCase().includes("academic integrity"));
+
+        // Put items into the instructor resources module
+        let issueOccurred = false;
+
+        for (const item of aiInstructorGuideItems ?? []) {
+            const itemUrl = item.getItem("url");
+            const unpublish = await fetchJson(
+                `/api/v1/courses/${bp.id}/pages/${itemUrl}`,
+                {
+                    fetchInit: {
+                        method: 'PUT',
+                        body: formDataify({
+                            wiki_page: {
+                                published: false,
+                            }
+                        }),
+                    }
+                }
+            )
+            const addToModule = await fetchJson(
+                `/api/v1/courses/${bp.id}/modules/${instructorResourcesModule.id}/items`,
+                {
+                    fetchInit: {
+                        method: 'POST',
+                        body: formDataify({
+                            module_item: {
+                                type: 'Page',
+                                page_url: item.getItem("url"),
+                            }
+                        }),
+                    }
+                }
+            );
+
+            if (unpublish.errors || addToModule.errors) {
+                issueOccurred = true;
+            }
+        }
+
+        if (issueOccurred) {
+            alert("There was an issue adding the Academic Integrity Instructor Guide pages to the Instructor Resources module. Please check the BP manually.");
+        }
+
+        // Set academic integrity module to only be assigned to people in the section
+        const setModuleAssignment = await fetch(
+            `/api/v1/courses/${bp.id}/modules/${bpAcademicIntegrityModule.id}/assignment_overrides`,
+            {
+                method: 'PUT',
+                body: formDataify({
+                    overrides: [{
+                        title: 'Academic Integrity Section Override',
+                        course_section_id: createSection.id,
+                    }]
+                }),
+            }
+        );
+
+        if (!setModuleAssignment.ok) {
+            alert("Failed to update academic integrity module assignment in BP. You will need to do this manually.");
+        }
+
+        //If we made it here, let the user know we've succeeded
+        alert("Academic integrity setup complete!");
+        setIsRunningIntegritySetup(false);
+    }
 
 
     return <div>
@@ -303,14 +552,24 @@ export function MakeBp({
         <hr/>
         {<>
             <Row><Col sm={3}>
-            <Button
+                <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
                     aria-label={'New BP'}
                     disabled={isNewBpDisabled}
                 >Create New BP</Button>
             </Col>
-                <Col sm={6}>
+                <Col sm={3}>
+                    {currentBp?.isUndergrad() && <Button
+                        id={'academicIntegrityButton'}
+                        onClick={academicIntegritySetup}
+                        disabled={isRunningIntegritySetup || !currentBp || isCloningBp}
+                        aria-label={'Setup Academic Integrity in New BP'}
+                        title="Set up the Academic Integrity content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
+                    >{academicIntegrityText}</Button>
+                    }
+                </Col>
+                <Col sm={5}>
                     {currentBp && activeMigrations.map(migration => <DevToBpMigrationBar
                         key={migration.id}
                         migration={migration}
@@ -340,5 +599,3 @@ export async function waitForMigrationCompletion(courseId: number, migrationId: 
         await new Promise(res => setTimeout(res, intervalMs));
     }
 }
-
-

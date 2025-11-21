@@ -32,10 +32,10 @@ export function DevToBpMigrationBar({migration, course, onFinishMigration}: Migr
                 Started: {migration.started_at}
             </Row>
         </Col>
-        <Col sm={4}>
+        <Col sm={3}>
             {progress?.completion ? `${progress.completion}%` : ""}
         </Col>
-        <Col sm={4}>
+        <Col sm={5}>
             {progress?.workflow_state === 'completed' && <Button
                 onClick={(e) => onFinishMigration && onFinishMigration(migration)}
             >Finish Migration</Button>}
