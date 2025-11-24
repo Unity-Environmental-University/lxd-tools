@@ -580,7 +580,7 @@ export function MakeBp({
                 >Create New BP</Button>
             </Col>
                 <Col sm={3}>
-                    {currentBp?.isUndergrad() && <Button
+                    {currentBp?.isUndergrad && <Button
                         id={'academicIntegrityButton'}
                         onClick={academicIntegritySetup}
                         disabled={isRunningIntegritySetup || !currentBp || isCloningBp}

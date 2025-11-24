@@ -350,7 +350,11 @@ describe('Migrations', () => {
             devCourse: mockCourse,
         });
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
-        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
+        const newBpBtn = screen.getByLabelText('New BP');
+        expect(newBpBtn).toBeInTheDocument();
+        await act(async () => {
+            fireEvent.click(newBpBtn);
+        });
         await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled())
         await waitFor(() => expect(screen.queryAllByText(/Status/)).toHaveLength(2));
         expect(screen.queryAllByText(/Status/)).toHaveLength(2);
