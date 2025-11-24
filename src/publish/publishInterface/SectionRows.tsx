@@ -34,7 +34,9 @@ export function SectionRows({
 
     return (<div className={'course-table'}>
         <div className={'row'}>
-            <div className={'col-xs-1'}><strong style={{textAlign: 'center'}}>Publish?</strong></div>
+            <div className={'col-xs-1'}>
+                <strong style={{textAlign: 'center'}}>Include?</strong>
+            </div>
             <div className={'col-sm-5'}>
                 <div><strong>Code</strong></div>
                 <a href={'#'} onClick={openAll}>Open All</a>
@@ -53,6 +55,6 @@ export function SectionRows({
                 onSelectSection={(section) => setWorkingSection(section)}
                 course={course}
                 selected={Boolean(sectionPublishRecord?.[course.id])}
-                sectionPublishToggle={sectionPublishToggle}/>))}
+                selectionToggle={sectionPublishToggle}/>))}
     </div>)
 }
