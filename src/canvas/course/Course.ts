@@ -539,6 +539,13 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return await fetchJson(`/api/v1/courses/${this.id}/settings`, configToUse) as ICourseSettings;
     }
 
+    public isUndergrad() {
+        if(this.courseCode) {
+            const match = this.courseCode.match(/\d+$/);
+            if(match) return parseInt(match[0], 10) < 500;
+        }
+        return false;
+    }
 }
 
 
