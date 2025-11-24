@@ -321,13 +321,13 @@ export function MakeBp({
             assignmentGroupId = assignmentGroups[0]?.id || 0;
         }
 
-        console.log("Integrity Assignment Group ID after if loop: ", assignmentGroupId);
-
         const academicIntegrityCourse = await getCourseById(7724480);
         const academicIntegrityModules = await academicIntegrityCourse.getModules();
         const academicIntegrityPages = await academicIntegrityCourse.getPages();
         const academicIntegrityModuleIds: number[] = [];
-        const aiInstructorGuideItemIds = [];
+        let aiInstructorGuideModule: IModuleData | null = null;
+        const aiInstructorGuideItemIds: number[] = [];
+        const aiInstructorGuideItemUrls: Array<string | undefined> = [];
 
         if (!academicIntegrityCourse) {
             alert("Academic integrity course not found.");
@@ -336,15 +336,28 @@ export function MakeBp({
         }
 
         for (const module of academicIntegrityModules) {
+            let academicIntegrityModuleFound = false;
+            let aiInstructorGuideModuleFound = false;
+
             if (module.name === 'Academic Integrity') {
                 academicIntegrityModuleIds.push(module.id);
-                break;
+                academicIntegrityModuleFound = true;
+            } else if (module.name.toLocaleLowerCase().includes("instructor guide resources")) {
+                aiInstructorGuideModule = module;
+                aiInstructorGuideModuleFound = true;
+            }
+
+            if(academicIntegrityModuleFound && aiInstructorGuideModuleFound) {
+                break; // Exit loop early if both modules are found
             }
         }
 
-        for (const page of academicIntegrityPages) {
-            if (page.name.toLocaleLowerCase().includes("academic integrity")) {
-                aiInstructorGuideItemIds.push(page.id);
+        if(aiInstructorGuideModule && aiInstructorGuideModule.items) {
+            for (const item of aiInstructorGuideModule.items) {
+                aiInstructorGuideItemUrls.push(item.page_url);
+                const page = academicIntegrityPages.find(p => p.rawData.url === item.page_url);
+                if (page) aiInstructorGuideItemIds.push(page.rawData.page_id);
+                console.log("Found AI Instructor Guide Page ID: ", page?.rawData.page_id);
             }
         }
 
@@ -430,7 +443,8 @@ export function MakeBp({
             return;
         }
 
-        const updatedAssignmentGroups = await bp.getAssignmentGroups();
+        // TODO; Hoping to delete from 445-462 once Canvas gets back to me, solving my import issue
+        /*const updatedAssignmentGroups = await bp.getAssignmentGroups();
 
         for (const group of updatedAssignmentGroups) {
             if (group.name.toLocaleLowerCase().includes("imported")) {
@@ -447,10 +461,16 @@ export function MakeBp({
                     alert("Failed to delete imported assignment group in BP. You will need to remove it manually.");
                 }
             }
-        }
+        }*/
 
         const pages = await bp.getPages();
-        const aiInstructorGuideItems = pages?.filter(page => page.name.toLocaleLowerCase().includes("academic integrity"));
+        console.log("All BP Pages: ", pages);
+        console.log("AI Instructor Guide Item URLs: ", aiInstructorGuideItemUrls);
+        const aiInstructorGuideItems = pages?.filter(page => aiInstructorGuideItemUrls.includes(page.rawData.url));
+
+        console.log("aiInstructorGuideItems after filter: ", aiInstructorGuideItems);
+
+        console.log("AI Instructor Guide Items in BP: ", aiInstructorGuideItems);
 
         // Put items into the instructor resources module
         let issueOccurred = false;
