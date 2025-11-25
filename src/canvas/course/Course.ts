@@ -541,7 +541,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     public isUndergrad() {
         if(this.courseCode) {
-            const match = this.courseCode.match(/\d+$/);
+            const match = this.courseCode.match(/\d{3,4}/);
             if(match) return parseInt(match[0], 10) < 500;
         }
         return false;
@@ -549,7 +549,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     public isGrad() {
         if(this.courseCode) {
-            const match = this.courseCode.match(/\d+$/);
+            const match = this.courseCode.match(/\d{3,4}/);
             if(match) return parseInt(match[0], 10) >= 500 && parseInt(match[0], 10) < 1000;
         }
         return false;
@@ -557,7 +557,7 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
 
     public isCareerInstitute() {
         if(this.courseCode) {
-            const match = this.courseCode.match(/\d{4}$/);
+            const match = this.courseCode.match(/\d{4}/);
             if(match) return true;
         }
         return false;

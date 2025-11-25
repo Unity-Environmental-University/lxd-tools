@@ -69,6 +69,7 @@ export async function getHometileSrcPage(module: IModuleData, courseId: number) 
             item.title.toLowerCase().includes('overview')
         );
     }
+    console.log("hometileSrc: ", hometileSrc)
     if (!hometileSrc?.url) return; //skip this if it's not an overview
 
     const url = hometileSrc.url.replace(/.*\/api\/v1/, '/api/v1')
