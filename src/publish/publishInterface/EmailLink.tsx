@@ -193,7 +193,6 @@ export const EmailLink = React.memo(function EmailLink({user, emails, course, te
 
     return <>
         <a href={`mailto:${user.email}?subject=${subject}&bcc=${bcc}`}>{emails.join('; ')}</a>
-        {/*TODO; Get this to stop loading everytime information changes*/}
         {termData &&
             <button disabled={!emailTemplate} onClick={copyToClipboard}>
                 {!emailTemplate ? 'Loading...' : 'Copy Form Email to Clipboard'}
