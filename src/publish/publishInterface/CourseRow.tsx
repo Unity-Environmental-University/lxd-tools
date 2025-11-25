@@ -29,7 +29,7 @@ export function CourseRow({
             <input type={'checkbox'} checked={selected}
                    onChange={e => selectionToggle?.(course, e.currentTarget.checked)}/>
         </div>
-        <div className={'col-xs-5'}>
+        <div className={'col-xs-4'}>
             <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}
                target={"blank_"}>{course.name}</a>
         </div>

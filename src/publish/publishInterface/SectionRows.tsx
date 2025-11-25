@@ -32,12 +32,46 @@ export function SectionRows({
         onOpenAll();
     }
 
+    function toggleAll(e: FormEvent) {
+        e.preventDefault();
+
+        if (!sectionPublishToggle || !sectionPublishRecord) return;
+
+        // Count how many sections are currently checked vs unchecked
+        const checkedCount = sections.filter(section => sectionPublishRecord[section.id]).length;
+        const uncheckedCount = sections.length - checkedCount;
+
+        // Determine the minority status (what we should set all checkboxes to)
+        const shouldCheckAll = uncheckedCount >= checkedCount;
+
+        // Set all sections to the minority status
+        sections.forEach(section => {
+            sectionPublishToggle(section, shouldCheckAll);
+        });
+    }
+
+    // Determine what the toggle action will do for display text
+    function getToggleAllText(): string {
+        if (!sectionPublishRecord) return "Check/Uncheck All";
+
+        const checkedCount = sections.filter(section => sectionPublishRecord[section.id]).length;
+        const uncheckedCount = sections.length - checkedCount;
+
+        // If more are unchecked (or equal), clicking will check all
+        if (uncheckedCount >= checkedCount) {
+            return "Select All";
+        } else {
+            return "Unselect All";
+        }
+    }
+
     return (<div className={'course-table'}>
         <div className={'row'}>
             <div className={'col-xs-1'}>
-                <strong style={{textAlign: 'center'}}>Include?</strong>
+                <strong style={{textAlign: 'center', fontSize:'.92rem'}}>Include?</strong>
+                <a href={'#'} onClick={toggleAll} style={{textAlign: 'center', fontSize:'.92rem'}}>{getToggleAllText()}</a>
             </div>
-            <div className={'col-sm-5'}>
+            <div className={'col-sm-4'}>
                 <div><strong>Code</strong></div>
                 <a href={'#'} onClick={openAll}>Open All</a>
             </div>
