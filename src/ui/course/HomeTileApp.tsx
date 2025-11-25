@@ -4,7 +4,7 @@ import {useEffectAsync} from "../utils";
 import {createPortal} from "react-dom";
 import {getCroppedSquareBlob, getResizedBlob} from "@canvas/image";
 import {Course} from "@canvas/course/Course";
-import {getModuleOverview} from "@canvas/course/modules";
+import {getHometileSrcPage} from "@canvas/course/modules";
 import {getBannerImage} from "@/canvas";
 import {Row} from "react-bootstrap";
 
@@ -76,7 +76,7 @@ async function generateBanners(course:Course, moduleNumber=0) {
     const code = course.baseCode ?? "CODE_NOT_FOUND";
     const module = (await course.getModules())[moduleNumber];
 
-    const overviewPage = await getModuleOverview(module, module.id);
+    const overviewPage = await getHometileSrcPage(module, module.id);
     if (!overviewPage) throw new Error("Module does not have an overview");
 
     const bannerImg = getBannerImage(overviewPage);
