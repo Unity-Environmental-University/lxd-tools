@@ -32,13 +32,13 @@ function extractContentFromHTML(html: string, query: string): HTMLElement[] {
   });
 
   return elements;
-}   // TODO would it be best to select all and return a list of HTMLElements that we can then sort thru in caller
-    // TODO to see if the HTMLElement contains what we want? Can fetch all vids that way and probably all learning mats as well - two calls
+}
 
-// takes a syllabus, an html element, a selector string, and an insert position,
-// removes the [bulleted list] placeholder from the "Week 1 Learning Materials" section,
-// and inserts the provided html element into the section of the syllabus specified by the selector and position
-function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[], selector: string, position: InsertPosition): string|null { // TODO returns modified syllabus body? (string) - then use course.changeSyllabus in caller - well then we would api call change te syllabus to the same thing for no reason - dumb
+// takes a body, removes everything but the <p> elements in
+// the bodies week 1 learning mats section. Used to clear the section
+// before we import the new/current wk 1 learning mats
+// if we fail to locate a div we return the same syllabus body passed
+function clearMatsSection(syllabusBody: string): string {
     const parser = new DOMParser();
     const syllabusDoc = parser.parseFromString(syllabusBody, "text/html");
 
@@ -49,7 +49,37 @@ function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[],
 
     if (!targetDiv) {
         console.error("Could not find 'Week 1 Learning Materials' section in syllabus");
-        return null;
+        return syllabusBody;
+    }
+
+    Array.from(targetDiv.children).forEach(child => {
+        const tag = child.tagName.toLowerCase();
+        if (tag !== "p" && tag !== "h3") {
+            child.remove();
+        }
+    });
+
+    const newBody = syllabusDoc.body.innerHTML;
+
+    return newBody;
+}
+
+// takes a syllabus, an html element, a selector string, and an insert position,
+// removes the [bulleted list] placeholder from the "Week 1 Learning Materials" section,
+// and inserts the provided html element into the section of the syllabus specified by the selector and position
+// if we fail to locate a div we return the same syllabus body passed
+function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[], selector: string, position: InsertPosition): string { // TODO returns modified syllabus body? (string) - then use course.changeSyllabus in caller - well then we would api call change te syllabus to the same thing for no reason - dumb
+    const parser = new DOMParser();
+    const syllabusDoc = parser.parseFromString(syllabusBody, "text/html");
+
+    // find all divs with class "content" in syllabus, then find
+    // the one that contains "Week 1 Learning Materials" - thats where we want to import
+    const targetDiv = Array.from(syllabusDoc.querySelectorAll(".content"))
+        .find(div => div.textContent?.includes("Week 1 Learning Materials"));
+
+    if (!targetDiv) {
+        console.error("Could not find 'Week 1 Learning Materials' section in syllabus");
+        return syllabusBody;
     }
 
     // remove the [bulleted list] placeholder
@@ -60,7 +90,7 @@ function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[],
         }
     });
     
-    // insert content
+    // insert content   // TODO text inside insertionPoint afterwards
     const insertionPoint = targetDiv.querySelector(selector);   
     if (insertionPoint) {   // TODO should I return null or throw error if insertion point not found? why return newBody if no changes?
         content.forEach(element => {
@@ -113,18 +143,17 @@ async function handleImportClick() {    // TODO don't do anything / don't render
         }
 
         const syllabusBody = await course.getSyllabus();  
-        let newBody = importContentIntoSyllabus(syllabusBody, extractedContent, 'p', "beforebegin");   // TODO is ! bad practice? just use an if else w an error
-        
-        if (newBody){
-            newBody = importContentIntoSyllabus(newBody, extractedMats, 'p', "afterend");
-            const response = await course.changeSyllabus(newBody!);
-        }
-        else{
-            console.error("Failed to import content into syllabus"); // is this needed? ImportContentIntoSyllabus already logs error
+        let newBody = clearMatsSection(syllabusBody);
+        newBody = importContentIntoSyllabus(newBody, extractedContent, 'p', "beforebegin");   // TODO is ! bad practice? just use an if else w an error
+        newBody = importContentIntoSyllabus(newBody, extractedMats, 'p', "afterend");
+
+        // only update the body if it changed
+        if (newBody != syllabusBody){
+            await course.changeSyllabus(newBody);
         }
     } 
     catch (err) {
-        console.error("Error fetching Week 1 Learning Materials page:", err);
+        console.error("Error fetching Week 1 Learning Materials page and importing into syllabus:", err);
     }
 }
 
