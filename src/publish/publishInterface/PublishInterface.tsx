@@ -183,7 +183,9 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 continue;
             }
             if (profiles.length > 1) {
-                errors.push("Multiple Matches Found")
+                errors.push("Multiple Matches Found");
+                // WARN; Set an alert to tell the user they have sections to deal with?
+                continue;
             }
             const profile = profiles[0];
             const frontPage = await section.getFrontPage();
