@@ -20,7 +20,7 @@ import {
 import {isBlueprint} from "./blueprint";
 import {filterUniqueFunc, formDataify, ICanvasCallConfig, renderAsyncGen} from "../canvasUtils";
 import {getModuleUnlockStartDate} from "./changeStartDate";
-import {getModuleOverview, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
+import {getHometileSrcPage, getModulesByWeekNumber, getModuleWeekNumber, moduleGenerator} from "./modules";
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles} from "../profile";
@@ -482,9 +482,9 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
     }
 
     async generateHomeTile(module: IModuleData) {
-        const overviewPage = await getModuleOverview(module, this.id);
-        if (!overviewPage) throw new Error("Module does not have an overview");
-        const bannerImg = getBannerImage(overviewPage);
+        const hometileSrcPage = await getHometileSrcPage(module, this.id);
+        if (!hometileSrcPage) throw new Error("Module does not have an overview");
+        const bannerImg = getBannerImage(hometileSrcPage);
         if (!bannerImg) throw new Error("No banner image on page");
         const resizedImageBlob = await getResizedBlob(bannerImg.src, HOMETILE_WIDTH);
         const fileName = `hometile${module.position}.png`;
@@ -539,6 +539,29 @@ export class Course extends BaseCanvasObject<ICourseData> implements IContentHav
         return await fetchJson(`/api/v1/courses/${this.id}/settings`, configToUse) as ICourseSettings;
     }
 
+    public isUndergrad() {
+        if(this.courseCode) {
+            const match = this.courseCode.match(/\d{3,4}/);
+            if(match) return parseInt(match[0], 10) < 500;
+        }
+        return false;
+    }
+
+    public isGrad() {
+        if(this.courseCode) {
+            const match = this.courseCode.match(/\d{3,4}/);
+            if(match) return parseInt(match[0], 10) >= 500 && parseInt(match[0], 10) < 1000;
+        }
+        return false;
+    }
+
+    public isCareerInstitute() {
+        if(this.courseCode) {
+            const match = this.courseCode.match(/\d{4}/);
+            if(match) return true;
+        }
+        return false;
+    }
 }
 
 

@@ -4,7 +4,7 @@ import {useEffectAsync} from "../utils";
 import {createPortal} from "react-dom";
 import {getCroppedSquareBlob, getResizedBlob} from "@canvas/image";
 import {Course} from "@canvas/course/Course";
-import {getModuleOverview} from "@canvas/course/modules";
+import {getHometileSrcPage} from "@canvas/course/modules";
 import {getBannerImage} from "@/canvas";
 import {Row} from "react-bootstrap";
 
@@ -27,10 +27,14 @@ export function HomeTileApp({course, el}: HomeTileAppProps) {
         setShowModal(true);
         await course.regenerateHomeTiles();
         const homeTiles = document.querySelectorAll(".cbt-module-card-img img") as NodeListOf<HTMLImageElement>;
-        await Promise.all(Array.from(homeTiles).map((async (tile) => {
-            await fetch(tile.src, {cache: 'reload', mode: 'no-cors'});
-            tile.src = tile.src + '?' + Date.now();
-        })))
+        try {
+            await Promise.all(Array.from(homeTiles).map((async (tile) => {
+                await fetch(tile.src, {cache: 'reload', mode: 'no-cors'});
+                tile.src = tile.src + '?' + Date.now();
+            })))
+        } catch (e) {
+            console.log(e);
+        }
         setRunning(false);
     }
 
@@ -76,14 +80,15 @@ async function generateBanners(course:Course, moduleNumber=0) {
     const code = course.baseCode ?? "CODE_NOT_FOUND";
     const module = (await course.getModules())[moduleNumber];
 
-    const overviewPage = await getModuleOverview(module, module.id);
-    if (!overviewPage) throw new Error("Module does not have an overview");
+    const sourcePage = await getHometileSrcPage(module, module.id);
+    if (!sourcePage) throw new Error("Module does not have a page to pull from.");
 
-    const bannerImg = getBannerImage(overviewPage);
+    const bannerImg = getBannerImage(sourcePage);
     if (!bannerImg) throw new Error("No banner image on page");
 
     // Resize the image to 1920px wide (maintaining aspect ratio)
     const bannerBlob = await getResizedBlob(bannerImg.src, 1920);
+    if(!bannerBlob) throw new Error("Unable to resize banner img");
 
     const bannerUrl = URL.createObjectURL(bannerBlob!);
     downloadFile(bannerUrl, `${code.toLocaleLowerCase()}DetailImage.png`);
