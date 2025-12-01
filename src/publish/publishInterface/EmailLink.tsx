@@ -1,6 +1,6 @@
 import {IUserData} from "@canvas/canvasDataDefs";
 import {Temporal} from "temporal-polyfill";
-import React, {useState} from "react";
+import React, {useState, useMemo, useCallback} from "react";
 import {Course} from "@canvas/course/Course";
 import {useEffectAsync} from "@/ui/utils";
 import {Alert} from "react-bootstrap";
@@ -8,6 +8,51 @@ import {ITermData} from "@/canvas/term/Term";
 import {PUBLISH_FORM_EMAIL_TEMPLATE_URL} from "@/publish/consts";
 import {IPageData} from "@canvas/content/pages/types";
 import PageKind from "@canvas/content/pages/PageKind";
+
+// Simple cache to store email templates by course ID
+const emailTemplateCache = new Map<number, Promise<string>>();
+
+// Function to fetch email template with caching
+async function fetchEmailTemplate(course: Course): Promise<string> {
+    if (emailTemplateCache.has(course.id)) {
+        return emailTemplateCache.get(course.id)!;
+    }
+
+    const templatePromise = (async () => {
+        if (!course.courseCode) {
+            throw new Error('Course code is required');
+        }
+
+        const parsedCourseCode = course.courseCode.match(/\d+/g);
+        if (!parsedCourseCode) {
+            throw new Error(`Course code ${course.courseCode} does not contain a number`);
+        }
+        const courseCodeNumber = parseInt(parsedCourseCode[0]);
+
+        let devCourseId: 7773747 | 7775658 | null = null;
+
+        if (courseCodeNumber >= 500) {
+            devCourseId = 7773747;
+        } else if (courseCodeNumber < 500) {
+            devCourseId = 7775658;
+        }
+
+        if (devCourseId) {
+            // Get the publish email from the page in the DEV course
+            const templateEmailPage = await PageKind.getByString(devCourseId, 'publish-form-email') as IPageData;
+            return templateEmailPage.body;
+        } else {
+            const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
+            if (!emailResponse.ok) {
+                throw new Error(`${emailResponse.statusText}: ${await emailResponse.text()}`);
+            }
+            return await emailResponse.text();
+        }
+    })();
+
+    emailTemplateCache.set(course.id, templatePromise);
+    return templatePromise;
+}
 
 type EmailLinkProps = {
     user: IUserData,
@@ -51,65 +96,37 @@ export async function getAdditionsTemplate(course: Course) {
  * @param termActualStart
  * @constructor
  */
-export function EmailLink({user, emails, course, termData, sectionStart}: EmailLinkProps) {
-
-
-    const bcc = emails.join(',');
-    const subject = encodeURIComponent(course.name?.replace('BP_', '') + ' Section(s) Ready Notification');
+export const EmailLink = React.memo(function EmailLink({user, emails, course, termData, sectionStart}: EmailLinkProps) {
+    const bcc = useMemo(() => emails.join(','), [emails]);
+    const subject = useMemo(() => encodeURIComponent(course.name?.replace('BP_', '') + ' Section(s) Ready Notification'), [course.name]);
     const [emailTemplate, setEmailTemplate] = useState<string | undefined>();
     const [additionsTemplate, setAdditionsTemplate] = useState<string | undefined>();
     const [errorMessages, setErrorMessages] = useState<string[]>([]);
     const [textCopied, setTextCopied] = useState(false);
 
     useEffectAsync(async () => {
+        // Only fetch if we don't have the template yet
         if (emailTemplate) return;
 
         try {
-            if(course.courseCode) {
-                const parsedCourseCode = course.courseCode.match(/\d+/g);
-                if (!parsedCourseCode) throw new Error(`Course code ${course.courseCode} does not contain a number`);
-                const courseCodeNumber = parseInt(parsedCourseCode[0]);
-
-                let devCourseId: 7773747 | 7775658 | null = null;
-
-
-                if (courseCodeNumber >= 500) {
-                    devCourseId = 7773747;
-                } else if (courseCodeNumber < 500) {
-                    devCourseId = 7775658;
-                }
-
-                if (devCourseId) {
-                    //Get the publish email from the page in the DEV course
-                    const templateEmailPage = await PageKind.getByString(devCourseId, 'publish-form-email') as IPageData;
-                    console.log(templateEmailPage);
-                    setEmailTemplate(templateEmailPage.body);
-                    console.log(templateEmailPage.body);
-                } else {
-                    const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
-                    if (!emailResponse.ok) {
-                        setErrorMessages([emailResponse.statusText, await emailResponse.text()])
-                        return;
-                    }
-                    setEmailTemplate(await emailResponse.text());
-                }
-            }
+            const template = await fetchEmailTemplate(course);
+            setEmailTemplate(template);
         } catch (e: unknown) {
             console.error(e);
             const msg = e instanceof Error ? e.message : String(e);
             setErrorMessages([msg])
         }
-    }, [])
+    }, [course.id, emailTemplate])
 
 
     useEffectAsync(async () => {
-        if(additionsTemplate) return;
+        if(additionsTemplate || !course.id) return;
 
         const _additionsTemplate = await getAdditionsTemplate(course);
         setAdditionsTemplate(_additionsTemplate);
-    }, [])
+    }, [course.id])
 
-    async function copyToClipboard() {
+    const copyToClipboard = useCallback(async () => {
         if (!emailTemplate && errorMessages.length > 0) {
             return;
         } else if (!emailTemplate) {
@@ -154,7 +171,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
             ]);
         }
         console.log(body);
-    }
+    }, [emailTemplate, additionsTemplate, errorMessages.length, course, user.name, termData, sectionStart])
 
     function getCourseStart() {
         if (!sectionStart) return '[[Start Date]]'
@@ -184,7 +201,7 @@ export function EmailLink({user, emails, course, termData, sectionStart}: EmailL
         {errorMessages.map(msg => <Alert>{msg}</Alert>)}
         {textCopied && <Alert variant={'success'}>Copied to clipboard!</Alert>}
     </>
-}
+});
 
 
 export type EmailTextProps = {

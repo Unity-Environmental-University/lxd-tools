@@ -11,7 +11,7 @@ export interface ICourseRowProps {
     facultyProfileMatches: IProfile[],
     frontPageProfile: IProfile | null,
     onSelectSection?: (course: Course) => void,
-    sectionPublishToggle?: (course: Course, publish: boolean) => void,
+    selectionToggle?: (course: Course, publish: boolean) => void,
     selected?: boolean
 }
 
@@ -21,15 +21,15 @@ export function CourseRow({
                               instructors,
                               onSelectSection,
                               errors,
-                              sectionPublishToggle,
+                              selectionToggle,
                               selected
                           }: ICourseRowProps) {
     return (<div className={'row course-row align-items-center'}>
         <div className={'col-xs-1'}>
             <input type={'checkbox'} checked={selected}
-                   onChange={e => sectionPublishToggle?.(course, e.currentTarget.checked)}/>
+                   onChange={e => selectionToggle?.(course, e.currentTarget.checked)}/>
         </div>
-        <div className={'col-xs-5'}>
+        <div className={'col-xs-4'}>
             <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}
                target={"blank_"}>{course.name}</a>
         </div>

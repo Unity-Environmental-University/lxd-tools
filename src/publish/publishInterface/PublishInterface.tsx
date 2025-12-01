@@ -308,6 +308,11 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                             onClick={applySectionProfiles} style={{marginLeft: '8px'}}>
                         Set Bios
                     </Button>
+                    {!sectionsListIdentical &&
+                    <Button className="btn" disabled={selectedSectionsEmpty || loading || !(course?.isBlueprint)}
+                            onClick={applySectionProfiles} style={{marginLeft: '8px'}}>
+                        Set Selected Bios
+                    </Button>}
                     <Button className="btn" disabled={loading || !(course?.isBlueprint)}
                             onClick={e => publishCourses(e, sections)} style={{marginLeft: '8px'}}>
                         Publish all
