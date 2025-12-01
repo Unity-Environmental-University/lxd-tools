@@ -443,8 +443,8 @@ export function MakeBp({
             return;
         }
 
-        // TODO; Hoping to delete from 445-462 once Canvas gets back to me, solving my import issue
-        /*const updatedAssignmentGroups = await bp.getAssignmentGroups();
+        // Hoping to delete from 445-462 once Canvas gets back to me, solving my import issue
+        const updatedAssignmentGroups = await bp.getAssignmentGroups();
 
         for (const group of updatedAssignmentGroups) {
             if (group.name.toLocaleLowerCase().includes("imported")) {
@@ -453,15 +453,16 @@ export function MakeBp({
                     {
                         fetchInit: {
                             method: 'DELETE',
+                            body: formDataify({}),
                         }
                     }
                 );
 
-                if (!deleteGroup.ok) {
+                if (deleteGroup.errors) {
                     alert("Failed to delete imported assignment group in BP. You will need to remove it manually.");
                 }
             }
-        }*/
+        }
 
         const pages = await bp.getPages();
         console.log("All BP Pages: ", pages);
