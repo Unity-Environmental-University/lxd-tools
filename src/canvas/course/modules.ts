@@ -70,18 +70,9 @@ export async function getHometileSrcPage(module: IModuleData, courseId: number) 
         );
     }
     console.log("hometileSrc: ", hometileSrc)
-    if (!hometileSrc?.url) return; //skip this if it's not an overview
+    if (!hometileSrc?.url) return;
 
     const url = hometileSrc.url.replace(/.*\/api\/v1/, '/api/v1')
-    const pageData = await fetchJson(url) as IPageData;
-    return new Page(pageData, courseId);
-}
-
-export async function getFirstPage(module: IModuleData, courseId: number) {
-    const firstPage = module.items[0];
-    if(!firstPage.url) throw new Error("Modules does not contain a page.");
-
-    const url = firstPage.url.replace(/.*\/api\/v1/, '/api/v1')
     const pageData = await fetchJson(url) as IPageData;
     return new Page(pageData, courseId);
 }
