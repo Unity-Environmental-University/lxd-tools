@@ -5,6 +5,7 @@ import { IModuleData } from "@canvas/canvasDataDefs";
 import { moduleGenerator } from "@canvas/course/modules";
 import { startMigration } from "@/canvas/course/migration";
 import { Course } from "@/canvas/course/Course";
+import {IModuleItemData} from "@canvas/canvasDataDefs";
 
 export interface AcademicIntegritySetupProps {
     currentBp: Course | null;
@@ -157,10 +158,34 @@ export async function academicIntegritySetup({
         return;
     }
 
+    // Unpublish module
+    const unpublishModule = await fetchJson(
+        `/api/v1/courses/${bp.id}/modules/${bpAcademicIntegrityModule.id}`,
+        {
+            fetchInit: {
+                method: 'PUT',
+                body: formDataify({
+                    module: {
+                        published: false,
+                    }
+                })
+            }
+        }
+    );
+
+    console.log(`Made it past unpublishing module.`)
+
+    if(unpublishModule.errors) {
+        alert("There was a problem unpublishing the Academic Integrity module in the blueprint. You may need to check this manually.")
+    }
+
+    console.log(`Made it past the if statement about unpublish module errors.`)
+
     // Hoping to delete from 445-462 once Canvas gets back to me, solving my import issue
     const updatedAssignmentGroups = await bp.getAssignmentGroups();
 
     for (const group of updatedAssignmentGroups) {
+        console.log(`We are inside of the assignment group delete.`);
         if (group.name.toLocaleLowerCase().includes("imported")) {
             const deleteGroup = await fetchJson(
                 `/api/v1/courses/${bp.id}/assignment_groups/${group.id}`,
