@@ -30,10 +30,10 @@ export async function academicIntegritySetup({
         return;
     }
 
-    // Check if academic integrity module exists, find instructor guide module
+    // Check if the academic integrity module exists, find the instructor guide module
     for (const module of modules) {
         if (module.name === 'Academic Integrity') {
-            // If academic integrity module already exists, alert the use and stop
+            // If the academic integrity module already exists, alert the use and stop
             alert("Academic integrity module already exists in BP.");
             setIsRunningIntegritySetup(false);
             return;
@@ -124,9 +124,10 @@ export async function academicIntegritySetup({
             }
         });
 
-    await waitForMigrationCompletion(bp.id, academicIntegrityMigration.id);
 
-    if (academicIntegrityMigration.workflow_state === "failed") {
+    const finalMigration = await waitForMigrationCompletion(bp.id, academicIntegrityMigration.id);
+
+    if (finalMigration.workflow_state === "failed") {
         alert("There was a problem in the migration process. Check the BP to make sure the modules imported correctly.");
         setIsRunningIntegritySetup(false);
         return;
