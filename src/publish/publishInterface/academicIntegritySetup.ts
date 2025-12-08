@@ -5,7 +5,6 @@ import { IModuleData } from "@canvas/canvasDataDefs";
 import { moduleGenerator } from "@canvas/course/modules";
 import { startMigration } from "@/canvas/course/migration";
 import { Course } from "@/canvas/course/Course";
-import {IModuleItemData} from "@canvas/canvasDataDefs";
 
 export interface AcademicIntegritySetupProps {
     currentBp: Course | null;
@@ -173,13 +172,9 @@ export async function academicIntegritySetup({
         }
     );
 
-    console.log(`Made it past unpublishing module.`)
-
     if(unpublishModule.errors) {
         alert("There was a problem unpublishing the Academic Integrity module in the blueprint. You may need to check this manually.")
     }
-
-    console.log(`Made it past the if statement about unpublish module errors.`)
 
     // Hoping to delete from 445-462 once Canvas gets back to me, solving my import issue
     const updatedAssignmentGroups = await bp.getAssignmentGroups();
@@ -196,7 +191,6 @@ export async function academicIntegritySetup({
                     }
                 }
             );
-
             if (deleteGroup.errors) {
                 alert("Failed to delete imported assignment group in BP. You will need to remove it manually.");
             }
