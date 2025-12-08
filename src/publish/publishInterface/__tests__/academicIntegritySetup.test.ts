@@ -1,4 +1,4 @@
-import { academicIntegritySetup, waitForMigrationCompletion } from "@/publish/publishInterface/academicIntegritySetup";
+import { academicIntegritySetup } from "@/publish/publishInterface/academicIntegritySetup";
 import { fetchJson } from "@canvas/fetch/fetchJson";
 import { getCourseById } from "@/canvas/course";
 import { moduleGenerator } from "@canvas/course/modules";
