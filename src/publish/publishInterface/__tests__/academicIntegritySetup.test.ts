@@ -5,6 +5,7 @@ import { moduleGenerator } from "@canvas/course/modules";
 import { startMigration } from "@/canvas/course/migration";
 import { Course } from "@/canvas/course/Course";
 import { IModuleData } from "@canvas/canvasDataDefs";
+import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
 
 beforeAll(() => {
     jest.useFakeTimers();
@@ -54,13 +55,14 @@ const mockInstructorGuidePageId = 500;
 
 // Base structure for modules in the BP before migration
 const bpInitialModules: IModuleData[] = [
-    { id: 1, name: 'Module 1', published: true, items: [] },
+    { ...mockModuleData, id: 1, name: 'Module 1', published: true, items: [] },
 ];
 
 // Modules in the source Academic Integrity course (7724480)
 const aiSourceModules: IModuleData[] = [
-    { id: mockAIModuleId, name: 'Academic Integrity', published: true, items: [] },
+    { ...mockModuleData, id: mockAIModuleId, name: 'Academic Integrity', published: true, items: [] },
     {
+        ...mockModuleData,
         id: 2,
         name: 'Instructor Guide Resources',
         published: true,
@@ -93,8 +95,8 @@ const bpPostMigrationPages = [
 // Define the final modules in the BP after a successful migration
 const bpFinalModules: IModuleData[] = [
     ...bpInitialModules,
-    { id: mockAIModuleId, name: 'Academic Integrity', published: true, items: [] },
-    { id: mockInstructorModuleId, name: 'Leave unpublished: Instructor Resources', published: true, items: [] },
+    { ...mockModuleData, id: mockAIModuleId, name: 'Academic Integrity', published: true, items: [] },
+    { ...mockModuleData, id: mockInstructorModuleId, name: 'Leave unpublished: Instructor Resources', published: true, items: [] },
 ];
 
 // --- Mock Implementation Setup ---
