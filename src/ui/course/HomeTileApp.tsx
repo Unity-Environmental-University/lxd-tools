@@ -1,6 +1,5 @@
 import Modal from "../widgets/Modal/index";
-import {useEffect, useState} from "react";
-import {useEffectAsync} from "../utils";
+import {useState} from "react";
 import {createPortal} from "react-dom";
 import {getCroppedSquareBlob, getResizedBlob} from "@canvas/image";
 import {Course} from "@canvas/course/Course";
@@ -26,6 +25,7 @@ export function HomeTileApp({course, el}: HomeTileAppProps) {
         setRunning(true);
         setShowModal(true);
         await course.regenerateHomeTiles();
+        // eslint-disable-next-line @/no-undef
         const homeTiles = document.querySelectorAll(".cbt-module-card-img img") as NodeListOf<HTMLImageElement>;
         try {
             await Promise.all(Array.from(homeTiles).map((async (tile) => {

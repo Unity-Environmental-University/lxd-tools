@@ -84,7 +84,15 @@ const scssRule = {
                 },
             },
         },
-        "sass-loader"
+        {
+            loader: "sass-loader",
+            options: {
+                api: "modern",
+                sassOptions: {
+                    silenceDeprecations: ["global-builtin", "import", "color-functions"],
+                },
+            },
+        },
     ],
 };
 

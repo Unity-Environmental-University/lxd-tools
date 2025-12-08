@@ -24,7 +24,7 @@ import {getHometileSrcPage, getModulesByWeekNumber, getModuleWeekNumber, moduleG
 import {getResizedBlob} from "../image";
 import {uploadFile} from "../files";
 import {getCurioPageFrontPageProfile, getPotentialFacultyProfiles} from "../profile";
-import {getCourseById, getCourseData,  getCourseDataGenerator,  getCourseGenerator,  getGradingStandards, getSingleCourse} from "./index";
+import {getCourseById, getCourseData,  getCourseGenerator,  getGradingStandards} from "./index";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {baseCourseCode, parseCourseCode} from "@/canvas/course/code";
 import {Term} from "@/canvas/term/Term";

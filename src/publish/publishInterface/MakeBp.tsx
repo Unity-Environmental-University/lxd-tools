@@ -1,5 +1,5 @@
 import {createNewCourse, getCourseById, getCourseName} from "@/canvas/course";
-import {Alert, Button, Col, FormControl, FormText, Row} from "react-bootstrap";
+import {Alert, Button, Col, FormControl, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
 import {
@@ -34,7 +34,7 @@ import {formDataify} from "@canvas/canvasUtils";
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
-        onChange && onChange(value);
+        if(onChange) onChange(value);
     }, [value]];
     return returnValue;
 }

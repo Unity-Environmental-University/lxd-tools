@@ -6,7 +6,6 @@ import 'bootstrap'
 import {useEffectAsync} from "../ui/utils";
 import { Form } from "react-bootstrap";
 import {OPEN_AI_API_KEY_KEY, SUB_ACCOUNT} from "../consts";
-import browser from "webextension-polyfill";
 
 function PopUpApp() {
     const [advanced, setAdvanced] = useState(false);

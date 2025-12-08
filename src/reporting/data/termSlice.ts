@@ -1,7 +1,6 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {ITermData} from "@canvas/term/Term";
 import {LoadStatus} from "@/reporting/data/loadStatus";
-import {fetchTermsThunk} from "@/reporting/data/thunks/fetchTermsThunk";
 
 
 type ADD_TERM = 'ADD_TERM';

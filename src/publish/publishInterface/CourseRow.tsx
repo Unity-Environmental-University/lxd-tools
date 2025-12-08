@@ -1,7 +1,6 @@
 import "./CourseRow.scss";
 import React, {useEffect, useState} from "react";
 import {IUserData} from "../../canvas/canvasDataDefs";
-import {useEffectAsync} from "../../ui/utils";
 import {Course} from "../../canvas/course/Course";
 import {IProfile} from "@canvas/type";
 

@@ -1,9 +1,7 @@
 import {Button, Card, Col, Container, Row} from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal";
-import React, {FormEvent, MouseEventHandler, useMemo} from "react";
+import React, {FormEvent} from "react";
 import {FacultyView} from "@/reporting/FacultyView";
-import {RootReportingState} from "@/reporting/data/reportingStore";
-import {useSelector} from "react-redux";
 
 
 export const ReportingApp = () => {

@@ -1,4 +1,3 @@
-import {createAsyncThunk} from '@reduxjs/toolkit';
 import {LoadStatus} from "@/reporting/data/loadStatus";
 
 export interface DataThunkOptions<ConfigParams, Params, Item> {

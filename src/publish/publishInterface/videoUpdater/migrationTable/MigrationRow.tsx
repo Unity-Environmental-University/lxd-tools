@@ -1,6 +1,6 @@
 // MigrationRow.tsx
 import React, { useState } from 'react';
-import { MigrationRowData } from './MigrationRowData'; // Adjust import path as needed
+// Adjust import path as needed
 import styles from './MigrationRow.module.css';
 import { IPageData } from "@canvas/content/pages/types";
 import { KalturaMigrationDetails } from "@publish/publishInterface/videoUpdater/data/types";

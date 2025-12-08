@@ -1,4 +1,4 @@
-import {mockAsyncGen, returnMockAsyncGen} from "@/__mocks__/utils";
+import {mockAsyncGen} from "@/__mocks__/utils";
 import {ICourseData} from "@/canvas/courseTypes";
 import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
 

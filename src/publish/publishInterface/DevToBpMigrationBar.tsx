@@ -1,4 +1,4 @@
-import {genCourseMigrationProgress, IMigrationData, IProgressData} from "../../canvas/course/migration";
+import {genCourseMigrationProgress, IProgressData} from "../../canvas/course/migration";
 import {Course} from "../../canvas/course/Course";
 import {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";

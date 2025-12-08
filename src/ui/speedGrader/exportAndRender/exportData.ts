@@ -1,9 +1,7 @@
-import {Course} from "@/canvas/course/Course";
 import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
 import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {ICourseData, SectionData} from "@/canvas/courseTypes";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 import {IAssignmentData} from "@canvas/content/types";
 
