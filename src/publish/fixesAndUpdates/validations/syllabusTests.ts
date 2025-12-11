@@ -31,8 +31,6 @@ export const useSyllabusStore = create((set, get) => ({
         try {
             const syllabus = await course.getSyllabus();
             set({'originalHtml': syllabus.html, 'draftHtml': syllabus.html, 'status': 'loaded'});
-            // WARN; This was autocompleted, and I don't think it could possibly be right
-            get.runAllValidations(course);
         } catch (e) {
             set({'status': 'error', 'validationResults': [{failureMessage: "Error fetching syllabus", error: e}]});
         }
@@ -54,6 +52,10 @@ export const useSyllabusStore = create((set, get) => ({
         }
     },
 }));
+
+// TODO; Initialize syllabus with fetchSyllabus
+// TODO; Refactor validations to use store
+//  This would require us to replace the input for each from a course object to the syllabus store
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
