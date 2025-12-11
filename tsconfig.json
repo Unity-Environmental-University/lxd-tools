@@ -15,6 +15,9 @@
       "@canvas/*": [
         "canvas/*"
       ],
+      "ueu_canvas": [
+        "@ueu/ueu-canvas"
+      ],
 
       "@citations/*": [
         "citations/*"

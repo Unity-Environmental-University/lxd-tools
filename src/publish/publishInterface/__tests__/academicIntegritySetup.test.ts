@@ -1,5 +1,5 @@
 import { academicIntegritySetup } from "@/publish/publishInterface/academicIntegritySetup";
-import { fetchJson } from "@canvas/fetch/fetchJson";
+import { fetchJson } from "@/canvas/fetch/fetchJson";
 import { getCourseById } from "@/canvas/course";
 import { moduleGenerator } from "@canvas/course/modules";
 import { startMigration } from "@/canvas/course/migration";
