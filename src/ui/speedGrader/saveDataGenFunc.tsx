@@ -1,5 +1,5 @@
 import {FILE_HEADER} from "@/ui/speedGrader/consts";
-
+ 
 
 export function saveDataGenFunc() {
     const a = document.createElement("a");
