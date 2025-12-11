@@ -84,7 +84,16 @@ const scssRule = {
                 },
             },
         },
-        "sass-loader"
+        {
+            loader: "sass-loader",
+            options: {
+                api: "modern",
+                sassOptions: {
+                    quietDeps: true,
+                    includePaths: [path.join(__dirname, 'node_modules')],
+                },
+            },
+        },
     ],
 };
 
@@ -169,6 +178,7 @@ module.exports = {
         extensions: [".tsx", ".ts", ".js", ".mjs"],
         alias: {
             config: path.resolve(__dirname, process.env.NODE_ENV || 'development'),
+            ueu_canvas: path.resolve(__dirname, 'node_modules/@ueu/ueu-canvas/dist'),
         },
         plugins: [
             new TsconfigPathsPlugin({}),

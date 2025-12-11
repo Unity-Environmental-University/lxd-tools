@@ -3,4 +3,6 @@ declare module '*.html' {
   export default content;
 }
 
-declare module "ueu_canvas";
+declare module 'ueu_canvas' {
+  export * from '@ueu/ueu-canvas';
+}

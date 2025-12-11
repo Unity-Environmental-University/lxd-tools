@@ -15,15 +15,12 @@
       "@canvas/*": [
         "canvas/*"
       ],
-
       "@citations/*": [
         "citations/*"
       ],
       "@publish/*": [
         "publish/*"
-      ],
-      "ueu_canvas": ["../ueu_canvas/src"],
-      "ueu_canvas/*": ["../ueu_canvas/src/*"]
+      ]
     },
     "plugins": [
       {
