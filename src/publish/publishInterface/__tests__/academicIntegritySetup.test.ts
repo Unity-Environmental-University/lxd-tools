@@ -67,7 +67,7 @@ const aiSourceModules: IModuleData[] = [
         name: 'Instructor Guide Resources',
         published: true,
         items: [
-            { id: 10, module_id: 333, position: 1, indent: 0, content_id: 10, title: 'AI Guide Page', type: 'Page', page_url: mockInstructorGuidePageUrl }
+            { id: 10, module_id: 333, position: 1, indent: 0, content_id: 10, title: 'AI Guide Page', html_url: 'ai-instructor-guide', new_tab: true, type: 'Page', page_url: mockInstructorGuidePageUrl }
         ]
     }
 ];
