@@ -24,7 +24,8 @@
     "redux-persist": "^6.0.0",
     "temporal-polyfill": "^0.2.4",
     "uuid": "^10.0.0",
-    "webextension-polyfill": "^0.10.0"
+    "webextension-polyfill": "^0.10.0",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.24.8",

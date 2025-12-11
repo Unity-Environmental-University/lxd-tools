@@ -16,6 +16,44 @@ import {
     TextReplaceValidation
 } from "@publish/fixesAndUpdates/validations/types";
 import {paraify} from "@/testing/DomUtils";
+import { create } from "zustand";
+
+export const useSyllabusStore = create((set, get) => ({
+    originalHtml: '', // What is pulled from Canvas
+    draftHtml: '', // The currently modified version
+    status: 'idle', // 'validating', 'saving', 'success', 'error'
+    validationResults: [], // List of discovered issues
+
+    fetchSyllabus: async (course: ISyllabusHaver) => {
+        if(get.originalHtml !== '') return;
+
+        set({'status': 'loading', originalHtml: '', draftHtml: ''});
+        try {
+            const syllabus = await course.getSyllabus();
+            set({'originalHtml': syllabus.html, 'draftHtml': syllabus.html, 'status': 'loaded'});
+            // WARN; This was autocompleted, and I don't think it could possibly be right
+            get.runAllValidations(course);
+        } catch (e) {
+            set({'status': 'error', 'validationResults': [{failureMessage: "Error fetching syllabus", error: e}]});
+        }
+    },
+
+    updateSyllabus: async (course: ISyllabusHaver, html: string) => {
+        set({'status': 'saving'});
+
+        if(html === get().originalHtml) {
+            set({'status': 'success'}, {'validationResults': ["No changes needed!"]});
+            return;
+        }
+
+        try {
+            await course.changeSyllabus(html);
+            set({'status': 'success'});
+        } catch (e) {
+            set({'status': 'error', 'validationResults': [{failureMessage: "Error saving syllabus", error: e}]});
+        }
+    },
+}));
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
