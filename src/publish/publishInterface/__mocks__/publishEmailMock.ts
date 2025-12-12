@@ -1,7 +1,6 @@
 import {EmailTextProps} from "@/publish/publishInterface/EmailLink";
 
-export default `# Publish Form Email
-<p>My name is {{userName}} and I’m the {{userTitle}} who is preparing your course to run
+export default `<p>My name is {{userName}} and I’m the {{userTitle}} who is preparing your course to run
 this term.
 Your course section(s) of {{courseCode}} has/have been created for you to teach
 for {{termName}}. Your students will
@@ -245,6 +244,7 @@ the official start of the term.</p>
     href='mailto:cmalmberg@unity.edu'>cmalmberg@unity.edu</a>).
 </li>
 </ul>
+# TEST000
 <p>For this course, you will need to set groups manually in weeks 2 and 3. Please see the instructor guide for a detailed guide on how to do this.</p>
 <ul>
 <li>TEST1234</li>

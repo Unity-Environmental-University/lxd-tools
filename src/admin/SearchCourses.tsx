@@ -1,7 +1,6 @@
 import {getCourseGenerator} from "../canvas/course/index";
 import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
 import React, {FormEventHandler, useEffect, useState} from "react";
-import {bpify} from "./index";
 import {Form, Spinner} from "react-bootstrap";
 import {Course} from "../canvas/course/Course";
 import {Account, RootAccountNotFoundError} from "@/canvas/Account";

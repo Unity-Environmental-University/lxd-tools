@@ -13,10 +13,9 @@ import {ISyllabusHaver} from "@canvas/course/courseTypes";
 import {
     CourseFixValidation,
     CourseValidation,
-    RunTestFunction,
     TextReplaceValidation
 } from "@publish/fixesAndUpdates/validations/types";
-import {beforeAndAfterSet, paraify} from "@/testing/DomUtils";
+import {paraify} from "@/testing/DomUtils";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
@@ -33,7 +32,7 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHav
         );
     },
     fix: badSyllabusFixFunc(/off the final grade/gi, 'off the grade')
-}
+};
 
 export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
     name: "Syllabus - Within 24 Hours",
@@ -47,10 +46,10 @@ export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
         el.innerHTML = syllabus;
         const text = el.textContent?.toLowerCase() || "";
         const failureMessage = "Communication language section in syllabus does not look right.";
-        const links = [`/courses/${course.id}/assignments/syllabus`]
+        const links = [`/courses/${course.id}/assignments/syllabus`];
         return testResult(text.includes(testString) && !text.match(/48 hours .* weekends/), {failureMessage, links})
     }
-}
+};
 
 export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "Syllabus Credits",
@@ -67,7 +66,7 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
         return testResult(creditList && creditList.length > 0, {failureMessage, links})
 
     }
-}
+};
 
 
 const classInclusiveDatesLanguageRegex = /<p>\s*<strong>\s*Class Inclusive[\s:]*<\/strong>[\s:]*(.*)<\/p>/ig;
@@ -87,7 +86,7 @@ export const classInclusiveNoDateHeaderTest: TextReplaceValidation<ISyllabusHave
         badText = badText.replaceAll(/<\/?span>/ig, '');
         return badText.replaceAll(classInclusiveDatesLanguageRegex, '<p><strong>Class Inclusive Dates:</strong> $1</p>')
     })
-}
+};
 export const badDiscussionPostOrderLanguage = /If you submit[^.]*only one post\.\s*(&nbsp;)?\s*/g;
 export const removeSameDayPostRestrictionTest: TextReplaceValidation<ISyllabusHaver> = {
     name: "Remove discussion same day post restriction",
@@ -100,20 +99,21 @@ export const removeSameDayPostRestrictionTest: TextReplaceValidation<ISyllabusHa
     ],
     run: badSyllabusRunFunc(badDiscussionPostOrderLanguage),
     fix: badSyllabusFixFunc(badDiscussionPostOrderLanguage, '')
-}
+};
 
 
 export const aiPolicyInSyllabusTest: CourseValidation<ISyllabusHaver> = {
     name: "AI Policy in Syllabus Test",
     description: "The AI policy is present in the syllabus",
     run: async (course: ISyllabusHaver) => {
-        const text = await course.getSyllabus();
-        const success = text.includes('Generative Artificial Intelligence');
+        const raw = await course.getSyllabus();
+        const text = raw.toLowerCase();
+        const success = text.includes('generative artificial intelligence');
         const links = [`/courses/${course.id}/assignments/syllabus`];
-        const failureMessage = `Can't find AI boilerplate in syllabus`
+        const failureMessage = `Can't find AI boilerplate in syllabus`;
         return testResult(success, {links, failureMessage})
     }
-}
+};
 
 
 export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
@@ -124,13 +124,13 @@ export const bottomOfSyllabusLanguageTest: CourseValidation<ISyllabusHaver> = {
         " page, which unlocks on the first day of the term.\" (**Do not link to the Course Overview Page**)",
     run: async (course) => {
         const text = getPlainTextFromHtml(await course.getSyllabus());
-        const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase())
+        const success = text.toLowerCase().includes(`The modules will become available after you've agreed to the Honor Code, Code of Conduct, and Tech for Success requirements on the Course Overview page, which unlocks on the first day of the term.`.toLowerCase());
         const links = [`/courses/${course.id}/assignments/syllabus`];
-        const failureMessage = "Text at the bottom of the syllabus looks incorrect."
+        const failureMessage = "Text at the bottom of the syllabus looks incorrect.";
         return testResult(success, {links, failureMessage})
     },
 
-}
+};
 
 export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
     name: "Grade headers correct",
@@ -142,12 +142,12 @@ export const gradeTableHeadersCorrectTest: CourseValidation<ISyllabusHaver> = {
         const letterGradeTh = ths.filter(th => /Letter Grade/i.test(th.innerHTML));
         const percentTh = ths.filter(th => /Percent/i.test(th.innerHTML));
         const success = letterGradeTh.length === 1 && percentTh.length === 1;
-        const links = [`/courses/${course.id}/assignments/syllabus`]
+        const links = [`/courses/${course.id}/assignments/syllabus`];
         const failureMessage = 'Grade headers incorrect';
         return testResult(success, {links, failureMessage})
     }
 
-}
+};
 
 
 export function htmlDiv(text: string) {
@@ -167,7 +167,7 @@ function findSecondParaOfDiscExpect(syllabusEl: HTMLElement) {
 }
 
 
-const correctSecondPara = 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" (for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".'
+const correctSecondPara = 'To access a discussion\'s grading rubric, click on the "View Rubric" button in the discussion directions and/or the "Dot Dot Dot" (for screen readers, titled "Manage this Discussion") button in the upper right corner of the discussion, and then click "show rubric".';
 export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
     el: HTMLElement,
     secondPara?: HTMLElement
@@ -182,7 +182,7 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
         if (!secondPara) return testResult('not run', {
             notFailureMessage: "Second paragraph of discussion expectations not found",
             userData,
-        })
+        });
 
         const secondParaText = secondPara.textContent ?? secondPara.innerText ?? '';
         const success =
@@ -197,18 +197,18 @@ export const secondDiscussionParaOff: CourseFixValidation<ISyllabusHaver, {
         const {success, userData} = await this.run(course);
         if (success) return testResult('not run', {notFailureMessage: "No need to run fix"});
 
-        if (!userData?.secondPara) return testResult(false, {failureMessage: "There was a problem accessing the syllabus."})
+        if (!userData?.secondPara) return testResult(false, {failureMessage: "There was a problem accessing the syllabus."});
         const {el, secondPara} = userData;
 
         secondPara.innerHTML = correctSecondPara;
         try {
-            await course.changeSyllabus(el.innerHTML)
+            await course.changeSyllabus(el.innerHTML);
             return testResult(true);
         } catch (e) {
             return errorMessageResult(e);
         }
     }
-}
+};
 
 const goodApaLanguage = 'The standard citation style for all Unity DE courses, ' +
     'unless otherwise noted in assignment instructions, ' +
@@ -231,7 +231,7 @@ export const addApaNoteToGradingPoliciesTest = {
     ISyllabusHaver,
     InSyllabusSectionFuncUserData,
     InSyllabusSectionFuncUserData | undefined
->
+>;
 
 
 //nbsp; is a non-breaking space, which is used in HTML to prevent line breaks
@@ -254,13 +254,13 @@ const tableHtml = `
 </tbody>
 </table>
 </div>
-`
+`;
 
 //This is hacky -- TECHNICALLY the grading policies section is not its own section,
 // but we are adding it to the end of the grading section, so it will go in the right place.
 // and will continue to work if the grading policies section is moved to its own section.
 
-const runLatePolicyTableCheck = inSyllabusSectionFunc(/grading/i, /<tr>\s*<td>0\.01 to 1/i)
+const runLatePolicyTableCheck = inSyllabusSectionFunc(/grading/i, /<tr>\s*<td>0\.01 to 1/i);
 
 export const latePolicyTableTest = {
     name: "Add Late Policy table",
@@ -306,7 +306,7 @@ export const latePolicyTableTest = {
     ISyllabusHaver,
     InSyllabusSectionFuncUserData,
     InSyllabusSectionFuncUserData | undefined
->
+>;
 
 
 const badAiLanguage = 'n this course, you may be encouraged to explore';
@@ -323,7 +323,7 @@ export const addAiGenerativeLanguageTest = {
     ],
     run: badSyllabusRunFunc(badAiRegex),
     fix: badSyllabusFixFunc(badAiRegex, goodAiLanguage)
-}
+};
 
 const badSupportEmail = 'helpdesk@unity.edu';
 const goodSupportEmail = 'unitysupport@unity.edu';
@@ -343,7 +343,7 @@ export const fixSupportEmailTest: TextReplaceValidation<ISyllabusHaver> = {
     ],
     run: badSyllabusRunFunc(badSupportEmailRegex),
     fix: badSyllabusFixFunc(badSupportEmailRegex, goodSupportEmail)
-}
+};
 
 const badHCLanguage = 'Any student found to be responsible for violating the Unity Environmental University Honor Code may be suspended or dismissed from the university.';
 const goodHCLanguage = 'Penalties may include, but are not limited to, grade penalty or a failing grade for the work in question or a failing grade for the course.';
@@ -360,11 +360,11 @@ export const honorCodeLanguageText: TextReplaceValidation<ISyllabusHaver> =
         ],
         run: badSyllabusRunFunc(badHCRegex),
         fix: badSyllabusFixFunc(badHCRegex, goodHCLanguage)
-    }
+    };
 
-const titleIXHTML = `<tr><td><h3><strong>Title IX Mandatory Reporting</strong></h3><p>Please note that instructors are mandatory reporters under Title IX. If you share information about sexual harassment, assault, relationship violence, stalking, or gender-based discrimination that involves another Unity student or employee, they are required to notify the University&rsquo;s Title IX office so they can offer you support and resources.</p></td></tr>`
+const titleIXHTML = `<tr><td><h3><strong>Title IX Mandatory Reporting</strong></h3><p>Please note that instructors are mandatory reporters under Title IX. If you share information about sexual harassment, assault, relationship violence, stalking, or gender-based discrimination that involves another Unity student or employee, they are required to notify the University&rsquo;s Title IX office so they can offer you support and resources.</p></td></tr>`;
 
-const runTitleIXPolicyCheck = inSyllabusSectionFunc(/Title IX/i, /Please note that instructors are mandatory/i)
+const runTitleIXPolicyCheck = inSyllabusSectionFunc(/Title IX/i, /Please note that instructors are mandatory/i);
 
 export const titleIXPolicyTest = {
     name: "Add Title IX Policy to Syllabus",
@@ -407,7 +407,7 @@ export const titleIXPolicyTest = {
     ISyllabusHaver,
     InSyllabusSectionFuncUserData,
     InSyllabusSectionFuncUserData | undefined
->
+>;
 
 const gradingDeadlineLanguage = `Any graded work that is a <em>Discussion</em> will have two formal deadlines. The initial post is due Thursday at 3 AM ET, and responses to classmates are due on the deadline listed below (Monday at 3am ET). Full instructions are listed at the top of the Discussion assignment details.`;
 
@@ -441,7 +441,7 @@ const gradingDeadlineRun = async (course: ISyllabusHaver) => {
     } else {
         return testResult(true, {notFailureMessage: "Not run because course is not undergrad."})
     }
-}
+};
 
 const gradingDeadlineFix = async (course: ISyllabusHaver) => {
     const syllabus = await course.getSyllabus();
@@ -454,14 +454,14 @@ const gradingDeadlineFix = async (course: ISyllabusHaver) => {
     } catch (e) {
         return errorMessageResult(e);
     }
-}
+};
 
 export const gradingDeadlineLanguageTest: CourseFixValidation<ISyllabusHaver> = {
     name: "UG Grading Deadline Language",
     description: "Adds clarifying language about the discussion deadlines to the bottom of the syllabus",
     run: gradingDeadlineRun,
     fix: gradingDeadlineFix
-}
+};
 
 const aiPolicyVideoLink = "https://drive.google.com/file/d/16O7s7_nX9NZF3orhogb3-nusBCCZ796x/view?t=2";
 const aiPolicyInfographicLink = "https://drive.google.com/file/d/1Gzbgp5piaQk9PQT5BbNsSfWfqEqWmNak/view";
@@ -489,7 +489,7 @@ const aiPolicyMediaRun = async (course: ISyllabusHaver) => {
             links: [`/courses/${course.id}/assignments/syllabus`]
         });
     }
-}
+};
 
 const aiPolicyMediaFix = async (course: ISyllabusHaver) => {
     const parser = new DOMParser();
@@ -524,14 +524,14 @@ const aiPolicyMediaFix = async (course: ISyllabusHaver) => {
         return errorMessageResult(e);
     }
 
-}
+};
 
 export const aiPolicyMediaTest: CourseFixValidation<ISyllabusHaver> = {
     name: "AI Policy Media",
     description: "Checks for infographic and video links in AI Policy section of syllabus",
     run: aiPolicyMediaRun,
     fix: aiPolicyMediaFix
-}
+};
 
 
 const badSupportNumber = "207-509-7277";
@@ -542,7 +542,7 @@ export const supportPhoneNumberFix: CourseFixValidation<ISyllabusHaver> = {
     description: "Checks for incorrect support phone number in syllabus",
     run: badSyllabusRunFunc(new RegExp(badSupportNumber, "ig")),
     fix: badSyllabusFixFunc(new RegExp(badSupportNumber, "ig"), goodSupportNumber)
-}
+};
 
 export default [
     addAiGenerativeLanguageTest,

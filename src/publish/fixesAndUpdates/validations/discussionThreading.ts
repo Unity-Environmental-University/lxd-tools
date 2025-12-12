@@ -1,7 +1,6 @@
 import {
     testResult
 } from "@publish/fixesAndUpdates/validations/utils";
-import {Course} from "@/canvas/course/Course";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 import {CourseFixValidation, RunTestFunction} from "@publish/fixesAndUpdates/validations/types";
 

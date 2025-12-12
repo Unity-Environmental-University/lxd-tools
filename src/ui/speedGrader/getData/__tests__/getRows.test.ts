@@ -10,8 +10,7 @@ import {mockUserData} from "@/canvas/__mocks__/mockUserData";
 import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
 import {getRows, IGetRowsConfig} from "@/ui/speedGrader/getData/getRows";
 import {mockEnrollment} from "@/canvas/__mocks__/mockEnrollment";
-import mockAssignmentSubmission from "@/canvas/content/__mocks__/mockAssignmentSubmission";
-import mock = jest.mock;
+
 import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
 
 import {IRubricCriterionData, RubricAssessment} from "@/canvas";

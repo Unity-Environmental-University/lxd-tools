@@ -1,4 +1,3 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
 import requireActual = jest.requireActual;
 import {mockAsyncGen} from "@/__mocks__/utils";
 

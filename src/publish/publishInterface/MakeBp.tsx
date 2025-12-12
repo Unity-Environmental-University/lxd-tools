@@ -1,5 +1,5 @@
 import {createNewCourse, getCourseById, getCourseName} from "@/canvas/course";
-import {Alert, Button, Col, FormControl, FormText, Row} from "react-bootstrap";
+import {Alert, Button, Col, FormControl, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
 import {
@@ -23,13 +23,15 @@ import dateFromTermName from "@/canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
 import { academicIntegritySetup, waitForMigrationCompletion } from "./academicIntegritySetup";
+import {getModules} from "@/canvas-redux/modulesSlice";
+import {fetchJson} from "@canvas/fetch/fetchJson";
+import {formDataify} from "@canvas/canvasUtils";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
-
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
-        onChange && onChange(value);
+        if(onChange) onChange(value);
     }, [value]];
     return returnValue;
 }
@@ -45,11 +47,11 @@ export interface IMakeBpProps {
 }
 
 export function MakeBp({
-                           devCourse,
-                           onBpSet,
-                           onTermNameSet,
-                           onSectionsSet,
-                       }: IMakeBpProps) {
+    devCourse,
+    onBpSet,
+    onTermNameSet,
+    onSectionsSet,
+}: IMakeBpProps) {
     const [isDev, setIsDev] = useState(devCourse.isDev);
     const [currentBp, setCurrentBp] = useState<Course | null>();
     const [isLoading, setIsLoading] = useState(false);
@@ -60,9 +62,6 @@ export function MakeBp({
     const [isLocking, setIsLocking] = useState(false);
     const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
     const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
-    const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);
-    const [isCloningBp, setCloningBp] = useState(false);
-    const academicIntegrityText = isRunningIntegritySetup ? 'Setting up...' : `Setup Academic Integrity`;
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
@@ -78,7 +77,7 @@ export function MakeBp({
     useEffect(() => {
         const activeMigrations = allMigrations.filter(migration => migration.tracked && !migration.cleanedUp);
         activeMigrationDispatcher({
-            set: activeMigrations
+          set: activeMigrations
         })
     }, [allMigrations])
 
@@ -100,13 +99,14 @@ export function MakeBp({
     }, [isLoading, currentBp, termName, activeMigrations]);
 
 
-    useEffect(() => {
+    useEffect( () => {
         const isDisabled = isLoading ||
-            !!currentBp ||
-            !devCourse.parsedCourseCode ||
-            devCourse.parsedCourseCode.length == 0
+                        !!currentBp ||
+                        !devCourse.parsedCourseCode ||
+                        devCourse.parsedCourseCode.length == 0
         setIsNewBpDisabled(isDisabled);
     }, [isLoading, currentBp, devCourse])
+
 
     async function updateMigrations() {
         if (!currentBp) return;
@@ -142,9 +142,9 @@ export function MakeBp({
 
     useEffectAsync(async () => {
         if (currentBp && currentBp.isBlueprint()) {
-            const sections: SectionData[] = [];
+            const sections:SectionData[] = [];
             const sectionGen = sectionDataGenerator(currentBp.id);
-            if (sections.length > 0) {
+            if(sections.length > 0) {
                 for await (const sectionData of sectionGen) {
                     sections.push(sectionData);
                     if (sectionData.term_name) setTermName(sectionData.term_name);
@@ -153,7 +153,7 @@ export function MakeBp({
                 const syllabusBody = document.createElement('div');
                 let currentBpSyllabus = '';
 
-                if (typeof currentBp.getSyllabus === 'function') {
+                if(typeof currentBp.getSyllabus === 'function') {
                     currentBpSyllabus = await currentBp.getSyllabus();
                 } else {
                     console.warn('Current BP does not have a getSyllabus function');
@@ -180,7 +180,7 @@ export function MakeBp({
         if (!currentBp) return false;
         if (termName.length === 0) return false;
         const termDate = dateFromTermName(termName);
-        if (termDate) {
+        if(termDate) {
             const daysLeft = termDate.until(Temporal.Now.plainDateISO()).days;
             if (daysLeft <= 5) {
                 const confirmFinish = confirm(`Term ${termName} appears to still be in the future. Are you SURE you want to archive?`)
@@ -197,7 +197,6 @@ export function MakeBp({
 
     async function onCloneIntoBp(e: FormEvent) {
         e.preventDefault();
-        setCloningBp(true);
         if (currentBp) {
             console.warn("Tried to clone while current BP exists")
             return;
@@ -210,7 +209,7 @@ export function MakeBp({
         const accountId = devCourse.accountId;
         const bpCode = bpify(devCourse.parsedCourseCode);
         let bpName = `${bpCode}: ${getCourseName(devCourse.rawData)}`;
-        if (devCourse.courseCode && devCourse.name.match(devCourse.courseCode)) {
+        if(devCourse.courseCode && devCourse.name.match(devCourse.courseCode)) {
             bpName = devCourse.name.replace(devCourse.courseCode, bpCode)
         }
         const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId, bpName);
@@ -219,7 +218,7 @@ export function MakeBp({
         startedMigration.tracked = true;
         startedMigration.cleanedUp = false;
         cacheCourseMigrations(newBpShell.id, [startedMigration]);
-        allMigrationDispatcher({add: startedMigration});
+        allMigrationDispatcher({ add: startedMigration });
         await updateMigrations();
 
         console.log("Waiting for migration to complete...");
@@ -239,17 +238,28 @@ export function MakeBp({
 
                 for (const group of bpAssignmentGroups) {
                     if (group.name === "Assignments" && group.group_weight === 0) {
-                        alert("An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.");
+                        const deleteGroup = await fetchJson(
+                            `/api/v1/courses/${bpCourse.id}/assignment_groups/${group.id}`,
+                            {
+                                fetchInit: {
+                                    method: 'DELETE',
+                                    body: formDataify({}),
+                                }
+                            }
+                        );
+
+                        if (deleteGroup.errors) {
+                            alert("An empty assignments category was created and couldn't be automatically deleted. You will need to remove it manually.");
+                        }
                     }
                 }
             } catch (e) {
                 console.error(e);
             }
         }
-        setCloningBp(false);
     }
 
-    async function finishMigration(migration: SavedMigration) {
+    async function finishMigration(migration:SavedMigration) {
         assert(currentBp);
         setIsLocking(true);
         await setAsBlueprint(currentBp.id);
@@ -259,14 +269,13 @@ export function MakeBp({
         const [newBp] = await getBlueprintsFromCode(
             devCourse.parsedCourseCode ?? '',
             [devCourse.accountId]
-        ) ?? [];
+            ) ?? [];
         setIsLocking(false);
         window.open(newBp.htmlContentUrl);
         location.reload();
 
 
     }
-
 
 
 
@@ -304,7 +313,7 @@ export function MakeBp({
         <hr/>
         {<>
             <Row><Col sm={3}>
-                <Button
+            <Button
                     id={'newBpButton'}
                     onClick={onCloneIntoBp}
                     aria-label={'New BP'}
