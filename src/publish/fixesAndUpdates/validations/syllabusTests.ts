@@ -18,21 +18,30 @@ import {
 import {paraify} from "@/testing/DomUtils";
 import { create } from "zustand";
 
-export const useSyllabusStore = create((set, get) => ({
+type SyllabusState = {
+    originalHtml: string,
+    draftHtml: string,
+    status: 'idle' | 'loading' | 'loaded' | 'saving' | 'success' | 'error',
+    validationResults: string[],
+    fetchSyllabus: (course: ISyllabusHaver) => Promise<void>,
+    updateSyllabus: (course: ISyllabusHaver, html: string) => Promise<void>,
+};
+
+export const useSyllabusStore = create<SyllabusState>((set, get) => ({
     originalHtml: '', // What is pulled from Canvas
     draftHtml: '', // The currently modified version
     status: 'idle', // 'validating', 'saving', 'success', 'error'
     validationResults: [], // List of discovered issues
 
     fetchSyllabus: async (course: ISyllabusHaver) => {
-        if(get.originalHtml !== '') return;
+        if(get().originalHtml !== '') return;
 
-        set({'status': 'loading', originalHtml: '', draftHtml: ''});
+        useSyllabusStore.setState({'status': 'loading', originalHtml: '', draftHtml: ''});
         try {
             const syllabus = await course.getSyllabus();
-            set({'originalHtml': syllabus.html, 'draftHtml': syllabus.html, 'status': 'loaded'});
+            set({'originalHtml': syllabus, 'draftHtml': syllabus, 'status': 'loaded'});
         } catch (e) {
-            set({'status': 'error', 'validationResults': [{failureMessage: "Error fetching syllabus", error: e}]});
+            set({'status': 'error', 'validationResults': ['Error fetching syllabus', e as string]});
         }
     },
 
@@ -40,7 +49,7 @@ export const useSyllabusStore = create((set, get) => ({
         set({'status': 'saving'});
 
         if(html === get().originalHtml) {
-            set({'status': 'success'}, {'validationResults': ["No changes needed!"]});
+            set({'status': 'success', 'validationResults': ["No changes needed!"]});
             return;
         }
 
@@ -48,7 +57,7 @@ export const useSyllabusStore = create((set, get) => ({
             await course.changeSyllabus(html);
             set({'status': 'success'});
         } catch (e) {
-            set({'status': 'error', 'validationResults': [{failureMessage: "Error saving syllabus", error: e}]});
+            set({'status': 'error', 'validationResults': ['Error saving syllabus: ', e as string]});
         }
     },
 }));
