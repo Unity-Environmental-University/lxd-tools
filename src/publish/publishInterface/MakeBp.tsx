@@ -14,18 +14,15 @@ import {listDispatcher} from "@/ui/reducerDispatchers";
 import {
     loadCachedCourseMigrations,
     SavedMigration,
-    cacheCourseMigrations,
-    loadCachedMigrations
+    cacheCourseMigrations
 } from "@/canvas/course/migration/migrationCache";
 import {DevToBpMigrationBar} from "./DevToBpMigrationBar";
 import assert from "assert";
 import {SectionData} from "@/canvas/courseTypes";
 import dateFromTermName from "@/canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
-import {jsonRegex} from "ts-loader/dist/constants";
-import {getSections} from "@canvas/course/getSections";
-import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
+import { academicIntegritySetup, waitForMigrationCompletion } from "./academicIntegritySetup";
 import {getModules} from "@/canvas-redux/modulesSlice";
 import {fetchJson} from "@canvas/fetch/fetchJson";
 import {formDataify} from "@canvas/canvasUtils";
@@ -323,7 +320,17 @@ export function MakeBp({
                     disabled={isNewBpDisabled}
                 >Create New BP</Button>
             </Col>
-                <Col sm={6}>
+                <Col sm={3}>
+                    {currentBp?.isUndergrad && <Button
+                        id={'academicIntegrityButton'}
+                        onClick={() => academicIntegritySetup({ currentBp, setIsRunningIntegritySetup })}
+                        disabled={isRunningIntegritySetup || !currentBp || isCloningBp}
+                        aria-label={'Setup Academic Integrity in New BP'}
+                        title="Set up the Academic Integrity content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
+                    >{academicIntegrityText}</Button>
+                    }
+                </Col>
+                <Col sm={5}>
                     {currentBp && activeMigrations.map(migration => <DevToBpMigrationBar
                         key={migration.id}
                         migration={migration}
@@ -334,24 +341,3 @@ export function MakeBp({
         </>}
     </div>
 }
-
-export async function waitForMigrationCompletion(courseId: number, migrationId: number, intervalMs = 5000, timeoutMs = 300000) {
-    const start = Date.now();
-
-    while (true) {
-        const migration = await fetchJson(`/api/v1/courses/${courseId}/content_migrations/${migrationId}`);
-
-        if (migration.workflow_state === "completed" || migration.workflow_state === "failed") {
-            return migration;
-        }
-
-        if (Date.now() - start > timeoutMs) {
-            throw new Error("Migration wait timed out after 5 minutes.");
-        }
-
-        console.log(`Migration still ${migration.workflow_state}... waiting ${intervalMs / 1000}s`);
-        await new Promise(res => setTimeout(res, intervalMs));
-    }
-}
-
-
