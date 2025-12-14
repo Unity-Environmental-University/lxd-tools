@@ -13,7 +13,7 @@ import {mockQuizData} from "@canvas/content/__mocks__/mockContentData";
 
 describe("courseHasDoubleQuizzes", () => {
     let course: DoubleQuizCourse;
-    let exampleQuizzes: IQuizData[] = [
+    const exampleQuizzes: IQuizData[] = [
             {
                 id: 101,
                 title: "Quiz A",

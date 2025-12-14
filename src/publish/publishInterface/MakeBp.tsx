@@ -1,5 +1,5 @@
-import {createNewCourse, getCourseName} from "@/canvas/course";
-import {Alert, Button, Col, FormControl, FormText, Row} from "react-bootstrap";
+import {createNewCourse, getCourseById, getCourseName} from "@/canvas/course";
+import {Alert, Button, Col, FormControl, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
 import {
@@ -14,24 +14,24 @@ import {listDispatcher} from "@/ui/reducerDispatchers";
 import {
     loadCachedCourseMigrations,
     SavedMigration,
-    cacheCourseMigrations,
-    loadCachedMigrations
+    cacheCourseMigrations
 } from "@/canvas/course/migration/migrationCache";
 import {DevToBpMigrationBar} from "./DevToBpMigrationBar";
 import assert from "assert";
 import {SectionData} from "@/canvas/courseTypes";
 import dateFromTermName from "@/canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
-import {jsonRegex} from "ts-loader/dist/constants";
-import {getSections} from "@canvas/course/getSections";
-import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
+import { academicIntegritySetup, waitForMigrationCompletion } from "./academicIntegritySetup";
+import {getModules} from "@/canvas-redux/modulesSlice";
+import {fetchJson} from "@canvas/fetch/fetchJson";
+import {formDataify} from "@canvas/canvasUtils";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
     const returnValue: [() => any, [T]] = [() => {
-        onChange && onChange(value);
+        if(onChange) onChange(value);
     }, [value]];
     return returnValue;
 }
@@ -214,14 +214,49 @@ export function MakeBp({
         }
         const newBpShell = await createNewCourse(bpify(devCourse.parsedCourseCode), accountId, bpName);
         setCurrentBp(new Course(newBpShell));
-        const migration = await startMigration(devCourse.id, newBpShell.id) as SavedMigration;
-        migration.tracked = true;
-        migration.cleanedUp = false;
-        cacheCourseMigrations(newBpShell.id, [migration])
-        allMigrationDispatcher({
-            add: migration,
-        });
+        const startedMigration = await startMigration(devCourse.id, newBpShell.id) as SavedMigration;
+        startedMigration.tracked = true;
+        startedMigration.cleanedUp = false;
+        cacheCourseMigrations(newBpShell.id, [startedMigration]);
+        allMigrationDispatcher({ add: startedMigration });
         await updateMigrations();
+
+        console.log("Waiting for migration to complete...");
+        const migration = await waitForMigrationCompletion(newBpShell.id, startedMigration.id);
+        console.log("Migration finished with state:", migration.workflow_state);
+        //Get assignment groups in BP
+        //For each, if there's one with name Assignments, check if it's empty, if it is, kill it and stop.
+        if (migration.workflow_state === "completed") {
+            console.log("We be in the completed state, baby.");
+            try {
+                const bpCourse = await getCourseById(newBpShell.id);
+                if (!bpCourse) throw new Error("We couldn't get the BP course");
+                console.log("BP Course ", bpCourse);
+                const bpAssignmentGroups = await bpCourse.getAssignmentGroups();
+                if (!bpAssignmentGroups) throw new Error("We couldn't get the BP assignment groups");
+                console.log("BP Modules ", bpAssignmentGroups);
+
+                for (const group of bpAssignmentGroups) {
+                    if (group.name === "Assignments" && group.group_weight === 0) {
+                        const deleteGroup = await fetchJson(
+                            `/api/v1/courses/${bpCourse.id}/assignment_groups/${group.id}`,
+                            {
+                                fetchInit: {
+                                    method: 'DELETE',
+                                    body: formDataify({}),
+                                }
+                            }
+                        );
+
+                        if (deleteGroup.errors) {
+                            alert("An empty assignments category was created and couldn't be automatically deleted. You will need to remove it manually.");
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
     }
 
     async function finishMigration(migration:SavedMigration) {
@@ -285,7 +320,17 @@ export function MakeBp({
                     disabled={isNewBpDisabled}
                 >Create New BP</Button>
             </Col>
-                <Col sm={6}>
+                <Col sm={3}>
+                    {currentBp?.isUndergrad && <Button
+                        id={'academicIntegrityButton'}
+                        onClick={() => academicIntegritySetup({ currentBp, setIsRunningIntegritySetup })}
+                        disabled={isRunningIntegritySetup || !currentBp || isCloningBp}
+                        aria-label={'Setup Academic Integrity in New BP'}
+                        title="Set up the Academic Integrity content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
+                    >{academicIntegrityText}</Button>
+                    }
+                </Col>
+                <Col sm={5}>
                     {currentBp && activeMigrations.map(migration => <DevToBpMigrationBar
                         key={migration.id}
                         migration={migration}
@@ -296,5 +341,3 @@ export function MakeBp({
         </>}
     </div>
 }
-
-

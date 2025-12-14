@@ -2,7 +2,6 @@ import {fetchJson} from "@/canvas/fetch/fetchJson";
 import {ICanvasCallConfig, renderAsyncGen} from "@/canvas/canvasUtils";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import assert from "assert";
 import {putContentConfig} from "@/canvas/content/BaseContentItem";
 import {ContentKind, contentUrlFuncs} from "@/canvas/content/ContentKind";
 

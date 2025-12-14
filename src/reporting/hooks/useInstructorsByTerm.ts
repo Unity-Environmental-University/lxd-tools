@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useCourses } from "@/reporting/hooks/useCourses";
 import { useInstructors } from "@/reporting/hooks/useInstructors";
 import {ITermData} from "@canvas/term/Term";
-import {IUserData} from "@canvas/canvasDataDefs";
 
 type UseInstructorsByTermProps = {
     selectedTerms?: ITermData[],
@@ -15,7 +14,7 @@ export const useInstructorsByTerm = ({selectedTerms}: UseInstructorsByTermProps)
     const { instructorsByCourseId } = useInstructors(courseIds); // Get instructors
 
     return useMemo(() => {
-        let allInstructors = new Map<symbol|string|number, { id: number, name: string, last_login: string }>();
+        const allInstructors = new Map<symbol|string|number, { id: number, name: string, last_login: string }>();
 
         courseIds.forEach((courseId) => {
             const instructors = instructorsByCourseId[courseId] || [];

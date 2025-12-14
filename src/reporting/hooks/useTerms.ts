@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTermsThunk } from "@/reporting/data/thunks/fetchTermsThunk";
 import {AppDispatch, RootReportingState} from "@/reporting/data/reportingStore";

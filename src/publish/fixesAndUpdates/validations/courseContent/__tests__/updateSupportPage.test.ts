@@ -29,11 +29,10 @@ describe('updateSupportPage', () => {
     it('should return failure when support page is not found', async () => {
         pageKindMock.getByString.mockResolvedValue({message: "Support page not found"});
         pageKindMock.dataGenerator.mockReturnValueOnce(mockAsyncGen([]));
-        const result = await updateSupportPage.run({ id: 1 });
+        const result = await updateSupportPage.run({id: 1});
 
-        expect(result).toEqual(testResult('unknown',{
-            notFailureMessage: "Support page not found",
-            userData: undefined
+        expect(result).toEqual(testResult('unknown', {
+            notFailureMessage: "Support page not found. ",
         }));
     });
 
@@ -48,14 +47,48 @@ describe('updateSupportPage', () => {
         pageKindMock.getByString.mockResolvedValue(_mockPageData);
         pageKindMock.dataIsThisKind.mockReturnValue(true);
 
-        const result = await updateSupportPage.run({ id: 1 });
+        const result = await updateSupportPage.run({id: 1});
 
         expect(result).toEqual(testResult(false, {
-            failureMessage: `Support page has link ${badUrl}`,
+            failureMessage: `Support page has link ${badUrl}. `,
             userData: _mockPageData
         }));
 
-    })
+    });
+
+    it('should replace "college" with "university" and return success', async () => {
+        const _mockPageData = {
+            id: 1,
+            ...mockPageData,
+            body: `<div><a href="${goodUrl}">link</a>This is a college resource.</div>`,
+        };
+
+        pageKindMock.getByString.mockResolvedValue(_mockPageData);
+        pageKindMock.dataIsThisKind.mockReturnValue(true);
+
+        const result = await updateSupportPage.run({id: 1});
+
+        expect(result).toEqual(testResult(false, {
+            failureMessage: "Support page mentions 'college.' ",
+            userData: _mockPageData
+        }));
+
+        pageKindMock.put.mockResolvedValue({
+            ..._mockPageData,
+            body: `<div>This is a university resource.</div>`,
+        });
+
+        const fixResult = await updateSupportPage.fix({id: 1}, result);
+        expect(fixResult).toEqual(testResult(true, {
+            notFailureMessage: "Support page updated successfully.",
+            userData: {
+                ..._mockPageData,
+                body: `<div>This is a university resource.</div>`,
+            }
+        }));
+    });
+
+
     it('should return success when support page has good url', async () => {
         const _mockPageData = {
             id: 1,
@@ -67,9 +100,10 @@ describe('updateSupportPage', () => {
         pageKindMock.dataGenerator.mockReturnValueOnce(mockAsyncGen([_mockPageData]));
         pageKindMock.dataIsThisKind.mockReturnValue(true);
 
-        const result = await updateSupportPage.run({ id: 1 });
+        const result = await updateSupportPage.run({id: 1});
 
         expect(result).toEqual(testResult(true, {
+            notFailureMessage: "Support page link is up to date.",
             userData: _mockPageData
         }));
     });
@@ -83,9 +117,10 @@ describe('updateSupportPage', () => {
         pageKindMock.getByString.mockResolvedValue(_mockPageData);
         pageKindMock.dataIsThisKind.mockReturnValue(true);
 
-        const result = await updateSupportPage.run({ id: 1 });
+        const result = await updateSupportPage.run({id: 1});
 
         expect(result).toEqual(testResult(true, {
+            notFailureMessage: "Support page link is up to date.",
             userData: _mockPageData
         }));
     });
@@ -98,12 +133,12 @@ describe('updateSupportPage', () => {
         }
         pageKindMock.getByString.mockResolvedValue(_mockPageData);
         pageKindMock.dataIsThisKind.mockReturnValue(true);
-        const result = await updateSupportPage.run({ id: 1 });
+        const result = await updateSupportPage.run({id: 1});
         pageKindMock.put.mockResolvedValue({
             ..._mockPageData,
             body: `<div><a href="${goodUrl}">Support message</a></div>`,
         });
-        const fixResult = await updateSupportPage.fix({ id: 1 }, result);
+        const fixResult = await updateSupportPage.fix({id: 1}, result);
         expect(fixResult).toEqual(testResult(true, {
             notFailureMessage: "Support page updated successfully.",
             userData: {
@@ -117,30 +152,30 @@ describe('updateSupportPage', () => {
 });
 
 describe("updateSupportPage.run", () => {
-  const course = { id: 42 };
+    const course = {id: 42};
 
-  beforeEach(() => {
-    jest.resetAllMocks();
-  });
+    beforeEach(() => {
+        jest.resetAllMocks();
+    });
 
-  it("returns failure when the support page has no links", async () => {
-    const fakePage = {
-      page_id: 123,
-      body: "<div>No links on this page</div>",
-    };
+    it("returns failure when the support page has no links", async () => {
+        const fakePage = {
+            page_id: 123,
+            body: "<div>No links on this page</div>",
+        };
 
-    // Mock getByString to return our fake page
-    jest.spyOn(pageKind, "getByString").mockResolvedValue(fakePage as any);
-    // Pretend that dataIsThisKind always recognizes our fakePage
-    jest.spyOn(pageKind, "dataIsThisKind").mockReturnValue(true);
+        // Mock getByString to return our fake page
+        jest.spyOn(pageKind, "getByString").mockResolvedValue(fakePage as any);
+        // Pretend that dataIsThisKind always recognizes our fakePage
+        jest.spyOn(pageKind, "dataIsThisKind").mockReturnValue(true);
 
-    const result = await updateSupportPage.run(course);
+        const result = await updateSupportPage.run(course);
 
-    expect(result).toEqual(
-      testResult(false, {
-        failureMessage: "Support page has no links, needs attention",
-        userData: fakePage,
-      })
-    );
-  });
+        expect(result).toEqual(
+            testResult(false, {
+                failureMessage: "No links found on support page, needs attention. ",
+                userData: fakePage,
+            })
+        );
+    });
 });

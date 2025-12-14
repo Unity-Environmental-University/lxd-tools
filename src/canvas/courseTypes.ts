@@ -1,4 +1,4 @@
-import {CanvasData, IUserData} from "@/canvas/canvasDataDefs";
+import {CanvasData} from "@/canvas/canvasDataDefs";
 import {ITermData} from "@/canvas/term/Term";
 
 export interface ICourseData extends CanvasData {

@@ -36,7 +36,7 @@ const coursesSlice = createSlice({
             state.courseIdsByTermId ??= {};
 
             const termIds = Array.isArray(course.enrollment_term_id) ? course.enrollment_term_id : [course.enrollment_term_id];
-            for (let termId of termIds) {
+            for (const termId of termIds) {
                 // Initialize the Set if it doesn't exist
                 if (!state.courseIdsByTermId[termId]) {
                     state.courseIdsByTermId[termId] = [];

@@ -1,4 +1,4 @@
-import {genCourseMigrationProgress, IMigrationData, IProgressData} from "../../canvas/course/migration";
+import {genCourseMigrationProgress, IProgressData} from "../../canvas/course/migration";
 import {Course} from "../../canvas/course/Course";
 import {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
@@ -32,10 +32,10 @@ export function DevToBpMigrationBar({migration, course, onFinishMigration}: Migr
                 Started: {migration.started_at}
             </Row>
         </Col>
-        <Col sm={4}>
+        <Col sm={3}>
             {progress?.completion ? `${progress.completion}%` : ""}
         </Col>
-        <Col sm={4}>
+        <Col sm={5}>
             {progress?.workflow_state === 'completed' && <Button
                 onClick={(e) => onFinishMigration && onFinishMigration(migration)}
             >Finish Migration</Button>}

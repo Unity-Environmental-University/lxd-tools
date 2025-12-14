@@ -2,7 +2,8 @@ import {createAsyncThunk} from "@reduxjs/toolkit";
 import {setAccountId, setRootAccountId, setStatus} from "@/reporting/data/accountsSlice";
 import { Account, getAccountIdFromUrl } from "ueu_canvas";
 
-type FetchAccountInfoParams = {} | undefined;
+type FetchAccountInfoParams = object | undefined;
+
 export const fetchAccountInfoThunk = createAsyncThunk(
     "accounts/fetchAccountIds",
     async (params: FetchAccountInfoParams, {dispatch}) => {

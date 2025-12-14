@@ -81,6 +81,7 @@ export interface IQueryParams extends Record<string, any> {
 }
 
 export interface ICanvasCallConfig<QueryParamsType extends IQueryParams = IQueryParams> {
+    // eslint-disable-next-line @/no-undef
     fetchInit?: RequestInit,
     queryParams?: QueryParamsType
 }
@@ -313,6 +314,7 @@ export async function getItemTypeAndId(
     let type;
     assert(type_lut.hasOwnProperty(item.type), "Unexpected type " + item.type);
 
+    // eslint-disable-next-line prefer-const
     type = type_lut[item.type];
     if (type === "wiki_page") {
         assert(item.url); //wiki_page items always have a url param

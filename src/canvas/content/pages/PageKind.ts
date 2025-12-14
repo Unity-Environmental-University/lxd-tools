@@ -1,6 +1,6 @@
 import { fetchJson } from "@/canvas/fetch/fetchJson";
 import { getPagedDataGenerator } from "@/canvas/fetch/getPagedDataGenerator";
-import {ICanvasCallConfig, renderAsyncGen} from "@/canvas/canvasUtils";
+import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import { IPageData } from "@/canvas/content/pages/types";
 import {
     ContentKind,
