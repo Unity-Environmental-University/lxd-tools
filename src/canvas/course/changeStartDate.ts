@@ -195,6 +195,7 @@ function dateToSyllabusString(date:Temporal.PlainDate) {
 
 export function syllabusHeaderName(el:HTMLElement) {
 
+    // eslint-disable-next-line prefer-const
     let [_, head] =  /([^:]*):/.exec(el.innerHTML) ?? [];
     head = head?.replaceAll(/<[^>]*>/g, '')
     return head;

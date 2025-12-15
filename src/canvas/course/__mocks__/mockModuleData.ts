@@ -1,4 +1,4 @@
-import {IModuleData, IModuleItemData, ModuleItemType} from "../../canvasDataDefs";
+import {IModuleData, IModuleItemData} from "../../canvasDataDefs";
 
 const mockModuleData: IModuleData = {
     id: 0,

@@ -4,11 +4,12 @@ import React from "react";
 import {IProfile} from "@canvas/type";
 
 interface IFacultyProfileProps {
-    profile: IProfile
-    setProfileButton?: ((e: React.MouseEvent) => void) | null
+    profile: IProfile,
+    setProfileButton?: ((e: React.MouseEvent) => void) | null,
+    key?: number
 }
 
-export function FacultyProfile({profile, setProfileButton}: IFacultyProfileProps) {
+export function FacultyProfile({profile, setProfileButton, key}: IFacultyProfileProps) {
     return (
         <div className={'row'} style={{border: "1px solid black", boxShadow: "10 10 2 #888"}}>
             <div className={'col-xs-3'}>

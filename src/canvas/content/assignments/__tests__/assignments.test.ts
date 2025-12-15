@@ -1,5 +1,5 @@
 import {mockCourseData} from "../../../course/__mocks__/mockCourseData";
-import {formDataify, ICanvasCallConfig, range} from "../../../canvasUtils";
+import {ICanvasCallConfig, range} from "../../../canvasUtils";
 import {updateAssignmentData} from "../index";
 import {mockAssignmentData} from "../../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";

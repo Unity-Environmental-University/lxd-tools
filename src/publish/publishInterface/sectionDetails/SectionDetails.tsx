@@ -59,10 +59,12 @@ export function SectionDetails({
 
     async function getInstructors(section: Course) {
         const fetchInstructors = await section.getInstructors();
-        fetchInstructors && setInstructors(fetchInstructors)
+        //Replaced logical-AND with IF to please linter
+        if(fetchInstructors) setInstructors(fetchInstructors);
         return fetchInstructors;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function error(message: string) {
         broadcast(message, 'alert-error')
     }
@@ -126,7 +128,8 @@ export function SectionDetails({
         </Col></Row>
         <Row><Col>
             {facultyProfileMatches && facultyProfileMatches.map((profile, i) => (
-                <FacultyProfile profile={profile} key={i}
+                <FacultyProfile profile={profile}
+                                key={i}
                                 setProfileButton={async () => await applyProfile(profile)}/>
             ))}
         </Col></Row></div>))

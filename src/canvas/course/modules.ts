@@ -8,6 +8,7 @@ import {Page} from "@/canvas/content/pages/Page";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {IPageData} from "@/canvas/content/pages/types";
 import {Discussion} from "@canvas/content/discussions/Discussion";
+import {getCourseById} from "@canvas/course/index";
 
 export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],
@@ -54,14 +55,24 @@ export async function changeModuleLockDate(courseId: number, module: IModuleData
 }
 
 
-export async function getModuleOverview(module: IModuleData, courseId: number) {
-    const overview = module.items.find(item =>
-        item.type === "Page" &&
-        item.title.toLowerCase().includes('overview')
-    );
-    if (!overview?.url) return; //skip this if it's not an overview
+export async function getHometileSrcPage(module: IModuleData, courseId: number) {
+    const course = await getCourseById(courseId);
+    let hometileSrc: IModuleItemData | undefined;
 
-    const url = overview.url.replace(/.*\/api\/v1/, '/api/v1')
+    if(course.isCareerInstitute()) {
+        // if career institute, grab first page
+        hometileSrc = module.items.find(item => item.type === "Page");
+    } else {
+
+        hometileSrc = module.items.find(item =>
+            item.type === "Page" &&
+            item.title.toLowerCase().includes('overview')
+        );
+    }
+    console.log("hometileSrc: ", hometileSrc)
+    if (!hometileSrc?.url) return;
+
+    const url = hometileSrc.url.replace(/.*\/api\/v1/, '/api/v1')
     const pageData = await fetchJson(url) as IPageData;
     return new Page(pageData, courseId);
 }

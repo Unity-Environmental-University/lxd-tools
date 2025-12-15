@@ -1,16 +1,12 @@
-import {Course} from "@/canvas/course/Course";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import {ICourseData, SectionData} from "@/canvas/courseTypes";
 import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
-import {Account} from "@/canvas/Account";
-import {render} from "@testing-library/react";
 import { fetchJson } from "@/canvas/fetch/fetchJson";
 import {ITermData} from "@/canvas/term/Term";
 import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 import {moduleGenerator} from "@/canvas/course/modules";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {renderAsyncGen} from "@canvas/canvasUtils";
 import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
 

@@ -1,7 +1,7 @@
 import {Course} from "@canvas/course/Course";
 import {
     getContentDataFromUrl, getRubric, IAssignmentData, IDiscussionData,
-    IRubricAssociationData, IRubricData, postContentFunc, putContentFunc
+    IRubricAssociationData, IRubricData
 } from "@/canvas";
 import { getSingleCourse } from "@canvas/course";
 import { IQuizData } from "@canvas/content/quizzes/types";
@@ -9,9 +9,8 @@ import { IPageData } from "@canvas/content/pages/types";
 import {getAssignmentData} from "@canvas/content/assignments/legacy";
 import {assignmentDataGen} from "@canvas/content/assignments";
 import {fetchJson} from "@canvas/fetch/fetchJson";
-import {deepObjectMerge, formDataify} from "@canvas/canvasUtils";
+import {formDataify} from "@canvas/canvasUtils";
 import {useState} from "react";
-
 
 
 interface RubricButtonProps {

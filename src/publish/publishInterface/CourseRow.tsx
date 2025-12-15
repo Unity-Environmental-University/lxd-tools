@@ -1,6 +1,6 @@
+import "./CourseRow.scss";
 import React, {useEffect, useState} from "react";
 import {IUserData} from "../../canvas/canvasDataDefs";
-import {useEffectAsync} from "../../ui/utils";
 import {Course} from "../../canvas/course/Course";
 import {IProfile} from "@canvas/type";
 
@@ -11,7 +11,7 @@ export interface ICourseRowProps {
     facultyProfileMatches: IProfile[],
     frontPageProfile: IProfile | null,
     onSelectSection?: (course: Course) => void,
-    sectionPublishToggle?: (course: Course, publish: boolean) => void,
+    selectionToggle?: (course: Course, publish: boolean) => void,
     selected?: boolean
 }
 
@@ -20,16 +20,22 @@ export function CourseRow({
                               frontPageProfile,
                               instructors,
                               onSelectSection,
+                              facultyProfileMatches,
                               errors,
-                              sectionPublishToggle,
+                              selectionToggle,
                               selected
                           }: ICourseRowProps) {
-    return (<div className={'row course-row align-items-center'}>
+
+    const rowClass  = ['row', 'course-row', 'align-items-center'];
+    const displayFacultyProfileWarning = facultyProfileMatches.length > 1 && !frontPageProfile;
+
+    if(displayFacultyProfileWarning) rowClass.push('alert-danger');
+    return (<div className={rowClass.join(' ')}>
         <div className={'col-xs-1'}>
             <input type={'checkbox'} checked={selected}
-                   onChange={e => sectionPublishToggle?.(course, e.currentTarget.checked)}/>
+                   onChange={e => selectionToggle?.(course, e.currentTarget.checked)}/>
         </div>
-        <div className={'col-xs-5'}>
+        <div className={'col-xs-4'}>
             <a href={`/courses/${course.id}`} className={`course-link ${course?.workflowState}`}
                target={"blank_"}>{course.name}</a>
         </div>
@@ -41,6 +47,11 @@ export function CourseRow({
         </div>
         <div className={'col-xs-1'}>{(onSelectSection && course) && (
             <button onClick={() => onSelectSection(course)}>Details</button>)}</div>
+        { displayFacultyProfileWarning ?
+            <div>More than One Match and no exact match, please fix in the details view</div>
+            :
         <div className={'col-xs-2'}>{instructors?.map((instructor) => instructor.name).join(', ')}</div>
+        }
+
     </div>)
 }

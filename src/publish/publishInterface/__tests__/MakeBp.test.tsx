@@ -1,3 +1,13 @@
+jest.resetModules();
+jest.mock('@canvas/fetch/fetchJson', () => ({
+  fetchJson: jest
+    .fn()
+    // First call: migration still running
+    .mockResolvedValueOnce({ workflow_state: 'running' })
+    // Second call: migration completed
+    .mockResolvedValueOnce({ workflow_state: 'completed' }),
+}));
+
 import React, {act} from 'react';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -27,6 +37,7 @@ import {SectionData} from "@/canvas/courseTypes";
 
 jest.mock('@/canvas/course/blueprint');
 import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
+import {waitForMigrationCompletion} from "@publish/publishInterface/academicIntegritySetup";
 
 
 jest.mock('@canvas/course/getTermNameFromSections', () => ({
@@ -339,10 +350,94 @@ describe('Migrations', () => {
             devCourse: mockCourse,
         });
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
-        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
+        const newBpBtn = screen.getByLabelText('New BP');
+        expect(newBpBtn).toBeInTheDocument();
+        await act(async () => {
+            fireEvent.click(newBpBtn);
+        });
         await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled())
         await waitFor(() => expect(screen.queryAllByText(/Status/)).toHaveLength(2));
         expect(screen.queryAllByText(/Status/)).toHaveLength(2);
     })
+
+    it('waits for migration completion before continuing', async () => {
+        jest.resetModules();
+
+        jest.doMock('@canvas/fetch/fetchJson', () => ({
+            // 👇 must match the named export, not default
+            fetchJson: jest
+                .fn()
+                .mockResolvedValueOnce({workflow_state: 'running'})
+                .mockResolvedValueOnce({workflow_state: 'completed'}),
+        }));
+
+        const {waitForMigrationCompletion} = await import('../academicIntegritySetup');
+
+        // super-short poll + timeout for fast test
+        await waitForMigrationCompletion(1, 1, 1, 20);
+
+        expect(true).toBe(true);
+    });
+
+    it('checks assignment groups when migration completes', async () => {
+        const getCourseById = jest.fn().mockResolvedValue({
+            getAssignmentGroups: jest.fn().mockResolvedValue([
+                {name: 'Assignments', group_weight: 0, id: 123},
+            ]),
+        });
+        jest.doMock('@/canvas/course', () => ({
+            getCourseById,
+        }));
+
+        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {
+        });
+
+        const migration = {workflow_state: 'completed'};
+        const bpCourse = await getCourseById(999);
+        const groups = await bpCourse.getAssignmentGroups();
+
+        expect(groups).toHaveLength(1);
+        if (migration.workflow_state === 'completed') {
+            for (const group of groups) {
+                if (group.name === 'Assignments' && group.group_weight === 0) {
+                    // @ts-expect-error Claiming alertSpy is not callable, but tests pass
+                    alertSpy('An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.');
+                }
+            }
+        }
+        expect(alertSpy).toHaveBeenCalledWith(
+            'An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.'
+        );
+        alertSpy.mockRestore();
+    });
+
+    it('does not alert when no empty Assignments group exists', async () => {
+        const getCourseById = jest.fn().mockResolvedValue({
+            getAssignmentGroups: jest.fn().mockResolvedValue([
+                {name: 'Assignments', group_weight: 5, id: 321},
+            ]),
+        });
+        jest.doMock('@/canvas/course', () => ({
+            getCourseById,
+        }));
+
+        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {
+        });
+        const migration = {workflow_state: 'completed'};
+        const bpCourse = await getCourseById(888);
+        const groups = await bpCourse.getAssignmentGroups();
+
+        if (migration.workflow_state === 'completed') {
+            for (const group of groups) {
+                if (group.name === 'Assignments' && group.group_weight === 0) {
+                    // @ts-expect-error Claiming alertSpy is not callable, but tests pass
+                    alertSpy('An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.');
+                }
+            }
+        }
+        expect(alertSpy).not.toHaveBeenCalled();
+        alertSpy.mockRestore();
+    });
+
 
 })

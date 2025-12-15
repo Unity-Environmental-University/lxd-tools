@@ -1,9 +1,7 @@
-import {projectRegex} from "@/publish/fixesAndUpdates/validations/courseSpecific/capstoneProjectValidations";
 import {Course} from "@/canvas/course/Course";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
 import {discussionThreadingValidation} from "../discussionThreading";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
 
 import {IDiscussionData} from "@canvas/content/types";

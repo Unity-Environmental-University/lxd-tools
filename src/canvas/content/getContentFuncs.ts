@@ -1,9 +1,3 @@
-import {CONTENT_KINDS, getContentKindFromUrl} from "@/canvas/content/determineContent";
-import assert from "assert";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-
-
-
 function getAllLinks(body:string): string[] {
     const el = bodyAsElement(body);
     const anchors = el.querySelectorAll('a');

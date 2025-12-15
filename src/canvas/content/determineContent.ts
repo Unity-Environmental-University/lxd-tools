@@ -8,7 +8,6 @@ import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
 import QuizKind from "@/canvas/content/quizzes/QuizKind";
 import PageKind from "@/canvas/content/pages/PageKind";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
-import {ContentKind} from "@/canvas/content/ContentKind";
 
 
 export const CONTENT_KINDS = [
