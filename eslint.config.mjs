@@ -21,5 +21,8 @@ export default tseslint.config(
     },
     {
         files: ['**/*.test.ts', '**/*.test.tsx'], // Adjust the glob pattern if necessary
+    },
+    {
+        env: { browser: true },
     }
 )
