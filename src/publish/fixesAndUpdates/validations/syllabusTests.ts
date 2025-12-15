@@ -62,7 +62,7 @@ export const useSyllabusStore = create<SyllabusState>((set, get) => ({
     },
 }));
 
-// TODO; Initialize syllabus with fetchSyllabus
+// TODO; Initialize syllabus with fetchSyllabus -- This is being done in CourseUpdateInterface when Run Validations button is pressed
 // TODO; Refactor validations to use store
 //  This would require us to replace the input for each from a course object to the syllabus store
 
@@ -72,7 +72,8 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHav
     beforeAndAfters: [['off the final grade', 'off the grade']],
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
-        const syllabus = await course.getSyllabus();
+        // Now using state instead of course.getSyllabus()
+        const syllabus = await useSyllabusStore.getState().originalHtml;
         const match = /off the final grade/gi.test(syllabus);
         return testResult(!match, {
                 failureMessage: ["'off the final grade' found in syllabus"],
@@ -89,7 +90,7 @@ export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
         "conduct all correspondence with students related to the class in Canvas, and you should " +
         "expect to receive a response to emails within 24 hours.\"",
     run: async (course, config) => {
-        const syllabus = await course.getSyllabus();
+        const syllabus = await useSyllabusStore.getState().draftHtml;
         const testString = 'The instructor will conduct all correspondence with students related to the class in Canvas, and you should expect to receive a response to emails within 24 hours'.toLowerCase();
         const el = document.createElement('div');
         el.innerHTML = syllabus;

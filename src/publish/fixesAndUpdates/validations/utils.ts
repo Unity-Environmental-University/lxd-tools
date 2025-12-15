@@ -3,6 +3,7 @@ import {IContentHaver, ICourseDataHaver, IIdHaver, ISyllabusHaver} from "@canvas
 import {BaseContentItem} from "@canvas/content/BaseContentItem";
 import {overrideConfig} from "@canvas/fetch/utils";
 import {ICourseData} from "@canvas/courseTypes";
+import {useSyllabusStore} from "@publish/fixesAndUpdates/validations/syllabusTests";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -497,6 +498,21 @@ export function badSyllabusFixFunc(
     }
 }
 
+export function badSyllabusStateFixFunc(
+    validateRegEx: RegExp,
+    replace: string | ((str: string, ...args: any[]) => string)
+) {
+    const replaceText = replaceTextFunc(validateRegEx, replace);
+    return async() => {
+        try {
+            // Autocomplete did this, not sure it's right
+            useSyllabusStore.setState({draftHtml: replaceText});
+            return testResult<never>(true)
+        } catch (e) {
+            return errorMessageResult(e)
+        }
+    }
+}
 
 export function badContentFixFunc<CourseType extends IContentHaver, ContentType extends BaseContentItem>(
     badContentRegex: RegExp,
