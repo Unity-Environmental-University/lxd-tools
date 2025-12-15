@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { selectCourses } from "@/reporting/data/selectors/courseSelectors";
 import { ICourseData, ITermData } from "ueu_canvas";
@@ -11,7 +10,7 @@ export const useCourses = (selectedTerms?: ITermData[]) => {
     const termIds = selectedTerms?.map(t => t.id) ?? []
 
     // return useMemo(() => {
-        let filtered = courses.filter(c => {
+        const filtered = courses.filter(c => {
             if (!c.enrollment_term_id) return false; // Exclude undefined cases
 
             // Normalize to an array for uniform comparison

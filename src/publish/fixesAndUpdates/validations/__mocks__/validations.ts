@@ -24,8 +24,7 @@ import {Discussion} from "@/canvas/content/discussions/Discussion";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {
     ContentTextReplaceFix,
-    CourseValidation,
-    TextReplaceValidation
+    CourseValidation
 } from "@publish/fixesAndUpdates/validations/types";
 
 export function badContentTextValidationTest(test: CourseValidation<IContentHaver>, badHtml: string, goodHtml: string, badContentItems?:IContentHaver[]) {

@@ -1,10 +1,10 @@
 // getModuleInfo.test.js
 
 import {getModuleInfo, getItemInModule} from '../modules';
-import {CanvasData, IModuleData, IModuleItemData, ModuleItemType} from "@/canvas/canvasDataDefs";
+import {CanvasData, IModuleData, ModuleItemType} from "@/canvas/canvasDataDefs";
 import mockModuleData, {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
-import {mockAssignmentData, mockDiscussionData, mockQuizData} from "@/canvas/content/__mocks__/mockContentData";
+import {mockAssignmentData, mockDiscussionData} from "@/canvas/content/__mocks__/mockContentData";
 
 import {Discussion} from "@/canvas/content/discussions/Discussion";
 

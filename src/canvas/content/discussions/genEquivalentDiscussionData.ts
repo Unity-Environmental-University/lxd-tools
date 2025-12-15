@@ -1,20 +1,5 @@
-import {genBlueprintDataForCode} from "@canvas/course/blueprint";
 import {Course} from "@canvas/course/Course";
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {ContentData, IAssignmentData, IDiscussionData} from "@canvas/content/types";
-import {Assignment} from "@canvas/content/assignments/Assignment";
-import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
-import {getModuleWeekNumber, moduleGenerator} from "@canvas/course/modules";
-import {ContentKind} from "@canvas/content/ContentKind";
-import {
-    CONTENT_KINDS,
-    ContentKindInPractice,
-    ContentDataType,
-    getContentKindFromContent
-} from "@canvas/content/determineContent";
-import {getModuleInfo} from "@/ui/speedGrader/modules";
-import {renderAsyncGen} from "@canvas/canvasUtils";
-import {IModuleItemData} from "@canvas/canvasDataDefs";
+import {IDiscussionData} from "@canvas/content/types";
 
 /**
  * Retrieves the equivalent discussion data for a given assignment across multiple course blueprints.

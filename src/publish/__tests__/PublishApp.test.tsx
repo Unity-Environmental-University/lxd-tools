@@ -1,5 +1,4 @@
 // PublishApp.test.tsx
-import {runtime} from "webextension-polyfill";
 
 // eslint-disable-next-line @/no-undef,@typescript-eslint/no-require-imports
 global.TextEncoder = require('util').TextEncoder;
@@ -9,7 +8,7 @@ import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import PublishApp, {getLatestVersionNumber, versionCompare} from '../PublishApp';
+import PublishApp, {versionCompare} from '../PublishApp';
 import {IUserData} from '../../canvas/canvasDataDefs';
 import {PublishInterface} from '../publishInterface/PublishInterface';
 import {CourseUpdateInterface} from '../fixesAndUpdates/CourseUpdateInterface';
@@ -57,6 +56,7 @@ beforeEach(() => {
 
 
 test('TextEncoder is globally defined in Jest', () => {
+    // eslint-disable-next-line @/no-undef
     expect(global.TextEncoder).toBeDefined();
 });
 

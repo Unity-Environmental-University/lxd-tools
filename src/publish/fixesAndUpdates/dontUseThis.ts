@@ -1,6 +1,6 @@
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
-import {ICourseData, SectionData} from "@canvas/courseTypes";
-import {getCourseData, getCourseDataGenerator, getSingleCourse} from "@canvas/course";
+import {ICourseData} from "@canvas/courseTypes";
+import {getCourseDataGenerator} from "@canvas/course";
 import {MessageResult, testResult, ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 import {Course} from "@canvas/course/Course";
 

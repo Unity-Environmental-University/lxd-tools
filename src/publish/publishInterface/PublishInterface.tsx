@@ -12,10 +12,9 @@ import {MakeBp} from "./MakeBp";
 import {Course} from "@/canvas/course/Course";
 import {Term} from "@/canvas/term/Term";
 import {getStartDateAssignments} from "@/canvas/course/changeStartDate";
-import {assignmentDataGen} from "@/canvas/content/assignments";
 import {IListAction, lutDispatcher, LutSetAction} from "@/ui/reducerDispatchers";
 import {sectionDataGenerator} from "@/canvas/course/blueprint";
-import {batchGen, renderAsyncGen} from "@/canvas/canvasUtils";
+import {batchGen} from "@/canvas/canvasUtils";
 import {getCourseData} from "@canvas/course";
 import {sleep} from "@/utils/toolbox";
 import {IProfile, IProfileWithUser} from "@canvas/type";
@@ -183,7 +182,9 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
                 continue;
             }
             if (profiles.length > 1) {
-                errors.push("Multiple Matches Found")
+                errors.push("Multiple Matches Found");
+                // WARN; Set an alert to tell the user they have sections to deal with?
+                continue;
             }
             const profile = profiles[0];
             const frontPage = await section.getFrontPage();

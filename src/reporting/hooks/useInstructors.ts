@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchInstructorsThunk } from "@/reporting/data/thunks/fetchInstructorsThunk";
-import {AppDispatch, RootReportingState} from "@/reporting/data/reportingStore";
+import {AppDispatch} from "@/reporting/data/reportingStore";
 import { selectInstructorsByCourseId } from "@/reporting/data/selectors/instructorSelectors";
 
 export const useInstructors = (courseIds: number[]) => {

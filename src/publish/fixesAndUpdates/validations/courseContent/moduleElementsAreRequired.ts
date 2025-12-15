@@ -1,10 +1,9 @@
-import {CourseFixValidation, CourseValidation, FixTestFunction} from "@publish/fixesAndUpdates/validations/types";
+import {CourseValidation, FixTestFunction} from "@publish/fixesAndUpdates/validations/types";
 import {IModuleItemData} from "@canvas/canvasDataDefs";
 import {errorMessageResult, MessageResult, testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {
     AssignmentItemData,
-    DiscussionItemData, isAssignmentItemData, isDiscussionItemData,
-    isPageItemData,
+    DiscussionItemData, isDiscussionItemData,
     moduleGenerator,
     PageItemData,
     saveModuleItem
@@ -26,11 +25,11 @@ export function isAffectedModuleItem(mi: IModuleItemData, moduleName: string): m
 }
 
 const run = async (course: CheckModuleCourse) => {
-    let affectedModuleItems: AffectedModuleItem[] = [];
+    const affectedModuleItems: AffectedModuleItem[] = [];
 
 
-    let modGen = moduleGenerator(course.id, {queryParams: {include: ['items']}});
-    for await (let mod of modGen) {
+    const modGen = moduleGenerator(course.id, {queryParams: {include: ['items']}});
+    for await (const mod of modGen) {
         if (!mod.published) continue;
         const {items} = mod;
         const badItems = items.filter(item => isAffectedModuleItem(item, mod.name));

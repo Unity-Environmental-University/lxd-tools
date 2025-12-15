@@ -1,5 +1,4 @@
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 import {IAssignmentData} from "@canvas/content/types";
 
