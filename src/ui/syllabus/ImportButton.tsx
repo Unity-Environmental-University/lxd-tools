@@ -2,8 +2,6 @@ import {Button} from "react-bootstrap";
 import { Course, renderAsyncGen } from "ueu_canvas";
 //import { getCourseIdFromUrl } from "ueu_canvas"; // Driving me crazy, thinks it doesnt exist
 
-// import { Course } from "@canvas/course/Course";
-// import {renderAsyncGen} from "@canvas/canvasUtils";
 import { Page } from "@canvas/content/pages/Page";  // these don't exist in ueu_canvas yet
 import PageKind from "@canvas/content/pages/PageKind";
 import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
