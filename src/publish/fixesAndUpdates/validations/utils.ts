@@ -4,6 +4,7 @@ import {BaseContentItem} from "@canvas/content/BaseContentItem";
 import {overrideConfig} from "@canvas/fetch/utils";
 import {ICourseData} from "@canvas/courseTypes";
 import {useSyllabusStore} from "@publish/fixesAndUpdates/validations/syllabusTests";
+import {getCourseById} from "@canvas/course";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -500,13 +501,14 @@ export function badSyllabusFixFunc(
 
 export function badSyllabusStateFixFunc(
     validateRegEx: RegExp,
-    replace: string | ((str: string, ...args: any[]) => string)
+    replace: string | ((str: string, ...args: any[]) => string),
 ) {
     const replaceText = replaceTextFunc(validateRegEx, replace);
     return async() => {
         try {
             // Autocomplete did this, not sure it's right
-            useSyllabusStore.setState({draftHtml: replaceText});
+            useSyllabusStore.setState({draftHtml: replaceText(useSyllabusStore.getState().draftHtml)});
+            await useSyllabusStore.getState().updateSyllabus(/*need to figure out how to get course here*/, useSyllabusStore.getState().draftHtml);
             return testResult<never>(true)
         } catch (e) {
             return errorMessageResult(e)

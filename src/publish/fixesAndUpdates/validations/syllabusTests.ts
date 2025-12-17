@@ -3,6 +3,7 @@ import {
     AddPosition,
     addSyllabusSectionFix,
     badSyllabusFixFunc,
+    badSyllabusStateFixFunc,
     badSyllabusRunFunc,
     errorMessageResult,
     inSyllabusSectionFunc,
@@ -73,7 +74,7 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHav
     description: 'Remove "final" from the grading policy paragraphs of syllabus',
     run: async (course, config) => {
         // Now using state instead of course.getSyllabus()
-        const syllabus = await useSyllabusStore.getState().originalHtml;
+        const syllabus = await useSyllabusStore.getState().draftHtml;
         const match = /off the final grade/gi.test(syllabus);
         return testResult(!match, {
                 failureMessage: ["'off the final grade' found in syllabus"],
@@ -81,7 +82,7 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHav
             }
         );
     },
-    fix: badSyllabusFixFunc(/off the final grade/gi, 'off the grade')
+    fix: badSyllabusStateFixFunc(/off the final grade/gi, 'off the grade'),
 };
 
 export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
@@ -90,7 +91,7 @@ export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
         "conduct all correspondence with students related to the class in Canvas, and you should " +
         "expect to receive a response to emails within 24 hours.\"",
     run: async (course, config) => {
-        const syllabus = await useSyllabusStore.getState().draftHtml;
+        const syllabus = await useSyllabusStore.getState().originalHtml;
         const testString = 'The instructor will conduct all correspondence with students related to the class in Canvas, and you should expect to receive a response to emails within 24 hours'.toLowerCase();
         const el = document.createElement('div');
         el.innerHTML = syllabus;
