@@ -16,6 +16,81 @@ import {
     TextReplaceValidation
 } from "@publish/fixesAndUpdates/validations/types";
 import {paraify} from "@/testing/DomUtils";
+import {Course} from "@/canvas/course/Course";
+
+const UG_SOURCE_SYLLABUS = ;
+const GRAD_SOURCE_SYLLABUS = ;
+const CE_SOURCE_SYLLABUS = ;
+
+let sourceSyllabus: string | undefined;
+const course = getCourseById();
+const courseSyllabus = await course.getSyllabus();
+
+if(course.isGrad()) {
+    sourceSyllabus = GRAD_SOURCE_SYLLABUS;
+} else if(course.isCareerInstitute()) {
+    sourceSyllabus = CE_SOURCE_SYLLABUS;
+} else {
+    sourceSyllabus = UG_SOURCE_SYLLABUS;
+}
+
+//Compare source syllabus to actual syllabus and find differences
+//Would need to exclude the information that is custom for each course
+const differences = getDifferences(sourceSyllabus, courseSyllabus);
+
+function getDifferences(source: string | undefined, actual: string): string[] {
+    if(!source) return [];
+    const sourceLines = source.split('\n');
+    const actualLines = actual.split('\n');
+    const differences: string[] = [];
+    for(let i = 0; i < sourceLines.length; i++) {
+        if(sourceLines[i] !== actualLines[i]) {
+            differences.push(sourceLines[i]);
+        }
+    }
+    return differences;
+}
+//Store difference
+//Return test results
+const runSyllabusDifferencesTest = async (course: ISyllabusHaver, differences: string[]): Promise<testResult> => {
+    const success = differences.length === 0;
+    return testResult(success, {
+        failureMessage: `Syllabus does not match source syllabus. Differences: ${differences.join('\n')}`,
+        links: [`/courses/${course.id}/assignments/syllabus`]
+    });
+};
+
+//Fix differences
+const fixSyllabusDifferences = async (course: ISyllabusHaver, differences: string[]) => {
+    const syllabus = await course.getSyllabus();
+    let newSyllabus = syllabus;
+    for(const difference of differences) {
+        newSyllabus = newSyllabus.replace(difference, '');
+    }
+    await course.changeSyllabus(newSyllabus);
+};
+
+export const syllabusDifferencesTest: CourseValidation<ISyllabusHaver> = {
+    name: "Syllabus Differences",
+    description: "Checks for differences between source syllabus and actual syllabus",
+    async run(course) {
+        const sourceSyllabus = await course.getSyllabus();
+        const courseSyllabus = await course.getSyllabus();
+        const differences = getDifferences(sourceSyllabus, courseSyllabus);
+        return testResult(differences.length === 0, {
+            failureMessage: `Syllabus has differences: ${differences.join(', ')}`,
+            links: [`/courses/${course.id}/assignments/syllabus`]
+        });
+    },
+    async fix(course) {
+        const sourceSyllabus = await course.getSyllabus();
+        const courseSyllabus = await course.getSyllabus();
+        const differences = getDifferences(sourceSyllabus, courseSyllabus);
+        if(differences.length === 0) return testResult("not run", {notFailureMessage: "No differences found."});
+        await fixSyllabusDifferences(course, differences);
+        return testResult(true);
+    }
+};
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
