@@ -14,83 +14,110 @@ import {
     CourseFixValidation,
     CourseValidation,
     TextReplaceValidation
-} from "@publish/fixesAndUpdates/validations/types";
+} from "./types";
 import {paraify} from "@/testing/DomUtils";
-import {Course} from "@/canvas/course/Course";
+import { getCourseById } from "@/canvas/course";
+import diff_match_patch, { patch_obj } from "diff-match-patch";
 
-const UG_SOURCE_SYLLABUS = ;
-const GRAD_SOURCE_SYLLABUS = ;
-const CE_SOURCE_SYLLABUS = ;
+// ********************************** BEGIN: Looking at refactoring to use a source syllabus instead of individual tests
+// TODO; Handle exclusions for information that is course-specific
+//  I probably need to do this at the string level, but that's not good.
+//  Option A: Turn both into DOM documents, pull out the divs that hold course specific information, and then turn them back into strings
+//  Option B: Use a regex to remove course-specific information(code complete's idea, not sure how this would work, worth thinking about)
+//  Option C: Could we keep it as a string, tell it to remove everything from the div tag with certain attributes until the closing div tag? May run into issues with nested divs
+//  Option D: Use a DOM parser to remove course-specific information(isn't this just option A?)
+//  Option E: OpenAI token?
+//  Option F: DOMpurify?
+//  Option G: Introduce a second diff to remove course specific information, reintroduce it after applying the patch
 
-let sourceSyllabus: string | undefined;
-const course = getCourseById();
-const courseSyllabus = await course.getSyllabus();
-
-if(course.isGrad()) {
-    sourceSyllabus = GRAD_SOURCE_SYLLABUS;
-} else if(course.isCareerInstitute()) {
-    sourceSyllabus = CE_SOURCE_SYLLABUS;
-} else {
-    sourceSyllabus = UG_SOURCE_SYLLABUS;
+type syllabusDifferenceUserData = {
+    sourceSyllabus: string | undefined,
+    courseSyllabus: string,
+    patch:  Array<{ new(): diff_match_patch.patch_obj }>,
 }
 
-//Compare source syllabus to actual syllabus and find differences
-//Would need to exclude the information that is custom for each course
-const differences = getDifferences(sourceSyllabus, courseSyllabus);
+let UG_SOURCE_SYLLABUS: string | undefined;
+let GRAD_SOURCE_SYLLABUS: string | undefined;
+let CE_SOURCE_SYLLABUS: string | undefined;
 
-function getDifferences(source: string | undefined, actual: string): string[] {
-    if(!source) return [];
-    const sourceLines = source.split('\n');
-    const actualLines = actual.split('\n');
-    const differences: string[] = [];
-    for(let i = 0; i < sourceLines.length; i++) {
-        if(sourceLines[i] !== actualLines[i]) {
-            differences.push(sourceLines[i]);
+async function getSourceSyllabus(course: ISyllabusHaver): Promise<string | undefined> {
+    const testCourse = await getCourseById(course.id);
+    if (testCourse.isGrad()) {
+        if (!GRAD_SOURCE_SYLLABUS) {
+            const gradSourceCourse = await getCourseById(7773747);
+            GRAD_SOURCE_SYLLABUS = await gradSourceCourse.getSyllabus();
         }
+        return GRAD_SOURCE_SYLLABUS;
     }
-    return differences;
-}
-//Store difference
-//Return test results
-const runSyllabusDifferencesTest = async (course: ISyllabusHaver, differences: string[]): Promise<testResult> => {
-    const success = differences.length === 0;
-    return testResult(success, {
-        failureMessage: `Syllabus does not match source syllabus. Differences: ${differences.join('\n')}`,
-        links: [`/courses/${course.id}/assignments/syllabus`]
-    });
+
+    if (testCourse.isCareerInstitute()) {
+        if (!CE_SOURCE_SYLLABUS) {
+            // const ceSourceCourse = await getCourseById(/*ID needed*/);
+            // CE_SOURCE_SYLLABUS = await ceSourceCourse.getSyllabus();
+            // For now, returning undefined until ID is available
+            return undefined;
+        }
+        return CE_SOURCE_SYLLABUS;
+    }
+
+    if (!UG_SOURCE_SYLLABUS) {
+        const ugSourceCourse = await getCourseById(7775658);
+        UG_SOURCE_SYLLABUS = await ugSourceCourse.getSyllabus();
+    }
+    return UG_SOURCE_SYLLABUS;
 };
 
-//Fix differences
-const fixSyllabusDifferences = async (course: ISyllabusHaver, differences: string[]) => {
-    const syllabus = await course.getSyllabus();
-    let newSyllabus = syllabus;
-    for(const difference of differences) {
-        newSyllabus = newSyllabus.replace(difference, '');
-    }
-    await course.changeSyllabus(newSyllabus);
-};
-
-export const syllabusDifferencesTest: CourseValidation<ISyllabusHaver> = {
+export const syllabusDifferencesTest: CourseValidation<ISyllabusHaver, syllabusDifferenceUserData> = {
     name: "Syllabus Differences",
     description: "Checks for differences between source syllabus and actual syllabus",
-    async run(course) {
-        const sourceSyllabus = await course.getSyllabus();
+    run: async (course) => {
+        const sourceSyllabus = await getSourceSyllabus(course);
         const courseSyllabus = await course.getSyllabus();
-        const differences = getDifferences(sourceSyllabus, courseSyllabus);
-        return testResult(differences.length === 0, {
-            failureMessage: `Syllabus has differences: ${differences.join(', ')}`,
-            links: [`/courses/${course.id}/assignments/syllabus`]
+        const dmp = new diff_match_patch();
+
+        if (!sourceSyllabus || !courseSyllabus) return testResult("not run", {notFailureMessage: "No source syllabus found."});
+        
+        /*const patch = dmp.patch_make(courseSyllabus, sourceSyllabus).map(p => {
+            const patchObj = new diff_match_patch.patch_obj();
+            Object.assign(patchObj, p);
+            return patchObj;
+        });*/
+        const patch = dmp.patch_make(courseSyllabus, sourceSyllabus);
+        const success = patch.length === 0;
+
+        return testResult(success, {
+            failureMessage: `Syllabus does not match source syllabus.`,
+            links: [`/courses/${course.id}/assignments/syllabus`],
+            userData: {
+                sourceSyllabus,
+                courseSyllabus,
+                patch,
+            },
         });
     },
-    async fix(course) {
-        const sourceSyllabus = await course.getSyllabus();
-        const courseSyllabus = await course.getSyllabus();
-        const differences = getDifferences(sourceSyllabus, courseSyllabus);
-        if(differences.length === 0) return testResult("not run", {notFailureMessage: "No differences found."});
-        await fixSyllabusDifferences(course, differences);
-        return testResult(true);
-    }
+    fix: async (course, result) => {
+        const dmp = new diff_match_patch();
+        const userData = result?.userData;
+        if (!userData || userData.patch.length === 0)
+            return testResult("not run", {failureMessage: "No user data found."});
+
+       const [newSyllabus, results] = dmp.patch_apply(userData.patch, userData.courseSyllabus);
+
+       if(results.some(applied => !applied))
+           return testResult(false, {failureMessage: "Failed to apply some patches."});
+
+        try {
+            await course.changeSyllabus(newSyllabus);
+            return testResult(true);
+        } catch (e) {
+            if (e instanceof Error) {
+                return testResult(false, {failureMessage: e.message});
+            }
+            return testResult(false, {failureMessage: "An unknown error occurred during fix."});
+        }
+    },
 };
+// *********************************** END: Looking at refactoring to use a source syllabus instead of individual tests
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
@@ -620,7 +647,8 @@ export const supportPhoneNumberFix: CourseFixValidation<ISyllabusHaver> = {
 };
 
 export default [
-    addAiGenerativeLanguageTest,
+    syllabusDifferencesTest,
+    /*addAiGenerativeLanguageTest,
     removeSameDayPostRestrictionTest,
     classInclusiveNoDateHeaderTest,
     courseCreditsInSyllabusTest,
@@ -637,6 +665,5 @@ export default [
     titleIXPolicyTest,
     gradingDeadlineLanguageTest,
     aiPolicyMediaTest,
-    supportPhoneNumberFix
+    supportPhoneNumberFix*/
 ]
-
