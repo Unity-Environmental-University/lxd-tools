@@ -177,7 +177,6 @@ export async function academicIntegritySetup({
         alert("There was a problem unpublishing the Academic Integrity module in the blueprint. You may need to check this manually.")
     }
 
-    // Hoping to delete from 445-462 once Canvas gets back to me, solving my import issue
     const updatedAssignmentGroups = await bp.getAssignmentGroups();
 
     for (const group of updatedAssignmentGroups) {

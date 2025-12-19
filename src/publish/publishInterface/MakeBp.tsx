@@ -23,6 +23,8 @@ import dateFromTermName from "@/canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
 import { academicIntegritySetup, waitForMigrationCompletion } from "./academicIntegritySetup";
+import {fetchJson} from "@canvas/fetch/fetchJson";
+import {formDataify} from "@canvas/canvasUtils";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
@@ -240,7 +242,18 @@ export function MakeBp({
 
                 for (const group of bpAssignmentGroups) {
                     if (group.name === "Assignments" && group.group_weight === 0) {
-                        alert("An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.");
+                        const deleteGroup = await fetchJson(
+                            `/api/v1/courses/${bpCourse.id}/assignment_groups/${group.id}`,
+                            {
+                                fetchInit: {
+                                    method: 'DELETE',
+                                    body: formDataify({}),
+                                }
+                            }
+                        );
+                        if (deleteGroup.errors) {
+                            alert("Failed to delete empty Assignments group in BP. You will need to remove it manually.");
+                        }
                     }
                 }
             } catch (e) {
