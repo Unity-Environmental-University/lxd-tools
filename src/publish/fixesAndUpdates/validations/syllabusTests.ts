@@ -21,14 +21,11 @@ import diff_match_patch, { patch_obj } from "diff-match-patch";
 
 // ********************************** BEGIN: Looking at refactoring to use a source syllabus instead of individual tests
 // TODO; Handle exclusions for information that is course-specific
-//  I probably need to do this at the string level, but that's not good.
-//  Option A: Turn both into DOM documents, pull out the divs that hold course specific information, and then turn them back into strings
-//  Option B: Use a regex to remove course-specific information(code complete's idea, not sure how this would work, worth thinking about)
-//  Option C: Could we keep it as a string, tell it to remove everything from the div tag with certain attributes until the closing div tag? May run into issues with nested divs
-//  Option D: Use a DOM parser to remove course-specific information(isn't this just option A?)
-//  Option E: OpenAI token?
-//  Option F: DOMpurify?
-//  Option G: Introduce a second diff to remove course specific information, reintroduce it after applying the patch
+//  Use document structure to identify and pull out course-specific information
+//  STRUCTURAL; Add placeholder tags with specific ids in source syllabus
+//  DONE; Run patch
+//  Parse placeholder tags, look up id in preserved content, replace the placeholder tag with preserved content
+
 
 type syllabusDifferenceUserData = {
     sourceSyllabus: string | undefined,
@@ -76,12 +73,7 @@ export const syllabusDifferencesTest: CourseValidation<ISyllabusHaver, syllabusD
         const dmp = new diff_match_patch();
 
         if (!sourceSyllabus || !courseSyllabus) return testResult("not run", {notFailureMessage: "No source syllabus found."});
-        
-        /*const patch = dmp.patch_make(courseSyllabus, sourceSyllabus).map(p => {
-            const patchObj = new diff_match_patch.patch_obj();
-            Object.assign(patchObj, p);
-            return patchObj;
-        });*/
+
         const patch = dmp.patch_make(courseSyllabus, sourceSyllabus);
         const success = patch.length === 0;
 
