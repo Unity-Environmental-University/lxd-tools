@@ -18,18 +18,19 @@ import {
 import {paraify} from "@/testing/DomUtils";
 import { getCourseById } from "@/canvas/course";
 import diff_match_patch, { patch_obj } from "diff-match-patch";
+import {MalformedSyllabusError} from "@canvas/course/changeStartDate";
 
 // ********************************** BEGIN: Looking at refactoring to use a source syllabus instead of individual tests
 // TODO; Handle exclusions for information that is course-specific
-//  Use document structure to identify and pull out course-specific information
+//  DONE; Use document structure to identify and pull out course-specific information
 //  STRUCTURAL; Add placeholder tags with specific ids in source syllabus
 //  DONE; Run patch
 //  Parse placeholder tags, look up id in preserved content, replace the placeholder tag with preserved content
 
-
 type syllabusDifferenceUserData = {
     sourceSyllabus: string | undefined,
     courseSyllabus: string,
+    preservedContent: [string, string][],
     patch:  Array<{ new(): diff_match_patch.patch_obj }>,
 }
 
@@ -62,7 +63,115 @@ async function getSourceSyllabus(course: ISyllabusHaver): Promise<string | undef
         UG_SOURCE_SYLLABUS = await ugSourceCourse.getSyllabus();
     }
     return UG_SOURCE_SYLLABUS;
-};
+}
+
+function getTextAfterStrong(element: HTMLElement): string {
+    const strongTag = element.querySelector('strong');
+    if (!strongTag) {
+        return element.textContent?.trim() || '';
+    }
+
+    let currentNode = strongTag.nextSibling;
+    let text = '';
+
+    while (currentNode) {
+        text += currentNode.textContent;
+        currentNode = currentNode.nextSibling;
+    }
+
+    return text.replace(/\u00A0/g, ' ').trim();
+}
+
+function getPreservedContent(syllabus: string): [string, string][] {
+    const el = document.createElement('div');
+    el.innerHTML = syllabus;
+    const preservedContent: [string, string][] = [];
+
+    // Find the course number and title
+    // Find Year/Term/Session
+    // Find Class Inclusive Dates
+    // Find Credits
+    const syllabusCalloutBox = el.querySelector('div.cbt-callout-box');
+    if(!syllabusCalloutBox) throw new MalformedSyllabusError("Can't find syllabus callout box");
+
+    const paras = Array.from(syllabusCalloutBox.querySelectorAll('p'));
+    const strongParas = paras.filter((para) => para.querySelector('strong'));
+
+    const [
+        courseNameEl,
+        termNameEl,
+        datesEl,
+        _instructorNameEl,
+        _instructorContactInfoEl,
+        creditsEl
+    ] = strongParas;
+
+    preservedContent.push(
+        ["course.name", getTextAfterStrong(courseNameEl)],
+        ["course.termname", getTextAfterStrong(termNameEl)],
+        ["course.dates", getTextAfterStrong(datesEl)],
+        ["course.credits", getTextAfterStrong(creditsEl)]
+    );
+
+    // Find Course Description
+    const headers = Array.from(el.querySelectorAll('h2'));
+    const courseDescHeader = headers.find(h => h.textContent?.trim() === 'Course Description');
+    if (courseDescHeader) {
+        const parentDiv = courseDescHeader.parentElement;
+        if (parentDiv) {
+            const nextElement = parentDiv.nextElementSibling;
+            if (nextElement && nextElement.tagName === 'P') {
+                preservedContent.push(["course.description", nextElement.textContent?.trim() || '']);
+            }
+        }
+    }
+    
+    // Find Course Outcomes
+    const courseOutcomesHeader = headers.find(h => h.textContent?.trim() === 'Course Outcomes');
+    if (courseOutcomesHeader) {
+        const parentDiv = courseOutcomesHeader.parentElement;
+        if (parentDiv) {
+            let nextElement = parentDiv.nextElementSibling;
+            let outcomesText = '';
+            // The outcomes can be split across multiple p tags
+            while (nextElement && nextElement.tagName === 'P') {
+                outcomesText += (nextElement.textContent?.trim() || '') + '\n';
+                nextElement = nextElement.nextElementSibling;
+            }
+            preservedContent.push(["course.outcomes", outcomesText.trim()]);
+        }
+    }
+
+    // Find textbook information
+    const strongs = Array.from(el.querySelectorAll('strong'));
+    const textbookHeaderStrong = strongs.find(s => s.textContent?.trim() === 'Textbook');
+
+    if (textbookHeaderStrong) {
+        const headerP = textbookHeaderStrong.parentElement;
+        if (headerP && headerP.tagName === 'P') {
+            const nextElement = headerP.nextElementSibling;
+            if (nextElement) {
+                preservedContent.push(["course.textbook", nextElement.textContent?.trim() || '']);
+            }
+        }
+    }
+
+    // Find Week 1 Learning Materials Preview
+    const h3s = Array.from(el.querySelectorAll('h3'));
+    const week1PreviewHeader = h3s.find(h => h.textContent?.trim() === 'Week 1 Learning Materials Preview');
+    if (week1PreviewHeader) {
+        let nextElement = week1PreviewHeader.nextElementSibling;
+        let previewHtml = '';
+        while(nextElement) {
+            previewHtml += nextElement.outerHTML;
+            nextElement = nextElement.nextElementSibling;
+        }
+        if (previewHtml) {
+            preservedContent.push(["course.week1preview", previewHtml.trim()]);
+        }
+    }
+    return preservedContent;
+}
 
 export const syllabusDifferencesTest: CourseValidation<ISyllabusHaver, syllabusDifferenceUserData> = {
     name: "Syllabus Differences",
@@ -71,6 +180,8 @@ export const syllabusDifferencesTest: CourseValidation<ISyllabusHaver, syllabusD
         const sourceSyllabus = await getSourceSyllabus(course);
         const courseSyllabus = await course.getSyllabus();
         const dmp = new diff_match_patch();
+
+        const preservedContent = getPreservedContent(courseSyllabus);
 
         if (!sourceSyllabus || !courseSyllabus) return testResult("not run", {notFailureMessage: "No source syllabus found."});
 
@@ -83,6 +194,7 @@ export const syllabusDifferencesTest: CourseValidation<ISyllabusHaver, syllabusD
             userData: {
                 sourceSyllabus,
                 courseSyllabus,
+                preservedContent,
                 patch,
             },
         });
