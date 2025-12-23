@@ -1,12 +1,10 @@
-import React, {ChangeEvent, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Temporal} from "temporal-polyfill";
-import {useEffectAsync} from "@/ui/utils";
 import {Button, Row} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 
 import {
-    getModuleUnlockStartDate,
     getStartDateAssignments, getStartDateFromSyllabus, MalformedSyllabusError,
     updatedDateSyllabusHtml
 } from "@canvas/course/changeStartDate";

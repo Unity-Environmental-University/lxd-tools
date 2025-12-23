@@ -1,4 +1,3 @@
-import {Course} from "@/canvas/course/Course";
 import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {MAX_SECTION_SLICE_SIZE} from "@/ui/speedGrader/consts";

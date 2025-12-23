@@ -1,5 +1,4 @@
 import {RootReportingState} from "@/reporting/data/reportingStore";
-import {useSelector} from "react-redux";
 import {createSelector} from "@reduxjs/toolkit";
 
 export * from './courseSelectors';

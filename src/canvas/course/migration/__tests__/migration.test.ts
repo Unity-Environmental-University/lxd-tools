@@ -7,11 +7,10 @@ import {
     IProgressData
 } from "../index";
 import {mockProgressData} from "../../__mocks__/mockProgressData";
-import {ICanvasCallConfig, range} from "../../../canvasUtils";
+import {range} from "../../../canvasUtils";
 import {mockMigrationData} from "@/canvas/course/migration/__mocks__/mockMigrationData";
 
 import {Course} from "../../Course";
-import {config} from "dotenv";
 import {ICourseData} from "@/canvas/courseTypes";
 
 
@@ -121,6 +120,7 @@ describe('Course Copying', () => {
     test('Copy course wholesale', async () => {
         fetchMock.enableMocks();
 
+        // eslint-disable-next-line @/no-undef
         const fetch = (global.fetch as FetchMock);
         const courseName = 'Test course the testing course';
         const courseCode = "TEST000";

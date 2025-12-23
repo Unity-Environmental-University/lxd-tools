@@ -1,7 +1,6 @@
 import footerOnFrontPageTest from "@publish/fixesAndUpdates/validations/courseContent/footerOnFrontPageTest";
 
 import { IPageData } from "@canvas/content/pages/types";
-import assert from "assert";
 import { jest } from "@jest/globals";
 import {Course} from "@canvas/course/Course";
 import {mockPageData} from "@canvas/content/__mocks__/mockContentData";

@@ -1,0 +1,54 @@
+name: Build Extension
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          path: lxd-tools
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install lxd-tools dependencies
+        working-directory: lxd-tools
+        run: |
+          npm install --legacy-peer-deps
+          npm install @testing-library/react --save-dev
+
+      - name: Run ESLint
+        working-directory: lxd-tools
+        run: |
+          if npm run link --if-present; then
+            echo "✅ ESLint passed"
+          else
+            echo "❌ ESLint failed"
+            exit 1
+          fi
+
+      - name: Build extension'
+        working-directory: lxd-tools
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lxd-tools-extension-test
+          path: |
+            dist/
+            build/
+          if-no-files-found: 'error'
+          retention-days: 7

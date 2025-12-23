@@ -1,7 +1,6 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {ICourseData} from "@/canvas";
 import {LoadStatus} from "@/reporting/data/loadStatus";
-import {useSelector} from "react-redux";
 import {CoursesState} from "@/reporting/data/coursesSlice";
 
 

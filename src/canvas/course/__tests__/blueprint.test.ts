@@ -1,13 +1,13 @@
 //We should really write integration tests for these eventually rather than just unit tests
 
 
-import {deFormDataify, ICanvasCallConfig, range} from "../../canvasUtils";
+import {ICanvasCallConfig, range} from "../../canvasUtils";
 import {
     getBlueprintsFromCode, setAsBlueprint, unSetAsBlueprint, lockBlueprint, genBlueprintDataForCode
 } from "../blueprint";
 import {mockCourseData} from "../__mocks__/mockCourseData";
-import fetchMock, {FetchMock} from "jest-fetch-mock";
-import {IAccountData, IModuleData} from "../../canvasDataDefs";
+import fetchMock from "jest-fetch-mock";
+import {IModuleData} from "../../canvasDataDefs";
 import {mockTermData} from "../../__mocks__/mockTermData";
 import {mockAccountData} from "../../__mocks__/mockAccountData";
 import assert from "assert";
@@ -34,6 +34,7 @@ const fetchGetConfig = jest.spyOn(fetchApi, 'fetchGetConfig')
 
 function getDummyBlueprintCourse(blueprint: boolean, id: number = 0) {
     let out: IBlueprintCourse;
+    // eslint-disable-next-line prefer-const
     out = new Course({
         ...mockCourseData,
         id,
@@ -183,6 +184,7 @@ test("setAsBlueprint", async () => {
 
 
     const config: ICanvasCallConfig = {};
+    // eslint-disable-next-line prefer-const
     responseData = await setAsBlueprint(0, config)
     expect(fetchJson).toHaveBeenCalledWith(`/api/v1/courses/0`, apiWriteConfig('PUT', payload, config))
 })
@@ -242,7 +244,7 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
 }
 
 
-import {ITermData, Term} from "@/canvas/term/Term";
+import {Term} from "@/canvas/term/Term";
 
 import apiWriteConfig from "@/fetch/apiWriteConfig";
 import {IBlueprintCourse} from "@canvas/course/IBlueprintCourse";

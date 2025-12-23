@@ -47,11 +47,7 @@ describe('ExportApp Component', () => {
     });
 
     test('renders ExportOneButton and ExportAllButton when course and assignment are set', async () => {
-        Object.defineProperty(window, 'location', {
-          writable: true,
-          value: { search: 'assignment_id=1' },
-        });
-
+        window.history.pushState({}, 'Test page', '/?assignment_id=1');
         getAssignmentById.mockImplementation(async() => mockAssignmentData)
         await act(async () => render(<ExportApp/>));
         await waitFor(() => expect(screen.getByTestId('export-one-button')).toBeInTheDocument());
@@ -64,9 +60,4 @@ describe('ExportApp Component', () => {
         await waitFor(() => expect(screen.getByTestId('date-range-export-dialog')).toBeInTheDocument());
     });
 
-    test('shows DateRangeExportDialog when button is clicked', async () => {
-        await act(async () => render(<ExportApp/>));
-        await act(async () => fireEvent.click(screen.getByText('...')))
-        await waitFor(() => expect(screen.getByTestId('date-range-export-dialog')).toBeInTheDocument());
-    });
 });

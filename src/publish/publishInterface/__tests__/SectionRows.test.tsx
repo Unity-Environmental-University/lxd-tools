@@ -45,6 +45,7 @@ const mockErrorsByCourseId = {
 
 const mockSetWorkingSection = jest.fn();
 const mockOnOpenAll = jest.fn();
+const mockSectionPublishToggle = jest.fn();
 
 const renderComponent = (props: Partial<ISectionRows> = {}) => {
     const defaultProps: ISectionRows = {
@@ -97,6 +98,158 @@ describe('SectionRows Component', () => {
             const courseRow = screen.getByText(`PublishCourseRow: ${course.id}`);
             fireEvent.click(courseRow);
             expect(mockSetWorkingSection).toHaveBeenCalledWith(course);
+        });
+    });
+
+    describe('Toggle All functionality', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('displays "Select All" when most sections are unchecked', () => {
+            const mockPublishRecord = {
+                1: mockCourses[0], // Only course 1 is checked
+            };
+
+            renderComponent({
+                sectionPublishRecord: mockPublishRecord,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            const toggleLink = screen.getByRole('link', { name: /Select All|Unselect All|Check\/Uncheck All/ });
+            expect(toggleLink).toHaveTextContent('Select All');
+        });
+
+        it('displays "Unselect All" when most sections are checked', () => {
+            const mockPublishRecord = {
+                1: mockCourses[0],
+                2: mockCourses[1], // Both courses are checked
+            };
+
+            renderComponent({
+                sectionPublishRecord: mockPublishRecord,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            const toggleLink = screen.getByRole('link', { name: /Select All|Unselect All|Check\/Uncheck All/ });
+            expect(toggleLink).toHaveTextContent('Unselect All');
+        });
+
+        it('displays "Select All" when equal numbers are checked and unchecked', () => {
+            const mockPublishRecord = {
+                1: mockCourses[0], // 1 checked, 1 unchecked (equal)
+            };
+
+            renderComponent({
+                sectionPublishRecord: mockPublishRecord,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            const toggleLink = screen.getByRole('link', { name: /Select All|Unselect All|Check\/Uncheck All/ });
+            expect(toggleLink).toHaveTextContent('Select All');
+        });
+
+        it('displays "Check/Uncheck All" when sectionPublishRecord is not provided', () => {
+            renderComponent({
+                sectionPublishRecord: undefined,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            const toggleLink = screen.getByRole('link', { name: /Select All|Unselect All|Check\/Uncheck All/ });
+            expect(toggleLink).toHaveTextContent('Check/Uncheck All');
+        });
+
+        it('calls sectionPublishToggle with true for all sections when most are unchecked', () => {
+            const mockPublishRecord = {
+                1: mockCourses[0], // Only course 1 is checked
+            };
+
+            renderComponent({
+                sectionPublishRecord: mockPublishRecord,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            fireEvent.click(screen.getByText('Select All'));
+
+            expect(mockSectionPublishToggle).toHaveBeenCalledTimes(mockCourses.length);
+            mockCourses.forEach(course => {
+                expect(mockSectionPublishToggle).toHaveBeenCalledWith(course, true);
+            });
+        });
+
+        it('calls sectionPublishToggle with false for all sections when most are checked', () => {
+            const mockPublishRecord = {
+                1: mockCourses[0],
+                2: mockCourses[1], // Both courses are checked
+            };
+
+            renderComponent({
+                sectionPublishRecord: mockPublishRecord,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            // Debug: Check what text is actually displayed
+            const toggleLink = screen.getByRole('link', { name: /Select All|Unselect All|Check\/Uncheck All/ });
+            expect(toggleLink).toHaveTextContent('Unselect All');
+
+            fireEvent.click(toggleLink);
+
+            expect(mockSectionPublishToggle).toHaveBeenCalledTimes(mockCourses.length);
+            mockCourses.forEach(course => {
+                expect(mockSectionPublishToggle).toHaveBeenCalledWith(course, false);
+            });
+        });
+
+        it('does not call sectionPublishToggle when sectionPublishToggle is not provided', () => {
+            const mockPublishRecord = {
+                1: mockCourses[0],
+            };
+
+            renderComponent({
+                sectionPublishRecord: mockPublishRecord,
+                sectionPublishToggle: undefined,
+            });
+
+            // With 1 checked and 1 unchecked, it should show "Select All"
+            const toggleLink = screen.getByRole('link', { name: /Select All|Unselect All|Check\/Uncheck All/ });
+            expect(toggleLink).toHaveTextContent('Select All');
+
+            fireEvent.click(toggleLink);
+
+            expect(mockSectionPublishToggle).not.toHaveBeenCalled();
+        });
+
+        it('does not call sectionPublishToggle when sectionPublishRecord is not provided', () => {
+            renderComponent({
+                sectionPublishRecord: undefined,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            fireEvent.click(screen.getByText('Check/Uncheck All'));
+
+            expect(mockSectionPublishToggle).not.toHaveBeenCalled();
+        });
+
+        it('prevents default form submission when toggle link is clicked', () => {
+            const mockPublishRecord = {
+                1: mockCourses[0],
+            };
+
+            renderComponent({
+                sectionPublishRecord: mockPublishRecord,
+                sectionPublishToggle: mockSectionPublishToggle,
+            });
+
+            const toggleLink = screen.getByText('Select All');
+            const mockEvent = { preventDefault: jest.fn() };
+
+            // We need to simulate the event more directly since fireEvent doesn't give us access to the event object
+            const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+            Object.defineProperty(clickEvent, 'preventDefault', { value: mockEvent.preventDefault });
+
+            toggleLink.dispatchEvent(clickEvent);
+
+            expect(mockEvent.preventDefault).toHaveBeenCalled();
         });
     });
 });

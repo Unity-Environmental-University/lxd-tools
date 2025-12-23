@@ -1,7 +1,7 @@
 import PageKind from "@canvas/content/pages/PageKind";
 import {afterEach, beforeEach} from "@jest/globals";
 import mockModuleData, {mockModuleItemData} from "@canvas/course/__mocks__/mockModuleData";
-import mock = jest.mock;
+
 import learningMaterialsForModule from "../learningMaterialsForModule";
 import {renderAsyncGen} from "@canvas/canvasUtils";
 import {IModuleData} from "@canvas/canvasDataDefs";
