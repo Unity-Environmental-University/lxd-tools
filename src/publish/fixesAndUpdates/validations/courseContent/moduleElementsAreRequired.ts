@@ -15,13 +15,19 @@ export type CheckModuleCourse = { id: number };
 export type CheckModuleResult = AffectedModuleItem[];
 
 export function isAffectedModuleItem(mi: IModuleItemData, moduleName: string): mi is AffectedModuleItem {
-    if(mi.title.toLocaleLowerCase().match(/how do i earn it\?/ig) || moduleName.toLocaleLowerCase().match(/claim badge/ig)) {
+    if(
+        mi.title.toLocaleLowerCase().match(/how do i earn it\?/ig)
+        || moduleName.toLocaleLowerCase().match(/claim badge/ig)
+        || moduleName.toLocaleLowerCase().match(/academic integrity/ig)
+    ) {
         return false;
     }
 
     const req = (mi as any).completion_requirement;
     if(typeof req === 'undefined') return true;
-    return req.type === 'min_score' && !moduleName.toLocaleLowerCase().match(/how do i earn it\?/ig) && (req.min_score ?? 0) !== 1;
+    return req.type === 'min_score'
+        && !moduleName.toLocaleLowerCase().match(/how do i earn it\?/ig)
+        && (req.min_score ?? 0) !== 1;
 }
 
 const run = async (course: CheckModuleCourse) => {
