@@ -73,7 +73,7 @@ const fix: CourseFixValidation<CourseInterface>['fix'] = async (course, result) 
             userData: null,
         });
     }
-    const newPageBody = page.body.replace(badUrl, goodUrl).replace(/college/gi, "university");
+    const newPageBody = page.body.replace(badUrl, goodUrl).replace(/college/gi, "University");
     try {
         const result = await pageKind.put(course.id, page.page_id, {
             wiki_page: {

@@ -1,17 +1,9 @@
 import {Button} from "react-bootstrap";
-import { Course, renderAsyncGen } from "ueu_canvas";
-//import { getCourseIdFromUrl } from "ueu_canvas"; // Driving me crazy, thinks it doesnt exist
-
-// import { Course } from "@canvas/course/Course";
-// import {renderAsyncGen} from "@canvas/canvasUtils";
-import { Page } from "@canvas/content/pages/Page";  // these don't exist in ueu_canvas yet
+import { Course } from "ueu_canvas";
+import { Page } from "@canvas/content/pages/Page";  // TODO these don't exist in ueu_canvas yet?
 import PageKind from "@canvas/content/pages/PageKind";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import { get, set } from "lodash";
 import {useState} from "react";
 
-// TODO I probably want to extract small things - just the video and just the list of mats underneath instead of grabbing all at once
-// TODO then carefully insert into syllabus
 // takes html string, parses it, and returns the first HTMLElement with class "cbt-video-container"
 function extractContentFromHTML(html: string, query: string): HTMLElement[] {
   const parser = new DOMParser();
@@ -68,12 +60,13 @@ function clearMatsSection(syllabusBody: string): string {
 // removes the [bulleted list] placeholder from the "Week 1 Learning Materials" section,
 // and inserts the provided html element into the section of the syllabus specified by the selector and position
 // if we fail to locate a div we return the same syllabus body passed
-function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[], selector: string, position: InsertPosition): string { // TODO returns modified syllabus body? (string) - then use course.changeSyllabus in caller - well then we would api call change te syllabus to the same thing for no reason - dumb
+function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[], selector: string, position: InsertPosition): string {
     const parser = new DOMParser();
     const syllabusDoc = parser.parseFromString(syllabusBody, "text/html");
 
     // find all divs with class "content" in syllabus, then find
     // the one that contains "Week 1 Learning Materials" - thats where we want to import
+    // TODO I use this same targetdiv a lot - make a function for this
     const targetDiv = Array.from(syllabusDoc.querySelectorAll(".content"))
         .find(div => div.textContent?.includes("Week 1 Learning Materials"));
 
@@ -88,14 +81,20 @@ function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[],
         if (p.textContent?.includes("[bulleted list]")) {
             p.remove();
         }
+        if (p.textContent?.includes("The following learning materials will")) { // TODO dropdown titles instead of this
+            p.textContent = "Please watch the overview video(s) for context on the learning materials below:"
+        }
     });
     
-    // insert content   // TODO text inside insertionPoint afterwards
+    // insert content
     const insertionPoint = targetDiv.querySelector(selector);   
-    if (insertionPoint) {   // TODO should I return null or throw error if insertion point not found? why return newBody if no changes?
+    if (insertionPoint) {
         content.forEach(element => {
             insertionPoint.insertAdjacentElement(position, element);
         });
+    }
+    else{
+        console.error(`Could not find insertion point with selector "${selector}"`);
     }     
 
     const newBody = syllabusDoc.body.innerHTML;
@@ -105,7 +104,7 @@ function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[],
 
 
 // main handler for import button click
-async function handleImportClick() {    // TODO don't do anything / don't render button if videos/mats already detected in syllabus
+async function handleImportClick() {
     try {
         const course = await Course.getFromUrl();
         if (!course) {
@@ -137,19 +136,22 @@ async function handleImportClick() {    // TODO don't do anything / don't render
             return;
         }
 
-        if (!extractedMats) {   // TODO doesnt matter putting this further down because it still wont reach the api call
+        if (!extractedMats) {
             console.error("No learning materials content found on Week 1 Learning Materials page");
             return;
         }
 
         const syllabusBody = await course.getSyllabus();  
         let newBody = clearMatsSection(syllabusBody);
-        newBody = importContentIntoSyllabus(newBody, extractedContent, 'p', "beforebegin");   // TODO is ! bad practice? just use an if else w an error
+        newBody = importContentIntoSyllabus(newBody, extractedContent, 'p', "beforebegin");
         newBody = importContentIntoSyllabus(newBody, extractedMats, 'p', "afterend");
 
         // only update the body if it changed
         if (newBody != syllabusBody){
             await course.changeSyllabus(newBody);
+        }
+        else{
+            console.log("Syllabus already up to date");
         }
     } 
     catch (err) {
@@ -175,6 +177,7 @@ export function ImportButton() {
             {loading ? "..." : "Import Wk1 Mats"}
         </Button>
     );
-}   // TODO am I stuffing the kaltura video for ESCI 620 full of categories by using it my test course? oops
-// TODO - next, test on courses with multiple vids and learning mats - should work unless class/ids are different
+}
 // TODO there might be some edge cases for lmats pages that don't use a dropdown?
+// TODO users might prefer a carousel over listing the videos out?
+// TODO replace stock line with titles of the dropdowns from the lmats page
