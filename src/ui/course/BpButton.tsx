@@ -23,7 +23,10 @@ export function BpButton({course, currentBp}: BpButtonProps) {
     useEffectAsync(async () => {
         dispatchBps({clear: true});
         const bpGen = genBlueprintDataForCode(course.courseCode, [course.accountId])
-        if(!bpGen) return;
+        if(!bpGen) {
+            dispatchBps({set: []});
+            return;
+        }
         const loadBps:ICourseData[] = [];
         let i = 0;
         for await (const bp of bpGen) {
@@ -38,19 +41,25 @@ export function BpButton({course, currentBp}: BpButtonProps) {
         assert(currentBp, "Attempted to open main BP with no BP")
         await openThisContentInTarget(course.id, currentBp.id);
     }
-    if (!currentBp && bps.length === 0) return <Button disabled={true}>No BPs Found</Button>;
+
+    const isBpDisabled = !currentBp;
+    const otherBps = currentBp ? bps.filter(bp => bp.id !== currentBp.id) : bps;
+    const isBpsDisabled = otherBps.length === 0;
+
+    const bpBtnTitle = isBpDisabled ? "No current BP" : "Open the blueprint version of this course";
+    const bpsBtnTitle = isBpsDisabled ? "No other BPs" : "Show archived BPs";
 
     return <>
         <Col>
         <Button
-            title={"Open the blueprint version of this course"}
+            title={bpBtnTitle}
             onClick={openMainBp}
-            disabled={currentBp?.id === course.id}
+            disabled={currentBp?.id === course.id || isBpDisabled}
         >BP</Button>
-            {!currentBp && bps.length == 1 || bps.length > 1 && <>
         <Button
             onClick={e => setOpen(true)}
-            title={"Show archived BPs"}
+            title={bpsBtnTitle}
+            disabled = {isBpsDisabled}
         >BPs</Button>
         <Modal isOpen={open} requestClose={() => setOpen(false)}>
             {bps.toSorted(bMinusASortFn((a) => a.id)).map((bp, i) =>
@@ -60,7 +69,7 @@ export function BpButton({course, currentBp}: BpButtonProps) {
 
                     onClick={e => openThisContentInTarget(course, bp.id)}
                 >{bp.course_code}</Button></Row>)}
-        </Modal></>}
+        </Modal>
         </Col>
     </>
 }

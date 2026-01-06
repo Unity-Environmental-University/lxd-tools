@@ -24,8 +24,8 @@ export async function main() {
 
     await addDevButton(header, currentCourse);
     const bp = currentCourse.isBlueprint()? currentCourse : await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+    await addBpButton(header, currentCourse, bp);
     if (bp) {
-        await addBpButton(header, currentCourse, bp);
         await addSectionsButton(header, bp, currentCourse);
     }
 
