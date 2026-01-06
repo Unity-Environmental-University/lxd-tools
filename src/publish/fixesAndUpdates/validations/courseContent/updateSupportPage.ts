@@ -50,6 +50,9 @@ const run: CourseFixValidation<CourseInterface>['run'] = async ({id}) => {
     if (page.body.toLocaleLowerCase().includes("college")) {
         success = false
         errorMessage += "Support page mentions 'college.' ";
+    } else if (page.body.includes("university")) {
+        success = false
+        errorMessage += "Support page contains 'university' instead of 'University.' ";
     }
 
     return testResult(success, {
@@ -73,7 +76,7 @@ const fix: CourseFixValidation<CourseInterface>['fix'] = async (course, result) 
             userData: null,
         });
     }
-    const newPageBody = page.body.replace(badUrl, goodUrl).replace(/college/gi, "University");
+    const newPageBody = page.body.replace(badUrl, goodUrl).replace(/college/gi, "University").replace(/university/gi, "University");
     try {
         const result = await pageKind.put(course.id, page.page_id, {
             wiki_page: {
