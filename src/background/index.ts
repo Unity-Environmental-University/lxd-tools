@@ -1,6 +1,6 @@
 // drawing from https://hackernoon.com/how-to-create-a-chrome-extension-with-react
 
-import {runtime, action, scripting, Runtime, tabs} from 'webextension-polyfill'
+import browser, {runtime, action, scripting, Runtime, tabs} from 'webextension-polyfill'
 import {backgroundDownloadImage} from "../canvas/image";
 
 
@@ -42,7 +42,7 @@ const messageHandlers: Record<string, MessageHandler<any, any>> = {
 
 }
 
-runtime.onMessage.addListener((
+browser.runtime.onMessage.addListener((
   message: Record<string, any>,
   sender,
   sendResponse
@@ -58,7 +58,7 @@ runtime.onMessage.addListener((
   // if no handler matched, we simply return void
 });
 
-runtime.onMessage.addListener((message: { downloadImage : string }, sender, sendResponse:(value:any) => void) => {
+browser.runtime.onMessage.addListener((message: { downloadImage : string }, sender, sendResponse:(value:any) => void) => {
   if (message.downloadImage) {
     (async () => {
       const resized = await backgroundDownloadImage(message.downloadImage);
@@ -69,7 +69,7 @@ runtime.onMessage.addListener((message: { downloadImage : string }, sender, send
   }
 });
 
-action.onClicked.addListener(async (tab) => {
+browser.action.onClicked.addListener(async (tab) => {
 
   const id = tab.id;
   if (!id) { return }
