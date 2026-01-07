@@ -29,9 +29,9 @@
     }
   },
   "background": {
-    "scripts": ["js/background.js"],
     "service_worker": "js/background.js",
-    "type": "module"
+    "type": "module",
+    "scripts": ["js/background.js"]
   },
   "web_accessible_resources": [
     {
