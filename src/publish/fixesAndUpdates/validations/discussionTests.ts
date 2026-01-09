@@ -4,7 +4,7 @@ import {    // TODO location of this - courseContent or..?
     TextReplaceValidation
 } from "@/publish/fixesAndUpdates/validations/types";
 import DiscussionKind from "@/canvas/content/discussions/DiscussionKind"; // TODO ueu_canvas export for this is f'd up
-import { IDiscussionData } from "@/canvas/content/types";   // TODO ueu_canvas
+import type { IDiscussionData } from "ueu_canvas";
 import { mockDiscussionData } from "@/canvas/content/__mocks__/mockContentData"; // TODO ueu_canvas
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
@@ -63,14 +63,14 @@ const fix: CourseFixValidation<{id: number}, IDiscussionData>['fix'] =
         // replace bad URL with good URL in discussion body/message
         const updatedMessage = discussion.message.replaceAll(badUrl, goodUrl);
         try{
-            const newddata = await DiscussionKind.put(course.id, discussion.id, {
+            const newDiscData = await DiscussionKind.put(course.id, discussion.id, {
                 message: updatedMessage
             });
 
-            if (newddata) {
+            if (newDiscData) {
                 return testResult(true, {
                     notFailureMessage: "profile guide link updated successfully.",
-                    userData: newddata,
+                    userData: newDiscData,
                 });
             } else {
                 return testResult(false, {
