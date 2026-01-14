@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "2.9.1.3",
-          "update_link": "https://raw.githubusercontent.com/Unity-Environmental-University/lxd-tools-build/stable/lxd-extension-2.9.1.3.xpi",
+          "update_link": "ai2.unity.edu/lxd-tools/lxd-extension-2.9.1.3.xpi",
           "applications": {
             "gecko": {
               "strict_min_version": "109.0",

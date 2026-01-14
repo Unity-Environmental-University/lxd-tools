@@ -133,7 +133,7 @@ const transformUpdates = (content) => {
     }
 
     updates.addons['lxd-extension@unity.edu'].updates[0].version = packageJson.version;
-    updates.addons['lxd-extension@unity.edu'].updates[0].update_link = `https://raw.githubusercontent.com/Unity-Environmental-University/lxd-tools-build/stable/lxd-extension-${packageJson.version}.xpi`;
+    updates.addons['lxd-extension@unity.edu'].updates[0].update_link = `ai2.unity.edu/lxd-tools/lxd-extension-${packageJson.version}.xpi`;
 
     return JSON.stringify(updates, null, 2);
 }
