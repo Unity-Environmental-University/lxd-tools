@@ -4,7 +4,6 @@ import {CanvasData, IModuleItemData, ModuleItemType} from "@/canvas/canvasDataDe
 import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
 
 import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
 
 type LookUpTable<T> = Record<string, T>

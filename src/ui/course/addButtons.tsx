@@ -7,7 +7,10 @@ import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
 import {BaseContentItem} from "@/canvas/content/BaseContentItem";
 import {getExternalLinks, getFileLinks} from "@/canvas/content/getContentFuncs";
-import {ContentKinds} from "@/canvas/content/determineContent";
+import {getContentKindFromUrl} from "@/canvas/content/determineContent";
+import {RubricButton} from "@/ui/course/RubricButton";
+import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
+import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
@@ -99,5 +102,22 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
                                 resizeTo={1200}/>
         );
         document.body.append(root);
+    }
+}
+
+export async function addRubricButton(header: HTMLElement) {
+    const page = window.document.URL;
+    const course = await Course.getFromUrl(page);
+    const contentKind = getContentKindFromUrl(page);
+
+    if(!course) return;
+
+    if(contentKind === AssignmentKind || contentKind === DiscussionKind) {
+        const rootDiv = document.createElement('div');
+        header.append(rootDiv);
+        const rubricButtonRoot = ReactDOM.createRoot(rootDiv);
+        rubricButtonRoot.render(
+            <RubricButton course={course}/>
+        );
     }
 }

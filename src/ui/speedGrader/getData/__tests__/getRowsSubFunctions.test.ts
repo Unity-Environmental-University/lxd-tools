@@ -11,7 +11,7 @@ import {
     sortCritAssessments,
     criteriaAssessmentRows
 } from '../getRows';
-import { IUserData, CanvasData, IEnrollmentData, IModuleData } from '@/canvas/canvasDataDefs';
+import { IUserData, IEnrollmentData, IModuleData } from '@/canvas/canvasDataDefs';
 import { AssignmentsCollection } from '@/ui/speedGrader/AssignmentsCollection';
 
 

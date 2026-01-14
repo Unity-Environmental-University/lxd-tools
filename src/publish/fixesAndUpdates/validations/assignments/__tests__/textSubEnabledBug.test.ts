@@ -1,5 +1,5 @@
 import {Course} from "@canvas/course/Course";
-import {IAssignmentData, SubmissionType, UpdateAssignmentDataOptions} from "@canvas/content/types";
+import {IAssignmentData, UpdateAssignmentDataOptions} from "@canvas/content/types";
 import {textSubEnabledBug} from "@publish/fixesAndUpdates/validations/assignments/textSubEnabledBug"; // Import the validation itself
 import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
 import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";

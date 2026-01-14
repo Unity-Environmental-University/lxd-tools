@@ -23,13 +23,13 @@ const run = async (course: UnusedAssignmentsCourse) => {
     const quizByName: Map<string, IQuizData[]> = new Map<string, IQuizData[]>();
 
     const quizGen = QuizKind.dataGenerator(course.id);
-    for await (let quiz of quizGen) {
+    for await (const quiz of quizGen) {
         const quizList = quizByName.get(quiz.title) ?? [];
         quizList.push(quiz);
         quizByName.set(quiz.title, quizList);
     }
 
-    const offenders = quizByName.values().filter(a => a.length > 1).toArray();
+    const offenders = Array.from(quizByName.values()).filter(a => a.length > 1);
     const success = offenders.length === 0;
 
     const failureMessage: MessageResult[] = [

@@ -1,6 +1,5 @@
 import {listLutDispatcher, listDispatcher, lutDispatcher} from "../reducerDispatchers";
 import {describe} from "@jest/globals";
-import {deepObjectCopy} from "../../canvas/canvasUtils";
 
 
 describe('collection lookuptable dispatcher', () => {

@@ -1,0 +1,90 @@
+name: Deploying to Test Branch
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [ closed ]
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      # Checkout lxd-tools (main repo)
+      - name: Checkout lxd-tools
+        uses: actions/checkout@v4
+        with:
+          path: lxd-tools
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh unzip
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Find pr-build run ID
+        id: find_run
+        run: |
+          PR_SHA=${{ github.event.pull_request.head.sha }}
+          RUN_ID=$(gh run list --workflow "lxd-tools pr-build" --json databaseId,headSha --limit 5 \ | jq --raw-output ".[] | select(.headSha==\"$PR_SHA\") | .databaseId" \ | head -n1)
+          echo "run_id=$RUN_ID" >> $GITHUB_ENV
+
+      # Download the build artifact from the build workflow
+      - name: Download build artifact
+        working-directory: lxd-tools
+        run: |
+          mkdir -p dist
+          gh run download ${{ steps.find_run.outputs.run_id }} \
+             --name lxd-tools \
+             --dir ../dist
+
+      # Check out the target repo (lxd-tools-build)
+      - name: Checkout lxd-tools-build & create/update beta branch
+        run: |
+          git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
+          cd lxd-tools-build
+          git fetch origin
+          # If origin/beta exists, reset local to match it; otherwise create a new beta
+          if git ls-remote --exit-code --heads origin beta; then
+            git checkout beta
+            git reset --hard origin/beta
+          else
+            git checkout -b beta
+            git push -u origin beta
+          fi
+
+
+      # Unzip the build artifact into the target repo and commit
+      - name: Unpack & commit build
+        run: |
+          cd lxd-tools-build
+          rm -rf ./*
+          cp -r ../dist/* .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}" || echo "No changes"
+          git push origin beta
+
+
+      # Create or update beta tag
+      - name: Tag beta with version
+        run: |
+          cd lxd-tools-build
+          VERSION=$(jq -r .version manifest.json)
+          TAG="beta-$VERSION"
+          echo "Tagging as $TAG"
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            git tag -f $TAG
+            git push origin "$TAG"
+          else
+            echo "Tag already exists, skipping"
+          fi

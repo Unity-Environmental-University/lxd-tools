@@ -1,7 +1,6 @@
-import {getFacultyPages, getPotentialFacultyProfiles, getProfileFromPage} from "../../../canvas/profile";
-import React, {FormEvent, useReducer, useState} from "react";
-import {listLutDispatcher, listDispatcher} from "../../../ui/reducerDispatchers";
-import {Button, Col, Form} from "react-bootstrap";
+import {getFacultyPages, getProfileFromPage} from "../../../canvas/profile";
+import React, {FormEvent, useState} from "react";
+import {Button, Form} from "react-bootstrap";
 import {FacultyProfile} from "./FacultyProfile";
 import {IUserData} from "../../../canvas/canvasDataDefs";
 import {IProfile} from "@canvas/type";

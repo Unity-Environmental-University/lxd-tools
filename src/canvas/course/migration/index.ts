@@ -6,7 +6,6 @@ import {
 import {createNewCourse, getCourseData} from "../index";
 import {Course} from "../Course";
 
-import { storage} from "webextension-polyfill";
 import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
 
 import {fetchJson} from "@/canvas/fetch/fetchJson";
@@ -18,7 +17,7 @@ export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
 export interface IMigrationData {
     migration_type: string;
     migration_type_title: string;
-    pre_attachment: { upload_params: {}; upload_url: string; message: string };
+    pre_attachment: { upload_params: Record<string, any>; upload_url: string; message: string };
     attachment: { url: string };
     finished_at: string;
     user_id: number;
@@ -77,6 +76,7 @@ export async function* courseMigrationGenerator(
 
 export async function startMigration(sourceCourseId:number, destCourseId: number, config?:ICanvasCallConfig) {
     const copyUrl = `/api/v1/courses/${destCourseId}/content_migrations`;
+    // eslint-disable-next-line @/no-undef
     const migrationInit: RequestInit = {
         method: 'POST',
         body: formDataify({

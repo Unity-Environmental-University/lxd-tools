@@ -1,8 +1,3 @@
-import mock = jest.mock;
-
-
-import {IAssignmentData} from "@canvas/content/types";
-
 import {IRubricAssessmentData, IRubricAssociationData, IRubricData} from "@/canvas";
 
 

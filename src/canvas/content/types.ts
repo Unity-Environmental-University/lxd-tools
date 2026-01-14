@@ -142,6 +142,14 @@ export interface IAssignmentData extends CanvasData {
     anonymous_grading: boolean,
 
     rubric?: IRubricCriterionData[],
+    rubric_settings?: {
+        free_form_criterion_comments: boolean,
+        hide_points: boolean,
+        hide_score_total: boolean,
+        id: number,
+        points_possible: number,
+        title: string,
+    }
 }
 
 export type ContentData = IPageData | IAssignmentData | IQuizData | IDiscussionData

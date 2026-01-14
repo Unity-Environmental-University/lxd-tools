@@ -1,4 +1,4 @@
-import {CanvasData, IModuleData, IModuleItemData, ModuleItemType} from "@/canvas/canvasDataDefs";
+import {CanvasData, IModuleData, IModuleItemData} from "@/canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {IModuleInfo} from "@/ui/speedGrader/types";
 import {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";

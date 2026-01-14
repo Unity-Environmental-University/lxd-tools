@@ -38,7 +38,7 @@ describe('BpButton', () => {
         } as Course;
     });
 
-    it('displays "No BPs Found" button when no blueprints are available', async () => {
+    it('displays disabled BP and BPs buttons when no blueprints are available', async () => {
         (genBlueprintDataForCode as jest.Mock).mockReturnValue(null);
         (renderAsyncGen as jest.Mock).mockResolvedValue([]);
 
@@ -47,7 +47,15 @@ describe('BpButton', () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByText('No BPs Found')).toBeInTheDocument();
+            // Expect the "BP" button to be rendered and disabled
+            const bpButton = screen.getByText('BP');
+            expect(bpButton).toBeInTheDocument();
+            expect(bpButton).toBeDisabled();
+
+            // Expect the "BPs" button to be rendered and disabled
+            const bpsButton = screen.getByText('BPs');
+            expect(bpsButton).toBeInTheDocument();
+            expect(bpsButton).toBeDisabled();
         });
     });
 

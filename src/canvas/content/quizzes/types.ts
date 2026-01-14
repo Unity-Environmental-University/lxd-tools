@@ -74,6 +74,7 @@ export interface IQuizData {
     "locked_for_user": boolean,
     // (Optional) Information for the user about the lock. Present when
     // locked_for_user is true.
+    // eslint-disable-next-line @/no-undef
     "lock_info"?: LockInfo | null,
     // (Optional) An explanation of why this is locked for the user. Present when
     // locked_for_user is true.

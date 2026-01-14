@@ -1,5 +1,3 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
-
 export default {
   "citations": [
     {

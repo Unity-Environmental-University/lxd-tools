@@ -26,7 +26,7 @@ const courseDefaultConfig: GetCoursesFromAccountOptions = {
 export const fetchCoursesThunk = createAsyncThunk(
     "courses/fetchCourses",
     async (params: FetchCoursesParams, {dispatch, getState}) => {
-        let {config: _config, ...rest} = params;
+        const {config: _config, ...rest} = params;
 
         const config = {
             queryParams: deepObjectMerge(_config, courseDefaultConfig)
@@ -36,15 +36,15 @@ export const fetchCoursesThunk = createAsyncThunk(
 
         const accountId = rest.accountId;
         dispatch(setStatus('loading'));
-        for (let termId of termIds) {
+        for (const termId of termIds) {
 
-            let gen = getPagedDataGenerator(`/api/v1/accounts/${accountId}/courses`, {
+            const gen = getPagedDataGenerator(`/api/v1/accounts/${accountId}/courses`, {
                 queryParams: {
                     enrollment_term_id: termId,
                     ...config.queryParams,
                 }
             })
-            for await (let course of gen) {
+            for await (const course of gen) {
                 console.log(course.course_code);
                 const state = getState() as RootReportingState;
                 console.log(state.courses.courseStatus[course.id])

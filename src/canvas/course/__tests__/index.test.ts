@@ -75,6 +75,7 @@ function testSave<SaveValue>(
     fetchJsonMock.mockResolvedValue({...mockCourseData, [rawDataKey]: testSubmitValue})
     const newCourseData = func(0, testSubmitValue);
     const [url, config] = fetchJsonMock.mock.lastCall as [string, ICanvasCallConfig];
+    // eslint-disable-next-line @/no-undef
     const {body} = config.fetchInit as RequestInit & { body: FormData };
     expect(url).toEqual(`/api/v1/courses/0`)
     expect([...body.entries()]).toStrictEqual([...formDataify({course: {[rawDataKey]: testSubmitValue}}).entries()])

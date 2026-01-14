@@ -5,6 +5,7 @@ import {findDateRange, oldDateToPlainDate} from "@/date";
 import {Assignment} from "@/canvas/content/assignments/Assignment";
 
 import {IAssignmentData} from "@canvas/content/types";
+import {assignmentDataGen} from "@canvas/content/assignments";
 
 const DEFAULT_LOCALE = 'en-US';
 
@@ -17,6 +18,7 @@ export function getModuleUnlockStartDate(modules: IModuleData[]) {
     return oldDateToPlainDate(oldDate);
 }
 
+//This may be unnecessary, as the API call is now pulling by due_at date.
 export function sortAssignmentsByDueDate(assignments:Assignment[]|IAssignmentData[]) {
     return assignments
         .toSorted((a, b) =>
@@ -37,12 +39,27 @@ export function sortAssignmentsByDueDate(assignments:Assignment[]|IAssignmentDat
 
 }
 
-export function getStartDateAssignments(assignments:Assignment[]|IAssignmentData[]) {
-    const sorted = sortAssignmentsByDueDate(assignments).map(a => a.rawData ?? a).filter(a => a.due_at);
-    if (sorted.length == 0) throw new NoAssignmentsWithDueDatesError();
-    const firstAssignmentDue = new Date(sorted[0].due_at);
+export async function getStartDateAssignments(courseId: number) {
+    const assignmentGen = assignmentDataGen(courseId, {
+        queryParams: {
+            order_by: "due_at",
+            per_page: 2,
+        }
+    })
+
+    let assignmentDueAt: string | undefined;
+
+    for await (const assignment of assignmentGen) {
+        if(assignment.due_at){
+            assignmentDueAt = assignment.due_at;
+            break
+        }
+    }
+
+    if(!assignmentDueAt) throw new NoAssignmentsWithDueDatesError();
 
     //Set to monday of that week.
+    const firstAssignmentDue = new Date(assignmentDueAt);
     const plainDateDue = oldDateToPlainDate(firstAssignmentDue);
     const dayOfWeekOffset = 1 - plainDateDue.dayOfWeek;
     return plainDateDue.add({days: dayOfWeekOffset});
@@ -178,6 +195,7 @@ function dateToSyllabusString(date:Temporal.PlainDate) {
 
 export function syllabusHeaderName(el:HTMLElement) {
 
+    // eslint-disable-next-line prefer-const
     let [_, head] =  /([^:]*):/.exec(el.innerHTML) ?? [];
     head = head?.replaceAll(/<[^>]*>/g, '')
     return head;

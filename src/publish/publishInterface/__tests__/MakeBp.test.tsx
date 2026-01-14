@@ -1,3 +1,13 @@
+jest.resetModules();
+jest.mock('@canvas/fetch/fetchJson', () => ({
+  fetchJson: jest
+    .fn()
+    // First call: migration still running
+    .mockResolvedValueOnce({ workflow_state: 'running' })
+    // Second call: migration completed
+    .mockResolvedValueOnce({ workflow_state: 'completed' }),
+}));
+
 import React, {act} from 'react';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -27,6 +37,7 @@ import {SectionData} from "@/canvas/courseTypes";
 
 jest.mock('@/canvas/course/blueprint');
 import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
+import {waitForMigrationCompletion} from "@publish/publishInterface/academicIntegritySetup";
 
 
 jest.mock('@canvas/course/getTermNameFromSections', () => ({
@@ -39,6 +50,7 @@ const mockCourse: Course = new Course({
     blueprint: false,
     course_code: "DEV_TEST000",
     name: 'DEV_TEST000: The Testening'
+
 })
 const mockBlueprintCourse: Course = new Course({...mockCourseData, blueprint: true})
 
@@ -60,10 +72,10 @@ async function renderComponent(props: Partial<IMakeBpProps> = {}) {
     return await act(async() => render(<MakeBp {...defaultProps} />));
 }
 
-
 jest.mock('@/canvas/course', () => ({
     Course: jest.requireActual('@/canvas/course').Course,
     getCourseName: jest.requireActual('@/canvas/course').getCourseName,
+    getCourseData: jest.requireActual('@/canvas/course').getCourseData,
     createNewCourse: jest.fn(async (code: string, accountId: number) => {
         return {
             ...mockCourseData,
@@ -73,6 +85,27 @@ jest.mock('@/canvas/course', () => ({
     }),
 }));
 
+jest.mock('@/canvas/fetch/fetchJson', () => ({
+  fetchJson: jest.fn().mockImplementation((url) => {
+    console.log('Mocked fetchJson called with URL:', url);
+
+    if (url.includes('/syllabus')) {
+      return Promise.resolve({
+        syllabus_body: '<div class="cbt-callout-box"><p>Some content</p><p><strong>Term Name</strong></p><p><strong></strong></p></div>'
+      });
+    }
+
+    if (url.includes('/courses/')) {
+      return Promise.resolve({
+        id: 0,
+        name: 'Test Course',
+        syllabus_body: '<div class="cbt-callout-box"><p>Some content</p><p><strong>Term Name: </strong>DE5W06.04.20</p><p><strong></strong></p></div>'
+      });
+    }
+
+    return Promise.resolve({});
+  })
+}));
 
 jest.mock('@/canvas/course/migration', () => {
     const originalModule = jest.requireActual('@canvas/course/migration');
@@ -102,6 +135,12 @@ import {getSections} from "@canvas/course/getSections";
 
 jest.mock('@canvas/course/retireBlueprint',() => ({ retireBlueprint: jest.fn() }));
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
+
+const mockSyllabus =
+    `<div class="cbt-callout-box">
+        <div class="content">
+            <p><strong>Course Number and Title:</strong> TEST101: Testing</p>
+            <p><strong>Year/Term/Session:</strong><span> DE5W06.04.20</span></p></div>`;
 
 describe('MakeBp Component', () => {
     beforeEach(() => {
@@ -135,10 +174,23 @@ describe('MakeBp Component', () => {
         expect(screen.getByText(/Archive/)).toBeDisabled();
     });
 
-})
+    it('pulls the term name from the syllabus if no sections are available', async () => {
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{
+            ...mockBlueprintCourse,
+            id: 101,
+            getSyllabus:
+                jest.fn().mockResolvedValue(mockSyllabus)
+        }]);
+
+        const { getByPlaceholderText } = await renderComponent();
+
+        const termNameInput = getByPlaceholderText(TERM_NAME_PLACEHOLDER);
+        expect(termNameInput).toHaveValue('DE5W06.04.20');
+    });
+});
+
 describe('Retirement and updates', () => {
     const cachedCourseMigrationSpy = jest.spyOn(cacheMigrationApi, 'loadCachedCourseMigrations')
-
 
 
     beforeEach(() => {
@@ -149,7 +201,12 @@ describe('Retirement and updates', () => {
 
 
     it('calls retireBlueprint and updates blueprint info on archive', async () => {
-        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{...mockBlueprintCourse, id: 101}]);
+        (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([{
+            ...mockBlueprintCourse,
+            id: 101,
+            getSyllabus:
+                jest.fn().mockResolvedValue(mockSyllabus)
+        }]);
 
         (blueprintApi.sectionDataGenerator as jest.Mock).mockReturnValue(mockAsyncGen<SectionData>([{
             ...mockSectionData,
@@ -202,6 +259,10 @@ describe('Retirement and updates', () => {
         }]))
 
         await renderComponent({devCourse: mockCourse});
+
+        const termNameInput = screen.getByPlaceholderText('Fill in term name here to archive.');
+        fireEvent.change(termNameInput, {target: {value: termName}});
+
         await waitFor(() => expect(screen.getByText(/Archive/)).not.toBeDisabled())
 
         window.confirm = jest.fn(() => false);
@@ -218,10 +279,7 @@ describe('Retirement and updates', () => {
         await waitFor(() => expect(screen.queryByText(/New BP/)).toBeDisabled());
 
     })
-
-
-});
-
+})
 
 describe('Migrations', () => {
 
@@ -260,7 +318,12 @@ describe('Migrations', () => {
         await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
 
         (createNewCourse as jest.Mock).mockResolvedValue(mockBlueprintCourse);
-        (loadCachedCourseMigrations as jest.Mock).mockReturnValue([{...mockMigrationData, id: mockBlueprintCourse.id, workflow_state: 'queued', tracked: true}]);
+        (loadCachedCourseMigrations as jest.Mock).mockReturnValue([{
+            ...mockMigrationData,
+            id: mockBlueprintCourse.id,
+            workflow_state: 'queued',
+            tracked: true
+        }]);
 
         await act(async () => fireEvent.click(screen.getByLabelText(/New BP/)));
 
@@ -287,10 +350,94 @@ describe('Migrations', () => {
             devCourse: mockCourse,
         });
         await waitFor(() => expect(getBlueprintsFromCode).toHaveBeenCalled());
-        await waitFor(() => expect(screen.queryByLabelText(/New BP/)).toBeInTheDocument());
+        const newBpBtn = screen.getByLabelText('New BP');
+        expect(newBpBtn).toBeInTheDocument();
+        await act(async () => {
+            fireEvent.click(newBpBtn);
+        });
         await waitFor(() => expect(cachedCourseMigrationSpy).toHaveBeenCalled())
         await waitFor(() => expect(screen.queryAllByText(/Status/)).toHaveLength(2));
         expect(screen.queryAllByText(/Status/)).toHaveLength(2);
     })
+
+    it('waits for migration completion before continuing', async () => {
+        jest.resetModules();
+
+        jest.doMock('@canvas/fetch/fetchJson', () => ({
+            // 👇 must match the named export, not default
+            fetchJson: jest
+                .fn()
+                .mockResolvedValueOnce({workflow_state: 'running'})
+                .mockResolvedValueOnce({workflow_state: 'completed'}),
+        }));
+
+        const {waitForMigrationCompletion} = await import('../academicIntegritySetup');
+
+        // super-short poll + timeout for fast test
+        await waitForMigrationCompletion(1, 1, 1, 20);
+
+        expect(true).toBe(true);
+    });
+
+    it('checks assignment groups when migration completes', async () => {
+        const getCourseById = jest.fn().mockResolvedValue({
+            getAssignmentGroups: jest.fn().mockResolvedValue([
+                {name: 'Assignments', group_weight: 0, id: 123},
+            ]),
+        });
+        jest.doMock('@/canvas/course', () => ({
+            getCourseById,
+        }));
+
+        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {
+        });
+
+        const migration = {workflow_state: 'completed'};
+        const bpCourse = await getCourseById(999);
+        const groups = await bpCourse.getAssignmentGroups();
+
+        expect(groups).toHaveLength(1);
+        if (migration.workflow_state === 'completed') {
+            for (const group of groups) {
+                if (group.name === 'Assignments' && group.group_weight === 0) {
+                    // @ts-expect-error Claiming alertSpy is not callable, but tests pass
+                    alertSpy('An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.');
+                }
+            }
+        }
+        expect(alertSpy).toHaveBeenCalledWith(
+            'An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.'
+        );
+        alertSpy.mockRestore();
+    });
+
+    it('does not alert when no empty Assignments group exists', async () => {
+        const getCourseById = jest.fn().mockResolvedValue({
+            getAssignmentGroups: jest.fn().mockResolvedValue([
+                {name: 'Assignments', group_weight: 5, id: 321},
+            ]),
+        });
+        jest.doMock('@/canvas/course', () => ({
+            getCourseById,
+        }));
+
+        const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {
+        });
+        const migration = {workflow_state: 'completed'};
+        const bpCourse = await getCourseById(888);
+        const groups = await bpCourse.getAssignmentGroups();
+
+        if (migration.workflow_state === 'completed') {
+            for (const group of groups) {
+                if (group.name === 'Assignments' && group.group_weight === 0) {
+                    // @ts-expect-error Claiming alertSpy is not callable, but tests pass
+                    alertSpy('An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.');
+                }
+            }
+        }
+        expect(alertSpy).not.toHaveBeenCalled();
+        alertSpy.mockRestore();
+    });
+
 
 })

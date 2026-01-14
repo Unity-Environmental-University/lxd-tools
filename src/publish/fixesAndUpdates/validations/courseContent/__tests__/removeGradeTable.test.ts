@@ -1,5 +1,4 @@
 import { removeGradeTable } from "@publish/fixesAndUpdates/validations/courseContent/removeGradeTable";
-import { testResult } from "@publish/fixesAndUpdates/validations/utils";
 import { IPageData } from "@canvas/content/pages/types";
 import { mockAsyncGen } from "@/__mocks__/utils";
 import PageKind from "@canvas/content/pages/PageKind";

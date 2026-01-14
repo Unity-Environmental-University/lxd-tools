@@ -9,7 +9,7 @@ import {csvEncode} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 
 import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
 
-import {IRubricAssessmentData, IRubricCriterionData, RubricAssessment} from "@/canvas";
+import {IRubricCriterionData, RubricAssessment} from "@/canvas";
 
 
 type LookUpTable<T> = Record<string, T>
@@ -88,7 +88,7 @@ export async function getRows(args: IGetRowsConfig) {
 
         const out = [
             ...rows,
-            submissionHeader(submissionBaseRow, submission, assignment, rubricId),
+            submissionHeader(submissionBaseRow, submission, assignment, rubricId.toString()),
             ...criteriaAssessmentRows(rubricAssessment, criteriaInfo, submissionBaseRow)
         ]
         return out;
@@ -99,6 +99,7 @@ export async function getRows(args: IGetRowsConfig) {
 }
 
 export function criteriaAssessmentRows(rubricAssessment:RubricAssessment | null | undefined, criteriaInfo: CriteriaInfo | null,  submissionBaseRow: Array<string|number|null|undefined>) {
+    // eslint-disable-next-line prefer-const
     let [critIds, critAssessments] = getCritIdsAndAssessments(rubricAssessment, criteriaInfo);
     critAssessments = fillEmptyCriteria(critAssessments, criteriaInfo, critIds);
     sortCritAssessments(critAssessments, criteriaInfo);

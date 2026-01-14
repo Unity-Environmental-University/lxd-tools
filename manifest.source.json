@@ -5,7 +5,10 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "lxd-extension@unity.edu",
-      "strict_min_version": "109.0",
+      "data_collection_permissions":{
+        "required":["none"]
+      },
+      "strict_min_version": "128.0"
       "update_url": "https://raw.githubusercontent.com/Unity-Environmental-University/lxd-tools-build/refs/heads/stable/update.json"
     }
   },
@@ -27,9 +30,9 @@
     }
   },
   "background": {
-    "scripts": ["js/background.js"],
     "service_worker": "js/background.js",
-    "type": "module"
+    "type": "module",
+    "scripts": ["js/background.js"]
   },
   "web_accessible_resources": [
     {
@@ -44,7 +47,8 @@
         "js/rubricOrganize.js.map",
         "js/ui/module.js.map",
         "js/ui/course.js.map",
-        "js/ui/account.js.map"
+        "js/ui/account.js.map",
+        "js/ui/syllabus.js.map"
       ]
     }
   ],
@@ -91,6 +95,15 @@
       ],
       "js": [
         "js/ui/course.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://*.instructure.com/courses/*/assignments/syllabus"
+      ],
+      "js": [
+        "js/ui/syllabus.js"
       ],
       "run_at": "document_end"
     },

@@ -10,7 +10,12 @@ import {
     fixSupportEmailTest,
     gradeTableHeadersCorrectTest,
     removeSameDayPostRestrictionTest,
-    honorCodeLanguageText, addApaNoteToGradingPoliciesTest
+    honorCodeLanguageText,
+    addApaNoteToGradingPoliciesTest,
+    titleIXPolicyTest,
+    gradingDeadlineLanguageTest,
+    aiPolicyMediaTest,
+    supportPhoneNumberFix
 } from "../syllabusTests";
 import {ISyllabusHaver} from "@/canvas/course/courseTypes";
 import assert from "assert";
@@ -19,23 +24,26 @@ import {mockSyllabusHaver} from "@publish/fixesAndUpdates/validations/__mocks__/
 
 import  gallantSyllabusHtml from '@canvas/course/__mocks__/syllabus.gallant.html'
 import  goofusSyllabusHtml from '@canvas/course/__mocks__/syllabus.goofus.html'
-import {latePolicyTest} from "@publish/fixesAndUpdates/validations/courseSettings";
 
 describe('Syllabus validation', () => {
-    test('AI policy present test correct', syllabusTestTest(aiPolicyInSyllabusTest))
-    test('Bottom of Syllabus language test correct', syllabusTestTest(bottomOfSyllabusLanguageTest))
-    test('Course credits displayed in syllabus test correct', syllabusTestTest(courseCreditsInSyllabusTest))
-    test('Communication policy current test correct', syllabusTestTest(communication24HoursTest))
-    test('Grading policy language in syllabus text is correct', syllabusTestTest(finalNotInGradingPolicyParaTest))
-    test('Grade table headers correct', syllabusTestTest(gradeTableHeadersCorrectTest))
-    test('Class Inclusive Dates Test', syllabusTestTest(classInclusiveNoDateHeaderTest))
-    test('Remove same day post restriction test', syllabusTestTest(removeSameDayPostRestrictionTest))
+    test('AI policy present test correct', syllabusTestTest(aiPolicyInSyllabusTest));
+    test('Bottom of Syllabus language test correct', syllabusTestTest(bottomOfSyllabusLanguageTest));
+    test('Course credits displayed in syllabus test correct', syllabusTestTest(courseCreditsInSyllabusTest));
+    test('Communication policy current test correct', syllabusTestTest(communication24HoursTest));
+    test('Grading policy language in syllabus text is correct', syllabusTestTest(finalNotInGradingPolicyParaTest));
+    test('Grade table headers correct', syllabusTestTest(gradeTableHeadersCorrectTest));
+    test('Class Inclusive Dates Test', syllabusTestTest(classInclusiveNoDateHeaderTest));
+    test('Remove same day post restriction test', syllabusTestTest(removeSameDayPostRestrictionTest));
     
-    test('Add apa language to grading policy test', syllabusTestTest(addApaNoteToGradingPoliciesTest))
-    test('Add generative ai language', syllabusTestTest(addAiGenerativeLanguageTest))
-    test('Fix support email', syllabusTestTest(fixSupportEmailTest))
-    test('Fix Honor Code langauge', syllabusTestTest(honorCodeLanguageText));
+    test('Add apa language to grading policy test', syllabusTestTest(addApaNoteToGradingPoliciesTest));
+    test('Add generative ai language', syllabusTestTest(addAiGenerativeLanguageTest));
+    test('Fix support email', syllabusTestTest(fixSupportEmailTest));
+    test('Fix Honor Code language', syllabusTestTest(honorCodeLanguageText));
     test('Late policy text replace', syllabusTestTest(latePolicyTableTest));
+    test('Title IX policy update', syllabusTestTest(titleIXPolicyTest));
+    test('Grading Deadline Language', syllabusTestTest(gradingDeadlineLanguageTest));
+    test('AI Policy Media', syllabusTestTest(aiPolicyMediaTest));
+    test('Support Phone Number Fix', syllabusTestTest(supportPhoneNumberFix));
 });
 
 export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
@@ -43,10 +51,11 @@ export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextRe
 
 
         const beforeAndAfters = 'beforeAndAfters' in test? test.beforeAndAfters : [[goofusSyllabusHtml, gallantSyllabusHtml]];
+        console.log(beforeAndAfters);
 
         for (const [goofusHtml, gallantHtml] of beforeAndAfters) {
             const gallantCourse: ISyllabusHaver = mockSyllabusHaver(gallantHtml);
-            const gallantResult = await test.run(gallantCourse)
+            const gallantResult = await test.run(gallantCourse);
             expect(gallantResult).toHaveProperty('success', true);
 
             const goofusCourse: ISyllabusHaver = mockSyllabusHaver(goofusHtml);

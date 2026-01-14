@@ -1,5 +1,4 @@
 import {csvRowsForCourse, csvEncode} from "../csvRowsForCourse";
-import {Course} from "@/canvas/course/Course";
 import {assignmentDataGen} from "@/canvas/content/assignments";
 import fetchMock from 'jest-fetch-mock';
 import {getRows} from "@/ui/speedGrader/getData/getRows";

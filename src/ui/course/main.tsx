@@ -5,7 +5,7 @@ import {
     addDevButton,
     addHighlightBigImageResizer,
     addHomeTileButton,
-    addOpenAllLinksButton,
+    addOpenAllLinksButton, addRubricButton,
     addSectionsButton
 } from "@/ui/course/addButtons";
 import {getSingleCourse} from "@/canvas/course";
@@ -24,9 +24,13 @@ export async function main() {
 
     await addDevButton(header, currentCourse);
     const bp = currentCourse.isBlueprint()? currentCourse : await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+    await addBpButton(header, currentCourse, bp);
     if (bp) {
-        await addBpButton(header, currentCourse, bp);
         await addSectionsButton(header, bp, currentCourse);
+    }
+
+    if(currentCourse.isBlueprint() || currentCourse.isDev) {
+        await addRubricButton(header);
     }
 
     if (currentContentItem) {

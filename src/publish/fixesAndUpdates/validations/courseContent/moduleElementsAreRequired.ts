@@ -1,33 +1,41 @@
-import {CourseFixValidation, CourseValidation, FixTestFunction} from "@publish/fixesAndUpdates/validations/types";
+import {CourseValidation, FixTestFunction} from "@publish/fixesAndUpdates/validations/types";
 import {IModuleItemData} from "@canvas/canvasDataDefs";
 import {errorMessageResult, MessageResult, testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {
     AssignmentItemData,
-    DiscussionItemData, isAssignmentItemData, isDiscussionItemData,
-    isPageItemData,
+    DiscussionItemData, isDiscussionItemData,
     moduleGenerator,
     PageItemData,
     saveModuleItem
 } from "@canvas/course/modules";
 
-type AffectedModuleItem = IModuleItemData & { completion_requirement: undefined };
+type AffectedModuleItem = IModuleItemData & { completion_requirement: {type: "min-score", min_score: number} | undefined };
 
 export type CheckModuleCourse = { id: number };
 export type CheckModuleResult = AffectedModuleItem[];
 
 export function isAffectedModuleItem(mi: IModuleItemData, moduleName: string): mi is AffectedModuleItem {
-    if(mi.title.toLocaleLowerCase().match(/how do i earn it\?/ig) || moduleName.toLocaleLowerCase().match(/claim badge/ig)) {
+    if(
+        mi.title.toLocaleLowerCase().match(/how do i earn it\?/ig)
+        || moduleName.toLocaleLowerCase().match(/claim badge/ig)
+        || moduleName.toLocaleLowerCase().match(/academic integrity/ig)
+    ) {
         return false;
     }
-    return typeof mi.completion_requirement === 'undefined';
+
+    const req = (mi as any).completion_requirement;
+    if(typeof req === 'undefined') return true;
+    return req.type === 'min_score'
+        && !moduleName.toLocaleLowerCase().match(/how do i earn it\?/ig)
+        && (req.min_score ?? 0) !== 1;
 }
 
 const run = async (course: CheckModuleCourse) => {
-    let affectedModuleItems: AffectedModuleItem[] = [];
+    const affectedModuleItems: AffectedModuleItem[] = [];
 
 
-    let modGen = moduleGenerator(course.id, {queryParams: {include: ['items']}});
-    for await (let mod of modGen) {
+    const modGen = moduleGenerator(course.id, {queryParams: {include: ['items']}});
+    for await (const mod of modGen) {
         if (!mod.published) continue;
         const {items} = mod;
         const badItems = items.filter(item => isAffectedModuleItem(item, mod.name));
@@ -79,13 +87,17 @@ const fixedAssignmentData = (item: AssignmentItemData & UndefinedCompletionRequi
 const fixModuleItems = async (courseId: number, items: UndefinedCompletionRequirementData[]) => {
     const fixedItems: IModuleItemData[] = [];
     for (const item of items) {
-        if (isPageItemData(item)) {
+        if(isDiscussionItemData(item)) {
+            fixedItems.push(fixedDiscussionData(item));
+        }
+
+        /*if (isPageItemData(item)) {
             fixedItems.push(fixedPageData(item));
         } else if (isDiscussionItemData(item)) {
             fixedItems.push(fixedDiscussionData(item));
         } else if (isAssignmentItemData(item)) {
             fixedItems.push(fixedAssignmentData(item))
-        }
+        }*/
 
     }
     for (const item of items) {
@@ -118,7 +130,7 @@ const fix: FixTestFunction<CheckModuleCourse, CheckModuleResult, IModuleItemData
 
 export const moduleElementsAreRequiredValidation: CourseValidation<CheckModuleCourse, CheckModuleResult, IModuleItemData[]> = {
     name: "Module Items Required",
-    description: "Check if all items in weekly modules have been marked as required. NOTE: This may be intential for things like practice quizzes.",
+    description: "Check if all items in weekly modules have been correctly marked as required. Discussions in this list may not be correctly set to Score at least 1.0. NOTE: This may be intential for things like practice quizzes.",
     run,
 //    fix,
 }
