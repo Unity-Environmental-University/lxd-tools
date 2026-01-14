@@ -9,6 +9,7 @@
         "required":["none"]
       },
       "strict_min_version": "128.0"
+      "update_url": "https://raw.githubusercontent.com/Unity-Environmental-University/lxd-tools-build/refs/heads/stable/update.json"
     }
   },
   "action": {
