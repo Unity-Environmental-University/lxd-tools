@@ -52,6 +52,16 @@ jobs:
         working-directory: lxd-tools
         run: npm test
 
+      - name: Debug - Check ueu-canvas installation
+        working-directory: lxd-tools
+        run: |
+          echo "Checking node_modules..."
+          ls -la node_modules/@ueu/ || echo "@ueu directory missing"
+          ls -la node_modules/@ueu/ueu-canvas/ || echo "ueu-canvas missing"
+          ls -la node_modules/@ueu/ueu-canvas/dist/ || echo "dist missing"
+          echo "--- package.json dependency ---"
+          cat package.json | grep -A2 ueu-canvas
+
       - name: Build lxd-tools
         working-directory: lxd-tools
         run: npm run build
