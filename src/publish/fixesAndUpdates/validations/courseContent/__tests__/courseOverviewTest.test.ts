@@ -109,7 +109,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
 
       expect(result.success).toBe(false);
       expect(result.messages).toEqual([
-        { bodyLines: ["Failed to update course overview"] },
+        { bodyLines: ["Failed to update course overview page."] },
       ]);
     });
 
