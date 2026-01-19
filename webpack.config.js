@@ -26,6 +26,7 @@ const entry = {
     'js/ui/course': './src/ui/course',
     'js/ui/account': './src/ui/account',
     'js/ui/module': './src/ui/module',
+    'js/ui/syllabus': './src/ui/syllabus',
 
     'js/rubricOrganize': './src/ui/rubricOrganize/rubricOrganize.ts',
 };
