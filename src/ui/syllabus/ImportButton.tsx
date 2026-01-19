@@ -88,6 +88,7 @@ function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[],
     
     // insert content
     const insertionPoint = targetDiv.querySelector(selector);   
+    content.reverse(); // reverse to maintain order when inserting
     if (insertionPoint) {
         content.forEach(element => {
             insertionPoint.insertAdjacentElement(position, element);
@@ -129,8 +130,8 @@ async function handleImportClick() {
 
         const wk1_mats_page = new Page(pageData, course.id); // TODO dont need to create this if all i need is body
         const extractedContent = extractContentFromHTML(wk1_mats_page.body, ".cbt-video-container");
-        const extractedMats = extractContentFromHTML(wk1_mats_page.body, "div#cbt_panel_2_content.cbt-accordion-content.cbt-answer"); // assuming learning mats are in a <ul>
-        
+        const extractedMats = extractContentFromHTML(wk1_mats_page.body, "div.scaffold-media-box.cbt-content.cbt-accordion-container"); // assuming learning mats are in a <ul>
+
         if (!extractedContent) {
             console.error("No video content found on Week 1 Learning Materials page");
             return;
