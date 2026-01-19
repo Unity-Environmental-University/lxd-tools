@@ -209,6 +209,7 @@ module.exports = {
         extensions: [".tsx", ".ts", ".js", ".mjs"],
         alias: {
             config: path.resolve(__dirname, process.env.NODE_ENV || 'development'),
+            ueu_canvas: require.resolve("@ueu/ueu-canvas")
         },
         plugins: [
             new TsconfigPathsPlugin({}),
