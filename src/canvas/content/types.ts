@@ -7,7 +7,7 @@ import {FileAttachment, TopicPermissions} from "@canvas/type";
 
 import {IRubricCriterionData, RubricAssessment} from "@/canvas";
 
-export type LockInfo = any;
+export type LockInfo = unknown;
 
 export type DateString = string;
 

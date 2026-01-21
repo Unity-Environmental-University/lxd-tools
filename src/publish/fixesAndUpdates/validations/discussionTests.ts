@@ -3,9 +3,8 @@ import {    // TODO location of this - courseContent or..?
     CourseValidation,
     TextReplaceValidation
 } from "@/publish/fixesAndUpdates/validations/types";
-import DiscussionKind from "@/canvas/content/discussions/DiscussionKind"; // TODO ueu_canvas export for this is f'd up
-import type { IDiscussionData } from "ueu_canvas";
-import { mockDiscussionData } from "@/canvas/content/__mocks__/mockContentData"; // TODO ueu_canvas
+import { DiscussionKind } from "@ueu/ueu-canvas";
+import { IDiscussionData } from "@ueu/ueu-canvas";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 
