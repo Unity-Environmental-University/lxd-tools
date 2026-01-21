@@ -22,7 +22,8 @@ import {SectionData} from "@/canvas/courseTypes";
 import dateFromTermName from "@/canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
 import {retireBlueprint} from "@canvas/course/retireBlueprint";
-import { academicIntegritySetup, waitForMigrationCompletion } from "./academicIntegritySetup";
+import { academicIntegritySetup } from "@/publish/publishInterface/academicIntegritySetup";
+import { skillsGapModuleSetup } from "@/publish/publishInterface/skillsGapModuleSetup";
 import {fetchJson} from "@canvas/fetch/fetchJson";
 import {formDataify} from "@canvas/canvasUtils";
 
@@ -47,6 +48,25 @@ export interface IMakeBpProps {
     onActiveImports?: (migrations: IMigrationData[]) => void,
 }
 
+export async function waitForMigrationCompletion(courseId: number, migrationId: number, intervalMs = 5000, timeoutMs = 300000) {
+    const start = Date.now();
+
+    while (true) {
+        const migration = await fetchJson(`/api/v1/courses/${courseId}/content_migrations/${migrationId}`);
+
+        if (migration.workflow_state === "completed" || migration.workflow_state === "failed") {
+            return migration;
+        }
+
+        if (Date.now() - start > timeoutMs) {
+            throw new Error("Migration wait timed out after 5 minutes.");
+        }
+
+        console.log(`Migration still ${migration.workflow_state}... waiting ${intervalMs / 1000}s`);
+        await new Promise(res => setTimeout(res, intervalMs));
+    }
+}
+
 export function MakeBp({
                            devCourse,
                            onBpSet,
@@ -64,8 +84,10 @@ export function MakeBp({
     const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
     const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
     const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);
+    const [isRunningSkillsGapSetup, setIsRunningSkillsGapSetup] = useState(false);
     const [isCloningBp, setCloningBp] = useState(false);
     const academicIntegrityText = isRunningIntegritySetup ? 'Setting up...' : `Setup Academic Integrity`;
+    const skillsGapText = isRunningSkillsGapSetup ? 'Setting up...' : 'Setup Skills Gap Module';
     useEffect(...callOnChangeFunc(currentBp, onBpSet));
     useEffect(...callOnChangeFunc(termName, onTermNameSet));
     useEffect(...callOnChangeFunc(sections, onSectionsSet));
@@ -333,6 +355,16 @@ export function MakeBp({
                         aria-label={'Setup Academic Integrity in New BP'}
                         title="Set up the Academic Integrity content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
                     >{academicIntegrityText}</Button>
+                    }
+                </Col>
+                <Col sm={3}>
+                    {currentBp?.isGrad && <Button
+                        id={'skillsGapButton'}
+                        onClick={() => skillsGapModuleSetup({ currentBp, setIsRunningSkillsGapSetup })}
+                        disabled={isRunningSkillsGapSetup|| !currentBp || isCloningBp}
+                        aria-label={'Setup Skills Gap Materials in New BP'}
+                        title="Set up the Skills Gap content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
+                    >{skillsGapText}</Button>
                     }
                 </Col>
                 <Col sm={5}>

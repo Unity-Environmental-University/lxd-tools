@@ -5,6 +5,7 @@ import { IModuleData } from "@canvas/canvasDataDefs";
 import { moduleGenerator } from "@canvas/course/modules";
 import { startMigration } from "@/canvas/course/migration";
 import { Course } from "@/canvas/course/Course";
+import { waitForMigrationCompletion } from "@publish/publishInterface/MakeBp"
 
 export interface AcademicIntegritySetupProps {
     currentBp: Course | null;
@@ -20,6 +21,7 @@ export async function academicIntegritySetup({
     const bp = currentBp;
     if (!bp) {
         alert("No BP found.");
+        setIsRunningIntegritySetup(false);
         return;
     }
 
@@ -46,7 +48,7 @@ export async function academicIntegritySetup({
     console.log("Assignment Groups: ", JSON.stringify(assignmentGroups));
 
     for (const group of assignmentGroups) {
-        if (group.name.toLocaleLowerCase().includes("assignment")) {
+        if (group.name.toLowerCase().includes("assignment")) {
             assignmentGroupId = group.id;
             break;
         }
@@ -79,7 +81,7 @@ export async function academicIntegritySetup({
         if (module.name === 'Academic Integrity') {
             academicIntegrityModuleIds.push(module.id);
             academicIntegrityModuleFound = true;
-        } else if (module.name.toLocaleLowerCase().includes("instructor guide resources")) {
+        } else if (module.name.toLowerCase().includes("instructor guide resources")) {
             aiInstructorGuideModule = module;
             aiInstructorGuideModuleFound = true;
         }
@@ -141,7 +143,7 @@ export async function academicIntegritySetup({
     for await (const module of updatedModulesGen) {
         if (module.name === "Academic Integrity") {
             bpAcademicIntegrityModule = module;
-        } else if (module.name.toLocaleLowerCase().includes("leave unpublished")) {
+        } else if (module.name.toLowerCase().includes("leave unpublished")) {
             instructorResourcesModule = module;
         }
     }
@@ -181,7 +183,7 @@ export async function academicIntegritySetup({
 
     for (const group of updatedAssignmentGroups) {
         console.log(`We are inside of the assignment group delete.`);
-        if (group.name.toLocaleLowerCase().includes("imported")) {
+        if (group.name.toLowerCase().includes("imported")) {
             const deleteGroup = await fetchJson(
                 `/api/v1/courses/${bp.id}/assignment_groups/${group.id}`,
                 {
@@ -251,23 +253,4 @@ export async function academicIntegritySetup({
     //If we made it here, let the user know we've succeeded
     alert("Academic integrity setup complete!");
     setIsRunningIntegritySetup(false);
-}
-
-export async function waitForMigrationCompletion(courseId: number, migrationId: number, intervalMs = 5000, timeoutMs = 300000) {
-    const start = Date.now();
-
-    while (true) {
-        const migration = await fetchJson(`/api/v1/courses/${courseId}/content_migrations/${migrationId}`);
-
-        if (migration.workflow_state === "completed" || migration.workflow_state === "failed") {
-            return migration;
-        }
-
-        if (Date.now() - start > timeoutMs) {
-            throw new Error("Migration wait timed out after 5 minutes.");
-        }
-
-        console.log(`Migration still ${migration.workflow_state}... waiting ${intervalMs / 1000}s`);
-        await new Promise(res => setTimeout(res, intervalMs));
-    }
 }
