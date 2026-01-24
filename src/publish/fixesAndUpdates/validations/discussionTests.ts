@@ -1,4 +1,4 @@
-import {    // TODO location of this - courseContent or..?
+import {
     CourseFixValidation,
     CourseValidation,
     TextReplaceValidation
@@ -12,7 +12,7 @@ const badUrl = "https://community.canvaslms.com/docs/DOC-1285";
 const goodUrl = "https://community.instructure.com/en/kb/articles/662765-what-are-profile-settings";
 
 // Validation to check that the 'Introductions' discussion does not contain
-// the outdated link to the profile settings guide
+// the outdated link to the profile settings guide // TODO does using ContentTextReplaceFix like aiLinkValidation make more sense? Will it for the 2x sentence?
 const run: CourseValidation<{id: number}>['run'] =
     async ({id}) => {
         let discussion: IDiscussionData
@@ -37,7 +37,11 @@ const run: CourseValidation<{id: number}>['run'] =
             success = false;
             errorMessage = `Discussion contains outdated link: ${badUrl}`;
         }
-
+        else if (!discussion.message.includes(goodUrl)) { // also fail if neither bad nor good URL is found
+            success = false;
+            errorMessage = "Discussion does not contain profile settings link.";
+        }
+        // TODO i could conquer this and the double profile link sentence issue at once with ContentTextReplaceFix right?
         return testResult(success, {
             notFailureMessage: "Profile settings link is up to date.",
             failureMessage: errorMessage,
@@ -47,8 +51,6 @@ const run: CourseValidation<{id: number}>['run'] =
 
 const fix: CourseFixValidation<{id: number}, IDiscussionData>['fix'] = 
     async (course, result?: ValidationResult<IDiscussionData>) => {
-        // prepare mock data to return if update fails
-        //const mockddata: IDiscussionData = mockDiscussionData;   // TODO i did this because I really was fighting using <any> like updateSupportPage does
         // re-run if we don't have result data from whatever's passed in to this when called
         result ??= await run(course);
         // pull userData out of result and rename to discussion for convenience
@@ -85,7 +87,7 @@ const fix: CourseFixValidation<{id: number}, IDiscussionData>['fix'] =
         }
     };
 
-export const discussionTests: CourseValidation<{id: number}> = {    // TODO doesn't really matter if its a courseFixVal or courseVal - but which is better practice?
+export const discussionTests: CourseFixValidation<{id: number}> = {    // TODO doesn't really matter if its a courseFixVal or courseVal - but which is better practice?
     name: "Fix Introductions Discussion Link",
     description: "Checks for outdated link to profile settings guide in Introductions discussion and updates it.",
     run,
