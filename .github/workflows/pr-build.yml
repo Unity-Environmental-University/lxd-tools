@@ -25,8 +25,8 @@ jobs:
       - name: Install lxd-tools dependencies
         working-directory: lxd-tools
         run: |
-          npm ci --legacy-peer-deps
-          npm ci @testing-library/react --save-dev
+          npm install --legacy-peer-deps
+          npm install @testing-library/react --save-dev
 
       - name: Run ESLint
         working-directory: lxd-tools
