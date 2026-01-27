@@ -15,8 +15,32 @@ jest.mock("@ueu/ueu-canvas", () => {
 import { DiscussionKind } from "@ueu/ueu-canvas";
 import { discussionTests } from "../discussionTests";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {mockDiscussionData} from "@ueu/ueu-canvas/src/content/__mocks__/mockContentData";
 import {mockAsyncGen} from "@/__mocks__/utils";
+import { IDiscussionData } from "@ueu/ueu-canvas";
+
+// TODO ueu-canvas is NOT COOPERATING so I give up
+export const mockDiscussionData: IDiscussionData = {
+    allow_rating: false,
+    assignment_id: 1,
+    discussion_subentry_count: 0,
+    discussion_type: 'threaded',
+    locked: false,
+    locked_for_user: false,
+    only_graders_can_rate: false,
+    permissions: {},
+    pinned: false,
+    published: false,
+    read_state: 'unread',
+    sort_by_grading: false,
+    subscribed: false,
+    topic_children: [],
+    unread_count: 0,
+    user_can_see_posts: false,
+    user_name: "",
+    html_url: "", id: 0, last_reply_at: "", message: "", posted_at: "", require_initial_post: false, title: "",
+    delayed_post_at: ""
+
+}
 
 const discussionKindMock = DiscussionKind as jest.Mocked<typeof DiscussionKind>;
 
