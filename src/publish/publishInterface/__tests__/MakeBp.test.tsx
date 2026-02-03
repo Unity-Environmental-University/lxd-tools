@@ -37,7 +37,6 @@ import {SectionData} from "@/canvas/courseTypes";
 
 jest.mock('@/canvas/course/blueprint');
 import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
-import {waitForMigrationCompletion} from "@publish/publishInterface/academicIntegritySetup";
 
 
 jest.mock('@canvas/course/getTermNameFromSections', () => ({
@@ -371,7 +370,7 @@ describe('Migrations', () => {
                 .mockResolvedValueOnce({workflow_state: 'completed'}),
         }));
 
-        const {waitForMigrationCompletion} = await import('../academicIntegritySetup');
+        const {waitForMigrationCompletion} = await import('../MakeBp');
 
         // super-short poll + timeout for fast test
         await waitForMigrationCompletion(1, 1, 1, 20);
