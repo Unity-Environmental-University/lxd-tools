@@ -6,7 +6,8 @@ import { moduleGenerator } from "@canvas/course/modules";
 import { startMigration } from "@/canvas/course/migration";
 import { Course } from "@/canvas/course/Course";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
-import { lockBlueprint } from "ueu_canvas";
+import { lockBlueprint } from "@/canvas/course/blueprint";
+import { getItemTypeAndId, IModuleItemData } from "ueu_canvas";
 
 export interface AcademicIntegritySetupProps {
   currentBp: Course | null;
@@ -168,13 +169,25 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   });
 
   // Lock all content in instructor guide module and academic integrity module
-  const modulesToLock: IModuleData[] = [bpAcademicIntegrityModule, instructorResourcesModule];
 
-  try {
-    await lockBlueprint(bp.id, modulesToLock);
-  } catch (e) {
-    console.log("Locking error for module items: ", e);
-    alert("There was an error locking the module items. You may need to check this manually.");
+  // TODO; Make calls to get items from the two modules(bpAcademicIntegrityModule and instructorResourcesModules)
+  const items: IModuleItemData[] = ;
+
+  for (const item of items) {
+    const url = `/api/v1/courses/${bp.id}/blueprint_templates/default/restrict_item`;
+    const { type, id } = await getItemTypeAndId(item);
+    const body = {
+      content_type: type,
+      content_id: id,
+      restricted: true,
+      _method: "PUT",
+    };
+    await fetchJson(url, {
+      fetchInit: {
+        method: "PUT",
+        body: formDataify(body),
+      },
+    });
   }
 
   if (unpublishModule.errors) {
