@@ -8,6 +8,7 @@ import { Course } from "@/canvas/course/Course";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
 import { lockBlueprint } from "@/canvas/course/blueprint";
 import { getItemTypeAndId, IModuleItemData } from "ueu_canvas";
+import { getItemInModule } from "@/ui/speedGrader/modules";
 
 export interface AcademicIntegritySetupProps {
   currentBp: Course | null;
@@ -132,11 +133,11 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   }
 
   // Get the updated list of modules in the BP after the migration
-  const updatedModulesGen = moduleGenerator(bp.id);
+  const updatedModules = await bp.updateModules();
   let bpAcademicIntegrityModule: IModuleData | undefined = undefined;
   let instructorResourcesModule: IModuleData | undefined = undefined;
 
-  for await (const module of updatedModulesGen) {
+  for (const module of updatedModules) {
     if (module.name === "Academic Integrity") {
       bpAcademicIntegrityModule = module;
     } else if (module.name.toLocaleLowerCase().includes("leave unpublished")) {
@@ -167,28 +168,6 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
       }),
     },
   });
-
-  // Lock all content in instructor guide module and academic integrity module
-
-  // TODO; Make calls to get items from the two modules(bpAcademicIntegrityModule and instructorResourcesModules)
-  const items: IModuleItemData[] = ;
-
-  for (const item of items) {
-    const url = `/api/v1/courses/${bp.id}/blueprint_templates/default/restrict_item`;
-    const { type, id } = await getItemTypeAndId(item);
-    const body = {
-      content_type: type,
-      content_id: id,
-      restricted: true,
-      _method: "PUT",
-    };
-    await fetchJson(url, {
-      fetchInit: {
-        method: "PUT",
-        body: formDataify(body),
-      },
-    });
-  }
 
   if (unpublishModule.errors) {
     alert(
@@ -253,6 +232,8 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
       issueOccurred = true;
     }
   }
+
+  bp.updateModules();
 
   if (issueOccurred) {
     alert(

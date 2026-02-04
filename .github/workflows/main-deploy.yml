@@ -1,4 +1,4 @@
-# TODO; Figure out what files are needed for Chrome to update automatically
+# TODO; Figure out what files are needed for Chrome to update automatically -- XPI and JSON file for Firefox, CRX and XML for Chrome
 # TODO; Gain clarity on hosting extension with Chrome/Firefox privately(don't want it on the extension marketplaces, just want it available to internal team)
 # TODO; CI/CD Workflow confirmed working.
 # TODO; Get extensions hosted on Chrome/Firefox
