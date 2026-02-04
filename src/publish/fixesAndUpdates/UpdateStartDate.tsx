@@ -33,7 +33,9 @@ type UpdateStartDateProps = {
     isDisabled: boolean,
     startLoading: () => void,
     endLoading: () => void
-    setStartDateOutcome?: (outcome: string) => void
+    setStartDateOutcome?: (outcome: string) => void,
+    onStartDateChangeStart?: () => void,
+    onStartDateChangeEnd?: () => void
 }
 export function UpdateStartDate(
     {
@@ -46,6 +48,8 @@ export function UpdateStartDate(
         setUnaffectedItems,
         setFailedItems,
         setStartDateOutcome,
+        onStartDateChangeStart,
+        onStartDateChangeEnd,
     }: UpdateStartDateProps) {
 
     const [startDate, setStartDate] = useState<Temporal.PlainDate | null>();
@@ -130,6 +134,7 @@ export function UpdateStartDate(
 
     async function changeStartDate() {
         startLoading();
+        onStartDateChangeStart?.();
         if (!workingStartDate) throw new StartDateNotSetError();
         const syllabusText = await course.getSyllabus();
         let affectedItems: React.ReactElement[] = [];
@@ -178,6 +183,7 @@ export function UpdateStartDate(
             console.error(error);
         }
         endLoading();
+        onStartDateChangeEnd?.();
     }
 
 
@@ -189,7 +195,8 @@ export function UpdateStartDate(
     const _isDisabledLocally = isDisabled
         || !course || !course.id || !workingStartDate
         || (startDate && workingStartDate.equals(startDate))
-        || startDate === null || mismatchError !== null;
+        || startDate === null || mismatchError !== null
+        || isLoading;
 
     return <>
         {isLoading && <div className="alert alert-info">Loading...</div>}
