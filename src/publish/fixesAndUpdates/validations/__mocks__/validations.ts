@@ -17,7 +17,7 @@ import {
 import {ILatePolicyUpdate} from "@/canvas/canvasDataDefs";
 import mockLatePolicy from "@/canvas/course/__mocks__/mockLatePolicy";
 
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {BaseContentItem} from "@ueu/ueu-canvas";
 import {Quiz} from "@/canvas/content/quizzes/Quiz";
 import {Page} from "@/canvas/content/pages/Page";
 import {Discussion} from "@/canvas/content/discussions/Discussion";
