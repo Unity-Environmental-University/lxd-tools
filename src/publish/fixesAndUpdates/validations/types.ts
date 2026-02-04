@@ -1,4 +1,4 @@
-import {BaseContentItem} from "@canvas/content/BaseContentItem";
+import {BaseContentItem} from "@ueu/ueu-canvas";
 import {Course} from "@canvas/course/Course";
 import {ICanvasCallConfig} from "@canvas/canvasUtils";
 import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
