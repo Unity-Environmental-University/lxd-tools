@@ -1,13 +1,19 @@
-name: Deploying to Test Branch
+# TODO; Figure out what files are needed for Chrome to update automatically -- XPI and JSON file for Firefox, CRX and XML for Chrome
+# TODO; Gain clarity on hosting extension with Chrome/Firefox privately(don't want it on the extension marketplaces, just want it available to internal team)
+# TODO; CI/CD Workflow confirmed working.
+# TODO; Get extensions hosted on Chrome/Firefox
+# TODO; Make sure the auto-updates are working
+
+name: Deploy Extension Updates
 
 on:
   pull_request:
     branches:
       - main
-    types: [ closed ]
+    types: [closed]
 
 jobs:
-  if_merged:
+  deploy_if_merged:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
@@ -15,7 +21,6 @@ jobs:
       id-token: write
 
     steps:
-      # Checkout lxd-tools (main repo)
       - name: Checkout lxd-tools
         uses: actions/checkout@v4
         with:
@@ -24,7 +29,7 @@ jobs:
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
-          sudo apt-get install -y gh unzip
+          sudo apt-get install -y gh
 
       - name: Authenticate GitHub CLI
         run: |
@@ -32,59 +37,76 @@ jobs:
 
       - name: Find pr-build run ID
         id: find_run
+        working-directory: lxd-tools
         run: |
           PR_SHA=${{ github.event.pull_request.head.sha }}
-          RUN_ID=$(gh run list --workflow "lxd-tools pr-build" --json databaseId,headSha --limit 5 \ | jq --raw-output ".[] | select(.headSha==\"$PR_SHA\") | .databaseId" \ | head -n1)
-          echo "run_id=$RUN_ID" >> $GITHUB_ENV
+          RUN_ID=$(gh run list \
+            --workflow "lxd-tools build" \
+            --json databaseId,headSha \
+            --limit 5 \
+            | jq --raw-output ".[] | select(.headSha==\"$PR_SHA\") | .databaseId" \
+            | head -n1)
+          
+          if [ -z "$RUN_ID" ]; then
+            echo "Error: Could not find build run for SHA $PR_SHA"
+            exit 1
+          fi
+          
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
-      # Download the build artifact from the build workflow
       - name: Download build artifact
         working-directory: lxd-tools
         run: |
           mkdir -p dist
           gh run download ${{ steps.find_run.outputs.run_id }} \
-             --name lxd-tools \
-             --dir ../dist
+            --name lxd-tools \
+            --dir dist
 
-      # Check out the target repo (lxd-tools-build)
-      - name: Checkout lxd-tools-build & create/update beta branch
+      - name: Verify deployment files
+        working-directory: lxd-tools/dist
         run: |
-          git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
-          cd lxd-tools-build
-          git fetch origin
-          # If origin/beta exists, reset local to match it; otherwise create a new beta
-          if git ls-remote --exit-code --heads origin beta; then
-            git checkout beta
-            git reset --hard origin/beta
-          else
-            git checkout -b beta
-            git push -u origin beta
+          # Verify both required files exist
+          if [ ! -f updates.json ]; then
+            echo "Error: updates.json not found"
+            exit 1
           fi
-
-
-      # Unzip the build artifact into the target repo and commit
-      - name: Unpack & commit build
-        run: |
-          cd lxd-tools-build
-          rm -rf ./*
-          cp -r ../dist/* .
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add --all
-          git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}" || echo "No changes"
-          git push origin beta
-
-
-      # Create or update beta tag
-      - name: Tag beta with version
-        run: |
-          cd lxd-tools-build
-          VERSION=$(jq -r .version manifest.json)
-          TAG="beta-$VERSION"
-          echo "Tagging as $TAG"
-          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
-            git tag -f $TAG
-            git push origin "$TAG"
-          else
-            echo "Tag already exists, skipping"
+          
+          XPI_FILE=$(ls lxd-extension-*.xpi 2>/dev/null | head -n1)
+          if [ -z "$XPI_FILE" ]; then
+            echo "Error: No .xpi file found"
+            exit 1
           fi
+          
+          echo "Found files:"
+          ls -lh updates.json "$XPI_FILE"
+          
+          # Export for next step
+          echo "xpi_file=$XPI_FILE" >> "$GITHUB_OUTPUT"
+        id: verify
+
+      - name: Deploy to server
+        working-directory: lxd-tools/dist
+        run: |
+          # TODO: Configure deployment mechanism
+          # Files to deploy:
+          #   - updates.json
+          #   - ${{ steps.verify.outputs.xpi_file }}
+          
+          echo "Ready to deploy:"
+          echo "  - updates.json"
+          echo "  - ${{ steps.verify.outputs.xpi_file }}"
+
+      # Example rsync deployment (uncomment and configure):
+      # - name: Deploy via SSH
+      #   working-directory: lxd-tools/dist
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+      #     chmod 600 ~/.ssh/deploy_key
+      #     
+      #     rsync -avz -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+      #       updates.json \
+      #       ${{ steps.verify.outputs.xpi_file }} \
+      #       ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
+
+    #TODO: Create a new release branch called 'feature/{version}'

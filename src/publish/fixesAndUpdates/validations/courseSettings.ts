@@ -15,7 +15,7 @@ import {CourseFixValidation, CourseValidation} from "@publish/fixesAndUpdates/va
 
 export const extensionsInstalledTest: CourseValidation<Course> = {
     name: "Extensions Installed",
-    description: 'Big Blue Button and Dropout Detective in nav bar',
+    description: 'Dropout Detective in nav bar',
     run: async (course, config) => {
         const missing: Set<string> = new Set(extensionsToTest);
         const tabs = await course.getTabs(config);
@@ -28,7 +28,7 @@ export const extensionsInstalledTest: CourseValidation<Course> = {
         }
     }
 }
-export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
+export const extensionsToTest = ['Dropout Detective'];
 
 
 /**

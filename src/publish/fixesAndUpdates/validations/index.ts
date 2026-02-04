@@ -9,9 +9,12 @@ import courseSpecific from "@publish/fixesAndUpdates/validations/courseSpecific"
 import references from "@publish/fixesAndUpdates/validations/references";
 import aiLinkValidation from "@publish/fixesAndUpdates/validations/aiLinkValidation";
 import {bannerHeadingValidation} from "./bannerHeadingValidation";
+import {discussionTests} from "@publish/fixesAndUpdates/validations/discussionTests";
+import {doubleProfileLanguageIntro} from "@publish/fixesAndUpdates/validations/doubleProfileLanguageIntro";
 //import {dontUseThisValidation} from "@publish/fixesAndUpdates/dontUseThis";
 
 export default [
+    
     ...courseContent,
     ...courseSettings,
     ...courseSpecific,
@@ -19,6 +22,8 @@ export default [
     ...rubricSettings,
     ...syllabusTests,
     ...assignments,
+    discussionTests,
+    doubleProfileLanguageIntro,
     proxyServerLinkValidation,
     aiLinkValidation,
     discussionThreading,

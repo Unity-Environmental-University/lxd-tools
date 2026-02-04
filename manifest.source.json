@@ -8,7 +8,8 @@
       "data_collection_permissions":{
         "required":["none"]
       },
-      "strict_min_version": "128.0"
+      "strict_min_version": "128.0",
+      "update_url": "https://raw.githubusercontent.com/Unity-Environmental-University/lxd-tools-build/refs/heads/stable/update.json"
     }
   },
   "action": {
@@ -29,9 +30,9 @@
     }
   },
   "background": {
-    "scripts": ["js/background.js"],
     "service_worker": "js/background.js",
-    "type": "module"
+    "type": "module",
+    "scripts": ["js/background.js"]
   },
   "web_accessible_resources": [
     {

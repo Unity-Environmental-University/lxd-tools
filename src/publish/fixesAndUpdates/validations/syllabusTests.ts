@@ -544,7 +544,55 @@ export const supportPhoneNumberFix: CourseFixValidation<ISyllabusHaver> = {
     fix: badSyllabusFixFunc(new RegExp(badSupportNumber, "ig"), goodSupportNumber)
 };
 
+
+
+type BadUrlData = {
+    name: string,
+    description?: string,
+    badUrl: string,
+    goodUrl: string
+}
+
+
+const makeBeforeAndAfters = (badUrlData: BadUrlData) => {
+    const {badUrl, goodUrl} = badUrlData;
+    return [
+        [`<a href="${badUrl}">`, `<a href="${goodUrl || badUrl}">`],
+        [`<a href="${badUrl}" target="_blank">`, `<a href="${goodUrl || badUrl}" target="_blank">`]
+    ]
+};
+const makeSyllabusUrlCheck: (data:BadUrlData) => CourseFixValidation<ISyllabusHaver> =
+    (data: BadUrlData) => {
+
+    const {badUrl, goodUrl, name} = data;
+    let description = data.description;
+    const badUrlRegex = new RegExp(badUrl, "ig");
+    const run = badSyllabusRunFunc(badUrlRegex);
+    const fix = badSyllabusFixFunc(badUrlRegex, goodUrl);
+    description ??= `Change ${badUrl} to ${goodUrl} in the syllabus.`;
+
+
+    return {
+        beforeAndAfters: makeBeforeAndAfters(data),
+        description,
+        name,
+        run,
+        fix
+    }
+
+};
+
+
+const badUrlDatas: BadUrlData[] = [
+    {
+        name: "Fix Send Message Url",
+        badUrl: "https://community.canvaslms.com/docs/DOC-10574-4212710325",
+        goodUrl: "https://community.instructure.com/en/kb/articles/662866-how-do-i-send-a-message-to-a-user-in-a-course-in-the-inbox"
+    },
+];
+
 export default [
+    ...badUrlDatas.map(makeSyllabusUrlCheck),
     addAiGenerativeLanguageTest,
     removeSameDayPostRestrictionTest,
     classInclusiveNoDateHeaderTest,

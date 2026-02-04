@@ -175,7 +175,7 @@ describe('Extensions installed', () => {
     it('fails if not all extensions are present', async () => {
 
         const mockCourse = new Course(mockCourseData);
-        mockCourse.getTabs = mockGetTabs([{...mockTabData, label: extensionsToTest[0]}, mockTabData, mockTabData])
+        mockCourse.getTabs = mockGetTabs([mockTabData, mockTabData, mockTabData])
         const result = await extensionsInstalledTest.run(mockCourse);
         expect(result.success).toBe(false);
     })
