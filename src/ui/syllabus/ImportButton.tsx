@@ -34,22 +34,33 @@ function clearMatsSection(syllabusBody: string): string {
     const parser = new DOMParser();
     const syllabusDoc = parser.parseFromString(syllabusBody, "text/html");
 
+    const textHeader = "Week 1 Learning Materials";
+
     // find all divs with class "content" in syllabus, then find
     // the one that contains "Week 1 Learning Materials" - thats where we want to import
     const targetDiv = Array.from(syllabusDoc.querySelectorAll(".content"))
-        .find(div => div.textContent?.includes("Week 1 Learning Materials"));
+        .find(div => div.textContent?.includes(textHeader));
 
     if (!targetDiv) {
         console.error("Could not find 'Week 1 Learning Materials' section in syllabus");
         return syllabusBody;
     }
 
-    Array.from(targetDiv.children).forEach(child => {
+    const targetChildren = Array.from(targetDiv.children)
+
+    targetChildren.forEach(child => {
         const tag = child.tagName.toLowerCase();
-        if (tag !== "p" && tag !== "h3") {
+        if (tag !== "p" && tag !== "h3") {  //h3 contains Wk1 Lmats title so we want to keep it, p we use to recognize where to insert
             child.remove();
         }
     });
+
+    // add a <p> if none exist in above array so we have a reference point for where to insert the new content
+    const referencePt = targetChildren.find(child => child.tagName === "P");
+    if (!referencePt){
+        const newP = syllabusDoc.createElement("p");
+        targetDiv.appendChild(newP);
+    }
 
     const newBody = syllabusDoc.body.innerHTML;
 
