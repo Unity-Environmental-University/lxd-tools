@@ -31,6 +31,4 @@ export default doubleProfileLanguageIntro;
 
 // // todo what do the beforeAndAfters even do in this context?
 // // try running test w no test file for this and see if beforeAndAfters do anything there
-// beforeAndAfters - if put in, can use the test just like the ai stuff does 
-
-console.log("hi")
+// beforeAndAfters - if put in, can use the test just like the ai stuff does
