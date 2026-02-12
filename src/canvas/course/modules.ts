@@ -55,22 +55,40 @@ export async function changeModuleLockDate(courseId: number, module: IModuleData
 }
 
 
+// FRAGILITY WARNING: Page finding for hometile source
+// ============================================================================
+// BRITTLE POINTS:
+// 1. Career Institute: Assumes first page is the right one (may not be)
+// 2. Regular courses: Text search for "overview" in title (case-insensitive)
+// 3. Both: Assumes page exists and has banner image
+//
+// FAILURE MODES:
+// - Returns undefined if no matching page found
+// - Throws in generateHomeTile if page has no banner
+// - Breaks silently if module structure doesn't match assumptions
+//
+// RECENT CHANGES:
+// - commit a511124: Added Career Institute support (different page selection logic)
+// - commit 5d1b380: Improved error handling (but still returns undefined on fail)
+// ============================================================================
 export async function getHometileSrcPage(module: IModuleData, courseId: number) {
     const course = await getCourseById(courseId);
     let hometileSrc: IModuleItemData | undefined;
 
     if(course.isCareerInstitute()) {
-        // if career institute, grab first page
+        // BRITTLE: Assumes first page in module is the banner source
+        // What if first page is instructions or intro text?
         hometileSrc = module.items.find(item => item.type === "Page");
     } else {
-
+        // BRITTLE: Text search for "overview" - breaks if page renamed
+        // Example: "Module 1 Overview" works, "Week 1 Introduction" doesn't
         hometileSrc = module.items.find(item =>
             item.type === "Page" &&
             item.title.toLowerCase().includes('overview')
         );
     }
-    console.log("hometileSrc: ", hometileSrc)
-    if (!hometileSrc?.url) return;
+    console.log("hometileSrc: ", hometileSrc) // Debug output left in production
+    if (!hometileSrc?.url) return; // SILENT FAIL: Returns undefined, caller must check
 
     const url = hometileSrc.url.replace(/.*\/api\/v1/, '/api/v1')
     const pageData = await fetchJson(url) as IPageData;

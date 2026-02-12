@@ -100,15 +100,6 @@
     },
     {
       "matches": [
-        "*://*.instructure.com/courses/*/assignments/syllabus"
-      ],
-      "js": [
-        "js/ui/syllabus.js"
-      ],
-      "run_at": "document_end"
-    },
-    {
-      "matches": [
         "*://*.instructure.com/accounts/*"
       ],
       "js": [
@@ -125,6 +116,15 @@
         "js/rubricOrganize.js"
       ],
       "run_at":"document_end"
+    },
+    {
+      "matches": [
+        "*://*.instructure.com/courses/*/assignments/syllabus"
+      ],
+      "js": [
+        "js/ui/syllabus.js"
+      ],
+      "run_at": "document_end"
     }
   ],
   "permissions": [

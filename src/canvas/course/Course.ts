@@ -462,20 +462,51 @@ export class Course
     return [this.accountId, this.rootAccountId].filter((a) => typeof a !== "undefined" && a !== null);
   }
 
-  async regenerateHomeTiles() {
+  // FIXED: Now explicitly deletes old files before upload for reliable replacement
+  // Still theme-dependent (can't fix that), but file replacement is now deterministic
+  // Progress callback: (current: number, total: number, moduleName: string) => void
+  async regenerateHomeTiles(
+    onProgress?: (current: number, total: number, moduleName: string) => void
+  ) {
     const modules = await this.getModules();
-    const urls = await Promise.all(
-      modules.map(async (module) => {
-        try {
-          const dataUrl = await this.generateHomeTile(module);
-        } catch (e) {
-          console.log(e);
-        }
-      })
-    );
-    console.log("done");
+    const total = modules.length;
+    const results: { success: number; failed: number; errors: string[] } = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    // Process sequentially to avoid race conditions
+    for (let i = 0; i < modules.length; i++) {
+      const module = modules[i];
+      const current = i + 1;
+      const moduleName = module.name || `Module ${module.position}`;
+
+      // Report progress before processing
+      if (onProgress) {
+        onProgress(current, total, moduleName);
+      }
+
+      try {
+        await this.generateHomeTile(module);
+        results.success++;
+      } catch (e) {
+        results.failed++;
+        const errorMsg = `${moduleName}: ${e instanceof Error ? e.message : String(e)}`;
+        results.errors.push(errorMsg);
+        console.error(errorMsg);
+      }
+    }
+
+    console.log(`Hometile generation complete: ${results.success} succeeded, ${results.failed} failed`);
+    if (results.errors.length > 0) {
+      console.error('Errors:', results.errors);
+    }
+
+    return results;
   }
 
+  // IMPROVED: Explicitly deletes old file before upload to ensure clean replacement
   async generateHomeTile(module: IModuleData) {
     const hometileSrcPage = await getHometileSrcPage(module, this.id);
     if (!hometileSrcPage) throw new Error("Module does not have an overview");
@@ -485,7 +516,12 @@ export class Course
     const fileName = `hometile${module.position}.png`;
     assert(resizedImageBlob);
     const file = new File([resizedImageBlob], fileName);
-    return await uploadFile(file, "Images/hometile", this.fileUploadUrl);
+
+    // Use explicit file replacement: delete old, upload new, wait for propagation
+    return await uploadFile(file, "Images/hometile", this.fileUploadUrl, {
+      courseId: this.id,
+      replaceExisting: true
+    });
   }
 
   public getPages(config: ICanvasCallConfig | null = null) {

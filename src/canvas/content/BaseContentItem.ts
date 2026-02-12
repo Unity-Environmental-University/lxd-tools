@@ -164,6 +164,27 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         return el;
     }
 
+    // FRAGILITY WARNING: "Works about half the time" - see HighlightBigImages.tsx line 48
+    // ============================================================================
+    // PROBLEM: Canvas file API creates new file ID on upload
+    // - Old file with old ID remains in course files
+    // - Page HTML (this.body) still references old file ID in img src
+    // - Sometimes Canvas CDN serves new file anyway (caching quirk), sometimes not
+    // - Result: ~50% success rate depending on Canvas's file resolution behavior
+    //
+    // ATTEMPTED FIXES THAT DIDN'T WORK:
+    // - Cache busting (caller adds ?timestamp) - helps but doesn't fix root cause
+    // - Using same filename - Canvas still creates new ID
+    // - Implicit file replacement used to work better but Canvas changed behavior
+    //
+    // POTENTIAL FIXES:
+    // 1. Delete old file first: await deleteFile(fileData.id, courseId)
+    // 2. Update page HTML to reference new file ID: await this.updateContent(newBody)
+    // 3. Research Canvas file "content update" API (PUT /files/:id/content?)
+    // 4. Don't auto-upload - provide download link, user replaces manually
+    //
+    // See also: HomeTileApp.tsx regenerateHomeTiles() - same issue with module cards
+    // ============================================================================
     async resizeBanner(maxWidth = SAFE_MAX_BANNER_WIDTH) {
         const bannerImg = getBannerImage(this);
         if (!bannerImg) throw new Error("No banner");
@@ -175,6 +196,9 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
         const fileUploadUrl = `/api/v1/courses/${this.courseId}/files`
         assert(resizedImageBlob);
         const file = new File([resizedImageBlob], fileName)
+        // PROBLEM: This creates a NEW file, doesn't update THIS page's HTML reference
+        // Page body still has: <img src="/files/{OLD_ID}/...">
+        // Uploaded file gets: /files/{NEW_ID}/...
         return await uploadFile(file, fileData.folder_id, fileUploadUrl);
     }
 }

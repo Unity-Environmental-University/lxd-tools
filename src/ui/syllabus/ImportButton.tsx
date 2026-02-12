@@ -1,10 +1,44 @@
+/*
+ * ============================================================================
+ * FEATURE STATUS: RE-ENABLED (2026-02-10)
+ * ============================================================================
+ *
+ * This feature was disabled in hotfix/2.9.9.3 (2026-02-05) due to bugs.
+ * RE-ENABLED after fix on 2026-02-10 by mvirgin.
+ *
+ * WHAT WAS FIXED:
+ * - Missing <p> tag bug: Now ensures <p> exists as insertion point
+ * - Sections were deleting themselves without importing content
+ * - Feature re-bundled into extension
+ *
+ * REMAINING FRAGILITY (marked inline with FRAGILITY WARNING):
+ * - Text search for "Week 1 Learning Materials" - breaks if renamed
+ * - Theme selectors (.content, .cbt-video-container) - breaks if theme updates
+ * - Hardcoded page slug "week-1-learning-materials" - breaks if page renamed
+ * - Still has silent failures (console.error but no user notification)
+ *
+ * THE CORE PROBLEM REMAINS:
+ * We don't control the Canvas theme. No stable semantic hooks (data attributes, IDs).
+ * This code guesses structure via selectors and text search.
+ * Current fix makes it MORE reliable, but still fragile.
+ *
+ * POTENTIAL FUTURE IMPROVEMENTS:
+ * 1. Add validation: Check if selectors exist BEFORE attempting import, show error UI
+ * 2. Detect already-imported content to prevent duplication
+ * 3. Add explicit failure alerts instead of silent console.error()
+ * 4. Make "copy to clipboard" alternative for when auto-inject fails
+ * ============================================================================
+ */
+
 import {Button} from "react-bootstrap";
 import { Course } from "ueu_canvas";
 import { Page } from "@canvas/content/pages/Page";  // TODO these don't exist in ueu_canvas yet?
 import PageKind from "@canvas/content/pages/PageKind";
 import {useState} from "react";
 
-// takes html string, parses it, and returns the first HTMLElement with class "cbt-video-container"
+// FRAGILITY WARNING: This depends on CBT theme selectors that we don't control
+// Breaks when: theme updates, course template changes, selector patterns vary
+// If this fails: content won't be found, returns empty array, silent fail
 function extractContentFromHTML(html: string, query: string): HTMLElement[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
@@ -26,68 +60,78 @@ function extractContentFromHTML(html: string, query: string): HTMLElement[] {
   return elements;
 }
 
-// takes a body, removes everything but the <p> elements in
-// the bodies week 1 learning mats section. Used to clear the section
-// before we import the new/current wk 1 learning mats
-// if we fail to locate a div we return the same syllabus body passed
+// FRAGILITY WARNING: Text-search based section finding
+// This breaks when: syllabus wording changes, section renamed, localized courses
+// Failure mode: Returns unchanged body, button appears to work but does nothing
+// FIXED (2026-02-10): Now ensures <p> tag exists for insertion point
 function clearMatsSection(syllabusBody: string): string {
     const parser = new DOMParser();
     const syllabusDoc = parser.parseFromString(syllabusBody, "text/html");
 
-    // find all divs with class "content" in syllabus, then find
-    // the one that contains "Week 1 Learning Materials" - thats where we want to import
+    const textHeader = "Week 1 Learning Materials";
+
+    // BRITTLE: Text search for "Week 1 Learning Materials" - no semantic hooks available
+    // Alternative approach: Use heading tags (h2, h3) with pattern matching
     const targetDiv = Array.from(syllabusDoc.querySelectorAll(".content"))
-        .find(div => div.textContent?.includes("Week 1 Learning Materials"));
+        .find(div => div.textContent?.includes(textHeader));
 
     if (!targetDiv) {
-        console.error("Could not find 'Week 1 Learning Materials' section in syllabus");
-        return syllabusBody;
+        console.error("SYLLABUS IMPORT FAILED: Could not find 'Week 1 Learning Materials' section. Template may have changed.");
+        return syllabusBody; // SILENT FAIL: User won't know nothing happened
     }
 
-    Array.from(targetDiv.children).forEach(child => {
+    const targetChildren = Array.from(targetDiv.children);
+
+    targetChildren.forEach(child => {
         const tag = child.tagName.toLowerCase();
-        if (tag !== "p" && tag !== "h3") {
+        if (tag !== "p" && tag !== "h3") {  // h3 contains Wk1 Lmats title so we want to keep it, p we use to recognize where to insert
             child.remove();
         }
     });
+
+    // BUGFIX: Ensure a <p> tag exists for insertion point (was causing silent failures)
+    const referencePt = targetChildren.find(child => child.tagName === "P");
+    if (!referencePt) {
+        const newP = syllabusDoc.createElement("p");
+        targetDiv.appendChild(newP);
+    }
 
     const newBody = syllabusDoc.body.innerHTML;
 
     return newBody;
 }
 
-// takes a syllabus, an html element, a selector string, and an insert position,
-// removes the [bulleted list] placeholder from the "Week 1 Learning Materials" section,
-// and inserts the provided html element into the section of the syllabus specified by the selector and position
-// if we fail to locate a div we return the same syllabus body passed
+// FRAGILITY WARNING: Selector-based injection with no validation
+// This breaks when: template structure changes, selector doesn't match, content array empty
+// Failure mode: Content injected in wrong place OR silently not injected at all
 function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[], selector: string, position: InsertPosition): string {
     const parser = new DOMParser();
     const syllabusDoc = parser.parseFromString(syllabusBody, "text/html");
 
-    // find all divs with class "content" in syllabus, then find
-    // the one that contains "Week 1 Learning Materials" - thats where we want to import
-    // TODO I use this same targetdiv a lot - make a function for this
+    // BRITTLE: Same text-search pattern as clearMatsSection (should extract to shared function)
+    // DUPLICATED LOGIC: Third place we search for "Week 1 Learning Materials"
     const targetDiv = Array.from(syllabusDoc.querySelectorAll(".content"))
         .find(div => div.textContent?.includes("Week 1 Learning Materials"));
 
     if (!targetDiv) {
-        console.error("Could not find 'Week 1 Learning Materials' section in syllabus");
-        return syllabusBody;
+        console.error("SYLLABUS IMPORT FAILED: Could not find 'Week 1 Learning Materials' section. Template may have changed.");
+        return syllabusBody; // SILENT FAIL: Changed nothing but returns as if successful
     }
 
-    // remove the [bulleted list] placeholder
+    // BRITTLE: Text-based placeholder detection
     const paragraphs = targetDiv.querySelectorAll("p");
     paragraphs.forEach(p => {
         if (p.textContent?.includes("[bulleted list]")) {
             p.remove();
         }
-        if (p.textContent?.includes("The following learning materials will")) { // TODO dropdown titles instead of this
+        // HARDCODED: Overwrites specific template text - breaks if wording changes
+        if (p.textContent?.includes("The following learning materials will")) {
             p.textContent = "Please watch the overview video(s) for context on the learning materials below:"
         }
     });
-    
-    // insert content
-    const insertionPoint = targetDiv.querySelector(selector);   
+
+    // FRAGILITY WARNING: Generic selector 'p' assumes structure - what if no <p> exists?
+    const insertionPoint = targetDiv.querySelector(selector);
     content.reverse(); // reverse to maintain order when inserting
     if (insertionPoint) {
         content.forEach(element => {
@@ -95,7 +139,8 @@ function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[],
         });
     }
     else{
-        console.error(`Could not find insertion point with selector "${selector}"`);
+        console.error(`SYLLABUS IMPORT FAILED: Could not find insertion point with selector "${selector}". Template structure changed.`);
+        // SILENT FAIL: Function still returns updated body even though nothing was inserted
     }     
 
     const newBody = syllabusDoc.body.innerHTML;
@@ -104,7 +149,11 @@ function importContentIntoSyllabus(syllabusBody: string, content: HTMLElement[],
 }
 
 
-// main handler for import button click
+// FRAGILITY WARNING: This entire function depends on:
+// 1. Page slug being exactly "week-1-learning-materials" (never renamed)
+// 2. Specific CBT theme selectors (change = breakage)
+// 3. Syllabus having exact text "Week 1 Learning Materials"
+// 4. Silent failures at multiple points (user never knows it didn't work)
 async function handleImportClick() {
     try {
         const course = await Course.getFromUrl();
@@ -113,33 +162,38 @@ async function handleImportClick() {
             return;
         }
 
-        // Canvas "slug" form of page name
-        const pageSlug = "week-1-learning-materials"; 
+        // BRITTLE: Hardcoded page slug - if faculty rename page, this breaks
+        const pageSlug = "week-1-learning-materials";
 
         const pageData = await PageKind.getByString(
             course.id,
-            pageSlug, 
-            { queryParams: { include: ["body"] } }, 
+            pageSlug,
+            { queryParams: { include: ["body"] } },
             { allowPartialMatch: false }
         );
 
         if ("message" in pageData) {
-            console.error(`Page with slug "${pageSlug}" not found:`, pageData.message);
-            return;
+            console.error(`IMPORT FAILED: Page "${pageSlug}" not found. May have been renamed or deleted.`, pageData.message);
+            return; // SILENT FAIL: User sees loading spinner then nothing
         }
 
-        const wk1_mats_page = new Page(pageData, course.id); // TODO dont need to create this if all i need is body
+        const wk1_mats_page = new Page(pageData, course.id);
+
+        // BRITTLE: Theme-specific selectors - these changed from commit 69a5676
+        // Previous selector: "div#cbt_panel_2_content.cbt-accordion-content.cbt-answer"
+        // Current selector: "div.scaffold-media-box.cbt-content.cbt-accordion-container"
+        // Both break when theme updates
         const extractedContent = extractContentFromHTML(wk1_mats_page.body, ".cbt-video-container");
-        const extractedMats = extractContentFromHTML(wk1_mats_page.body, "div.scaffold-media-box.cbt-content.cbt-accordion-container"); // assuming learning mats are in a <ul>
+        const extractedMats = extractContentFromHTML(wk1_mats_page.body, "div.scaffold-media-box.cbt-content.cbt-accordion-container");
 
-        if (!extractedContent) {
-            console.error("No video content found on Week 1 Learning Materials page");
-            return;
+        if (!extractedContent || extractedContent.length === 0) {
+            console.error("IMPORT FAILED: No video content found. Theme selectors may have changed.");
+            return; // SILENT FAIL
         }
 
-        if (!extractedMats) {
-            console.error("No learning materials content found on Week 1 Learning Materials page");
-            return;
+        if (!extractedMats || extractedMats.length === 0) {
+            console.error("IMPORT FAILED: No learning materials found. Theme selectors may have changed.");
+            return; // SILENT FAIL
         }
 
         const syllabusBody = await course.getSyllabus();  
@@ -160,19 +214,22 @@ async function handleImportClick() {
     }
 }
 
+// FRAGILITY WARNING: This button provides no feedback on failure
+// User clicks → spinner shows → page reloads → looks like it worked (even if it failed)
+// FIX: Add success/failure modal before reload, or don't reload at all
 export function ImportButton() {
     const [loading, setLoading] = useState(false);
 
     return (
-        <Button 
+        <Button
             title={"Import the Week 1 Learning mats into the syllabus"}
             disabled={loading}
             onClick={async e => {
                 setLoading(true);
                 console.log("Import Syllabus clicked", e);
-                await handleImportClick();
+                await handleImportClick(); // Can fail silently at multiple points
                 console.log("About to reload");
-                location.reload();  
+                location.reload(); // PROBLEM: Reloads even if import failed, masking errors
             }}
         >
             {loading ? "..." : "Import Wk1 Mats"}

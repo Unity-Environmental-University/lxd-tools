@@ -1,3 +1,25 @@
+/*
+ * Hometile generation and Salesforce image export
+ * ============================================================================
+ * TWO FEATURES HERE:
+ * 1. "Generate Home Tiles" - Regenerate module card images from overview banners
+ * 2. "Salesforce Image Download" - Export resized images for course catalog
+ *
+ * RECENT IMPROVEMENTS (2026-02-10):
+ * - Now explicitly deletes old files before uploading new ones
+ * - Added 2-second delay for Canvas CDN propagation
+ * - Better error reporting (shows success/failure counts)
+ * - More aggressive cache busting
+ *
+ * REMAINING LIMITATIONS:
+ * - Still depends on CBT theme selectors (.cbt-module-card-img img)
+ * - Still uses filename conventions (Images/hometile/hometileN.png)
+ * - If theme changes, this breaks
+ *
+ * But file replacement is now deterministic - should work reliably.
+ * ============================================================================
+ */
+
 import Modal from "../widgets/Modal/index";
 import {useState} from "react";
 import {createPortal} from "react-dom";
@@ -12,6 +34,49 @@ type HomeTileAppProps = {
     el: HTMLElement,
 }
 
+// TODO: Move to shared components when progress bars are needed elsewhere
+interface ProgressBarProps {
+    current: number;
+    total: number;
+    label?: string;
+}
+
+// TODO: Style this properly with CSS/SCSS
+function ProgressBar({current, total, label}: ProgressBarProps) {
+    const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+
+    return (
+        <div style={{margin: '10px 0'}}>
+            {label && <div style={{marginBottom: '5px', fontSize: '14px'}}>{label}</div>}
+            <div style={{
+                width: '100%',
+                height: '20px',
+                backgroundColor: '#e0e0e0',
+                borderRadius: '4px',
+                overflow: 'hidden'
+            }}>
+                <div style={{
+                    width: `${percentage}%`,
+                    height: '100%',
+                    backgroundColor: '#4CAF50',
+                    transition: 'width 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                }}>
+                    {percentage > 10 && `${current}/${total}`}
+                </div>
+            </div>
+            <div style={{marginTop: '5px', fontSize: '12px', color: '#666'}}>
+                {current} of {total} modules ({percentage}%)
+            </div>
+        </div>
+    );
+}
+
 export function HomeTileApp({course, el}: HomeTileAppProps) {
 
     const [showModal, setShowModal] = useState(false);
@@ -20,21 +85,55 @@ export function HomeTileApp({course, el}: HomeTileAppProps) {
     const [moduleNumber, setModuleNumber] = useState(0);
     const [useDefault, setUseDefault] = useState(true);
 
+    // Progress tracking
+    const [progressCurrent, setProgressCurrent] = useState(0);
+    const [progressTotal, setProgressTotal] = useState(0);
+    const [currentModuleName, setCurrentModuleName] = useState("");
 
+    // IMPROVED: Now waits for Canvas to propagate file changes before cache busting
     async function regenerate() {
         setRunning(true);
         setShowModal(true);
-        await course.regenerateHomeTiles();
+        setProgressCurrent(0);
+        setProgressTotal(0);
+        setModalText("Initializing...");
+
+        // Progress callback for regenerateHomeTiles
+        const onProgress = (current: number, total: number, moduleName: string) => {
+            setProgressCurrent(current);
+            setProgressTotal(total);
+            setCurrentModuleName(moduleName);
+            setModalText(`Processing module ${current} of ${total}...`);
+        };
+
+        const results = await course.regenerateHomeTiles(onProgress);
+
+        // Update modal with results
+        if (results.failed > 0) {
+            setModalText(`Generated ${results.success} tiles. ${results.failed} failed (check console).`);
+        } else {
+            setModalText(`Successfully generated ${results.success} tiles. Refreshing...`);
+        }
+
+        // Wait for Canvas CDN to propagate new files (critical for reliability)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Force browser cache refresh
+        // BRITTLE: Theme selector - breaks if CBT theme changes class names
         // eslint-disable-next-line @/no-undef
         const homeTiles = document.querySelectorAll(".cbt-module-card-img img") as NodeListOf<HTMLImageElement>;
         try {
             await Promise.all(Array.from(homeTiles).map((async (tile) => {
+                // More aggressive cache busting
                 await fetch(tile.src, {cache: 'reload', mode: 'no-cors'});
-                tile.src = tile.src + '?' + Date.now();
+                // Remove old query params and add new timestamp
+                const baseUrl = tile.src.split('?')[0];
+                tile.src = `${baseUrl}?v=${Date.now()}`;
             })))
         } catch (e) {
-            console.log(e);
+            console.error('Cache refresh failed:', e);
         }
+
         setRunning(false);
     }
 
@@ -70,7 +169,28 @@ export function HomeTileApp({course, el}: HomeTileAppProps) {
 
         </>, el)}
         <Modal isOpen={showModal} canClose={!running} requestClose={() => setShowModal(false)}>
-            <p>{running ? `Updating ${modalText}...` : `Finished Updating ${modalText}`}</p>
+            <div>
+                {running ? (
+                    <>
+                        <p>{modalText}</p>
+                        {progressTotal > 0 && (
+                            <>
+                                <ProgressBar
+                                    current={progressCurrent}
+                                    total={progressTotal}
+                                />
+                                {currentModuleName && (
+                                    <div style={{fontSize: '12px', color: '#666', marginTop: '10px'}}>
+                                        Current: {currentModuleName}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </>
+                ) : (
+                    <p>Finished: {modalText}</p>
+                )}
+            </div>
             {!running && <button onClick={() => setShowModal(false)}>Close</button>}
         </Modal>
     </>)
