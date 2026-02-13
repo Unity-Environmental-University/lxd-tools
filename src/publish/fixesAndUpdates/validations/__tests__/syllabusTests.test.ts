@@ -38,8 +38,7 @@ describe("Syllabus validation", () => {
   test("Add apa language to grading policy test", syllabusTestTest(addApaNoteToGradingPoliciesTest));
   test("Add generative ai language", syllabusTestTest(addAiGenerativeLanguageTest));
   test("Fix support email", syllabusTestTest(fixSupportEmailTest));
-  // TODO; Commenting this out for now, will come back when honor code check is down, may need to adjust the gallant/goofus
-  //test('Fix Honor Code language', syllabusTestTest(honorCodeCheck));
+  test('Fix Honor Code language', syllabusTestTest(honorCodeCheck));
   test("Late policy text replace", syllabusTestTest(latePolicyTableTest));
   test("Title IX policy update", syllabusTestTest(titleIXPolicyTest));
   test("Grading Deadline Language", syllabusTestTest(gradingDeadlineLanguageTest));

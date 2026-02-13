@@ -368,11 +368,17 @@ export const fixSupportEmailTest: TextReplaceValidation<ISyllabusHaver> = {
   fix: badSyllabusFixFunc(badSupportEmailRegex, goodSupportEmail),
 };
 
+type HonorCodeUserData = {
+  parsedSyllabus: Document;
+  honorCodeTable: HTMLTableElement | undefined;
+};
+
+const searchString = "students be honest in all academic work";
+
 export const honorCodeCheck: CourseValidation<ISyllabusHaver> = {
   name: "Syllabus Honor Code Check",
   description: "Checks for outdated honor code section in syllabus and replaces it with new language.",
   async run(bp) {
-    const searchString = "students be honest in all academic work";
     let honorCodeTable: HTMLTableElement | undefined = undefined;
     const syllabus = await bp.getSyllabus();
     const parser = new DOMParser();
@@ -381,16 +387,17 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver> = {
     // Find the table, determine if it's old or new
     const tables = parsedSyllabus.querySelectorAll("table");
     for (const table of tables) {
-      if (table.textContent.includes(searchString)) {
+      if (table.textContent?.includes(searchString)) {
         // Flag this as the table to return
         honorCodeTable = table;
       }
     }
+
     // Return a success, message depending on success, table element and any other useful fix items for user data
     return testResult(!honorCodeTable, {
       failureMessage: "Syllabus contains old honor code table.",
       notFailureMessage: "Honor code table is up to date.",
-      userData: { syllabus, parsedSyllabus, honorCodeTable },
+      userData: { parsedSyllabus, honorCodeTable } as HonorCodeUserData,
     });
   },
   async fix(bp, results) {
@@ -402,22 +409,36 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver> = {
       });
 
     // Pull apart results.userData to useable parts
-    const { syllabus, parsedSyllabus, honorCodeTable } = results.userData;
-    // TODO: Add new syllabus HTML
-    const newSyllabusHtml = `<table><table>`;
+    const { parsedSyllabus, honorCodeTable }: HonorCodeUserData = results.userData;
 
-    // Update the syllabus body with the new honor code section
-    // TODO; Make sure this doesn't break, being a document
-    const updatedSyllabus = parsedSyllabus.replace(honorCodeTable, newSyllabusHtml).toString();
+    if (!honorCodeTable) return testResult("not run", { notFailureMessage: "Couldn't find table in syllabus" });
 
-    // Send it
-    const success = bp.changeSyllabus(updatedSyllabus);
+    const newSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3><p>Click on <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3323&app=pt&source=browse&public=true">this link to view the full Academic Honor Code</a>. You are responsible for being familiar with the Academic Honor Code.</p>`;
 
-    // Return a result based on the API call success/failure
-    return testResult(success, {
-      failureMessage: "Could not update syllabus",
-      notFailureMessage: "Syllabus honor code section updated successfully!",
-    });
+    // Find the specific element that contains the honor code text
+    const honorCodeTd = Array.from(honorCodeTable.querySelectorAll("td")).find((td) =>
+      td.textContent?.includes(searchString)
+    );
+
+    if (!honorCodeTd) return testResult("not run", { notFailureMessage: "Couldn't find honor code table cell." });
+
+    // Replace the text with the newSyllabusHtml
+    honorCodeTd.innerHTML = newSyllabusHtml;
+    honorCodeTd.style.height = "auto";
+    if(honorCodeTd.parentElement) {
+      honorCodeTd.parentElement.style.height = "auto";
+    }
+
+    try {
+      await bp.changeSyllabus(parsedSyllabus.documentElement.outerHTML);
+      return testResult(true, {
+        notFailureMessage: "Syllabus honor code section updated successfully!",
+      });
+    } catch (e) {
+      return testResult(false, {
+        failureMessage: `Could not update syllabus: ${e}`,
+      });
+    }
   },
 };
 
