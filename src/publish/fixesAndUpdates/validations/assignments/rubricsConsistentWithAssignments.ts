@@ -1,5 +1,5 @@
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {rubricsForCourseGen, IRubricData, IRubricAssociationData, IAssignmentData} from "@/canvas";
+import AssignmentKind from "@ueu/ueu-canvas";
+import {rubricsForCourseGen, IRubricData, IRubricAssociationData, IAssignmentData} from "@ueu/ueu-canvas";
 import {MessageResult, testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {CourseValidation, RunTestFunction} from "@publish/fixesAndUpdates/validations/types";
 

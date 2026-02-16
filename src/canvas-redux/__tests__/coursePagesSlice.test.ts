@@ -1,28 +1,28 @@
-import { mockPageData } from "@canvas/content/__mocks__/mockContentData";
-import { configureStore } from '@reduxjs/toolkit';
-import {coursePagesReducer, fetchCoursePages, updateCoursePages} from '../coursePagesSlice';
-import { IPageData } from '@canvas/content/pages/types';
-import PageKind from "@canvas/content/pages/PageKind";
+import { mockPageData } from "@ueu/ueu-canvas";
+import { configureStore } from "@reduxjs/toolkit";
+import { coursePagesReducer, fetchCoursePages, updateCoursePages } from "../coursePagesSlice";
+import { IPageData } from "@ueu/ueu-canvas";
+import PageKind from "@ueu/ueu-canvas";
 
 // Mock dataGenerator as an async generator function
-jest.mock('@canvas/content/pages/PageKind', () => ({
+jest.mock("@ueu/ueu-canvas/dist/content/pages/PageKind", () => ({
   dataGenerator: jest.fn(async function* () {
-      yield {
-          ...mockPageData,
-          id: 1,
-          title: 'Mock Page', // Assuming this is intended to be a string
-      };
-  })
+    yield {
+      ...mockPageData,
+      id: 1,
+      title: "Mock Page", // Assuming this is intended to be a string
+    };
+  }),
 }));
 
-describe('coursePagesSlice', () => {
+describe("coursePagesSlice", () => {
   let store: any;
 
   beforeEach(() => {
     store = configureStore({ reducer: { coursePages: coursePagesReducer } });
   });
 
-  it('should return the initial state', () => {
+  it("should return the initial state", () => {
     const state = store.getState().coursePages;
     expect(state).toEqual({
       data: [],
@@ -31,15 +31,15 @@ describe('coursePagesSlice', () => {
     });
   });
 
-  it('should handle updateCoursePages', () => {
-    const mockData: IPageData = { ...mockPageData, id: 1, title: 'Mock Page' }; // Adjust based on IPageData structure
+  it("should handle updateCoursePages", () => {
+    const mockData: IPageData = { ...mockPageData, id: 1, title: "Mock Page" }; // Adjust based on IPageData structure
     store.dispatch(updateCoursePages({ pageData: mockData }));
 
     const state = store.getState().coursePages;
     expect(state.data).toContainEqual(mockData);
   });
 
-  it('should handle fetchCoursePages pending', async () => {
+  it("should handle fetchCoursePages pending", async () => {
     await store.dispatch(fetchCoursePages({ courseId: 1 }));
 
     const state = store.getState().coursePages;
@@ -48,9 +48,9 @@ describe('coursePagesSlice', () => {
     expect(state.data).toHaveLength(1); // Expect one page to be added
   });
 
-  it('should handle fetchCoursePages rejected', async () => {
+  it("should handle fetchCoursePages rejected", async () => {
     (PageKind.dataGenerator as jest.Mock).mockImplementation(async function* () {
-      throw new Error('Network error');
+      throw new Error("Network error");
     });
 
     const result = await store.dispatch(fetchCoursePages({ courseId: 2 }));
@@ -58,6 +58,6 @@ describe('coursePagesSlice', () => {
     const state = store.getState().coursePages;
     expect(result.type).toBe(fetchCoursePages.rejected.type);
     expect(state.loading).toBe(false);
-    expect(state.error).toBe('Failed to fetch course pages Error: Network error');
+    expect(state.error).toBe("Failed to fetch course pages Error: Network error");
   });
 });

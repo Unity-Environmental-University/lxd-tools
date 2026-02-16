@@ -1,11 +1,10 @@
 import { fetchTermsThunk, GetTermsThunkParams } from "@/reporting/data/thunks/fetchTermsThunk";
 
 import { addTerm, setStatus } from "@/reporting/data/termSlice";
-import {mockAsyncGen} from "@/__mocks__/utils";
-import {mockTermData} from "@canvas/__mocks__/mockTermData"; // Adjust path as needed
+import { mockAsyncGen } from "@/__mocks__/utils";
+import { mockTermData } from "@ueu/ueu-canvas"; // Adjust path as needed
 import { getTermsGenerator } from "ueu_canvas";
-import {mockAll} from "@/utils/testUtls";
-
+import { mockAll } from "@/utils/testUtls";
 
 jest.mock("ueu_canvas", () => ({
   getTermsGenerator: jest.fn(),
@@ -22,7 +21,10 @@ describe("getTermsThunk", () => {
 
   it("dispatches setStatus('loading'), then addTerm for each term, then setStatus('fulfilled')", async () => {
     const mockTerms = mockAll(
-      [{ id: 101, name: "Spring 2024" }, { id: 102, name: "Fall 2024" }],
+      [
+        { id: 101, name: "Spring 2024" },
+        { id: 102, name: "Fall 2024" },
+      ],
       mockTermData
     );
 

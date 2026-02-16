@@ -1,85 +1,87 @@
-import { exportData } from '@/ui/speedGrader/exportAndRender/exportData';
-import { csvRowsForCourse } from '@/ui/speedGrader/exportAndRender/csvRowsForCourse';
-import { saveDataGenFunc } from '@/ui/speedGrader/saveDataGenFunc';
-import { UiHandlerProps } from '@/ui/speedGrader/controls/UiHandlerProps';
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import {ICourseData} from "@/canvas/courseTypes";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import { exportData } from "@/ui/speedGrader/exportAndRender/exportData";
+import { csvRowsForCourse } from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
+import { saveDataGenFunc } from "@/ui/speedGrader/saveDataGenFunc";
+import { UiHandlerProps } from "@/ui/speedGrader/controls/UiHandlerProps";
+import { mockAssignmentData } from "@ueu/ueu-canvas";
+import { ICourseData } from "@ueu/ueu-canvas";
+import { mockCourseData } from "@ueu/ueu-canvas";
 
-import {IAssignmentData} from "@canvas/content/types";
+import { IAssignmentData } from "@ueu/ueu-canvas";
 
-jest.mock('@/ui/speedGrader/exportAndRender/csvRowsForCourse');
-jest.mock('@/ui/speedGrader/saveDataGenFunc');
+jest.mock("@/ui/speedGrader/exportAndRender/csvRowsForCourse");
+jest.mock("@/ui/speedGrader/saveDataGenFunc");
 
-describe('exportData', () => {
-    let mockCourse: ICourseData;
-    let mockUiHandlerProps: UiHandlerProps;
-    let mockAssignment: IAssignmentData | null;
-    let mockCsvRows: string[];
-    let mockSaveData: jest.Mock;
+describe("exportData", () => {
+  let mockCourse: ICourseData;
+  let mockUiHandlerProps: UiHandlerProps;
+  let mockAssignment: IAssignmentData | null;
+  let mockCsvRows: string[];
+  let mockSaveData: jest.Mock;
 
-    beforeEach(() => {
-        mockCourse = {
-            ...mockCourseData,
-            course_code: 'CS101',
+  beforeEach(() => {
+    mockCourse = {
+      ...mockCourseData,
+      course_code: "CS101",
+    } as ICourseData;
 
-        } as ICourseData;
+    mockUiHandlerProps = {
+      popUp: jest.fn(),
+      popClose: jest.fn(),
+      showError: jest.fn(),
+    };
 
-        mockUiHandlerProps = {
-            popUp: jest.fn(),
-            popClose: jest.fn(),
-            showError: jest.fn(),
-        };
+    mockAssignment = {
+      ...mockAssignmentData,
+      name: "Assignment 1",
+    };
 
-        mockAssignment = {
-            ...mockAssignmentData,
-            name: 'Assignment 1',
-        };
+    mockCsvRows = ["header", "row1", "row2"];
+    (csvRowsForCourse as jest.Mock).mockResolvedValue(mockCsvRows);
 
-        mockCsvRows = ['header', 'row1', 'row2'];
-        (csvRowsForCourse as jest.Mock).mockResolvedValue(mockCsvRows);
+    mockSaveData = jest.fn();
+    (saveDataGenFunc as jest.Mock).mockReturnValue(mockSaveData);
+  });
 
-        mockSaveData = jest.fn();
-        (saveDataGenFunc as jest.Mock).mockReturnValue(mockSaveData);
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
+  test("should call csvRowsForCourse and saveDataGenFunc with correct parameters when assignment is provided", async () => {
+    await exportData(mockCourse, mockUiHandlerProps, mockAssignment);
+    expect(csvRowsForCourse).toHaveBeenCalledWith(mockCourse, mockAssignment);
+    expect(mockSaveData).toHaveBeenCalledWith(mockCsvRows, "Rubric Scores Assignment 1.csv");
+  });
 
-    test('should call csvRowsForCourse and saveDataGenFunc with correct parameters when assignment is provided', async () => {
-        await exportData(mockCourse, mockUiHandlerProps, mockAssignment);
-        expect(csvRowsForCourse).toHaveBeenCalledWith(mockCourse, mockAssignment);
-        expect(mockSaveData).toHaveBeenCalledWith(mockCsvRows, 'Rubric Scores Assignment 1.csv');
-    });
+  test("should call csvRowsForCourse and saveDataGenFunc with correct parameters when assignment is not provided", async () => {
+    await exportData(mockCourse, mockUiHandlerProps);
 
-    test('should call csvRowsForCourse and saveDataGenFunc with correct parameters when assignment is not provided', async () => {
-        await exportData(mockCourse, mockUiHandlerProps);
+    expect(csvRowsForCourse).toHaveBeenCalledWith(mockCourse, null);
+    expect(mockSaveData).toHaveBeenCalledWith(mockCsvRows, "Rubric Scores CS101.csv");
+  });
 
-        expect(csvRowsForCourse).toHaveBeenCalledWith(mockCourse, null);
-        expect(mockSaveData).toHaveBeenCalledWith(mockCsvRows, 'Rubric Scores CS101.csv');
-    });
+  test("should call popUp and popClose on error", async () => {
+    const error = new Error("test error");
+    (csvRowsForCourse as jest.Mock).mockRejectedValue(error);
 
-    test('should call popUp and popClose on error', async () => {
-        const error = new Error('test error');
-        (csvRowsForCourse as jest.Mock).mockRejectedValue(error);
+    await expect(exportData(mockCourse, mockUiHandlerProps)).rejects.toThrow(error);
 
-        await expect(exportData(mockCourse, mockUiHandlerProps)).rejects.toThrow(error);
+    expect(mockUiHandlerProps.popClose).toHaveBeenCalled();
+    expect(mockUiHandlerProps.popUp).toHaveBeenCalledWith(
+      `ERROR ${error} while retrieving assignment data from Canvas. Please refresh and try again.`,
+      "OK"
+    );
+  });
 
-        expect(mockUiHandlerProps.popClose).toHaveBeenCalled();
-        expect(mockUiHandlerProps.popUp).toHaveBeenCalledWith(`ERROR ${error} while retrieving assignment data from Canvas. Please refresh and try again.`, 'OK');
-    });
+  test("should add and remove event listeners for error handling", async () => {
+    const addEventListenerSpy = jest.spyOn(window, "addEventListener");
+    const removeEventListenerSpy = jest.spyOn(window, "removeEventListener");
 
-    test('should add and remove event listeners for error handling', async () => {
-        const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
-        const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+    await exportData(mockCourse, mockUiHandlerProps, mockAssignment);
 
-        await exportData(mockCourse, mockUiHandlerProps, mockAssignment);
+    expect(addEventListenerSpy).toHaveBeenCalledWith("error", mockUiHandlerProps.showError);
+    expect(removeEventListenerSpy).toHaveBeenCalledWith("error", mockUiHandlerProps.showError);
 
-        expect(addEventListenerSpy).toHaveBeenCalledWith('error', mockUiHandlerProps.showError);
-        expect(removeEventListenerSpy).toHaveBeenCalledWith('error', mockUiHandlerProps.showError);
-
-        addEventListenerSpy.mockRestore();
-        removeEventListenerSpy.mockRestore();
-    });
+    addEventListenerSpy.mockRestore();
+    removeEventListenerSpy.mockRestore();
+  });
 });

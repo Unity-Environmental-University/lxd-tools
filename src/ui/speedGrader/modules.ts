@@ -1,4 +1,4 @@
-import {CanvasData, IModuleData, ModuleItemType} from "@/canvas/canvasDataDefs";
+import {CanvasData, IModuleData, ModuleItemType} from "@ueu/ueu-canvas";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {IModuleInfo} from "@/ui/speedGrader/types";
 

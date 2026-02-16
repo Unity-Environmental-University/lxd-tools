@@ -1,14 +1,14 @@
-import {assignmentDataGen} from "@/canvas/content/assignments";
-import {ICourseData, SectionData} from "@/canvas/courseTypes";
-import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
+import {assignmentDataGen} from "@ueu/ueu-canvas";
+import {ICourseData, SectionData} from "@ueu/ueu-canvas";
+import {IEnrollmentData, IUserData} from "@ueu/ueu-canvas";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
-import { fetchJson } from "@/canvas/fetch/fetchJson";
-import {ITermData} from "@/canvas/term/Term";
-import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {moduleGenerator} from "@/canvas/course/modules";
-import {renderAsyncGen} from "@canvas/canvasUtils";
-import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
+import { fetchJson } from "@ueu/ueu-canvas";
+import {ITermData} from "@ueu/ueu-canvas";
+import {getPagedData, getPagedDataGenerator} from "@ueu/ueu-canvas";
+import {moduleGenerator} from "@ueu/ueu-canvas";
+import {renderAsyncGen} from "@ueu/ueu-canvas";
+import {IAssignmentData, IAssignmentSubmission} from "@ueu/ueu-canvas";
 
 export async function csvRowsForCourse(course: SectionData | ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];

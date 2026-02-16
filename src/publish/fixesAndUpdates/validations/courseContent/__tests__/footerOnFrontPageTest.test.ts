@@ -1,9 +1,9 @@
 import footerOnFrontPageTest from "@publish/fixesAndUpdates/validations/courseContent/footerOnFrontPageTest";
 
-import { IPageData } from "@canvas/content/pages/types";
+import { IPageData } from "@ueu/ueu-canvas";
 import { jest } from "@jest/globals";
-import {Course} from "@canvas/course/Course";
-import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
+import { Course } from "@ueu/ueu-canvas";
+import { mockPageData } from "@ueu/ueu-canvas";
 
 describe("removeGradeTable Fix", () => {
   let mockCourse: Course;
@@ -16,7 +16,7 @@ describe("removeGradeTable Fix", () => {
     } as unknown as Course;
 
     currentMockPageData = {
-        ...mockPageData,
+      ...mockPageData,
       body: "<div><div class='cbt-footer-container'>Footer Content</div></div>",
       htmlContentUrl: "/some-url",
     } as IPageData;
@@ -25,7 +25,7 @@ describe("removeGradeTable Fix", () => {
       body: currentMockPageData.body,
       data: currentMockPageData,
       htmlContentUrl: currentMockPageData.htmlContentUrl,
-      updateContent: jest.fn(async (body) => mockFrontPage.body = body),
+      updateContent: jest.fn(async (body) => (mockFrontPage.body = body)),
     };
 
     (mockCourse.getFrontPage as jest.Mock<typeof mockCourse.getFrontPage>).mockResolvedValue(mockFrontPage);
@@ -63,8 +63,8 @@ describe("removeGradeTable Fix", () => {
 
     const result = await footerOnFrontPageTest.fix(mockCourse);
 
-    expect(result.success).toBe('not run');
-    const messageLines = [...result.messages.flatMap(a => a.bodyLines)];
+    expect(result.success).toBe("not run");
+    const messageLines = [...result.messages.flatMap((a) => a.bodyLines)];
     expect(messageLines).toContain("Test not run; no broken pages");
   });
 });

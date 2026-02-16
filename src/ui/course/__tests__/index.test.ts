@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/dom';
 
 
 import ReactDOM from 'react-dom/client';
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {mockCourseData} from "@ueu/ueu-canvas";
 import {act} from "react";
 
 import {main} from "../main";
@@ -16,14 +16,14 @@ import {
     addSectionsButton
 } from "../addButtons"
 import assert from "assert";
-import {Course} from "@/canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas";
 
 
-import * as courseApi from '@/canvas/course';
-import {getSingleCourse} from "@/canvas/course";
+import * as courseApi from '@ueu/ueu-canvas';
+import {getSingleCourse} from "@ueu/ueu-canvas";
 
-import * as determineContent from "@/canvas/content/determineContent";
-import {getContentClassFromUrl} from "@/canvas/content/determineContent";
+import * as determineContent from "@ueu/ueu-canvas";
+import {getContentClassFromUrl} from "@ueu/ueu-canvas";
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('../addButtons')

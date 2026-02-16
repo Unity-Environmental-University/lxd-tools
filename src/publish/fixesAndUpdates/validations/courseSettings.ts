@@ -5,12 +5,12 @@ import {
     ILatePolicyHaver,
     IModulesHaver,
     IPagesHaver
-} from "@canvas/course/courseTypes";
-import {Course} from "@canvas/course/Course";
+} from "@ueu/ueu-canvas";
+import {Course} from "@ueu/ueu-canvas";
 import assert from "assert";
-import {setGradingStandardForCourse} from "@canvas/course";
+import {setGradingStandardForCourse} from "@ueu/ueu-canvas";
 
-import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
+import {ICourseData, ICourseSettings} from "@ueu/ueu-canvas";
 import {CourseFixValidation, CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export const extensionsInstalledTest: CourseValidation<Course> = {

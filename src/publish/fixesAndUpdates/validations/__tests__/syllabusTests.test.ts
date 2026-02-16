@@ -17,7 +17,7 @@ import {
   aiPolicyMediaTest,
   supportPhoneNumberFix,
 } from "../syllabusTests";
-import { ISyllabusHaver } from "@/canvas/course/courseTypes";
+import { ISyllabusHaver } from "@ueu/ueu-canvas";
 import assert from "assert";
 import { CourseValidation, TextReplaceValidation } from "@publish/fixesAndUpdates/validations/types";
 import { mockSyllabusHaver } from "@publish/fixesAndUpdates/validations/__mocks__/validations";
@@ -38,7 +38,7 @@ describe("Syllabus validation", () => {
   test("Add apa language to grading policy test", syllabusTestTest(addApaNoteToGradingPoliciesTest));
   test("Add generative ai language", syllabusTestTest(addAiGenerativeLanguageTest));
   test("Fix support email", syllabusTestTest(fixSupportEmailTest));
-  test('Fix Honor Code language', syllabusTestTest(honorCodeCheck));
+  test("Fix Honor Code language", syllabusTestTest(honorCodeCheck));
   test("Late policy text replace", syllabusTestTest(latePolicyTableTest));
   test("Title IX policy update", syllabusTestTest(titleIXPolicyTest));
   test("Grading Deadline Language", syllabusTestTest(gradingDeadlineLanguageTest));

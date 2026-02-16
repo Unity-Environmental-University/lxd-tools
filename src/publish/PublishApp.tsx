@@ -3,15 +3,15 @@ import React, {useState} from 'react';
 import {useEffectAsync} from "@/ui/utils";
 
 import {CourseUpdateInterface} from "./fixesAndUpdates/CourseUpdateInterface";
-import {IUserData} from "@canvas/canvasDataDefs";
+import {IUserData} from "@ueu/ueu-canvas";
 import {AdminApp} from "@/admin/AdminApp";
 import {PublishInterface} from "./publishInterface/PublishInterface";
 import {Alert, Row} from "react-bootstrap";
-import {Course} from "@canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas";
 import {IMultiSelectOption} from "@/ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {fetchJson} from "@ueu/ueu-canvas";
 import {DIST_REPO_MANIFEST} from "@/publish/consts";
 import validations from "@publish/fixesAndUpdates/validations";
 import {Provider} from "react-redux";

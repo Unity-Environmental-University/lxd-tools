@@ -1,13 +1,13 @@
-import { IUserData } from "@canvas/canvasDataDefs";
+import { IUserData } from "@ueu/ueu-canvas";
 import { Temporal } from "temporal-polyfill";
 import React, { useState, useMemo, useCallback } from "react";
-import { Course } from "@canvas/course/Course";
+import { Course } from "@ueu/ueu-canvas";
 import { useEffectAsync } from "@/ui/utils";
 import { Alert } from "react-bootstrap";
-import { ITermData } from "@/canvas/term/Term";
+import { ITermData } from "@ueu/ueu-canvas";
 import { PUBLISH_FORM_EMAIL_TEMPLATE_URL } from "@/publish/consts";
-import { IPageData } from "@canvas/content/pages/types";
-import PageKind from "@canvas/content/pages/PageKind";
+import { IPageData } from "@ueu/ueu-canvas";
+import PageKind from "@ueu/ueu-canvas";
 import { env } from "node:process";
 
 // Simple cache to store email templates by course ID

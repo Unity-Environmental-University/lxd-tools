@@ -1,4 +1,4 @@
-import { getPlainTextFromHtml } from "@canvas/canvasUtils";
+import { getPlainTextFromHtml } from "@ueu/ueu-canvas";
 import {
   AddPosition,
   addSyllabusSectionFix,
@@ -9,7 +9,7 @@ import {
   InSyllabusSectionFuncUserData,
   testResult,
 } from "./utils";
-import { ISyllabusHaver } from "@canvas/course/courseTypes";
+import { ISyllabusHaver } from "@ueu/ueu-canvas";
 import {
   CourseFixValidation,
   CourseValidation,
@@ -425,7 +425,7 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver> = {
     // Replace the text with the newSyllabusHtml
     honorCodeTd.innerHTML = newSyllabusHtml;
     honorCodeTd.style.height = "auto";
-    if(honorCodeTd.parentElement) {
+    if (honorCodeTd.parentElement) {
       honorCodeTd.parentElement.style.height = "auto";
     }
 

@@ -1,108 +1,104 @@
-import React from 'react';
-import {render, fireEvent, waitFor, act, screen} from '@testing-library/react';
-import '@testing-library/jest-dom';
-import {BpButton} from '../BpButton';
-import {Course} from "@/canvas/course/Course";
-import {ICourseData} from "@/canvas/courseTypes";
-import {genBlueprintDataForCode} from "@/canvas/course/blueprint";
-import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {mockAsyncGen} from "@/__mocks__/utils";
-import {renderAsyncGen} from "@/canvas/canvasUtils";
+import React from "react";
+import { render, fireEvent, waitFor, act, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import { BpButton } from "../BpButton";
+import { Course } from "@ueu/ueu-canvas";
+import { ICourseData } from "@ueu/ueu-canvas";
+import { genBlueprintDataForCode } from "@ueu/ueu-canvas";
+import openThisContentInTarget from "@ueu/ueu-canvas";
+import { mockCourseData } from "@ueu/ueu-canvas";
+import { mockAsyncGen } from "@/__mocks__/utils";
+import { renderAsyncGen } from "@ueu/ueu-canvas";
 
 // Mock dependencies
-jest.mock('@/canvas/course/blueprint', () => ({
-    genBlueprintDataForCode: jest.fn()
+jest.mock("@ueu/ueu-canvas/dist/course/blueprint", () => ({
+  genBlueprintDataForCode: jest.fn(),
 }));
-jest.mock('@/canvas/canvasUtils', () => ({
-    renderAsyncGen: jest.fn(),
+jest.mock("@/canvas/canvasUtils", () => ({
+  renderAsyncGen: jest.fn(),
 }));
-jest.mock('@/canvas/content/openThisContentInTarget', () => jest.fn());
+jest.mock("@/canvas/content/openThisContentInTarget", () => jest.fn());
 
-describe('BpButton', () => {
-    let course: Course;
-    let currentBp: Course;
+describe("BpButton", () => {
+  let course: Course;
+  let currentBp: Course;
 
-    beforeEach(() => {
-        course = {
-            id: 1,
-            courseCode: 'CS101',
-            accountId: 1,
-            rootAccountId: 1
-        } as Course;
-        currentBp = {
-            id: 2,
-            courseCode: 'BP_CS101',
-            accountId: 1,
-            rootAccountId: 1
-        } as Course;
+  beforeEach(() => {
+    course = {
+      id: 1,
+      courseCode: "CS101",
+      accountId: 1,
+      rootAccountId: 1,
+    } as Course;
+    currentBp = {
+      id: 2,
+      courseCode: "BP_CS101",
+      accountId: 1,
+      rootAccountId: 1,
+    } as Course;
+  });
+
+  it("displays disabled BP and BPs buttons when no blueprints are available", async () => {
+    (genBlueprintDataForCode as jest.Mock).mockReturnValue(null);
+    (renderAsyncGen as jest.Mock).mockResolvedValue([]);
+
+    await act(async () => {
+      render(<BpButton course={course} />);
     });
 
-    it('displays disabled BP and BPs buttons when no blueprints are available', async () => {
-        (genBlueprintDataForCode as jest.Mock).mockReturnValue(null);
-        (renderAsyncGen as jest.Mock).mockResolvedValue([]);
+    await waitFor(() => {
+      // Expect the "BP" button to be rendered and disabled
+      const bpButton = screen.getByText("BP");
+      expect(bpButton).toBeInTheDocument();
+      expect(bpButton).toBeDisabled();
 
-        await act(async () => {
-            render(<BpButton course={course}/>);
-        });
-
-        await waitFor(() => {
-            // Expect the "BP" button to be rendered and disabled
-            const bpButton = screen.getByText('BP');
-            expect(bpButton).toBeInTheDocument();
-            expect(bpButton).toBeDisabled();
-
-            // Expect the "BPs" button to be rendered and disabled
-            const bpsButton = screen.getByText('BPs');
-            expect(bpsButton).toBeInTheDocument();
-            expect(bpsButton).toBeDisabled();
-        });
+      // Expect the "BPs" button to be rendered and disabled
+      const bpsButton = screen.getByText("BPs");
+      expect(bpsButton).toBeInTheDocument();
+      expect(bpsButton).toBeDisabled();
     });
+  });
 
-    it('displays "BP" button and opens the main BP when clicked', async () => {
-        (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce([]);
-        (renderAsyncGen as jest.Mock).mockResolvedValueOnce([currentBp]);
-        window.open = jest.fn();
-        const {getByText} = await act(async () => render(<BpButton course={course} currentBp={currentBp}/>));
-        await waitFor(() => {
-            expect(getByText('BP')).toBeInTheDocument();
-        });
-        await act(async () => fireEvent.click(screen.getByText('BP')));
-        await waitFor(() => {
-            expect(openThisContentInTarget).toHaveBeenCalledWith(course.id, currentBp.id);
-        });
+  it('displays "BP" button and opens the main BP when clicked', async () => {
+    (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce([]);
+    (renderAsyncGen as jest.Mock).mockResolvedValueOnce([currentBp]);
+    window.open = jest.fn();
+    const { getByText } = await act(async () => render(<BpButton course={course} currentBp={currentBp} />));
+    await waitFor(() => {
+      expect(getByText("BP")).toBeInTheDocument();
     });
-
-
-    it('displays "Archived BPs" button and opens modal with blueprint list when clicked', async () => {
-        const blueprintData: ICourseData[] = [
-            {...mockCourseData, id: 2, course_code: 'CS102'},
-            {...mockCourseData, id: 3, course_code: 'CS103'}
-        ];
-
-        (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce(mockAsyncGen(blueprintData));
-
-        const {getByText, getByTitle} = await act(async () => render(<BpButton
-            course={course}
-            currentBp={currentBp}
-        />));
-        await waitFor(() => {
-            expect(getByTitle('Open the blueprint version of this course')).toBeInTheDocument();
-        });
-        await act(async () => fireEvent.click(getByTitle('Open the blueprint version of this course')));
-
-        await waitFor(() => {
-            expect(getByText('BPs')).toBeInTheDocument();
-        });
-        await act(async () => fireEvent.click(getByText('BPs')));
-
-        await waitFor(() => {
-            expect(getByText('CS102')).toBeInTheDocument();
-            expect(getByText('CS103')).toBeInTheDocument();
-        });
-        await act(async () => fireEvent.click(getByText('CS102')));
-        await waitFor(() => {
-            expect(openThisContentInTarget).toHaveBeenCalledWith(course, 2);
-        });
+    await act(async () => fireEvent.click(screen.getByText("BP")));
+    await waitFor(() => {
+      expect(openThisContentInTarget).toHaveBeenCalledWith(course.id, currentBp.id);
     });
+  });
+
+  it('displays "Archived BPs" button and opens modal with blueprint list when clicked', async () => {
+    const blueprintData: ICourseData[] = [
+      { ...mockCourseData, id: 2, course_code: "CS102" },
+      { ...mockCourseData, id: 3, course_code: "CS103" },
+    ];
+
+    (genBlueprintDataForCode as jest.Mock).mockReturnValueOnce(mockAsyncGen(blueprintData));
+
+    const { getByText, getByTitle } = await act(async () => render(<BpButton course={course} currentBp={currentBp} />));
+    await waitFor(() => {
+      expect(getByTitle("Open the blueprint version of this course")).toBeInTheDocument();
+    });
+    await act(async () => fireEvent.click(getByTitle("Open the blueprint version of this course")));
+
+    await waitFor(() => {
+      expect(getByText("BPs")).toBeInTheDocument();
+    });
+    await act(async () => fireEvent.click(getByText("BPs")));
+
+    await waitFor(() => {
+      expect(getByText("CS102")).toBeInTheDocument();
+      expect(getByText("CS103")).toBeInTheDocument();
+    });
+    await act(async () => fireEvent.click(getByText("CS102")));
+    await waitFor(() => {
+      expect(openThisContentInTarget).toHaveBeenCalledWith(course, 2);
+    });
+  });
 });

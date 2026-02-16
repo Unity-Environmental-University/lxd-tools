@@ -1,15 +1,15 @@
-import {Course} from "@canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas";
 import {
     getContentDataFromUrl, getRubric, IAssignmentData, IDiscussionData,
     IRubricAssociationData, IRubricData
-} from "@/canvas";
-import { getSingleCourse } from "@canvas/course";
-import { IQuizData } from "@canvas/content/quizzes/types";
-import { IPageData } from "@canvas/content/pages/types";
-import {getAssignmentData} from "@canvas/content/assignments/legacy";
-import {assignmentDataGen} from "@canvas/content/assignments";
-import {fetchJson} from "@canvas/fetch/fetchJson";
-import {formDataify} from "@canvas/canvasUtils";
+} from "@ueu/ueu-canvas";
+import { getSingleCourse } from "@ueu/ueu-canvas";
+import { IQuizData } from "@ueu/ueu-canvas";
+import { IPageData } from "@ueu/ueu-canvas";
+import {getAssignmentData} from "@ueu/ueu-canvas";
+import {assignmentDataGen} from "@ueu/ueu-canvas";
+import {fetchJson} from "@ueu/ueu-canvas";
+import {formDataify} from "@ueu/ueu-canvas";
 import {useState} from "react";
 
 

@@ -1,28 +1,28 @@
-import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData"; // Adjust import for assignment mock data
-import { configureStore } from '@reduxjs/toolkit';
-import {courseAssignmentsReducer, fetchCourseAssignments, updateCourseAssignments} from '../courseAssignmentsSlice'; // Update the path as needed
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {IAssignmentData} from "@canvas/content/types";
+import { mockAssignmentData } from "@ueu/ueu-canvas"; // Adjust import for assignment mock data
+import { configureStore } from "@reduxjs/toolkit";
+import { courseAssignmentsReducer, fetchCourseAssignments, updateCourseAssignments } from "../courseAssignmentsSlice"; // Update the path as needed
+import AssignmentKind from "@ueu/ueu-canvas";
+import { IAssignmentData } from "@ueu/ueu-canvas";
 
 // Mock dataGenerator as an async generator function
-jest.mock('@canvas/content/assignments/AssignmentKind', () => ({
+jest.mock("@ueu/ueu-canvas/dist/content/assignments/AssignmentKind", () => ({
   dataGenerator: jest.fn(async function* () {
     yield {
       ...mockAssignmentData, // Change this to appropriate mock assignment data
       id: 1,
-      title: 'Mock Assignment', // Assuming this is intended to be a string
+      title: "Mock Assignment", // Assuming this is intended to be a string
     };
-  })
+  }),
 }));
 
-describe('courseAssignmentsSlice', () => {
+describe("courseAssignmentsSlice", () => {
   let store: any;
 
   beforeEach(() => {
     store = configureStore({ reducer: { courseAssignments: courseAssignmentsReducer } });
   });
 
-  it('should return the initial state', () => {
+  it("should return the initial state", () => {
     const state = store.getState().courseAssignments;
     expect(state).toEqual({
       data: [],
@@ -31,15 +31,15 @@ describe('courseAssignmentsSlice', () => {
     });
   });
 
-  it('should handle updateCourseAssignments', () => {
-    const mockData: IAssignmentData = { ...mockAssignmentData, id: 1, title: 'Mock Assignment' }; // Adjust based on IAssignmentData structure
+  it("should handle updateCourseAssignments", () => {
+    const mockData: IAssignmentData = { ...mockAssignmentData, id: 1, title: "Mock Assignment" }; // Adjust based on IAssignmentData structure
     store.dispatch(updateCourseAssignments({ assignmentData: mockData }));
 
     const state = store.getState().courseAssignments;
     expect(state.data).toContainEqual(mockData);
   });
 
-  it('should handle fetchCourseAssignments pending', async () => {
+  it("should handle fetchCourseAssignments pending", async () => {
     await store.dispatch(fetchCourseAssignments({ courseId: 1 }));
 
     const state = store.getState().courseAssignments;
@@ -48,9 +48,9 @@ describe('courseAssignmentsSlice', () => {
     expect(state.data).toHaveLength(1); // Expect one assignment to be added
   });
 
-  it('should handle fetchCourseAssignments rejected', async () => {
+  it("should handle fetchCourseAssignments rejected", async () => {
     (AssignmentKind.dataGenerator as jest.Mock).mockImplementation(async function* () {
-      throw new Error('Network error');
+      throw new Error("Network error");
     });
 
     const result = await store.dispatch(fetchCourseAssignments({ courseId: 2 }));
@@ -58,6 +58,6 @@ describe('courseAssignmentsSlice', () => {
     const state = store.getState().courseAssignments;
     expect(result.type).toBe(fetchCourseAssignments.rejected.type);
     expect(state.loading).toBe(false);
-    expect(state.error).toBe('Network error');
+    expect(state.error).toBe("Network error");
   });
 });

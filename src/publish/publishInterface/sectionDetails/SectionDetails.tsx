@@ -1,15 +1,15 @@
-import {renderProfileIntoCurioFrontPage} from "../../../canvas/profile";
+import {renderProfileIntoCurioFrontPage} from "@ueu/ueu-canvas";
 import React, {useState} from "react";
-import {IModuleData, IUserData} from "../../../canvas/canvasDataDefs";
+import {IModuleData, IUserData} from "@ueu/ueu-canvas";
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
 import {FacultyProfileSearch} from "./FacultyProfileSearch";
 import {Col, Row} from "react-bootstrap";
-import {Course} from "../../../canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas";
 
 
-import {IAssignmentGroup} from "@canvas/content/types";
-import {IProfile} from "@canvas/type";
+import {IAssignmentGroup} from "@ueu/ueu-canvas";
+import {IProfile} from "@ueu/ueu-canvas";
 
 type SectionDetailsProps = {
     section?: Course | null,

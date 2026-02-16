@@ -1,12 +1,12 @@
-import { getCourseById } from "@/canvas/course";
-import { fetchJson } from "@canvas/fetch/fetchJson";
-import { formDataify } from "@canvas/canvasUtils";
-import { IModuleData } from "@canvas/canvasDataDefs";
-import { moduleGenerator } from "@canvas/course/modules";
-import { startMigration } from "@/canvas/course/migration";
-import { Course } from "@/canvas/course/Course";
+import { getCourseById } from "@ueu/ueu-canvas";
+import { fetchJson } from "@ueu/ueu-canvas";
+import { formDataify } from "@ueu/ueu-canvas";
+import { IModuleData } from "@ueu/ueu-canvas";
+import { moduleGenerator } from "@ueu/ueu-canvas";
+import { startMigration } from "@ueu/ueu-canvas";
+import { Course } from "@ueu/ueu-canvas";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
-import { lockBlueprint } from "@/canvas/course/blueprint";
+import { lockBlueprint } from "@ueu/ueu-canvas";
 import { getItemTypeAndId, IModuleItemData } from "ueu_canvas";
 import { getItemInModule } from "@/ui/speedGrader/modules";
 

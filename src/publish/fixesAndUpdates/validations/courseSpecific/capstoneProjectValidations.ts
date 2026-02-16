@@ -4,7 +4,7 @@ import {
     preserveCapsReplace
 } from "../utils";
 
-import {IContentHaver} from "../../../../canvas/course/courseTypes";
+import {IContentHaver} from "@ueu/ueu-canvas";
 import {TextReplaceValidation} from "@publish/fixesAndUpdates/validations/types";
 
 

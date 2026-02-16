@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 // Adjust import path as needed
 import styles from './MigrationRow.module.css';
-import { IPageData } from "@canvas/content/pages/types";
+import { IPageData } from "@ueu/ueu-canvas";
 import { KalturaMigrationDetails } from "@publish/publishInterface/videoUpdater/data/types";
 import { migrationStart } from "@publish/publishInterface/videoUpdater/data/actions/migrationStarts";
 import { useDispatch } from "react-redux";
 import transformToMigrationRowData from "@publish/publishInterface/videoUpdater/migrationTable/transformToMigrationRowData";
 import { KalturaAppDispatch } from "@publish/publishInterface/videoUpdater/data/store";
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas";
 
 // Define the props interface for MigrationRow
 interface MigrationRowProps {

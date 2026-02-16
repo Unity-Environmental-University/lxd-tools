@@ -1,4 +1,4 @@
-import {SubmissionType} from "@/canvas";
+import { SubmissionType } from "@ueu/ueu-canvas";
 
 jest.mock("@canvas/canvasUtils");
 jest.mock("@canvas/course/modules");
@@ -6,13 +6,11 @@ jest.mock("@canvas/content/assignments");
 jest.mock("@publish/fixesAndUpdates/validations/utils");
 
 import { courseHasUnusedAssignments } from "../courseHasUnusedAssignments"; // Adjust the import path
-import { renderAsyncGen } from "@canvas/canvasUtils";
-import { moduleGenerator } from "@canvas/course/modules";
-import { assignmentDataGen } from "@canvas/content/assignments";
+import { renderAsyncGen } from "@ueu/ueu-canvas";
+import { moduleGenerator } from "@ueu/ueu-canvas";
+import { assignmentDataGen } from "@ueu/ueu-canvas";
 import { testResult } from "@publish/fixesAndUpdates/validations/utils";
-import {mockAsyncGen} from "@/__mocks__/utils";
-
-
+import { mockAsyncGen } from "@/__mocks__/utils";
 
 describe("courseHasUnusedAssignments", () => {
   const mockCourse = {
@@ -41,14 +39,19 @@ describe("courseHasUnusedAssignments", () => {
     submission_types: SubmissionType[];
   };
 
-  const mockAssignments:MockAssignmentType[] = [
+  const mockAssignments: MockAssignmentType[] = [
     { id: 101, name: "Assignment 1", html_url: "url1", submission_types: ["online_text_entry"] },
     { id: 102, name: "Assignment 2", html_url: "url2", submission_types: ["online_text_entry"] },
-    { id: 201, discussion_topic: { id: 2201 }, name: "Discussion 1", html_url: "url3", submission_types: ["discussion_topic"] },
-    { id: 301, quiz_id: 3301, name: "Quiz 1", html_url: "url4", submission_types: ['online_quiz'] },
+    {
+      id: 201,
+      discussion_topic: { id: 2201 },
+      name: "Discussion 1",
+      html_url: "url3",
+      submission_types: ["discussion_topic"],
+    },
+    { id: 301, quiz_id: 3301, name: "Quiz 1", html_url: "url4", submission_types: ["online_quiz"] },
     { id: 401, name: "External Tool", html_url: "url2", submission_types: ["external_tool"] },
   ];
-
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -74,7 +77,12 @@ describe("courseHasUnusedAssignments", () => {
 
   it("returns failure when there are unlisted assignments", async () => {
     // Add an unlisted assignment
-    mockAssignments.push({ id: 999, name: "Unlisted Assignment", html_url: "url5", submission_types: ["online_text_entry"] });
+    mockAssignments.push({
+      id: 999,
+      name: "Unlisted Assignment",
+      html_url: "url5",
+      submission_types: ["online_text_entry"],
+    });
 
     const result = await courseHasUnusedAssignments.run(mockCourse);
 

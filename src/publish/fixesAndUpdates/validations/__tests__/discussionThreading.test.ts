@@ -1,10 +1,10 @@
-import {Course} from "@/canvas/course/Course";
-import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
+import {Course} from "@ueu/ueu-canvas";
+import DiscussionKind from "@ueu/ueu-canvas";
 import {discussionThreadingValidation} from "../discussionThreading";
 import {mockAsyncGen} from "@/__mocks__/utils";
 
 
-import {IDiscussionData} from "@canvas/content/types";
+import {IDiscussionData} from "@ueu/ueu-canvas";
 
 jest.mock("@/canvas/content/discussions/DiscussionKind", () => ({
         dataGenerator: jest.fn(),
