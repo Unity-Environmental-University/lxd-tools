@@ -482,10 +482,44 @@ export class Course
     const bannerImg = getBannerImage(hometileSrcPage);
     if (!bannerImg) throw new Error("No banner image on page");
     const resizedImageBlob = await getResizedBlob(bannerImg.src, HOMETILE_WIDTH);
-    const fileName = `hometile${module.position}.png`;
-    assert(resizedImageBlob);
+    const fileName = `hometile${module.position}.jpg`;
+    if (!resizedImageBlob) throw new TypeError("Resized image is bad.");
     const file = new File([resizedImageBlob], fileName);
+    // if hometile already exists, delete it
+    const existingHometiles = await this.findExistingHometiles(module.position);
+    if (existingHometiles) await this.deleteHometiles(existingHometiles);
     return await uploadFile(file, "Images/hometile", this.fileUploadUrl);
+  }
+
+  async findExistingHometiles(position: number): Promise<number[] | undefined> {
+    // Fetch all files that are images and title matches 'hometile{position}'
+    // I'm hoping this will return either png or jpg, but it may return neither(unlikely)
+    const results = await fetchJson(`/api/v1/courses/${this.id}/files`, {
+      queryParams: {
+        method: "GET",
+        per_page: 10,
+        content_types: "image",
+        search_query: `hometile${position}`,
+      },
+    });
+    if (!results) {
+      console.error("images not found");
+      return undefined;
+    }
+    // Turn the result into an array of file IDs
+    const existingHometiles = Array.isArray(results) ? results.map((file: any) => file.id) : [];
+    return existingHometiles.length > 0 ? existingHometiles : undefined;
+  }
+
+  async deleteHometiles(hometiles: number[]) {
+    // For each hometile in hometiles, delete that file
+    for (const hometile of hometiles) {
+      await fetchJson(`api/v1/files/${hometile}`, {
+        queryParams: {
+          method: "DELETE",
+        },
+      });
+    }
   }
 
   public getPages(config: ICanvasCallConfig | null = null) {
