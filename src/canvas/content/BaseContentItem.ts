@@ -157,6 +157,9 @@ export class BaseContentItem extends BaseCanvasObject<CanvasData> {
   async resizeBanner(maxWidth = SAFE_MAX_BANNER_WIDTH) {
     const bannerImg = getBannerImage(this);
     if (!bannerImg) throw new Error("No banner");
+    if (!bannerImg.complete) {
+      await new Promise((resolve) => (bannerImg.onload = resolve));
+    }
     const fileData = await getFileDataFromUrl(bannerImg.src, this.courseId);
     if (!fileData) throw new Error("File not found");
     if (bannerImg.naturalWidth < maxWidth) return; //Dont resize image unless we're shrinking it
