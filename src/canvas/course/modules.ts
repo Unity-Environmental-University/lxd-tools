@@ -1,124 +1,118 @@
-import {Temporal} from "temporal-polyfill";
-import {IModuleData, IModuleItemData} from "../canvasDataDefs";
-import {formDataify, ICanvasCallConfig} from "../canvasUtils";
+import { Temporal } from "temporal-polyfill";
+import { IModuleData, IModuleItemData } from "../canvasDataDefs";
+import { formDataify, ICanvasCallConfig } from "../canvasUtils";
 
-
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Page} from "@/canvas/content/pages/Page";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {IPageData} from "@/canvas/content/pages/types";
-import {Discussion} from "@canvas/content/discussions/Discussion";
-import {getCourseById} from "@canvas/course/index";
+import { fetchJson } from "@/canvas/fetch/fetchJson";
+import { Page } from "@/canvas/content/pages/Page";
+import { getPagedDataGenerator } from "@/canvas/fetch/getPagedDataGenerator";
+import { IPageData } from "@/canvas/content/pages/types";
+import { Discussion } from "@canvas/content/discussions/Discussion";
+import { getCourseById } from "@canvas/course/index";
 
 export interface IModuleHaver {
-    getModules(config: ICanvasCallConfig): IModuleData[],
+  getModules(config: ICanvasCallConfig): IModuleData[];
 }
 
 export interface GenerateModulesOptions {
-    include?: ('items' | 'content_details')[],
-    search_term?: string,
-    student_id?: string
+  include?: ("items" | "content_details")[];
+  search_term?: string;
+  student_id?: string;
 }
-
 
 export async function saveModuleItem(
-    courseId:number,
-    moduleId:number,
-    moduleItemId: number,
-    moduleItem: Partial<IModuleItemData>
+  courseId: number,
+  moduleId: number,
+  moduleItemId: number,
+  moduleItem: Partial<IModuleItemData>
 ) {
-    return await fetchJson(`/api/v1/courses/${courseId}/modules/${moduleId}/modules/items/${moduleItemId}`, {
-        fetchInit: {
-            method: "PUT",
-            body: formDataify({ moduleItem: moduleItem }),
-        }
-    })
+  return await fetchJson(`/api/v1/courses/${courseId}/modules/${moduleId}/modules/items/${moduleItemId}`, {
+    fetchInit: {
+      method: "PUT",
+      body: formDataify({ moduleItem: moduleItem }),
+    },
+  });
 }
 
-export function moduleGenerator(courseId:number, config?: ICanvasCallConfig<GenerateModulesOptions>) {
-    return getPagedDataGenerator<IModuleData>(`/api/v1/courses/${courseId}/modules`, config);
+export function moduleGenerator(courseId: number, config?: ICanvasCallConfig<GenerateModulesOptions>) {
+  return getPagedDataGenerator<IModuleData>(`/api/v1/courses/${courseId}/modules`, config);
 }
 
 export async function changeModuleLockDate(courseId: number, module: IModuleData, targetDate: Temporal.PlainDate) {
-    const payload = {
-        module: {
-            unlock_at: targetDate.toString()
-        }
-    }
-    const url = `/api/v1/courses/${courseId}/modules/${module.id}`;
-    const result = fetchJson(url, {
-        fetchInit: {
-            method: 'PUT',
-            body: formDataify(payload)
-        }
-    })
+  const payload = {
+    module: {
+      unlock_at: targetDate.toString(),
+    },
+  };
+  const url = `/api/v1/courses/${courseId}/modules/${module.id}`;
+  const result = fetchJson(url, {
+    fetchInit: {
+      method: "PUT",
+      body: formDataify(payload),
+    },
+  });
 }
 
-
 export async function getHometileSrcPage(module: IModuleData, courseId: number) {
-    const course = await getCourseById(courseId);
-    let hometileSrc: IModuleItemData | undefined;
+  const course = await getCourseById(courseId);
+  let hometileSrc: IModuleItemData | undefined;
 
-    if(course.isCareerInstitute()) {
-        // if career institute, grab first page
-        hometileSrc = module.items.find(item => item.type === "Page");
-    } else {
+  if (course.isCareerInstitute()) {
+    // if career institute, grab first page
+    hometileSrc = module.items.find((item) => item.type === "Page");
+  } else {
+    hometileSrc = module.items.find((item) => item.type === "Page" && item.title.toLowerCase().includes("overview"));
+  }
+  console.log("hometileSrc: ", hometileSrc);
+  if (!hometileSrc?.url) return;
 
-        hometileSrc = module.items.find(item =>
-            item.type === "Page" &&
-            item.title.toLowerCase().includes('overview')
-        );
-    }
-    console.log("hometileSrc: ", hometileSrc)
-    if (!hometileSrc?.url) return;
-
-    const url = hometileSrc.url.replace(/.*\/api\/v1/, '/api/v1')
-    const pageData = await fetchJson(url) as IPageData;
-    return new Page(pageData, courseId);
+  const url = hometileSrc.url.replace(/.*\/api\/v1/, "/api/v1");
+  const pageData = (await fetchJson(url)) as IPageData;
+  return new Page(pageData, courseId);
 }
 
 export function getModuleWeekNumber(module: Record<string, any>) {
-    const regex = /(week|module) (\d+)/i;
-    const match = module.name.match(regex);
-    let weekNumber = !match ? null : Number(match[1]);
-    if (!weekNumber) {
-        for (const moduleItem of module.items) {
-            if (!moduleItem.hasOwnProperty('title')) {
-                continue;
-            }
-            const match = moduleItem.title.match(regex);
-            if (match) {
-                weekNumber = match[2];
-            }
-        }
+  const regex = /(week|module) (\d+)/i;
+  const match = module.name.match(regex);
+  let weekNumber = !match ? null : Number(match[1]);
+  if (!weekNumber) {
+    for (const moduleItem of module.items) {
+      if (!moduleItem.hasOwnProperty("title")) {
+        continue;
+      }
+      const match = moduleItem.title.match(regex);
+      if (match) {
+        weekNumber = match[2];
+      }
     }
-    return weekNumber;
+  }
+  return weekNumber;
 }
 
 export async function getModulesByWeekNumber(modules: IModuleData[]) {
-    const modulesByWeekNumber: Record<string | number, IModuleData> = {};
-    for (const module of modules) {
-        const weekNumber = getModuleWeekNumber(module);
-        if (weekNumber) {
-            modulesByWeekNumber[weekNumber] = module;
-        }
+  const modulesByWeekNumber: Record<string | number, IModuleData> = {};
+  for (const module of modules) {
+    const weekNumber = getModuleWeekNumber(module);
+    if (weekNumber) {
+      modulesByWeekNumber[weekNumber] = module;
     }
-    return modulesByWeekNumber;
+  }
+  return modulesByWeekNumber;
 }
 
-const isModuleItemTypeFunc = <T extends IModuleItemData>(typeString: string) => (item: IModuleItemData): item is T => {
+const isModuleItemTypeFunc =
+  <T extends IModuleItemData>(typeString: string) =>
+  (item: IModuleItemData): item is T => {
     return item.type === typeString;
-}
+  };
 
 export type PageItemData = IModuleItemData & { type: "Page" };
 export const isPageItemData = isModuleItemTypeFunc<PageItemData>("Page");
 
-export type AssignmentItemData = IModuleItemData & { type: "Assignment"; };
+export type AssignmentItemData = IModuleItemData & { type: "Assignment" };
 export const isAssignmentItemData = isModuleItemTypeFunc<AssignmentItemData>("Assignment");
 
-export type DiscussionItemData = IModuleItemData & { type: "Discussion"; };
+export type DiscussionItemData = IModuleItemData & { type: "Discussion" };
 export const isDiscussionItemData = isModuleItemTypeFunc<DiscussionItemData>("Discussion");
 
-export type QuizItemData = IModuleItemData & { type: "Quiz"; };
+export type QuizItemData = IModuleItemData & { type: "Quiz" };
 export const isQuizItemData = isModuleItemTypeFunc<QuizItemData>("Quiz");
-
