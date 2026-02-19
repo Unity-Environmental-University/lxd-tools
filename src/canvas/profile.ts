@@ -3,10 +3,10 @@ import {IUserData} from "./canvasDataDefs";
 import {parentElement} from "./canvasUtils";
 
 import {Course} from "./course/Course";
-import {Account} from "@/canvas/Account";
-import {getSingleCourse} from "@/canvas/course";
-import {Page} from "@/canvas/content/pages/Page";
-import {IProfile, IProfileWithUser} from "@canvas/type";
+import {Account} from "@ueu/ueu-canvas/Account";
+import {getSingleCourse} from "@ueu/ueu-canvas/course";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
+import {IProfile, IProfileWithUser} from "@ueu/ueu-canvas/type";
 
 
 let facultyCourseCached: Course;

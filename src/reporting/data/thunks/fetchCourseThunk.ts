@@ -1,7 +1,7 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
 
 
-import {deepObjectMerge, getCourseData, GetCourseOptions } from "ueu_canvas";
+import {deepObjectMerge, getCourseData, GetCourseOptions } from "@ueu/ueu-canvas";
 import {setCourseStatus} from "@/reporting/data/coursesSlice";
 import {RootReportingState} from "@/reporting/data/reportingStore";
 

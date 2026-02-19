@@ -1,4 +1,4 @@
-import {Course} from "@canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
 export async function getTermNameFromSections(sections: Course[]) {
     const [section] = sections;

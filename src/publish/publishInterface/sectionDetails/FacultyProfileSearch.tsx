@@ -3,7 +3,7 @@ import React, {FormEvent, useState} from "react";
 import {Button, Form} from "react-bootstrap";
 import {FacultyProfile} from "./FacultyProfile";
 import {IUserData} from "../../../canvas/canvasDataDefs";
-import {IProfile} from "@canvas/type";
+import {IProfile} from "@ueu/ueu-canvas/type";
 
 interface IFacultyProfileSearchProps {
     onProfileSelect(profile: IProfile): Promise<void>

@@ -10,7 +10,7 @@ import { SectionRows, ISectionRows } from '../SectionRows';
 import {IUserData} from "../../../canvas/canvasDataDefs";
 import {mockUserData} from "../../../canvas/__mocks__/mockUserData";
 import {Course} from "../../../canvas/course/Course";
-import {IProfile} from "@canvas/type";
+import {IProfile} from "@ueu/ueu-canvas/type";
 
 jest.mock('../CourseRow', () => ({
     CourseRow: jest.fn(({ course, onSelectSection }) => <div onClick={() => onSelectSection(course)}>PublishCourseRow: {course.id}</div>),

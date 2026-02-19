@@ -1,5 +1,5 @@
-import {Course} from "@canvas/course/Course";
-import {IDiscussionData} from "@canvas/content/types";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {IDiscussionData} from "@ueu/ueu-canvas/content/types";
 
 /**
  * Retrieves the equivalent discussion data for a given assignment across multiple course blueprints.

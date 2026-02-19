@@ -1,4 +1,6 @@
-import {IRubricAssessmentData, IRubricAssociationData, IRubricData} from "@/canvas";
+import {IRubricAssessmentData, IRubricAssociationData} from "@ueu/ueu-canvas";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IRubricData} from "@/canvas/rubricTypes";
 
 
 export const mockRubricAssociation:IRubricAssociationData = {

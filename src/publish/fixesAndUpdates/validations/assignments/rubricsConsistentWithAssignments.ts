@@ -1,5 +1,7 @@
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {rubricsForCourseGen, IRubricData, IRubricAssociationData, IAssignmentData} from "@/canvas";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {rubricsForCourseGen, IRubricAssociationData, IAssignmentData} from "@ueu/ueu-canvas";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IRubricData} from "@/canvas/rubricTypes";
 import {MessageResult, testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {CourseValidation, RunTestFunction} from "@publish/fixesAndUpdates/validations/types";
 

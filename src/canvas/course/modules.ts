@@ -3,12 +3,12 @@ import {IModuleData, IModuleItemData} from "../canvasDataDefs";
 import {formDataify, ICanvasCallConfig} from "../canvasUtils";
 
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Page} from "@/canvas/content/pages/Page";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {IPageData} from "@/canvas/content/pages/types";
-import {Discussion} from "@canvas/content/discussions/Discussion";
-import {getCourseById} from "@canvas/course/index";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
+import {Discussion} from "@ueu/ueu-canvas/content/discussions/Discussion";
+import {getCourseById} from "@ueu/ueu-canvas/course/index";
 
 export interface IModuleHaver {
     getModules(config: ICanvasCallConfig): IModuleData[],

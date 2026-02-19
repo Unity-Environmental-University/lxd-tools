@@ -2,13 +2,13 @@ import React from 'react';
 import {render, fireEvent, waitFor, act, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {BpButton} from '../BpButton';
-import {Course} from "@/canvas/course/Course";
-import {ICourseData} from "@/canvas/courseTypes";
-import {genBlueprintDataForCode} from "@/canvas/course/blueprint";
-import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {genBlueprintDataForCode} from "@ueu/ueu-canvas/course/blueprint";
+import openThisContentInTarget from "@ueu/ueu-canvas/content/openThisContentInTarget";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {renderAsyncGen} from "@/canvas/canvasUtils";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 
 // Mock dependencies
 jest.mock('@/canvas/course/blueprint', () => ({

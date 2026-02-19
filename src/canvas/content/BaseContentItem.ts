@@ -1,14 +1,15 @@
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {IFile, uploadFile} from "@/canvas/files";
-import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
-import {CanvasData} from "@/canvas/canvasDataDefs";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {IFile, uploadFile} from "@ueu/ueu-canvas/files";
+import {BaseCanvasObject} from "@ueu/ueu-canvas/baseCanvasObject";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
 import assert from "assert";
-import {deepObjectMerge, formDataify, ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
+import {deepObjectMerge, formDataify, ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {getPagedData} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
 import {getResizedBlob} from "@/canvas/image";
-import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
-import {ContentKind} from "@/canvas/content/ContentKind";
-import {NotImplementedException} from "@/canvas/NotImplementedException";
+import getCourseIdFromUrl from "@ueu/ueu-canvas/course/getCourseIdFromUrl";
+import {ContentKind} from "@ueu/ueu-canvas/content/ContentKind";
+import {NotImplementedException} from "@ueu/ueu-canvas/NotImplementedException";
 import {SAFE_MAX_BANNER_WIDTH} from "@/publish/consts";
 
 

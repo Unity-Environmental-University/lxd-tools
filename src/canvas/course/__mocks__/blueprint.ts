@@ -1,6 +1,6 @@
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {ICourseData} from "@/canvas/courseTypes";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 
 
 const isBlueprint = jest.fn();

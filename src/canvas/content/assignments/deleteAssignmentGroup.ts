@@ -1,5 +1,5 @@
-import {fetchJson} from "@canvas/fetch/fetchJson";
-import {formDataify} from "@canvas/canvasUtils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {formDataify} from "@ueu/ueu-canvas/canvasUtils";
 
 export default async function(courseId:number, groupId:number, moveAssignmentsTo?: number) {
     const data = moveAssignmentsTo? { move_assignments_to: moveAssignmentsTo} : {};

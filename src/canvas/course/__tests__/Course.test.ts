@@ -5,9 +5,9 @@ import {
     Course
 } from "../Course";
 import mockTabData from "../../__mocks__/mockTabData";
-import {assignmentDataGen} from "@/canvas/content/assignments";
-import {baseCourseCode, parseCourseCode, stringIsCourseCode} from "@/canvas/course/code";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
+import {baseCourseCode, parseCourseCode, stringIsCourseCode} from "@ueu/ueu-canvas/course/code";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 jest.mock('@/canvas/fetch/fetchJson')
 
 jest.mock('@/canvas/content/assignments', () => ({

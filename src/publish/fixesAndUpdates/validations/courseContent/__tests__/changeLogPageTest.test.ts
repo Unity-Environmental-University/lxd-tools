@@ -1,9 +1,9 @@
 import { changelogPageTest } from "../changeLogPageTest";
-import { Course } from "@canvas/course/Course";
-import { IPageData } from "@canvas/content/pages/types";
+import { Course } from "@ueu/ueu-canvas/course/Course";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import { jest } from "@jest/globals";
-import PageKind from "@canvas/content/pages/PageKind";
-import { postContentFunc } from "@/canvas";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import { postContentFunc } from "@ueu/ueu-canvas";
 
 // Mock dependencies
 jest.mock("@canvas/content/pages/PageKind");

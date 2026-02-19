@@ -1,9 +1,9 @@
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 
-import {GetQuizOptions, IQuizData, SaveQuizOptions} from "@/canvas/content/quizzes/types";
-import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/ContentKind";
+import {GetQuizOptions, IQuizData, SaveQuizOptions} from "@ueu/ueu-canvas/content/quizzes/types";
+import {ContentKind, contentUrlFuncs, putContentFunc} from "@ueu/ueu-canvas/content/ContentKind";
 
 export const quizUrlFuncs = contentUrlFuncs('quizzes');
 const QuizKind: ContentKind<IQuizData, GetQuizOptions, SaveQuizOptions> = {

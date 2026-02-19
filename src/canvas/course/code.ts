@@ -1,4 +1,4 @@
-import {COURSE_CODE_REGEX} from "@/canvas/course/Course";
+import {COURSE_CODE_REGEX} from "@ueu/ueu-canvas/course/Course";
 
 export function parseCourseCode(code: string) {
     const match = COURSE_CODE_REGEX.exec(code);

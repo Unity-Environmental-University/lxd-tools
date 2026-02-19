@@ -1,9 +1,9 @@
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {Course} from "@/canvas/course/Course";
-import {IPageData} from "@/canvas/content/pages/types";
-import PageKind from "@/canvas/content/pages/PageKind";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import {REFERENCES_PAGE_URL_NAME} from "@/publish/consts";
-import getReferencesTemplate, {ReferenceExportType} from "@/canvas/course/references/getReferencesTemplate";
+import getReferencesTemplate, {ReferenceExportType} from "@ueu/ueu-canvas/course/references/getReferencesTemplate";
 import assert from "assert";
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 

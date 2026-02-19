@@ -1,14 +1,16 @@
-import {assignmentDataGen} from "@/canvas/content/assignments";
-import {ICourseData, SectionData} from "@/canvas/courseTypes";
-import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
+import {ICourseData, SectionData} from "@ueu/ueu-canvas/courseTypes";
+import {IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IEnrollmentData} from "@/canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
-import { fetchJson } from "@/canvas/fetch/fetchJson";
-import {ITermData} from "@/canvas/term/Term";
-import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {moduleGenerator} from "@/canvas/course/modules";
-import {renderAsyncGen} from "@canvas/canvasUtils";
-import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
+import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
+import {getPagedData, getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {moduleGenerator} from "@ueu/ueu-canvas/course/modules";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
+import {IAssignmentData, IAssignmentSubmission} from "@ueu/ueu-canvas/content/types";
 
 export async function csvRowsForCourse(course: SectionData | ICourseData, assignment: IAssignmentData | null = null) {
     let csvRows: string[] = [];

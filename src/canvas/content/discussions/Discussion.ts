@@ -1,10 +1,10 @@
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
-import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
+import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 
 
-import {IDiscussionData} from "@canvas/content/types";
+import {IDiscussionData} from "@ueu/ueu-canvas/content/types";
 
 export class Discussion extends BaseContentItem {
     static kindInfo = DiscussionKind;

@@ -1,12 +1,12 @@
 
-import { Course } from "@/canvas/course/Course";
-import PageKind from "@/canvas/content/pages/PageKind";
+import { Course } from "@ueu/ueu-canvas/course/Course";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import { REFERENCES_PAGE_URL_NAME } from "@/publish/consts";
-import getReferencesTemplate, { ReferenceExportType } from "@/canvas/course/references/getReferencesTemplate";
+import getReferencesTemplate, { ReferenceExportType } from "@ueu/ueu-canvas/course/references/getReferencesTemplate";
 import { testResult } from "@publish/fixesAndUpdates/validations/utils";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 import referencePageExistsValidation from "@/publish/fixesAndUpdates/validations/references/referencesPageExistsValidation";
-import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";
+import {mockPageData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
 // Mock dependencies
 jest.mock("@/canvas/content/pages/PageKind");

@@ -1,10 +1,10 @@
-import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {Account, RootAccountNotFoundError} from "@/canvas/Account";
+import {BaseCanvasObject} from "@ueu/ueu-canvas/baseCanvasObject";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {Account, RootAccountNotFoundError} from "@ueu/ueu-canvas/Account";
 import assert from "assert";
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {getPagedData} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {getPagedData} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 export type TermWorkflowState = 'all' | 'active' | 'deleted'
 

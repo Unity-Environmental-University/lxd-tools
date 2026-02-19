@@ -1,11 +1,11 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {IQueryParams} from "@/canvas/canvasUtils";
-import {IQuizData} from "@/canvas/content/quizzes/types";
-import {IPageData} from "@/canvas/content/pages/types";
-import {ICourseData} from "@canvas/courseTypes";
-import {FileAttachment, TopicPermissions} from "@canvas/type";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {IQueryParams} from "@ueu/ueu-canvas/canvasUtils";
+import {IQuizData} from "@ueu/ueu-canvas/content/quizzes/types";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {FileAttachment, TopicPermissions} from "@ueu/ueu-canvas/type";
 
-import {IRubricCriterionData, RubricAssessment} from "@/canvas";
+import {IRubricCriterionData, RubricAssessment} from "@ueu/ueu-canvas";
 
 export type LockInfo = unknown;
 

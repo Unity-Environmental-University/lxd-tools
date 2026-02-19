@@ -1,6 +1,6 @@
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {IQueryParams} from "@/canvas/canvasUtils";
-import {apiGetConfig} from "@canvas/fetch/apiGetConfig";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {IQueryParams} from "@ueu/ueu-canvas/canvasUtils";
+import {apiGetConfig} from "@ueu/ueu-canvas/fetch/apiGetConfig";
 
 const baseUrl = 'https://api.citeas.org/product'
 

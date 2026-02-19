@@ -3,7 +3,7 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Temporal} from 'temporal-polyfill';
 import {UpdateStartDate} from '../UpdateStartDate';
-import {Course} from '@/canvas/course/Course';
+import {Course} from '@ueu/ueu-canvas/course/Course';
 
 // Mock dependencies
 jest.mock('react-datepicker', () => (props: any) => (

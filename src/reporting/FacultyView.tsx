@@ -1,6 +1,6 @@
 import {FormEvent, useState} from "react";
 import {Card, Container, Row} from "react-bootstrap";
-import { ITermData } from "ueu_canvas";
+import { ITermData } from "@ueu/ueu-canvas";
 import { useCourses } from "./hooks/useCourses";
 import { TermPicker } from "@/reporting/TermPicker";
 import {fetchCoursesThunk} from "@/reporting/data/thunks";

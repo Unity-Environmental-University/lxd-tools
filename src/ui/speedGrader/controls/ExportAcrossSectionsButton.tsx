@@ -1,8 +1,8 @@
 import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
 import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
 import React from "react";
-import {ICourseData} from "@/canvas/courseTypes";
-import {ITermData} from "@/canvas/term/Term";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
 
 export type ExportSectionsButtonProps = UiHandlerProps & {
     course: ICourseData &{ term: ITermData},

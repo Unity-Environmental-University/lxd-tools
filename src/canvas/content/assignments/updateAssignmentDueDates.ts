@@ -1,5 +1,5 @@
-import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {IAssignmentData} from "@canvas/content/types";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 export type UpdateAssignmentDueDatesOptions = {
     courseId?: number,

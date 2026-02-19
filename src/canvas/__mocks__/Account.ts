@@ -1,6 +1,6 @@
-import { ICanvasCallConfig } from '@/canvas/canvasUtils';
-import { CanvasData } from '@/canvas/canvasDataDefs';
-import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
+import { ICanvasCallConfig } from '@ueu/ueu-canvas/canvasUtils';
+import { CanvasData } from '@ueu/ueu-canvas/canvasDataDefs';
+import {BaseCanvasObject} from "@ueu/ueu-canvas/baseCanvasObject";
 
 // Create a type alias for the original Account class
 export class MockAccount extends BaseCanvasObject<CanvasData> {

@@ -1,17 +1,17 @@
 import {mockCourseData} from "../../../course/__mocks__/mockCourseData";
 import {ICanvasCallConfig, range} from "../../../canvasUtils";
-import {updateAssignmentData} from "../index";
+import {updateAssignmentData} from "@ueu/ueu-canvas/content/assignments";
 import {mockAssignmentData} from "../../__mocks__/mockContentData";
 import fetchMock from "jest-fetch-mock";
-import {assignmentDataGen} from "@/canvas/content/assignments";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
 import {returnMockAsyncGen} from "@/__mocks__/utils";
 
-import * as canvasUtils from '@/canvas/canvasUtils';
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {putContentConfig} from "@/canvas/content/BaseContentItem";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import {UpdateAssignmentDataOptions} from "@canvas/content/types";
+import * as canvasUtils from '@ueu/ueu-canvas/canvasUtils';
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {putContentConfig} from "@ueu/ueu-canvas/content/BaseContentItem";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {UpdateAssignmentDataOptions} from "@ueu/ueu-canvas/content/types";
 
 fetchMock.enableMocks();
 

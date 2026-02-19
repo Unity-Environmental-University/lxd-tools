@@ -1,4 +1,4 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
 
 export interface IPageData extends CanvasData {
     page_id: number,

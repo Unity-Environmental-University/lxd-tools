@@ -6,10 +6,10 @@ import {
 import {createNewCourse, getCourseData} from "../index";
 import {Course} from "../Course";
 
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {GetCourseOptions} from "@/canvas/course/courseTypes";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {GetCourseOptions} from "@ueu/ueu-canvas/course/courseTypes";
 import {sleep} from "@/utils/toolbox";
 export type WorkflowState = 'queued' | 'running' | 'completed' | 'failed';
 

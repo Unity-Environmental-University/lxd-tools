@@ -1,4 +1,4 @@
-import dateFromTermName from "@/canvas/term/dateFromTermName";
+import dateFromTermName from "@ueu/ueu-canvas/term/dateFromTermName";
 import { Temporal } from "temporal-polyfill";
 
 

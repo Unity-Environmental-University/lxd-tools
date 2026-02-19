@@ -1,16 +1,16 @@
 import { courseOverviewLanguageTest } from "../courseOverviewTest";
-import { getCourseById } from "@canvas/course/index";
+import { getCourseById } from "@ueu/ueu-canvas/course/index";
 import { testResult } from "@publish/fixesAndUpdates/validations/utils";
-import { Course, mockCourseData } from "ueu_canvas";
-import { mockPageData } from "@/canvas/content/__mocks__/mockContentData";
+import { Course, mockCourseData } from "@ueu/ueu-canvas";
+import { mockPageData } from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 import { expect } from "@jest/globals";
-import { IPageData } from "@/canvas/content/pages/types";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 
 // Mock the external dependencies
 jest.mock("@canvas/course/index");
 jest.mock("@canvas/content/pages/PageKind");
 
-import PageKind from "@canvas/content/pages/PageKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 describe("courseOverviewLanguageTest - Full Suite", () => {
   let mockCourse: Course;

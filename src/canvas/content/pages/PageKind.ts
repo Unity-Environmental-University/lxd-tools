@@ -1,14 +1,14 @@
-import { fetchJson } from "@/canvas/fetch/fetchJson";
-import { getPagedDataGenerator } from "@/canvas/fetch/getPagedDataGenerator";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import { IPageData } from "@/canvas/content/pages/types";
+import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import { getPagedDataGenerator } from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import {
     ContentKind,
     contentUrlFuncs,
     courseContentUrlFunc,
     postContentFunc,
     putContentFunc
-} from "@/canvas/content/ContentKind";
+} from "@ueu/ueu-canvas/content/ContentKind";
 
 export const PageUrlFuncs = contentUrlFuncs('pages')
 export type GetPageOptions = Record<string, any>;

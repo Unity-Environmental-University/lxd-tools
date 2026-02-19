@@ -1,7 +1,7 @@
-import getReferencesForText from "@/canvas/course/references/getReferencesForText";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import getReferencesForText from "@ueu/ueu-canvas/course/references/getReferencesForText";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 import {jest} from "@jest/globals";
-import mockCiteAsResponse from "@/canvas/course/references/mockCiteAsResponse";
+import mockCiteAsResponse from "@ueu/ueu-canvas/course/references/mockCiteAsResponse";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),

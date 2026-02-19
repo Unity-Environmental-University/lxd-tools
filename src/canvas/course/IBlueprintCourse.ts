@@ -1,5 +1,5 @@
-import {ICourseCodeHaver, IIdHaver} from "@canvas/course/courseTypes";
-import {Course} from "@canvas/course/Course";
+import {ICourseCodeHaver, IIdHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
 export interface IBlueprintCourse extends ICourseCodeHaver, IIdHaver {
     isBlueprint(): boolean,

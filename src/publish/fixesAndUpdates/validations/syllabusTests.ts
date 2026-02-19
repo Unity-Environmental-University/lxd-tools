@@ -1,4 +1,4 @@
-import { getPlainTextFromHtml } from "@canvas/canvasUtils";
+import { getPlainTextFromHtml } from "@ueu/ueu-canvas/canvasUtils";
 import {
   AddPosition,
   addSyllabusSectionFix,
@@ -9,7 +9,7 @@ import {
   InSyllabusSectionFuncUserData,
   testResult,
 } from "./utils";
-import { ISyllabusHaver } from "@canvas/course/courseTypes";
+import { ISyllabusHaver } from "@ueu/ueu-canvas/course/courseTypes";
 import {
   CourseFixValidation,
   CourseValidation,

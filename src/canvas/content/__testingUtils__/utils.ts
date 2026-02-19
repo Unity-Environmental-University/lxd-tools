@@ -1,9 +1,9 @@
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {ICanvasCallConfig, renderAsyncGen} from "@/canvas/canvasUtils";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {ICanvasCallConfig, renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {putContentConfig} from "@/canvas/content/BaseContentItem";
-import {ContentKind, contentUrlFuncs} from "@/canvas/content/ContentKind";
+import {putContentConfig} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {ContentKind, contentUrlFuncs} from "@ueu/ueu-canvas/content/ContentKind";
 
 export function kindUrlTests(urlFuncs: ReturnType<typeof contentUrlFuncs>, courseId: number, contentId: number, apiUrl: string, htmlUrl: string, allUrl: string) {
     return () => {

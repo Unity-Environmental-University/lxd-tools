@@ -1,9 +1,9 @@
-import {ICanvasCallConfig, IQueryParams} from "@/canvas/canvasUtils";
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {ContentData} from "@/canvas/content/types";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {postContentConfig, putContentConfig} from "@/canvas/content/BaseContentItem";
-import {GetByStringIdOptions} from "@canvas/content/pages/PageKind";
+import {ICanvasCallConfig, IQueryParams} from "@ueu/ueu-canvas/canvasUtils";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {ContentData} from "@ueu/ueu-canvas/content/types";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {postContentConfig, putContentConfig} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {GetByStringIdOptions} from "@ueu/ueu-canvas/content/pages/PageKind";
 
 
 export type ContentKind<

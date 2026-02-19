@@ -1,10 +1,10 @@
 import {CanvasData} from "./canvasDataDefs";
 import assert from "assert";
 import {formDataify, ICanvasCallConfig, renderAsyncGen} from "./canvasUtils";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {overrideConfig} from "@/canvas/fetch/utils";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {overrideConfig} from "@ueu/ueu-canvas/fetch/utils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
 
 
 export interface ICanvasObject<CanvasDataType extends CanvasData> {

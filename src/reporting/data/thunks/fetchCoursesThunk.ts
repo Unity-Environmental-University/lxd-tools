@@ -6,9 +6,9 @@ import {
     deepObjectMerge,
     GetCoursesFromAccountOptions,
     ICanvasCallConfig
-} from "ueu_canvas";
+} from "@ueu/ueu-canvas";
 import {RootReportingState} from "@/reporting/data/reportingStore";
-import {getPagedDataGenerator} from "ueu_canvas";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas";
 
 
 export type FetchCoursesParams = {

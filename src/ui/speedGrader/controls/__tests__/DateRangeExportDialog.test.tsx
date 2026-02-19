@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import DateRangeExportDialog, { IDateRangeExportProps } from '../DateRangeExportDialog';
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {getCourseDataGenerator} from "@/canvas/course";
+import {getCourseDataGenerator} from "@ueu/ueu-canvas/course";
 import '@testing-library/jest-dom';
 
 // Mocking the dependencies

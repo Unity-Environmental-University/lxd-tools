@@ -1,5 +1,7 @@
-import {IEnrollmentData, IUserData} from "@/canvas/canvasDataDefs";
-import {mockUserData} from "@/canvas/__mocks__/mockUserData";
+import {IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IEnrollmentData} from "@/canvas/canvasDataDefs";
+import {mockUserData} from "@ueu/ueu-canvas/__mocks__/mockUserData";
 
 export const mockEnrollment: IEnrollmentData = {
     id: 1,

@@ -4,12 +4,12 @@ import {IModuleItemData, ModuleItemType, RestrictModuleItemType} from "./canvasD
 
 import {Course} from "./course/Course";
 
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 
-import {IPageData} from "@/canvas/content/pages/types";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
 
 
 type FuncType<T> = FuncObject<T> | WithoutParamsFuncType<T> | WithParamsFuncType<T>
@@ -103,7 +103,7 @@ export {
     deepObjectCopy,
     deepObjectMerge,
     deFormDataify,
-} from 'ueu_canvas';
+} from '@ueu/ueu-canvas';
 
 
 

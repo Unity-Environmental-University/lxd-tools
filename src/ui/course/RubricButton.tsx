@@ -1,15 +1,17 @@
-import {Course} from "@canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import {
     getContentDataFromUrl, getRubric, IAssignmentData, IDiscussionData,
-    IRubricAssociationData, IRubricData
-} from "@/canvas";
-import { getSingleCourse } from "@canvas/course";
-import { IQuizData } from "@canvas/content/quizzes/types";
-import { IPageData } from "@canvas/content/pages/types";
-import {getAssignmentData} from "@canvas/content/assignments/legacy";
-import {assignmentDataGen} from "@canvas/content/assignments";
-import {fetchJson} from "@canvas/fetch/fetchJson";
-import {formDataify} from "@canvas/canvasUtils";
+    IRubricAssociationData
+} from "@ueu/ueu-canvas";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IRubricData} from "@/canvas/rubricTypes";
+import { getSingleCourse } from "@ueu/ueu-canvas/course";
+import { IQuizData } from "@ueu/ueu-canvas/content/quizzes/types";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
+import {getAssignmentData} from "@ueu/ueu-canvas/content/assignments/legacy";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {formDataify} from "@ueu/ueu-canvas/canvasUtils";
 import {useState} from "react";
 
 

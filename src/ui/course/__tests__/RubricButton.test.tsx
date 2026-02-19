@@ -1,18 +1,19 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import {RubricButton} from "@/ui/course/RubricButton";
-import { Course } from '@canvas/course/Course';
+import { Course } from '@ueu/ueu-canvas/course/Course';
 import {
     getContentDataFromUrl,
     getRubric,
     IAssignmentData,
     IDiscussionData,
-    IRubricData,
     IRubricAssociationData
-} from '@/canvas';
-import { getSingleCourse } from '@canvas/course';
-import { getAssignmentData } from '@canvas/content/assignments/legacy';
-import { assignmentDataGen } from '@canvas/content/assignments';
-import { fetchJson } from '@canvas/fetch/fetchJson';
+} from '@ueu/ueu-canvas';
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IRubricData} from "@/canvas/rubricTypes";
+import { getSingleCourse } from '@ueu/ueu-canvas/course';
+import { getAssignmentData } from '@ueu/ueu-canvas/content/assignments/legacy';
+import { assignmentDataGen } from '@ueu/ueu-canvas/content/assignments';
+import { fetchJson } from '@ueu/ueu-canvas/fetch/fetchJson';
 import '@testing-library/jest-dom';
 
 // Mock all dependencies

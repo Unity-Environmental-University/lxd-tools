@@ -1,9 +1,9 @@
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import {IAssignmentData} from "@canvas/content/types";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 export class Assignment extends BaseContentItem {
     static kind = AssignmentKind;

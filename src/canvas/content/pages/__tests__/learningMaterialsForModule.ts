@@ -1,10 +1,10 @@
-import PageKind from "@canvas/content/pages/PageKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import {afterEach, beforeEach} from "@jest/globals";
-import mockModuleData, {mockModuleItemData} from "@canvas/course/__mocks__/mockModuleData";
+import mockModuleData, {mockModuleItemData} from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
 
 import learningMaterialsForModule from "../learningMaterialsForModule";
-import {renderAsyncGen} from "@canvas/canvasUtils";
-import {IModuleData} from "@canvas/canvasDataDefs";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
+import {IModuleData} from "@ueu/ueu-canvas/canvasDataDefs";
 
 jest.mock('@canvas/content/pages/PageKind', () => ({
     get: jest.fn(),

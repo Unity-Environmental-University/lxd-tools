@@ -1,9 +1,9 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/ContentKind";
-import {IAssignmentData, UpdateAssignmentDataOptions} from "@canvas/content/types";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {ContentKind, contentUrlFuncs, putContentFunc} from "@ueu/ueu-canvas/content/ContentKind";
+import {IAssignmentData, UpdateAssignmentDataOptions} from "@ueu/ueu-canvas/content/types";
 
 export const assignmentUrlFuncs = contentUrlFuncs('assignments');
 const AssignmentKind: ContentKind<

@@ -17,13 +17,13 @@ import {
   aiPolicyMediaTest,
   supportPhoneNumberFix,
 } from "../syllabusTests";
-import { ISyllabusHaver } from "@/canvas/course/courseTypes";
+import { ISyllabusHaver } from "@ueu/ueu-canvas/course/courseTypes";
 import assert from "assert";
 import { CourseValidation, TextReplaceValidation } from "@publish/fixesAndUpdates/validations/types";
 import { mockSyllabusHaver } from "@publish/fixesAndUpdates/validations/__mocks__/validations";
 
-import gallantSyllabusHtml from "@canvas/course/__mocks__/syllabus.gallant.html";
-import goofusSyllabusHtml from "@canvas/course/__mocks__/syllabus.goofus.html";
+import gallantSyllabusHtml from "@ueu/ueu-canvas/course/__mocks__/syllabus.gallant.html";
+import goofusSyllabusHtml from "@ueu/ueu-canvas/course/__mocks__/syllabus.goofus.html";
 
 describe("Syllabus validation", () => {
   test("AI policy present test correct", syllabusTestTest(aiPolicyInSyllabusTest));

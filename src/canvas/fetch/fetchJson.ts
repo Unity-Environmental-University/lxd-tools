@@ -1,4 +1,4 @@
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
 
 export async function fetchJson<T = Record<string, any>>(
     url: string, config: ICanvasCallConfig | null = null

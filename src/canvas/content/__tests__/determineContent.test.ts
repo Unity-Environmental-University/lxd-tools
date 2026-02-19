@@ -3,23 +3,23 @@ import {
     getContentItemFromUrl,
     getContentKindFromContent,
     getContentKindFromUrl
-} from "@/canvas/content/determineContent";
+} from "@ueu/ueu-canvas/content/determineContent";
 import assert from "assert";
 import {
     mockAssignmentData,
     mockDiscussionData,
     mockPageData,
     mockQuizData
-} from "@/canvas/content/__mocks__/mockContentData";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/pages/Page";
-import {Discussion} from "@/canvas/content/discussions/Discussion";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import QuizKind from "@/canvas/content/quizzes/QuizKind";
-import PageKind from "@/canvas/content/pages/PageKind";
-import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
+} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {Quiz} from "@ueu/ueu-canvas/content/quizzes/Quiz";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
+import {Discussion} from "@ueu/ueu-canvas/content/discussions/Discussion";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import QuizKind from "@ueu/ueu-canvas/content/quizzes/QuizKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),

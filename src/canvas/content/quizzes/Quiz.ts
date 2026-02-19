@@ -1,6 +1,6 @@
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {formDataify} from "@/canvas/canvasUtils";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {formDataify} from "@ueu/ueu-canvas/canvasUtils";
 
 
 export class Quiz extends BaseContentItem {

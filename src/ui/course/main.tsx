@@ -1,5 +1,5 @@
-import {Course} from "@/canvas/course/Course";
-import {getContentClassFromUrl} from "@/canvas/content/determineContent";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {getContentClassFromUrl} from "@ueu/ueu-canvas/content/determineContent";
 import {
     addBpButton,
     addDevButton,
@@ -8,7 +8,7 @@ import {
     addOpenAllLinksButton, addRubricButton,
     addSectionsButton
 } from "@/ui/course/addButtons";
-import {getSingleCourse} from "@/canvas/course";
+import {getSingleCourse} from "@ueu/ueu-canvas/course";
 
 export async function main() {
     const currentCourse = await Course.getFromUrl(document.documentURI);

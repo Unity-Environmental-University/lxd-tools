@@ -1,6 +1,6 @@
-import {Course} from "@/canvas/course/Course";
-import {getContentItemFromUrl} from "@/canvas/content/determineContent";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {getContentItemFromUrl} from "@ueu/ueu-canvas/content/determineContent";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
 
 function getIdOrCourse(courseOrId: number | Course) {
     if (typeof courseOrId === 'object') return courseOrId.id;

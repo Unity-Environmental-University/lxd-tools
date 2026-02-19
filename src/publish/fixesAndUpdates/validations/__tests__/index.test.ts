@@ -1,5 +1,5 @@
 import {capitalize, matchHighlights, preserveCapsReplace, testResult} from "../utils";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
 
 
 jest.spyOn(BaseContentItem.prototype, 'saveData')

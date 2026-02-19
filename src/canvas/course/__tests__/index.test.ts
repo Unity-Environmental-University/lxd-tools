@@ -5,8 +5,8 @@ import assert from "assert";
 import fetchMock from "jest-fetch-mock";
 import {Course} from "../Course";
 
-import {ICourseData} from "@/canvas/courseTypes";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 jest.mock('@/canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),

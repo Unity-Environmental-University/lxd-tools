@@ -1,4 +1,4 @@
-import {ICourseData} from "@/canvas";
+import {ICourseData} from "@ueu/ueu-canvas";
 import {LoadStatus} from "@/reporting/data/loadStatus";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 

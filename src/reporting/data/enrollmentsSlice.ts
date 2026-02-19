@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {EnrollmentData} from 'ueu_canvas'
+import {EnrollmentData} from '@ueu/ueu-canvas'
 
 export type UpdateEnrollmentAction = PayloadAction<{
     enrollment: EnrollmentData,

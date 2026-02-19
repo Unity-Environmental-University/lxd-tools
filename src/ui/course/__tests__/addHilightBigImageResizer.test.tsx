@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { HighlightBigImages } from '../HighlightBigImages';
 
 import {addHighlightBigImageResizer} from "@/ui/course/addButtons";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
 
 // Mock dependencies
 jest.mock('react-dom/client', () => ({

@@ -1,10 +1,10 @@
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {ContentData} from "@/canvas/content/types";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
+import {ContentData} from "@ueu/ueu-canvas/content/types";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
 
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 
 export const getContentClassFromUrl = jest.fn((url: string | null = null) => {
     return Assignment;

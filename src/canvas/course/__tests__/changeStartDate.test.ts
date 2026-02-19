@@ -5,12 +5,12 @@ import {
     updatedDateSyllabusHtml, getStartDateFromSyllabus
 } from '../changeStartDate'
 import {Temporal} from "temporal-polyfill";
-import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData";
-import {range} from "@canvas/canvasUtils";
-import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
-import {Assignment} from "@canvas/content/assignments/Assignment";
-import * as assignments from "@canvas/content/assignments";
-import {assignmentDataGen} from "@canvas/content/assignments";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {range} from "@ueu/ueu-canvas/canvasUtils";
+import mockModuleData from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
+import * as assignments from "@ueu/ueu-canvas/content/assignments";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
 import {mockAsyncGen} from "@/__mocks__/utils";
 const baseSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.gallant.html')
 const gradSyllabus = jest.requireActual('@canvas/course/__mocks__/syllabus.grad.html')

@@ -1,8 +1,8 @@
-import { mockPageData } from "@canvas/content/__mocks__/mockContentData";
+import { mockPageData } from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 import { configureStore } from '@reduxjs/toolkit';
 import {coursePagesReducer, fetchCoursePages, updateCoursePages} from '../coursePagesSlice';
-import { IPageData } from '@canvas/content/pages/types';
-import PageKind from "@canvas/content/pages/PageKind";
+import { IPageData } from '@ueu/ueu-canvas/content/pages/types';
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 // Mock dataGenerator as an async generator function
 jest.mock('@canvas/content/pages/PageKind', () => ({

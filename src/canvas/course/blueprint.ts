@@ -2,11 +2,11 @@ import { formDataify, getItemTypeAndId, ICanvasCallConfig, renderAsyncGen } from
 import { IModuleData, IModuleItemData } from "../canvasDataDefs";
 import { getCourseDataGenerator, getCourseGenerator } from "./index";
 import { GetCoursesFromAccountOptions } from "./courseTypes";
-import { baseCourseCode } from "@/canvas/course/code";
-import { ICourseData, SectionData } from "@/canvas/courseTypes";
-import { getPagedDataGenerator } from "@/canvas/fetch/getPagedDataGenerator";
-import { fetchGetConfig } from "@/canvas/fetch/utils";
-import { fetchJson } from "@/canvas/fetch/fetchJson";
+import { baseCourseCode } from "@ueu/ueu-canvas/course/code";
+import { ICourseData, SectionData } from "@ueu/ueu-canvas/courseTypes";
+import { getPagedDataGenerator } from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import { fetchGetConfig } from "@ueu/ueu-canvas/fetch/utils";
+import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { apiWriteConfig } from "@/fetch/apiWriteConfig";
 
 export function isBlueprint({ blueprint }: { blueprint?: boolean | undefined }) {

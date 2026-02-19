@@ -5,9 +5,9 @@ import {
     initialState,
     courseDataReducer
 } from "../courseDataSlice";
-import { ICourseData } from "@canvas/courseTypes";
-import { mockCourseData } from "@canvas/course/__mocks__/mockCourseData";
-import { getCourseData } from "@canvas/course";
+import { ICourseData } from "@ueu/ueu-canvas/courseTypes";
+import { mockCourseData } from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import { getCourseData } from "@ueu/ueu-canvas/course";
 
 // Mock the fetchJson function to simulate API calls
 jest.mock('@canvas/fetch/fetchJson', () => ({

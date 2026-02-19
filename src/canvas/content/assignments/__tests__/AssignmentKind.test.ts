@@ -1,6 +1,6 @@
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import AssignmentKind, {assignmentUrlFuncs} from "@/canvas/content/assignments/AssignmentKind";
-import {getDataTests, kindUrlTests} from "@/canvas/content/__testingUtils__/utils";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import AssignmentKind, {assignmentUrlFuncs} from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {getDataTests, kindUrlTests} from "@ueu/ueu-canvas/content/__testingUtils__/utils";
 
 
 jest.mock('@/canvas/fetch/fetchJson')

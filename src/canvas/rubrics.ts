@@ -1,9 +1,11 @@
 import {deepObjectMerge, formDataify, ICanvasCallConfig} from "./canvasUtils";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
-import {GetRubricsForCourseOptions, IRubricData, RubricAssociationUpdateOptions} from "@canvas/rubricTypes";
+import {GetRubricsForCourseOptions, RubricAssociationUpdateOptions} from "@ueu/ueu-canvas/rubricTypes";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IRubricData} from "@/canvas/rubricTypes";
 
 
 export function getRubricsFetchUrl(courseId:number) { return `/api/v1/courses/${courseId}/rubrics`}

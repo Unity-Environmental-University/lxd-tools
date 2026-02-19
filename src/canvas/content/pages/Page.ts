@@ -1,7 +1,7 @@
-import { BaseContentItem } from "@/canvas/content/BaseContentItem";
-import { ICanvasCallConfig } from "@/canvas/canvasUtils";
-import PageKind from "@/canvas/content/pages/PageKind";
-import { IPageData } from "@/canvas/content/pages/types";
+import { BaseContentItem } from "@ueu/ueu-canvas/content/BaseContentItem";
+import { ICanvasCallConfig } from "@ueu/ueu-canvas/canvasUtils";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 
 export class Page extends BaseContentItem {
   static kindInfo = PageKind;

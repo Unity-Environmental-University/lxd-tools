@@ -1,5 +1,5 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {ITermData} from "@/canvas/term/Term";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
 
 export interface ICourseData extends CanvasData {
     id: number,

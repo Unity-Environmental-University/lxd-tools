@@ -2,8 +2,8 @@ import { fetchTermsThunk, GetTermsThunkParams } from "@/reporting/data/thunks/fe
 
 import { addTerm, setStatus } from "@/reporting/data/termSlice";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {mockTermData} from "@canvas/__mocks__/mockTermData"; // Adjust path as needed
-import { getTermsGenerator } from "ueu_canvas";
+import {mockTermData} from "@ueu/ueu-canvas/__mocks__/mockTermData"; // Adjust path as needed
+import { getTermsGenerator } from "@ueu/ueu-canvas";
 import {mockAll} from "@/utils/testUtls";
 
 

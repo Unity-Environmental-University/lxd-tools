@@ -7,7 +7,7 @@ import { CourseRow, ICourseRowProps } from '../CourseRow';
 import { IUserData } from '../../../canvas/canvasDataDefs';
 import { mockCourseData } from '../../../canvas/course/__mocks__/mockCourseData';
 import {Course} from "../../../canvas/course/Course";
-import {IProfile} from "@canvas/type";
+import {IProfile} from "@ueu/ueu-canvas/type";
 
 
 const mockCourse: Course = new Course({

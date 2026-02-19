@@ -13,12 +13,12 @@ jest.mock('@canvas/content/pages/PageKind', () => {
         put: jest.fn(),
     };
 });
-import PageKind from "@canvas/content/pages/PageKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import {updateSupportPage} from "../updateSupportPage";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
+import {mockPageData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import pageKind from "@canvas/content/pages/PageKind";
+import pageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 const pageKindMock = PageKind as jest.Mocked<typeof PageKind>;
 

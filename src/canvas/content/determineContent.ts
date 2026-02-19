@@ -1,13 +1,13 @@
-import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/pages/Page";
-import {Discussion} from "@/canvas/content/discussions/Discussion";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {ContentData} from "@/canvas/content/types";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import QuizKind from "@/canvas/content/quizzes/QuizKind";
-import PageKind from "@/canvas/content/pages/PageKind";
-import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
+import {Quiz} from "@ueu/ueu-canvas/content/quizzes/Quiz";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
+import {Discussion} from "@ueu/ueu-canvas/content/discussions/Discussion";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
+import {ContentData} from "@ueu/ueu-canvas/content/types";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import QuizKind from "@ueu/ueu-canvas/content/quizzes/QuizKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 
 
 export const CONTENT_KINDS = [

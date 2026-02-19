@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useCourses } from "@/reporting/hooks/useCourses";
 import { useInstructors } from "@/reporting/hooks/useInstructors";
-import {ITermData} from "@canvas/term/Term";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
 
 type UseInstructorsByTermProps = {
     selectedTerms?: ITermData[],

@@ -1,26 +1,26 @@
 import {csvRowsForCourse, csvEncode} from "../csvRowsForCourse";
-import {assignmentDataGen} from "@/canvas/content/assignments";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
 import fetchMock from 'jest-fetch-mock';
 import {getRows} from "@/ui/speedGrader/getData/getRows";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import {Account} from "@/canvas/Account";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {Account} from "@ueu/ueu-canvas/Account";
 
-import * as assignmentsApi from "@/canvas/content/assignments";
+import * as assignmentsApi from "@ueu/ueu-canvas/content/assignments";
 
 jest.mock('@/canvas/fetch/utils');
 jest.mock('@/ui/speedGrader/getData/getRows');
 jest.mock('@/canvas/fetch/getPagedDataGenerator')
 
-import * as moduleApi from '@/canvas/course/modules';
+import * as moduleApi from '@ueu/ueu-canvas/course/modules';
 
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {getPagedData, getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {getPagedData, getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 
-import mockModuleData from "@/canvas/course/__mocks__/mockModuleData";
-import {mockUserData} from "@/canvas/__mocks__/mockUserData";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
-import {SectionData} from "@/canvas/courseTypes";
+import mockModuleData from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
+import {mockUserData} from "@ueu/ueu-canvas/__mocks__/mockUserData";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
+import {SectionData} from "@ueu/ueu-canvas/courseTypes";
 
 const generateModulesSpy = jest.spyOn(moduleApi, 'moduleGenerator')
 const getAccountByIdSpy = jest.spyOn(Account, 'getDataById');

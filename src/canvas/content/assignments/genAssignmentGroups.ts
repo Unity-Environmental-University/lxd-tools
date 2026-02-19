@@ -1,6 +1,6 @@
-import {getPagedDataGenerator} from "@canvas/fetch/getPagedDataGenerator";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 
-import {AssignmentGroup} from "@canvas/content/types";
+import {AssignmentGroup} from "@ueu/ueu-canvas/content/types";
 
 
 export type AssignmentGroupInclude = 'assignments' | 'discussion_topic' | 'all_dates' |

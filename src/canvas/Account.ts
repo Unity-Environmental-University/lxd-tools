@@ -1,8 +1,8 @@
-import {BaseCanvasObject} from "@/canvas/baseCanvasObject";
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {BaseCanvasObject} from "@ueu/ueu-canvas/baseCanvasObject";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 /**
  *  A base class for objects that interact with the Canvas API

@@ -2,10 +2,10 @@ import {Temporal} from "temporal-polyfill";
 import {IModuleData} from "../canvasDataDefs";
 import {findDateRange, oldDateToPlainDate} from "@/date";
 
-import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
 
-import {IAssignmentData} from "@canvas/content/types";
-import {assignmentDataGen} from "@canvas/content/assignments";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
 
 const DEFAULT_LOCALE = 'en-US';
 

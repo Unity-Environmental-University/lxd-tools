@@ -1,5 +1,5 @@
-import {IModuleData} from "@canvas/canvasDataDefs";
-import PageKind from "@canvas/content/pages/PageKind";
+import {IModuleData} from "@ueu/ueu-canvas/canvasDataDefs";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 
 export async function* learningMaterialsForModule(courseId: number, module: IModuleData) {

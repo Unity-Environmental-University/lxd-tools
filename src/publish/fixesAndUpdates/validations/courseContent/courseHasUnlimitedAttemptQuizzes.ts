@@ -1,6 +1,6 @@
 import {CourseValidation, RunTestFunction} from "@publish/fixesAndUpdates/validations/types";
-import {IQuizData} from "@canvas/content/quizzes/types";
-import QuizKind from "@canvas/content/quizzes/QuizKind";
+import {IQuizData} from "@ueu/ueu-canvas/content/quizzes/types";
+import QuizKind from "@ueu/ueu-canvas/content/quizzes/QuizKind";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 
 type _Course = { id: number, name: string }

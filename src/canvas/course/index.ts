@@ -2,13 +2,13 @@ import {deepObjectMerge, formDataify, generatorMap, ICanvasCallConfig} from "../
 
 import {GetCourseOptions, GetCoursesFromAccountOptions, IGradingStandardData} from "./courseTypes";
 import {Course} from "./Course";
-import {Term} from "@/canvas/term/Term";
+import {Term} from "@ueu/ueu-canvas/term/Term";
 
-import {ICourseData} from "@/canvas/courseTypes";
-import {getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "@/canvas/fetch/getPagedDataGenerator";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {getPagedData, getPagedDataGenerator, mergePagedDataGenerators} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {overrideConfig} from "@canvas/fetch/utils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {overrideConfig} from "@ueu/ueu-canvas/fetch/utils";
 
 
 export async function getGradingStandards(contextId: number, contextType: 'account' | 'course', config?: ICanvasCallConfig) {

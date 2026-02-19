@@ -4,8 +4,8 @@ import {
     inSyllabusSectionFunc, InSyllabusSectionFuncUserData, testResult,
     ValidationResult
 } from "@publish/fixesAndUpdates/validations/utils";
-import {ICourseDataHaver, ISyllabusHaver} from "@canvas/course/courseTypes";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
+import {ICourseDataHaver, ISyllabusHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 
 
 /**

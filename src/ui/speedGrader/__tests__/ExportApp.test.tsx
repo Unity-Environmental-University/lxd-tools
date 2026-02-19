@@ -2,14 +2,14 @@ import React, {act} from 'react';
 import {render, screen, waitFor, fireEvent} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ExportApp from '../ExportApp';
-import {Course} from "@/canvas/course/Course";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
 
-import * as courseApi from '@/canvas/course';
-import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
+import * as courseApi from '@ueu/ueu-canvas/course';
+import getCourseIdFromUrl from "@ueu/ueu-canvas/course/getCourseIdFromUrl";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 
 const getCourseById = jest.spyOn(courseApi, 'getCourseById');
 const getCourseData = jest.spyOn(courseApi, 'getCourseData');

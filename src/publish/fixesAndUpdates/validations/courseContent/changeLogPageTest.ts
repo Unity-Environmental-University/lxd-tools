@@ -1,9 +1,9 @@
-import PageKind from "@canvas/content/pages/PageKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import {CourseValidation, RunTestFunction, FixTestFunction} from "@publish/fixesAndUpdates/validations/types";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {IPageData} from "@canvas/content/pages/types";
-import {postContentFunc} from "@/canvas";
-import {Course} from "@canvas/course/Course";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
+import {postContentFunc} from "@ueu/ueu-canvas";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
 const run: RunTestFunction<Course, IPageData> = async (course) => {
 

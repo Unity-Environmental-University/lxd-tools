@@ -1,4 +1,4 @@
-import { getFileLinks, getExternalLinks } from "@/canvas/content/getContentFuncs";
+import { getFileLinks, getExternalLinks } from "@ueu/ueu-canvas/content/getContentFuncs";
 
 describe("Canvas Link Tests", () => {
   const courseId = 12345;

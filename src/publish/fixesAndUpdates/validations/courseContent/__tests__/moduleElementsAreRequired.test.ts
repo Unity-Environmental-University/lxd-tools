@@ -1,9 +1,9 @@
-import {moduleGenerator} from "@canvas/course/modules";
-import {IModuleItemData} from "@canvas/canvasDataDefs";
+import {moduleGenerator} from "@ueu/ueu-canvas/course/modules";
+import {IModuleItemData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {
     moduleElementsAreRequiredValidation, isAffectedModuleItem
 } from "@publish/fixesAndUpdates/validations/courseContent/moduleElementsAreRequired";
-import {mockModuleItemData} from "@canvas/course/__mocks__/mockModuleData";
+import {mockModuleItemData} from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
 import {mockAll} from "@/utils/testUtls";
 
 

@@ -1,8 +1,8 @@
-import {Course} from "@canvas/course/Course";
-import {ICanvasCallConfig} from "@canvas/canvasUtils";
-import {MalformedCourseCodeError} from "@canvas/course/code";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {MalformedCourseCodeError} from "@ueu/ueu-canvas/course/code";
 
-import {NotABlueprintError} from "@canvas/course/notABlueprintError";
+import {NotABlueprintError} from "@ueu/ueu-canvas/course/notABlueprintError";
 
 export async function retireBlueprint(course: Course, termName: string | null, config?: ICanvasCallConfig) {
 

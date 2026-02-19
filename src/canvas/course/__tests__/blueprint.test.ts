@@ -13,14 +13,14 @@ import {mockAccountData} from "../../__mocks__/mockAccountData";
 import assert from "assert";
 import mockModuleData, {mockModuleItemData} from "../__mocks__/mockModuleData";
 import {Course} from "../Course";
-import {GetCoursesFromAccountOptions} from "@/canvas/course/courseTypes";
-import * as courseApi from '@/canvas/course/index';
-import * as fetchApi from '@/canvas/fetch/utils'
-import {ICourseData} from "@/canvas/courseTypes";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
+import {GetCoursesFromAccountOptions} from "@ueu/ueu-canvas/course/courseTypes";
+import * as courseApi from '@ueu/ueu-canvas/course/index';
+import * as fetchApi from '@ueu/ueu-canvas/fetch/utils'
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 import {mockAsyncGen, returnMockAsyncGen} from "@/__mocks__/utils";
-import {baseCourseCode, MalformedCourseCodeError} from "@/canvas/course/code";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {baseCourseCode, MalformedCourseCodeError} from "@ueu/ueu-canvas/course/code";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 
 jest.mock('@/canvas/fetch/fetchJson');
@@ -244,14 +244,14 @@ async function mockBpResponse(mockRequest: Request, numberToMock = 1) {
 }
 
 
-import {Term} from "@/canvas/term/Term";
+import {Term} from "@ueu/ueu-canvas/term/Term";
 
 import apiWriteConfig from "@/fetch/apiWriteConfig";
-import {IBlueprintCourse} from "@canvas/course/IBlueprintCourse";
-import {getSections} from "@canvas/course/getSections";
-import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
-import {retireBlueprint} from "@canvas/course/retireBlueprint";
-import {NotABlueprintError} from "@canvas/course/notABlueprintError";
+import {IBlueprintCourse} from "@ueu/ueu-canvas/course/IBlueprintCourse";
+import {getSections} from "@ueu/ueu-canvas/course/getSections";
+import {getTermNameFromSections} from "@ueu/ueu-canvas/course/getTermNameFromSections";
+import {retireBlueprint} from "@ueu/ueu-canvas/course/retireBlueprint";
+import {NotABlueprintError} from "@ueu/ueu-canvas/course/notABlueprintError";
 
 
 describe("genBlueprintsForCode", () => {

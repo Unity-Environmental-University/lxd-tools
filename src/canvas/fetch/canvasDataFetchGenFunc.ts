@@ -1,7 +1,7 @@
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {overrideConfig} from "@canvas/fetch/utils";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {overrideConfig} from "@ueu/ueu-canvas/fetch/utils";
 
 
 type UrlFuncType<UrlParams extends Record<string, any>> = (args: UrlParams, config?: ICanvasCallConfig) => string

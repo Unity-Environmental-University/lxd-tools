@@ -1,5 +1,5 @@
-import {ICourseData} from "@/canvas/courseTypes";
-import {mockTermData} from "@/canvas/__mocks__/mockTermData";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {mockTermData} from "@ueu/ueu-canvas/__mocks__/mockTermData";
 
 export const mockCourseData: ICourseData = {
     account_id: 0,

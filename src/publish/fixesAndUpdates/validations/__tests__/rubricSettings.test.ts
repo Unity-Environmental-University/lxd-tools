@@ -1,18 +1,19 @@
-import {Course} from "@/canvas/course/Course";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
 import {rubricsTiedToGradesTest} from "../rubricSettings";
-import mockRubricData, {mockRubricAssociation} from "@/canvas/__mocks__/mockRubricData";
+import mockRubricData, {mockRubricAssociation} from "@ueu/ueu-canvas/__mocks__/mockRubricData";
 import {returnMockAsyncGen} from "@/__mocks__/utils";
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
-import * as rubricApi from "@/canvas/rubrics";
+import * as rubricApi from "@ueu/ueu-canvas/rubrics";
 import assert from "assert";
-import {updateAssignmentData} from "@/canvas/content/assignments";
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
+import {updateAssignmentData} from "@ueu/ueu-canvas/content/assignments";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
-import {IRubricData} from "@/canvas";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IRubricData} from "@/canvas/rubricTypes";
 
 
 jest.mock('@/canvas/rubrics', () => {

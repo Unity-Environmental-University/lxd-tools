@@ -1,6 +1,6 @@
-import {mockDiscussionData} from "@/canvas/content/__mocks__/mockContentData";
-import {getDataTests, kindUrlTests} from "@/canvas/content/__testingUtils__/utils";
-import DiscussionKind, {discussionUrlFuncs} from "@/canvas/content/discussions/DiscussionKind";
+import {mockDiscussionData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {getDataTests, kindUrlTests} from "@ueu/ueu-canvas/content/__testingUtils__/utils";
+import DiscussionKind, {discussionUrlFuncs} from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('@/canvas/fetch/getPagedDataGenerator')

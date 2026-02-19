@@ -1,5 +1,5 @@
-import {IUserData} from "@canvas/canvasDataDefs";
-import {Page} from "@canvas/content/pages/Page";
+import {IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 
 export type TopicPermissions = Record<string, any>
 export type FileAttachment = Record<string, any>

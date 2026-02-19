@@ -10,8 +10,8 @@ import { rootReducer } from "@publish/publishInterface/videoUpdater/data/rootRed
 import {configureStore} from "@reduxjs/toolkit";
 import {RootState} from "@publish/publishInterface/videoUpdater/data/store";
 //
-import * as courseApi from '@/canvas/course/index'
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
+import * as courseApi from '@ueu/ueu-canvas/course/index'
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 
 const getCourseDataSpy = jest.spyOn(courseApi, 'getCourseData')
 const getNewState = (params?: Partial<RootState>) => {

@@ -1,10 +1,10 @@
 import { academicIntegritySetup } from "@/publish/publishInterface/academicIntegritySetup";
-import { fetchJson } from "@/canvas/fetch/fetchJson";
-import { getCourseById } from "@/canvas/course";
-import { startMigration } from "@/canvas/course/migration";
-import { Course } from "@/canvas/course/Course";
-import { IModuleData } from "@canvas/canvasDataDefs";
-import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
+import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import { getCourseById } from "@ueu/ueu-canvas/course";
+import { startMigration } from "@ueu/ueu-canvas/course/migration";
+import { Course } from "@ueu/ueu-canvas/course/Course";
+import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
+import mockModuleData from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
 
 beforeAll(() => {
   jest.useFakeTimers();

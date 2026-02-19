@@ -1,4 +1,4 @@
-import {ITermData} from "@/canvas/term/Term";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
 
 export const mockTermData: ITermData = {
     id: 1,

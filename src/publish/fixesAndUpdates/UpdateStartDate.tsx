@@ -5,24 +5,26 @@ import DatePicker from "react-datepicker";
 
 
 import {
-    getStartDateAssignments, getStartDateFromSyllabus, MalformedSyllabusError,
+    getStartDateAssignments, MalformedSyllabusError,
     updatedDateSyllabusHtml
-} from "@canvas/course/changeStartDate";
-import {changeModuleLockDate, moduleGenerator} from "@canvas/course/modules";
+} from "@ueu/ueu-canvas/course/changeStartDate";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {getStartDateFromSyllabus} from "@/canvas/course/changeStartDate";
+import {changeModuleLockDate, moduleGenerator} from "@ueu/ueu-canvas/course/modules";
 import {oldDateToPlainDate} from "@/date";
 
-import {Course} from "@canvas/course/Course";
-import {assignmentDataGen, updateAssignmentDueDates} from "@canvas/content/assignments";
-import {getPagedDataGenerator} from "@canvas/fetch/getPagedDataGenerator";
-import {BaseContentItem} from "@canvas/content/BaseContentItem";
-import {Discussion} from "@canvas/content/discussions/Discussion";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {assignmentDataGen, updateAssignmentDueDates} from "@ueu/ueu-canvas/content/assignments";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {Discussion} from "@ueu/ueu-canvas/content/discussions/Discussion";
 
-import {IModuleData} from "@canvas/canvasDataDefs";
-import {renderAsyncGen} from "@canvas/canvasUtils";
+import {IModuleData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 
 
-import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
-import {Assignment} from "@canvas/content/assignments/Assignment";
+import {IAssignmentData, IDiscussionData} from "@ueu/ueu-canvas/content/types";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
 
 type UpdateStartDateProps = {
     setAffectedItems?: (elements: React.ReactElement[]) => any,

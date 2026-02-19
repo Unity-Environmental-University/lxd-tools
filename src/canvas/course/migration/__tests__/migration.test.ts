@@ -8,10 +8,10 @@ import {
 } from "../index";
 import {mockProgressData} from "../../__mocks__/mockProgressData";
 import {range} from "../../../canvasUtils";
-import {mockMigrationData} from "@/canvas/course/migration/__mocks__/mockMigrationData";
+import {mockMigrationData} from "@ueu/ueu-canvas/course/migration/__mocks__/mockMigrationData";
 
 import {Course} from "../../Course";
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
 
 
 

@@ -1,7 +1,7 @@
-import {IBlueprintCourse} from "@canvas/course/IBlueprintCourse";
-import {Course} from "@canvas/course/Course";
+import {IBlueprintCourse} from "@ueu/ueu-canvas/course/IBlueprintCourse";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
-import {getSections} from "@canvas/course/getSections";
+import {getSections} from "@ueu/ueu-canvas/course/getSections";
 
 export function cachedGetAssociatedCoursesFunc(course: IBlueprintCourse) {
     let cache: Course[] | null = null;

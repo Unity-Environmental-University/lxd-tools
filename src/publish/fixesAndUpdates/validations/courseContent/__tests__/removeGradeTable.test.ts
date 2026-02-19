@@ -1,9 +1,9 @@
 import { removeGradeTable } from "@publish/fixesAndUpdates/validations/courseContent/removeGradeTable";
-import { IPageData } from "@canvas/content/pages/types";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import { mockAsyncGen } from "@/__mocks__/utils";
-import PageKind from "@canvas/content/pages/PageKind";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
-import {Course} from "@canvas/course/Course";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
 // Mock data
 const mockCourse = new Course({ ... mockCourseData, id: 1 });

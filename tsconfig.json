@@ -12,13 +12,18 @@
       "@/*": [
         "*"
       ],
-      "@canvas/*": [
-        "canvas/*"
+      "@ueu/ueu-canvas": [
+        "../node_modules/@ueu/ueu-canvas/dist"
       ],
-      "ueu_canvas": [
-        "@ueu/ueu-canvas"
+      "@ueu/ueu-canvas/courseTypes": [
+        "../node_modules/@ueu/ueu-canvas/dist/types"
       ],
-
+      "@ueu/ueu-canvas/type": [
+        "../node_modules/@ueu/ueu-canvas/dist/types"
+      ],
+      "@ueu/ueu-canvas/*": [
+        "../node_modules/@ueu/ueu-canvas/dist/*"
+      ],
       "@citations/*": [
         "citations/*"
       ],

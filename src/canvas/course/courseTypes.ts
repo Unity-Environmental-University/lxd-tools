@@ -2,11 +2,11 @@
 import {ICanvasCallConfig} from "../canvasUtils";
 import {ILatePolicyData, IModuleData} from "../canvasDataDefs";
 
-import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
-import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/pages/Page";
-import {Discussion} from "@/canvas/content/discussions/Discussion";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {ICourseData, ICourseSettings} from "@ueu/ueu-canvas/courseTypes";
+import {Quiz} from "@ueu/ueu-canvas/content/quizzes/Quiz";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
+import {Discussion} from "@ueu/ueu-canvas/content/discussions/Discussion";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
 
 export interface IIdHaver<IdType = number> {
     id: IdType,

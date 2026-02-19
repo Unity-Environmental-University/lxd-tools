@@ -15,7 +15,7 @@ import {CourseUpdateInterface} from '../fixesAndUpdates/CourseUpdateInterface';
 import {AdminApp} from '../../admin/AdminApp';
 import fetchMock from "jest-fetch-mock";
 
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 
 

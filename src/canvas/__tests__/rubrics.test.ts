@@ -10,8 +10,8 @@ import {returnMockAsyncGen} from "../../__mocks__/utils";
 import mockRubric, {mockRubricsForAssignments} from "../__mocks__/mockRubricData";
 
 import {formDataify, renderAsyncGen} from "../canvasUtils";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 
 jest.mock('../fetch/fetchJson', () => ({

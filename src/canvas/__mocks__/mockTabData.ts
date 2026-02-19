@@ -1,4 +1,4 @@
-import {ITabData} from "@/canvas/courseTypes";
+import {ITabData} from "@ueu/ueu-canvas/courseTypes";
 
 export const mockTabData:ITabData = {
     full_url: "/api/v1/...",

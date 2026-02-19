@@ -1,4 +1,4 @@
-import {deepObjectMerge, ICanvasCallConfig} from "@/canvas/canvasUtils";
+import {deepObjectMerge, ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
 
 export function overrideConfig<ConfigType extends ICanvasCallConfig | undefined>(
     source: ConfigType | undefined,

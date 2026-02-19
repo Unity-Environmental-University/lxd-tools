@@ -2,14 +2,16 @@ import {errorMessageResult, MessageResult, testResult} from "./utils";
 import {
     rubricsForCourseGen,
     updateRubricAssociation
-} from "@/canvas/rubrics";
-import {IIdHaver} from "@/canvas/course/courseTypes";
-import {updateAssignmentData} from "@/canvas/content/assignments";
-import {callAll} from "@/canvas/canvasUtils";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
+} from "@ueu/ueu-canvas/rubrics";
+import {IIdHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {updateAssignmentData} from "@ueu/ueu-canvas/content/assignments";
+import {callAll} from "@ueu/ueu-canvas/canvasUtils";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
-import {IRubricAssociationData, IRubricData} from "@/canvas";
+import {IRubricAssociationData} from "@ueu/ueu-canvas";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IRubricData} from "@/canvas/rubricTypes";
 
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});

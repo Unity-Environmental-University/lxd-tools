@@ -1,5 +1,5 @@
-import {CanvasData} from "@/canvas/canvasDataDefs";
-import {ICanvasCallConfig, searchParamsFromObject} from "@/canvas/canvasUtils";
+import {CanvasData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {ICanvasCallConfig, searchParamsFromObject} from "@ueu/ueu-canvas/canvasUtils";
 
 /**
  * @param url The entire path of the url

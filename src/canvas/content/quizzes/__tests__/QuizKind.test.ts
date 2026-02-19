@@ -1,6 +1,6 @@
-import {mockQuizData} from "@/canvas/content/__mocks__/mockContentData";
-import QuizKind, {quizUrlFuncs} from "@/canvas/content/quizzes/QuizKind";
-import {getDataTests, kindUrlTests} from "@/canvas/content/__testingUtils__/utils";
+import {mockQuizData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import QuizKind, {quizUrlFuncs} from "@ueu/ueu-canvas/content/quizzes/QuizKind";
+import {getDataTests, kindUrlTests} from "@ueu/ueu-canvas/content/__testingUtils__/utils";
 
 jest.mock('@/canvas/fetch/fetchJson')
 jest.mock('@/canvas/fetch/getPagedDataGenerator')

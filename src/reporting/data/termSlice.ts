@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {ITermData} from "@canvas/term/Term";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
 import {LoadStatus} from "@/reporting/data/loadStatus";
 
 

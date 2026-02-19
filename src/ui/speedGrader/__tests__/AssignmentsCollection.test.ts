@@ -1,9 +1,9 @@
 import { AssignmentsCollection } from '../AssignmentsCollection';
-import {CanvasData, IModuleItemData} from '@/canvas/canvasDataDefs';
-import {mockAssignmentData, mockDiscussionData} from "@/canvas/content/__mocks__/mockContentData";
-import {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";
+import {CanvasData, IModuleItemData} from '@ueu/ueu-canvas/canvasDataDefs';
+import {mockAssignmentData, mockDiscussionData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {mockModuleItemData} from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
 
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 describe('AssignmentsCollection', () => {
     const mockAssignments = [

@@ -19,30 +19,30 @@ import {
     IProgressData,
     migrationsForCourseGen,
     startMigration
-} from "@/canvas/course/migration";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Course} from "@/canvas/course/Course";
-import {mockProgressData} from "@/canvas/course/__mocks__/mockProgressData";
-import {mockMigrationData} from "@/canvas/course/migration/__mocks__/mockMigrationData";
+} from "@ueu/ueu-canvas/course/migration";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {mockProgressData} from "@ueu/ueu-canvas/course/__mocks__/mockProgressData";
+import {mockMigrationData} from "@ueu/ueu-canvas/course/migration/__mocks__/mockMigrationData";
 import {bpify} from "@/admin";
 
-import {createNewCourse} from '@/canvas/course';
-import * as cacheMigrationApi from "@/canvas/course/migration/migrationCache";
-import {cacheCourseMigrations, loadCachedCourseMigrations} from "@/canvas/course/migration/migrationCache";
-import {range} from "@/canvas/canvasUtils";
+import {createNewCourse} from '@ueu/ueu-canvas/course';
+import * as cacheMigrationApi from "@ueu/ueu-canvas/course/migration/migrationCache";
+import {cacheCourseMigrations, loadCachedCourseMigrations} from "@ueu/ueu-canvas/course/migration/migrationCache";
+import {range} from "@ueu/ueu-canvas/canvasUtils";
 import assert from "assert";
 import {Temporal} from "temporal-polyfill";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {SectionData} from "@/canvas/courseTypes";
+import {SectionData} from "@ueu/ueu-canvas/courseTypes";
 
 jest.mock('@/canvas/course/blueprint');
-import {getBlueprintsFromCode} from "@/canvas/course/blueprint";
+import {getBlueprintsFromCode} from "@ueu/ueu-canvas/course/blueprint";
 
 
 jest.mock('@canvas/course/getTermNameFromSections', () => ({
    getTermNameFromSections: jest.fn()
 }))
-import {getTermNameFromSections} from "@canvas/course/getTermNameFromSections";
+import {getTermNameFromSections} from "@ueu/ueu-canvas/course/getTermNameFromSections";
 
 const mockCourse: Course = new Course({
     ...mockCourseData,
@@ -129,11 +129,11 @@ jest.mock('@/canvas/course/migration/migrationCache', () => ({
     loadCachedCourseMigrations: jest.fn(() => []),
 }))
 jest.mock('@canvas/course/getSections',() => ({ getSections: jest.fn(() => mockSectionData) }))
-import {getSections} from "@canvas/course/getSections";
+import {getSections} from "@ueu/ueu-canvas/course/getSections";
 
 
 jest.mock('@canvas/course/retireBlueprint',() => ({ retireBlueprint: jest.fn() }));
-import {retireBlueprint} from "@canvas/course/retireBlueprint";
+import {retireBlueprint} from "@ueu/ueu-canvas/course/retireBlueprint";
 
 const mockSyllabus =
     `<div class="cbt-callout-box">

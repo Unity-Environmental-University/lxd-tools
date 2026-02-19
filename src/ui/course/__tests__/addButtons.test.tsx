@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom';
 import { fireEvent, waitFor } from '@testing-library/dom';
-import { Course } from '@/canvas/course/Course';
+import { Course } from '@ueu/ueu-canvas/course/Course';
 
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
 import {
     addBpButton,
@@ -11,9 +11,9 @@ import {
     addOpenAllLinksButton,
 } from "@/ui/course/addButtons";
 import {act} from "react";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
 
-import * as getContentFuncs from '@/canvas/content/getContentFuncs';
+import * as getContentFuncs from '@ueu/ueu-canvas/content/getContentFuncs';
 import ReactDOM from "react-dom/client";
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');

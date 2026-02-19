@@ -1,10 +1,10 @@
-import {ICanvasCallConfig} from "@/canvas/canvasUtils";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {ContentKind, contentUrlFuncs, putContentFunc} from "@/canvas/content/ContentKind";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {ContentKind, contentUrlFuncs, putContentFunc} from "@ueu/ueu-canvas/content/ContentKind";
 
 
-import {IDiscussionData, SaveDiscussionData} from "@canvas/content/types";
+import {IDiscussionData, SaveDiscussionData} from "@ueu/ueu-canvas/content/types";
 
 export type GetDiscussionOptions = Record<string, any>;
 export const discussionUrlFuncs = contentUrlFuncs('discussion_topics');

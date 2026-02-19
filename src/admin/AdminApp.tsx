@@ -2,14 +2,14 @@ import React, {useEffect, useReducer, useState} from "react";
 import {IMultiSelectOption, optionize, optionizeOne} from "@/ui/widgets/MuliSelect";
 import Modal from "@/ui/widgets/Modal/index";
 import {Button, Col, Container, Form, Row} from "react-bootstrap";
-import {batchify, filterUniqueFunc} from "@/canvas/canvasUtils";
+import {batchify, filterUniqueFunc} from "@ueu/ueu-canvas/canvasUtils";
 import {ValidationRow} from "@/publish/fixesAndUpdates/ValidationRow";
 import {listLutDispatcher, lutDispatcher} from "@/ui/reducerDispatchers";
 import {IIncludesTestAndCourseId} from "./index";
 import {SearchCourses} from "./SearchCourses";
 import {SelectValidations} from "./SelectValidations";
-import {Course} from "@/canvas/course/Course";
-import {beginBpSync} from "@/canvas/course/blueprint";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {beginBpSync} from "@ueu/ueu-canvas/course/blueprint";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 

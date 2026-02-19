@@ -1,10 +1,10 @@
 import {deepObjectMerge, ICanvasCallConfig, range, renderAsyncGen} from "../canvasUtils";
 import {describe, expect} from "@jest/globals";
 import {CanvasData} from "../canvasDataDefs";
-import {getPagedDataGenerator} from "@/canvas/fetch/getPagedDataGenerator";
-import {fetchGetConfig} from "@/canvas/fetch/utils";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {canvasDataFetchGenFunc} from "@/canvas/fetch/canvasDataFetchGenFunc";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
+import {fetchGetConfig} from "@ueu/ueu-canvas/fetch/utils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {canvasDataFetchGenFunc} from "@ueu/ueu-canvas/fetch/canvasDataFetchGenFunc";
 
 // eslint-disable-next-line @/no-undef
 global.fetch = jest.fn();

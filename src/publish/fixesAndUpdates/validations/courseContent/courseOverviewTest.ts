@@ -1,11 +1,11 @@
-import { IContentHaver } from "@canvas/course/courseTypes";
-import { getCourseById } from "@canvas/course/index";
+import { IContentHaver } from "@ueu/ueu-canvas/course/courseTypes";
+import { getCourseById } from "@ueu/ueu-canvas/course/index";
 import { CourseFixValidation } from "@publish/fixesAndUpdates/validations/types";
 import {
 testResult,
 ValidationResult,
 } from "@publish/fixesAndUpdates/validations/utils";
-import PageKind from "@canvas/content/pages/PageKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 type MinPageData = {
   title: string;

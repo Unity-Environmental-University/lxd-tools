@@ -7,7 +7,7 @@ import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
 import {Course} from "../../canvas/course/Course";
-import {Page} from "@/canvas/content/pages/Page";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export type CourseUpdateInterfaceProps = {
