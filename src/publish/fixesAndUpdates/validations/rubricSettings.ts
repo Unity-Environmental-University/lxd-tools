@@ -10,8 +10,7 @@ import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 import {IRubricAssociationData} from "@ueu/ueu-canvas";
-// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
-import {IRubricData} from "@/canvas/rubricTypes";
+import { IRubricData } from "@ueu/ueu-canvas";
 
 async function getBadRubricAssociations(courseId: number) {
     const rubricGen = rubricsForCourseGen(courseId, {include: ['assignment_associations']});

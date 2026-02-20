@@ -12,7 +12,7 @@ export const fetchEnrollmentsThunk = createAsyncThunk(
         const gen = getEnrollmentGenerator(params)
         dispatch(setStatus('loading'))
         for await (const enrollments of gen) {
-            updateEnrollment(enrollments)
+            dispatch(updateEnrollment({ enrollment: enrollments }))
         }
     }
 )

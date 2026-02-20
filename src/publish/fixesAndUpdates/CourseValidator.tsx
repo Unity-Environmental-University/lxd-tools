@@ -1,7 +1,7 @@
 import React from "react";
 import './CourseValidTest.scss'
 import {ValidationRow} from "./ValidationRow";
-import {Course} from "../../canvas/course/Course";
+import {Course} from '@ueu/ueu-canvas/course/Course';
 import {Col} from "react-bootstrap";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 import {ValidationResult} from "./validations/utils";

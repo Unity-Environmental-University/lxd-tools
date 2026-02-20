@@ -1,7 +1,7 @@
 import "./CourseRow.scss";
 import React, {useEffect, useState} from "react";
-import {IUserData} from "../../canvas/canvasDataDefs";
-import {Course} from "../../canvas/course/Course";
+import {IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
+import {Course} from '@ueu/ueu-canvas/course/Course';
 import {IProfile} from "@ueu/ueu-canvas/type";
 
 export interface ICourseRowProps {

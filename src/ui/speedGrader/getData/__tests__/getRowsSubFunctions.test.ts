@@ -13,7 +13,7 @@ import {
 } from '../getRows';
 import { IUserData, IModuleData } from '@ueu/ueu-canvas/canvasDataDefs';
 // TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
-import {IEnrollmentData} from "@/canvas/canvasDataDefs";
+import {IEnrollmentData} from "@ueu/ueu-canvas/canvasDataDefs";
 import { AssignmentsCollection } from '@/ui/speedGrader/AssignmentsCollection';
 
 

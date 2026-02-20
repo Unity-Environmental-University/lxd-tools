@@ -20,7 +20,7 @@ const mockPageWithoutSection = {
 } as unknown as IPageData;
 
 
-jest.mock("@canvas/content/pages/PageKind", () => ({
+jest.mock("@ueu/ueu-canvas/content/pages/PageKind", () => ({
   dataGenerator: jest.fn(),
   put: jest.fn(),
 }));

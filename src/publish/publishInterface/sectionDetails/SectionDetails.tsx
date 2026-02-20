@@ -1,11 +1,11 @@
-import {renderProfileIntoCurioFrontPage} from "../../../canvas/profile";
+import {renderProfileIntoCurioFrontPage} from '@ueu/ueu-canvas/profile';
 import React, {useState} from "react";
-import {IModuleData, IUserData} from "../../../canvas/canvasDataDefs";
+import {IModuleData, IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
 import {FacultyProfileSearch} from "./FacultyProfileSearch";
 import {Col, Row} from "react-bootstrap";
-import {Course} from "../../../canvas/course/Course";
+import {Course} from '@ueu/ueu-canvas/course/Course';
 
 
 import {IAssignmentGroup} from "@ueu/ueu-canvas/content/types";

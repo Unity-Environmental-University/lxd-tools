@@ -1,11 +1,12 @@
 import ReactDOM from "react-dom/client";
 import {HighlightBigImages} from "@/ui/course/HighlightBigImages";
 import React from "react";
-import {Course} from "@ueu/ueu-canvas/course/Course";
+import {Course} from '@ueu/ueu-canvas/course/Course';
 import openThisContentInTarget from "@ueu/ueu-canvas/content/openThisContentInTarget";
 import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
 import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {resizeBannerOnItem} from "@/ui/course/resizeBanner";
 import {getExternalLinks, getFileLinks} from "@ueu/ueu-canvas/content/getContentFuncs";
 import {getContentKindFromUrl} from "@ueu/ueu-canvas/content/determineContent";
 import {RubricButton} from "@/ui/course/RubricButton";
@@ -97,8 +98,12 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
         bannerImageContainer.parentElement?.append(notification)
         const root = document.createElement("div")
         const rootDiv = ReactDOM.createRoot(root);
+        const itemWithResizeBanner = {
+            courseId: currentContentItem.courseId,
+            resizeBanner: (maxWidth?: number) => resizeBannerOnItem(currentContentItem, maxWidth),
+        };
         rootDiv.render(
-            <HighlightBigImages el={notification} bannerImage={image} currentContentItem={currentContentItem}
+            <HighlightBigImages el={notification} bannerImage={image} currentContentItem={itemWithResizeBanner}
                                 resizeTo={1200}/>
         );
         document.body.append(root);

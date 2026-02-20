@@ -2,27 +2,31 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import {RubricButton} from "@/ui/course/RubricButton";
 import { Course } from '@ueu/ueu-canvas/course/Course';
 import {
-    getContentDataFromUrl,
-    getRubric,
     IAssignmentData,
     IDiscussionData,
     IRubricAssociationData
 } from '@ueu/ueu-canvas';
-// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
-import {IRubricData} from "@/canvas/rubricTypes";
+import { IRubricData } from '@ueu/ueu-canvas';
 import { getSingleCourse } from '@ueu/ueu-canvas/course';
+import { getContentDataFromUrl } from '@ueu/ueu-canvas/content/determineContent';
+import { getRubric } from '@ueu/ueu-canvas/rubrics';
 import { getAssignmentData } from '@ueu/ueu-canvas/content/assignments/legacy';
 import { assignmentDataGen } from '@ueu/ueu-canvas/content/assignments';
 import { fetchJson } from '@ueu/ueu-canvas/fetch/fetchJson';
 import '@testing-library/jest-dom';
 
 // Mock all dependencies
-jest.mock('@/canvas');
-jest.mock('@canvas/course');
-jest.mock('@canvas/content/assignments/legacy');
-jest.mock('@canvas/content/assignments');
-jest.mock('@canvas/fetch/fetchJson');
-jest.mock('@canvas/canvasUtils', () => ({
+jest.mock('@ueu/ueu-canvas/course');
+jest.mock('@ueu/ueu-canvas/content/determineContent', () => ({
+    getContentDataFromUrl: jest.fn(),
+}));
+jest.mock('@ueu/ueu-canvas/rubrics', () => ({
+    getRubric: jest.fn(),
+}));
+jest.mock('@ueu/ueu-canvas/content/assignments/legacy');
+jest.mock('@ueu/ueu-canvas/content/assignments');
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson');
+jest.mock('@ueu/ueu-canvas/canvasUtils', () => ({
     formDataify: jest.fn((data) => data),
     deepObjectMerge: jest.fn()
 }));

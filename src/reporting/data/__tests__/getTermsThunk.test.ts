@@ -7,7 +7,7 @@ import { getTermsGenerator } from "@ueu/ueu-canvas";
 import {mockAll} from "@/utils/testUtls";
 
 
-jest.mock("ueu_canvas", () => ({
+jest.mock("@ueu/ueu-canvas", () => ({
   getTermsGenerator: jest.fn(),
 }));
 

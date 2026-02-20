@@ -1,9 +1,9 @@
-import {genCourseMigrationProgress, IProgressData} from "../../canvas/course/migration";
-import {Course} from "../../canvas/course/Course";
+import {genCourseMigrationProgress, IProgressData} from '@ueu/ueu-canvas/course/migration';
+import {Course} from '@ueu/ueu-canvas/course/Course';
 import {useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {Button, Col, Row} from "react-bootstrap";
-import {SavedMigration} from "../../canvas/course/migration/migrationCache";
+import {SavedMigration} from '@ueu/ueu-canvas/course/migration/migrationCache';
 
 type MigrationBarProps = {
     migration: SavedMigration,

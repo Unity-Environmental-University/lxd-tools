@@ -6,7 +6,7 @@ import {
     courseHasUnlimitedAttemptQuizzes
 } from "@publish/fixesAndUpdates/validations/courseContent/courseHasUnlimitedAttemptQuizzes";
 
-jest.mock("@canvas/content/quizzes/QuizKind", () => ({
+jest.mock("@ueu/ueu-canvas/content/quizzes/QuizKind", () => ({
     dataGenerator: jest.fn()
 }));
 

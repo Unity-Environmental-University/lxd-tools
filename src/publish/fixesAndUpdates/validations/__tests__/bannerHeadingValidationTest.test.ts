@@ -11,8 +11,8 @@ import {ContentTextReplaceFix, CourseValidation} from "@publish/fixesAndUpdates/
 import {IContentHaver} from "@ueu/ueu-canvas/course/courseTypes";
 import {BaseContentItem} from "@ueu/ueu-canvas";
 
-jest.mock('@/canvas/content/pages/PageKind');
-jest.mock('@/canvas/content/assignments/AssignmentKind');
+jest.mock('@ueu/ueu-canvas/content/pages/PageKind');
+jest.mock('@ueu/ueu-canvas/content/assignments/AssignmentKind');
 jest.mock('../utils', () => ({
     testResult: jest.fn((success, data) => ({success, ...data})),
     badContentRunFunc: jest.fn(),

@@ -11,13 +11,13 @@ import {mockAsyncGen} from "@/__mocks__/utils";
 import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 
 // Mock dependencies
-jest.mock('@/canvas/course/blueprint', () => ({
+jest.mock('@ueu/ueu-canvas/course/blueprint', () => ({
     genBlueprintDataForCode: jest.fn()
 }));
-jest.mock('@/canvas/canvasUtils', () => ({
+jest.mock('@ueu/ueu-canvas/canvasUtils', () => ({
     renderAsyncGen: jest.fn(),
 }));
-jest.mock('@/canvas/content/openThisContentInTarget', () => jest.fn());
+jest.mock('@ueu/ueu-canvas/content/openThisContentInTarget', () => jest.fn());
 
 describe('BpButton', () => {
     let course: Course;

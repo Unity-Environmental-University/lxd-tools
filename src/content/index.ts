@@ -1,8 +1,8 @@
-import {ModuleItemType} from "../canvas/canvasDataDefs";
+import {ModuleItemType} from '@ueu/ueu-canvas/canvasDataDefs';
 import {runtime} from "webextension-polyfill";
 
 
-import {Course} from "../canvas/course/Course";
+import {Course} from '@ueu/ueu-canvas/course/Course';
 import {stringIsCourseCode} from "@ueu/ueu-canvas/course/code";
 
 import {ICourseData} from "@ueu/ueu-canvas/courseTypes";

@@ -9,8 +9,8 @@ import referencePageExistsValidation from "@/publish/fixesAndUpdates/validations
 import {mockPageData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
 // Mock dependencies
-jest.mock("@/canvas/content/pages/PageKind");
-jest.mock("@/canvas/course/references/getReferencesTemplate");
+jest.mock("@ueu/ueu-canvas/content/pages/PageKind");
+jest.mock("@ueu/ueu-canvas/course/references/getReferencesTemplate");
 jest.mock("assert");
 
 describe("referencePageExistsValidation", () => {
@@ -23,16 +23,14 @@ describe("referencePageExistsValidation", () => {
 
     describe("run", () => {
         it("should return a successful test result when the references page exists", async () => {
-            const pageDataMock = { ...mockPageData, id: "page1", title: "Learning Materials References" };
+            const pageDataMock = { ...mockPageData, id: 1, title: "Learning Materials References" };
             (PageKind.getByString as jest.Mock).mockResolvedValueOnce(pageDataMock);
 
             const result = await referencePageExistsValidation.run(courseMock);
 
             expect(result.success).toBe(true);
             expect(result.userData).toBe(pageDataMock);
-            expect(PageKind.getByString).toHaveBeenCalledWith(courseMock.id, REFERENCES_PAGE_URL_NAME, undefined, {
-                allowPartialMatch: true,
-            });
+            expect(PageKind.getByString).toHaveBeenCalledWith(courseMock.id, REFERENCES_PAGE_URL_NAME);
         });
 
         it("should return a failure test result when the references page is not found", async () => {
@@ -51,7 +49,7 @@ describe("referencePageExistsValidation", () => {
 
     describe("fix", () => {
         it("should return a 'not run' test result if the page already exists", async () => {
-            const existingPageMock = { ...mockPageData, id: "page1", title: "Learning Materials References" };
+            const existingPageMock = { ...mockPageData, id: 1, title: "Learning Materials References" };
             const previousResult = testResult(true, { userData: existingPageMock });
 
             const result = await referencePageExistsValidation.fix(courseMock, previousResult);
@@ -63,7 +61,7 @@ describe("referencePageExistsValidation", () => {
 
         it("should create a new references page if it does not exist", async () => {
             const templateMock = { title: "Learning Materials References", body: "<p>References content</p>" };
-            const newPageMock = { id: "page1", title: "Learning Materials References" };
+            const newPageMock = { id: 1, title: "Learning Materials References" };
             (getReferencesTemplate as jest.Mock).mockResolvedValueOnce(templateMock);
             (PageKind.post as jest.Mock).mockResolvedValueOnce(newPageMock);
             const refPageExistsRunSpy = jest.spyOn(referencePageExistsValidation, 'run');
@@ -101,4 +99,3 @@ describe("referencePageExistsValidation", () => {
         });
     });
 });
-

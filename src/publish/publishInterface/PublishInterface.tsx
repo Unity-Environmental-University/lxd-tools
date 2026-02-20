@@ -9,7 +9,7 @@ import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
 import {MakeBp} from "./MakeBp";
-import {Course} from "@ueu/ueu-canvas/course/Course";
+import {Course} from '@ueu/ueu-canvas/course/Course';
 import {Term} from "@ueu/ueu-canvas/term/Term";
 import {getStartDateAssignments} from "@ueu/ueu-canvas/course/changeStartDate";
 import {IListAction, lutDispatcher, LutSetAction} from "@/ui/reducerDispatchers";
@@ -113,7 +113,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         await Course.publishAll(toPublish, accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
-            let newAssocCourses = await course?.getAssociatedCourses();
+            let newAssocCourses = await course?.getAssociatedCourses() as Course[] | undefined;
             if (newAssocCourses) {
                 newAssocCourses = [...newAssocCourses];
             } else {

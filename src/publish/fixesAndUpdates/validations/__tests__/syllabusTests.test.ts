@@ -22,8 +22,8 @@ import assert from "assert";
 import { CourseValidation, TextReplaceValidation } from "@publish/fixesAndUpdates/validations/types";
 import { mockSyllabusHaver } from "@publish/fixesAndUpdates/validations/__mocks__/validations";
 
-import gallantSyllabusHtml from "@ueu/ueu-canvas/course/__mocks__/syllabus.gallant.html";
-import goofusSyllabusHtml from "@ueu/ueu-canvas/course/__mocks__/syllabus.goofus.html";
+import gallantSyllabusHtml from "@/__mocks__/syllabus.gallant.html";
+import goofusSyllabusHtml from "@/__mocks__/syllabus.goofus.html";
 
 describe("Syllabus validation", () => {
   test("AI policy present test correct", syllabusTestTest(aiPolicyInSyllabusTest));

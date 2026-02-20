@@ -21,7 +21,7 @@ export const fetchCourseThunk = createAsyncThunk(
         if(state.courses.status === 'loading')
 
         dispatch(setCourseStatus({courseId, status: "loading"}));
-        const data = await getCourseData(courseId, deepObjectMerge(options, defaults))
+        const data = await getCourseData(courseId, { queryParams: deepObjectMerge(options, defaults) })
         dispatch(setCourseStatus({courseId, status: "fulfilled"}));
 
         return data;

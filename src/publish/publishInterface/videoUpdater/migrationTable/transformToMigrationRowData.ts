@@ -32,7 +32,7 @@ const transformToMigrationRowData = (migration?: TransformableData): MigrationRo
             error: migration.error,
             sourceUrl: migration.sourceUrl,
             additionalInfo: migration.additionalInfo,
-            id: migration.id, // Or whatever unique identifier you need
+            id: String(migration.id ?? ''), // Or whatever unique identifier you need
         };
     } else if ('page_id' in migration) { // This is IPageData
         return {

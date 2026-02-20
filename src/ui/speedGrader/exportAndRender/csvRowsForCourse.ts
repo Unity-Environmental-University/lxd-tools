@@ -2,7 +2,7 @@ import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
 import {ICourseData, SectionData} from "@ueu/ueu-canvas/courseTypes";
 import {IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
 // TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
-import {IEnrollmentData} from "@/canvas/canvasDataDefs";
+import {IEnrollmentData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {getRows} from "@/ui/speedGrader/getData/getRows";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";

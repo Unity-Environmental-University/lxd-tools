@@ -1,5 +1,5 @@
 import {BaseContentItem} from "@ueu/ueu-canvas";
-import {Course} from "@ueu/ueu-canvas/course/Course";
+import {Course} from '@ueu/ueu-canvas/course/Course';
 import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
 import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 

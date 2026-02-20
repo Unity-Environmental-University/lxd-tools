@@ -1,8 +1,8 @@
 import {SubmissionType} from "@ueu/ueu-canvas";
 
-jest.mock("@canvas/canvasUtils");
-jest.mock("@canvas/course/modules");
-jest.mock("@canvas/content/assignments");
+jest.mock("@ueu/ueu-canvas/canvasUtils");
+jest.mock("@ueu/ueu-canvas/course/modules");
+jest.mock("@ueu/ueu-canvas/content/assignments");
 jest.mock("@publish/fixesAndUpdates/validations/utils");
 
 import { courseHasUnusedAssignments } from "../courseHasUnusedAssignments"; // Adjust the import path

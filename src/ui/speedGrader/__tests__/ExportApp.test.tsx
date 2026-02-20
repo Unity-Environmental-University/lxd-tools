@@ -6,15 +6,21 @@ import {Course} from "@ueu/ueu-canvas/course/Course";
 import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
-
-import * as courseApi from '@ueu/ueu-canvas/course';
+import { getCourseData } from '@ueu/ueu-canvas/course';
 import getCourseIdFromUrl from "@ueu/ueu-canvas/course/getCourseIdFromUrl";
 import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 
-const getCourseById = jest.spyOn(courseApi, 'getCourseById');
-const getCourseData = jest.spyOn(courseApi, 'getCourseData');
-jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn())
-const getAssignmentById = jest.spyOn(AssignmentKind, 'get')
+jest.mock('@ueu/ueu-canvas/course', () => ({
+    getCourseData: jest.fn(),
+}));
+jest.mock('@ueu/ueu-canvas/course/getCourseIdFromUrl', () => jest.fn())
+jest.mock('@ueu/ueu-canvas/content/assignments/AssignmentKind', () => ({
+    __esModule: true,
+    default: {
+        get: jest.fn(),
+    },
+}));
+const getAssignmentById = AssignmentKind.get as jest.Mock;
 
 jest.mock('@/ui/speedGrader/controls/ExportOneButton', () => () => (
     <div data-testid="export-one-button">Export One Button</div>
@@ -29,13 +35,13 @@ jest.mock('@/ui/speedGrader/controls/DateRangeExportDialog', () => ({show}: { sh
     show ? <div data-testid="date-range-export-dialog">Date Range Export Dialog</div> : undefined
 ));
 
-jest.mock('@/canvas/fetch/fetchJson')
-jest.mock('@/canvas/fetch/canvasDataFetchGenFunc')
-jest.mock('@/canvas/fetch/getPagedDataGenerator')
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson')
+jest.mock('@ueu/ueu-canvas/fetch/canvasDataFetchGenFunc')
+jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator')
 
 describe('ExportApp Component', () => {
     beforeEach(() => {
-        getCourseById.mockResolvedValue(new Course({...mockCourseData}));
+        (getCourseData as jest.Mock).mockResolvedValue(new Course({...mockCourseData}));
         (getCourseIdFromUrl as jest.Mock).mockReturnValue(15);
 
     })

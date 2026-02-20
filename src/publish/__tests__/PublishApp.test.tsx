@@ -3,13 +3,14 @@
 // eslint-disable-next-line @/no-undef,@typescript-eslint/no-require-imports
 global.TextEncoder = require('util').TextEncoder;
 
-import {Course} from "../../canvas/course/Course";
+
+import { Course } from "@ueu/ueu-canvas/course/Course";
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import PublishApp, {versionCompare} from '../PublishApp';
-import {IUserData} from '../../canvas/canvasDataDefs';
+import { IUserData } from "@ueu/ueu-canvas";
 import {PublishInterface} from '../publishInterface/PublishInterface';
 import {CourseUpdateInterface} from '../fixesAndUpdates/CourseUpdateInterface';
 import {AdminApp} from '../../admin/AdminApp';
@@ -19,9 +20,8 @@ import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
 
 
 
-jest.mock('../../canvas/course');
-jest.mock('../../canvas/canvasUtils');
-jest.mock('../../canvas/fetch/fetchJson');
+jest.mock('@ueu/ueu-canvas/canvasUtils');
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson');
 jest.mock('../publishInterface/PublishInterface');
 jest.mock('../fixesAndUpdates/CourseUpdateInterface');
 jest.mock('../../admin/AdminApp');

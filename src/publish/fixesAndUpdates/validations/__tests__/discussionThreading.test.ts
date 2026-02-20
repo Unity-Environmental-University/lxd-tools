@@ -6,7 +6,7 @@ import {mockAsyncGen} from "@/__mocks__/utils";
 
 import {IDiscussionData} from "@ueu/ueu-canvas/content/types";
 
-jest.mock("@/canvas/content/discussions/DiscussionKind", () => ({
+jest.mock("@ueu/ueu-canvas/content/discussions/DiscussionKind", () => ({
         dataGenerator: jest.fn(),
         put: jest.fn(),
         getHtmlUrl: jest.fn(),

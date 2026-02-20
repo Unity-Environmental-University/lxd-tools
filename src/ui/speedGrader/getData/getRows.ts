@@ -1,7 +1,7 @@
 import {ICourseData, SectionData} from "@ueu/ueu-canvas/courseTypes";
 import {CanvasData, IModuleData, IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
 // TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
-import {IEnrollmentData} from "@/canvas/canvasDataDefs";
+import {IEnrollmentData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {ITermData} from "@ueu/ueu-canvas/term/Term";
 import {getModuleInfo} from "@/ui/speedGrader/modules";

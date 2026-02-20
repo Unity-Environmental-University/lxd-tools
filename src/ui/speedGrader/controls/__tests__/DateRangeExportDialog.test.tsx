@@ -14,12 +14,12 @@ jest.mock('@/ui/speedGrader/saveDataGenFunc', () => ({
 jest.mock('@/ui/speedGrader/getData/getRowsForSections', () => ({
   getRowsForSections: jest.fn(() => Promise.resolve([])),
 }));
-jest.mock('@/canvas/fetch/getPagedDataGenerator');
-jest.mock('@/canvas/course/index', () => ({
+jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator');
+jest.mock('@ueu/ueu-canvas/course/index', () => ({
   getCourseDataGenerator: jest.fn(),
 }));
 
-jest.mock('@/canvas/course/blueprint');
+jest.mock('@ueu/ueu-canvas/course/blueprint');
 
 
 describe('DateRangeExportDialog', () => {

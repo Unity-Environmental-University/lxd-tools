@@ -1,12 +1,12 @@
 import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 import {mockTermData} from "@ueu/ueu-canvas/__mocks__/mockTermData";
-jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn(() => 1))
+jest.mock('@ueu/ueu-canvas/course/getCourseIdFromUrl', () => jest.fn(() => 1))
 jest.mock('@/ui/speedGrader/saveDataGenFunc')
 jest.mock('@/ui/speedGrader/getData/getRowsForSections')
-jest.mock('@/canvas/Account')
-jest.mock('@/canvas/course/blueprint');
-jest.mock('@canvas/course/getSections', () => ({ getSections: jest.fn() }))
-jest.mock('@/canvas/course/index', () => ({
+jest.mock('@ueu/ueu-canvas/Account')
+jest.mock('@ueu/ueu-canvas/course/blueprint');
+jest.mock('@ueu/ueu-canvas/course/getSections', () => ({ getSections: jest.fn() }))
+jest.mock('@ueu/ueu-canvas/course/index', () => ({
     getCourseData: jest.fn(),
     getCourseById: jest.fn(),
     getWorkingCourseData: jest.fn(() => ({

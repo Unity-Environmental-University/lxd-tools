@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { HighlightBigImages } from '../HighlightBigImages';
 
 import {addHighlightBigImageResizer} from "@/ui/course/addButtons";
-import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import { BaseContentItem } from '@ueu/ueu-canvas';
 
 // Mock dependencies
 jest.mock('react-dom/client', () => ({
@@ -43,7 +43,10 @@ describe('addHighlightBigImageResizer', () => {
             <HighlightBigImages
                 el={notificationDiv}
                 bannerImage={img}
-                currentContentItem={currentContentItem}
+                currentContentItem={expect.objectContaining({
+                    courseId: undefined,
+                    resizeBanner: expect.any(Function),
+                })}
                 resizeTo={1200}
             />
         );

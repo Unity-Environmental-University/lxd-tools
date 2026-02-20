@@ -1,6 +1,6 @@
 import {Button} from "react-bootstrap";
 import { Course } from "@ueu/ueu-canvas";
-import { Page } from "@ueu/ueu-canvas/content/pages/Page";  // TODO these don't exist in ueu_canvas yet?
+import { Page } from "@ueu/ueu-canvas/content/pages/Page";
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import {useState} from "react";
 
@@ -118,9 +118,8 @@ async function handleImportClick() {
 
         const pageData = await PageKind.getByString(
             course.id,
-            pageSlug, 
-            { queryParams: { include: ["body"] } }, 
-            { allowPartialMatch: false }
+            pageSlug,
+            { queryParams: { include: ["body"] } }
         );
 
         if ("message" in pageData) {

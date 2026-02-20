@@ -5,7 +5,7 @@ const badUrl = "https://online.unity.edu/support/";
 const goodUrl = "https://unity.edu/distance-education/student-resources/";
 
 
-jest.mock('@canvas/content/pages/PageKind', () => {
+jest.mock('@ueu/ueu-canvas/content/pages/PageKind', () => {
     return {
         getByString: jest.fn(),
         dataIsThisKind: jest.fn(),

@@ -17,8 +17,8 @@ import * as getContentFuncs from '@ueu/ueu-canvas/content/getContentFuncs';
 import ReactDOM from "react-dom/client";
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
-jest.mock('@/canvas/fetch/fetchJson')
-jest.mock('@/canvas/fetch/getPagedDataGenerator')
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson')
+jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator')
 
 describe('Button Functions', () => {
     let header: HTMLElement;

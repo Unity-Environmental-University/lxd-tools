@@ -5,7 +5,7 @@ import { IPageData } from '@ueu/ueu-canvas/content/pages/types';
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 // Mock dataGenerator as an async generator function
-jest.mock('@canvas/content/pages/PageKind', () => ({
+jest.mock('@ueu/ueu-canvas/content/pages/PageKind', () => ({
   dataGenerator: jest.fn(async function* () {
       yield {
           ...mockPageData,

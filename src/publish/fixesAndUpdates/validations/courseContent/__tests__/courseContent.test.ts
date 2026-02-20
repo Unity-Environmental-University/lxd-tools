@@ -17,11 +17,11 @@ import {
 import studentHandbookTest from "../studentHanbookTest";
 import technologyLinkTest from "@publish/fixesAndUpdates/validations/courseContent/technologyForSuccess";
 
-jest.mock('@canvas/fetch/fetchJson', () => ({
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
 }));
 
-jest.mock('@canvas/fetch/getPagedDataGenerator', () => ({
+jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator', () => ({
     getPagedDataGenerator: jest.fn(),
 }));
 

@@ -8,9 +8,9 @@ import {Account} from "@ueu/ueu-canvas/Account";
 
 import * as assignmentsApi from "@ueu/ueu-canvas/content/assignments";
 
-jest.mock('@/canvas/fetch/utils');
+jest.mock('@ueu/ueu-canvas/fetch/utils');
 jest.mock('@/ui/speedGrader/getData/getRows');
-jest.mock('@/canvas/fetch/getPagedDataGenerator')
+jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator')
 
 import * as moduleApi from '@ueu/ueu-canvas/course/modules';
 

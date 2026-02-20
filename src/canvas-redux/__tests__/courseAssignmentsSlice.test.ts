@@ -5,7 +5,7 @@ import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 // Mock dataGenerator as an async generator function
-jest.mock('@canvas/content/assignments/AssignmentKind', () => ({
+jest.mock('@ueu/ueu-canvas/content/assignments/AssignmentKind', () => ({
   dataGenerator: jest.fn(async function* () {
     yield {
       ...mockAssignmentData, // Change this to appropriate mock assignment data

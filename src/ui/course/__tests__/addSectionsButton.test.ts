@@ -8,7 +8,7 @@ import { act } from 'react';
 import {addSectionsButton} from "@/ui/course/addButtons";
 
 // Mock dependencies
-jest.mock('@/canvas/content/openThisContentInTarget', () => jest.fn());
+jest.mock('@ueu/ueu-canvas/content/openThisContentInTarget', () => jest.fn());
 
 describe('addSectionsButton', () => {
     let header: HTMLElement;

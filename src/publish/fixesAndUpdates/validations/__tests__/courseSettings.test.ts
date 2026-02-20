@@ -26,7 +26,7 @@ import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
-jest.mock('@/canvas/fetch/fetchJson')
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson')
 
 test('Late policy test works', async () => {
     const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});
