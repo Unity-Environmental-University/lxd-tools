@@ -424,9 +424,12 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver> = {
 
     // Replace the text with the newSyllabusHtml
     honorCodeTd.innerHTML = newSyllabusHtml;
-    honorCodeTd.style.height = "auto";
-    if(honorCodeTd.parentElement) {
-      honorCodeTd.parentElement.style.height = "auto";
+
+    // Remove fixed heights from the table and all its tr/td elements so the
+    // table resizes naturally after the shorter honor code content is inserted.
+    for (const el of [honorCodeTable, ...Array.from(honorCodeTable.querySelectorAll("tr, td"))]) {
+      (el as HTMLElement).style.removeProperty("height");
+      el.removeAttribute("height");
     }
 
     try {
