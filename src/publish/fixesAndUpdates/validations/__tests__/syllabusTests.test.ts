@@ -21,6 +21,9 @@ import { ISyllabusHaver } from "@ueu/ueu-canvas/course/courseTypes";
 import assert from "assert";
 import { CourseValidation, TextReplaceValidation } from "@publish/fixesAndUpdates/validations/types";
 import { mockSyllabusHaver } from "@publish/fixesAndUpdates/validations/__mocks__/validations";
+import fetchMock from "jest-fetch-mock";
+
+fetchMock.enableMocks();
 
 import gallantSyllabusHtml from "@/__mocks__/syllabus.gallant.html";
 import goofusSyllabusHtml from "@/__mocks__/syllabus.goofus.html";
@@ -38,7 +41,7 @@ describe("Syllabus validation", () => {
   test("Add apa language to grading policy test", syllabusTestTest(addApaNoteToGradingPoliciesTest));
   test("Add generative ai language", syllabusTestTest(addAiGenerativeLanguageTest));
   test("Fix support email", syllabusTestTest(fixSupportEmailTest));
-  test('Fix Honor Code language', syllabusTestTest(honorCodeCheck));
+  test("Fix Honor Code language", syllabusTestTest(honorCodeCheck));
   test("Late policy text replace", syllabusTestTest(latePolicyTableTest));
   test("Title IX policy update", syllabusTestTest(titleIXPolicyTest));
   test("Grading Deadline Language", syllabusTestTest(gradingDeadlineLanguageTest));

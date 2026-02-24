@@ -7,7 +7,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@reduxjs/toolkit": "^2.3.0",
-    "@ueu/ueu-canvas": "^0.0.4",
+    "@ueu/ueu-canvas": "^0.0.5",
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.18",
     "bootstrap": "^5.3.3",
@@ -80,8 +80,8 @@
   },
   "overrides": {
     "postcss": "^8.4.41",
-    "jsdom": "^24.0.0",
-    "glob": "^10.4.5"
+    "minimatch": "^10.2.1",
+    "glob": "^10.5.0"
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",

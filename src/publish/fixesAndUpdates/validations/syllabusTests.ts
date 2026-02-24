@@ -16,6 +16,7 @@ import {
   TextReplaceValidation,
 } from "@publish/fixesAndUpdates/validations/types";
 import { paraify } from "@/testing/DomUtils";
+import { getCourseById } from "@ueu/ueu-canvas";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
@@ -383,6 +384,11 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver> = {
     const syllabus = await bp.getSyllabus();
     const parser = new DOMParser();
     const parsedSyllabus = parser.parseFromString(syllabus, "text/html");
+    const course = await getCourseById(bp.id);
+
+    if (!course.isUndergrad()) {
+      return testResult("not run", { notFailureMessage: "Did no run because course is not undergrad." });
+    }
 
     // Find the table, determine if it's old or new
     const tables = parsedSyllabus.querySelectorAll("table");
