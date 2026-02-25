@@ -1,10 +1,10 @@
 import { academicIntegritySetup } from "@/publish/publishInterface/academicIntegritySetup";
-import { fetchJson } from "@/canvas/fetch/fetchJson";
-import { getCourseById } from "@/canvas/course";
-import { startMigration } from "@/canvas/course/migration";
-import { Course } from "@/canvas/course/Course";
-import { IModuleData } from "@canvas/canvasDataDefs";
-import mockModuleData from "@canvas/course/__mocks__/mockModuleData";
+import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import { getCourseById } from "@ueu/ueu-canvas/course";
+import { startMigration } from "@ueu/ueu-canvas/course/migration";
+import { Course } from "@ueu/ueu-canvas/course/Course";
+import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
+import mockModuleData from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
 
 beforeAll(() => {
   jest.useFakeTimers();
@@ -12,14 +12,14 @@ beforeAll(() => {
 
 // --- Mocking Dependencies ---
 // Mocks for external dependencies, treating them as utilities
-jest.mock("@canvas/fetch/fetchJson");
-jest.mock("@canvas/canvasUtils", () => ({
+jest.mock("@ueu/ueu-canvas/fetch/fetchJson");
+jest.mock("@ueu/ueu-canvas/canvasUtils", () => ({
   formDataify: jest.fn((data) => data), // Mock formDataify to return the data directly for easy inspection
 }));
-jest.mock("@canvas/course/migration");
+jest.mock("@ueu/ueu-canvas/course/migration");
 
 // Mocking the Canvas-specific classes/constructors
-jest.mock("@/canvas/course", () => ({
+jest.mock("@ueu/ueu-canvas/course", () => ({
   getCourseById: jest.fn(),
 }));
 

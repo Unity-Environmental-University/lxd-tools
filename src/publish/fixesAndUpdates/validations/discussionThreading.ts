@@ -1,11 +1,11 @@
 import {
     testResult
 } from "@publish/fixesAndUpdates/validations/utils";
-import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
+import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 import {CourseFixValidation, RunTestFunction} from "@publish/fixesAndUpdates/validations/types";
 
 
-import {IDiscussionData} from "@canvas/content/types";
+import {IDiscussionData} from "@ueu/ueu-canvas/content/types";
 
 
 const run: RunTestFunction<{ id: number }, IDiscussionData[]> = async (course)  => {

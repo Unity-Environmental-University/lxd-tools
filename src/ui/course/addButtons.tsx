@@ -1,16 +1,17 @@
 import ReactDOM from "react-dom/client";
 import {HighlightBigImages} from "@/ui/course/HighlightBigImages";
 import React from "react";
-import {Course} from "@/canvas/course/Course";
-import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
+import {Course} from '@ueu/ueu-canvas/course/Course';
+import openThisContentInTarget from "@ueu/ueu-canvas/content/openThisContentInTarget";
 import {HomeTileApp} from "@/ui/course/HomeTileApp";
 import {BpButton} from "@/ui/course/BpButton";
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
-import {getExternalLinks, getFileLinks} from "@/canvas/content/getContentFuncs";
-import {getContentKindFromUrl} from "@/canvas/content/determineContent";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {resizeBannerOnItem} from "@/ui/course/resizeBanner";
+import {getExternalLinks, getFileLinks} from "@ueu/ueu-canvas/content/getContentFuncs";
+import {getContentKindFromUrl} from "@ueu/ueu-canvas/content/determineContent";
 import {RubricButton} from "@/ui/course/RubricButton";
-import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
+import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
     const root = document.createElement("div")
@@ -97,8 +98,12 @@ export function addHighlightBigImageResizer(currentContentItem: BaseContentItem)
         bannerImageContainer.parentElement?.append(notification)
         const root = document.createElement("div")
         const rootDiv = ReactDOM.createRoot(root);
+        const itemWithResizeBanner = {
+            courseId: currentContentItem.courseId,
+            resizeBanner: (maxWidth?: number) => resizeBannerOnItem(currentContentItem, maxWidth),
+        };
         rootDiv.render(
-            <HighlightBigImages el={notification} bannerImage={image} currentContentItem={currentContentItem}
+            <HighlightBigImages el={notification} bannerImage={image} currentContentItem={itemWithResizeBanner}
                                 resizeTo={1200}/>
         );
         document.body.append(root);

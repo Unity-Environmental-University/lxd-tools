@@ -11,17 +11,19 @@ import {
     sortCritAssessments,
     criteriaAssessmentRows
 } from '../getRows';
-import { IUserData, IEnrollmentData, IModuleData } from '@/canvas/canvasDataDefs';
+import { IUserData, IModuleData } from '@ueu/ueu-canvas/canvasDataDefs';
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IEnrollmentData} from "@ueu/ueu-canvas/canvasDataDefs";
 import { AssignmentsCollection } from '@/ui/speedGrader/AssignmentsCollection';
 
 
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import {mockUserData} from "@/canvas/__mocks__/mockUserData";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {mockUserData} from "@ueu/ueu-canvas/__mocks__/mockUserData";
 import {getModuleInfo} from "@/ui/speedGrader/modules";
-import mockAssignmentSubmission from "@/canvas/content/__mocks__/mockAssignmentSubmission";
-import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
+import mockAssignmentSubmission from "@ueu/ueu-canvas/content/__mocks__/mockAssignmentSubmission";
+import {IAssignmentData, IAssignmentSubmission} from "@ueu/ueu-canvas/content/types";
 
-import {RubricAssessment} from "@/canvas";
+import {RubricAssessment} from "@ueu/ueu-canvas";
 
 
 jest.mock('@/ui/speedGrader/modules')

@@ -1,7 +1,7 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {setStatus} from "@/reporting/data/coursesSlice";
 import {updateEnrollment} from "@/reporting/data/enrollmentsSlice";
-import { GetEnrollmentGenConfig, getEnrollmentGenerator } from "ueu_canvas";
+import { GetEnrollmentGenConfig, getEnrollmentGenerator } from "@ueu/ueu-canvas";
 
 
 
@@ -12,7 +12,7 @@ export const fetchEnrollmentsThunk = createAsyncThunk(
         const gen = getEnrollmentGenerator(params)
         dispatch(setStatus('loading'))
         for await (const enrollments of gen) {
-            updateEnrollment(enrollments)
+            dispatch(updateEnrollment({ enrollment: enrollments }))
         }
     }
 )

@@ -1,18 +1,18 @@
 import {bannerHeadingValidation} from '../bannerHeadingValidation';
-import PageKind from '@/canvas/content/pages/PageKind';
-import {assignmentDataGen} from "@/canvas/content/assignments";
+import PageKind from '@ueu/ueu-canvas/content/pages/PageKind';
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {mockPageData} from "@/canvas/content/__mocks__/mockContentData";
+import {mockPageData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 import {badContentTextValidationTest} from "../__mocks__/validations";
 import {badContentTextValidationFixTest} from "../__mocks__/validations";
 import {mockContentHaver} from "../__mocks__/validations";
-import {Page} from "@/canvas/content/pages/Page";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import {ContentTextReplaceFix, CourseValidation} from "@publish/fixesAndUpdates/validations/types";
-import {IContentHaver} from "@canvas/course/courseTypes";
-import {BaseContentItem} from "@/canvas";
+import {IContentHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {BaseContentItem} from "@ueu/ueu-canvas";
 
-jest.mock('@/canvas/content/pages/PageKind');
-jest.mock('@/canvas/content/assignments/AssignmentKind');
+jest.mock('@ueu/ueu-canvas/content/pages/PageKind');
+jest.mock('@ueu/ueu-canvas/content/assignments/AssignmentKind');
 jest.mock('../utils', () => ({
     testResult: jest.fn((success, data) => ({success, ...data})),
     badContentRunFunc: jest.fn(),

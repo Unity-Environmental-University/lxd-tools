@@ -1,12 +1,12 @@
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {mockTermData} from "@/canvas/__mocks__/mockTermData";
-jest.mock('@/canvas/course/getCourseIdFromUrl', () => jest.fn(() => 1))
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {mockTermData} from "@ueu/ueu-canvas/__mocks__/mockTermData";
+jest.mock('@ueu/ueu-canvas/course/getCourseIdFromUrl', () => jest.fn(() => 1))
 jest.mock('@/ui/speedGrader/saveDataGenFunc')
 jest.mock('@/ui/speedGrader/getData/getRowsForSections')
-jest.mock('@/canvas/Account')
-jest.mock('@/canvas/course/blueprint');
-jest.mock('@canvas/course/getSections', () => ({ getSections: jest.fn() }))
-jest.mock('@/canvas/course/index', () => ({
+jest.mock('@ueu/ueu-canvas/Account')
+jest.mock('@ueu/ueu-canvas/course/blueprint');
+jest.mock('@ueu/ueu-canvas/course/getSections', () => ({ getSections: jest.fn() }))
+jest.mock('@ueu/ueu-canvas/course/index', () => ({
     getCourseData: jest.fn(),
     getCourseById: jest.fn(),
     getWorkingCourseData: jest.fn(() => ({
@@ -17,14 +17,14 @@ jest.mock('@/canvas/course/index', () => ({
 
 
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
-import {Course} from "@/canvas/course/Course";
-import {Term} from "@/canvas/term/Term";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {Term} from "@ueu/ueu-canvas/term/Term";
 import {exportSectionsInTerm} from "@/ui/speedGrader/exportAndRender/exportSectionsInTerm";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
-import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
-import {getCourseData} from "@canvas/course";
+import getCourseIdFromUrl from "@ueu/ueu-canvas/course/getCourseIdFromUrl";
+import {getCourseData} from "@ueu/ueu-canvas/course";
 
-import {getSections} from "@canvas/course/getSections";
+import {getSections} from "@ueu/ueu-canvas/course/getSections";
 
 describe('exportSectionsInTerm', () => {
     let mockCourse = new Course(mockCourseData)

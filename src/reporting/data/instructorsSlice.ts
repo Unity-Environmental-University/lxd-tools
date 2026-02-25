@@ -1,6 +1,6 @@
 import {LoadStatus} from "@/reporting/data/loadStatus";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {IUserData} from "ueu_canvas"
+import {IUserData} from "@ueu/ueu-canvas"
 
 export type InstructorsState = {
     instructorsById: Record<number, IUserData>;

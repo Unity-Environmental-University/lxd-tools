@@ -1,19 +1,19 @@
-import {ICourseData, SectionData} from '@/canvas/courseTypes';
+import {ICourseData, SectionData} from '@ueu/ueu-canvas/courseTypes';
 import {AssignmentsCollection} from '@/ui/speedGrader/AssignmentsCollection';
 
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {ITermData} from "@/canvas/term/Term";
-import {IModuleData, IUserData} from "@/canvas/canvasDataDefs";
-import {mockTermData} from "@/canvas/__mocks__/mockTermData";
-import mockModuleData, {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";
-import {mockUserData} from "@/canvas/__mocks__/mockUserData";
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
+import {IModuleData, IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {mockTermData} from "@ueu/ueu-canvas/__mocks__/mockTermData";
+import mockModuleData, {mockModuleItemData} from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
+import {mockUserData} from "@ueu/ueu-canvas/__mocks__/mockUserData";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 import {getRows, IGetRowsConfig} from "@/ui/speedGrader/getData/getRows";
-import {mockEnrollment} from "@/canvas/__mocks__/mockEnrollment";
+import {mockEnrollment} from "@ueu/ueu-canvas/__mocks__/mockEnrollment";
 
-import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
+import {IAssignmentData, IAssignmentSubmission} from "@ueu/ueu-canvas/content/types";
 
-import {IRubricCriterionData, RubricAssessment} from "@/canvas";
+import {IRubricCriterionData, RubricAssessment} from "@ueu/ueu-canvas";
 // Mock data
 const mockCourse: ICourseData = {
     ...mockCourseData,

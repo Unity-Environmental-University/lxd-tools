@@ -7,13 +7,13 @@ import DateRangeExportDialog from "@/ui/speedGrader/controls/DateRangeExportDial
 
 import ExportOneButton from "@/ui/speedGrader/controls/ExportOneButton";
 import ExportAllButton from "@/ui/speedGrader/controls/ExportAllButton";
-import {getCourseData} from "@/canvas/course";
+import {getCourseData} from "@ueu/ueu-canvas/course";
 import {useEffectAsync} from "@/ui/utils";
 
-import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
-import {ICourseData} from "@/canvas/courseTypes";
-import AssignmentKind from "@/canvas/content/assignments/AssignmentKind";
-import {IAssignmentData} from "@canvas/content/types";
+import getCourseIdFromUrl from "@ueu/ueu-canvas/course/getCourseIdFromUrl";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 
 export type ExportAppProps = {

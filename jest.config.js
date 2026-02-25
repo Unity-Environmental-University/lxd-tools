@@ -17,8 +17,8 @@ module.exports = {
     },
     moduleNameMapper: {
         ...pathsToModuleNameMapper(compilerOptions.paths, {prefix: '<rootDir>/src/'}),
-        "^ueu_canvas$": "<rootDir>/node_modules/@ueu/ueu-canvas",
-        "^@ueu/ueu-canvas/(.*)$": "<rootDir>/node_modules/@ueu/ueu-canvas/$1",
+        "^@ueu/ueu-canvas$": "<rootDir>/node_modules/@ueu/ueu-canvas/dist",
+        "^@ueu/ueu-canvas/(.*)$": "<rootDir>/node_modules/@ueu/ueu-canvas/dist/$1",
         "^webextension-polyfill$": 
           "<rootDir>/src/__mocks__/runtime.ts",
         '\\.(css|scss)$': 'identity-obj-proxy',

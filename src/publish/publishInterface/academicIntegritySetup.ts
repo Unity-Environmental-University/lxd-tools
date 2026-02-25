@@ -1,13 +1,13 @@
-import { getCourseById } from "@/canvas/course";
-import { fetchJson } from "@canvas/fetch/fetchJson";
-import { formDataify } from "@canvas/canvasUtils";
-import { IModuleData } from "@canvas/canvasDataDefs";
-import { moduleGenerator } from "@canvas/course/modules";
-import { startMigration } from "@/canvas/course/migration";
-import { Course } from "@/canvas/course/Course";
+import { getCourseById } from "@ueu/ueu-canvas/course";
+import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
+import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
+import { moduleGenerator } from "@ueu/ueu-canvas/course/modules";
+import { startMigration } from "@ueu/ueu-canvas/course/migration";
+import { Course } from "@ueu/ueu-canvas/course/Course";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
-import { lockBlueprint } from "@/canvas/course/blueprint";
-import { getItemTypeAndId, IModuleItemData } from "ueu_canvas";
+import { lockBlueprint } from "@ueu/ueu-canvas/course/blueprint";
+import { getItemTypeAndId, IModuleItemData } from "@ueu/ueu-canvas";
 import { getItemInModule } from "@/ui/speedGrader/modules";
 
 export interface AcademicIntegritySetupProps {

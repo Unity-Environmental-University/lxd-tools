@@ -10,10 +10,12 @@ import { rootReducer } from "@publish/publishInterface/videoUpdater/data/rootRed
 import {configureStore} from "@reduxjs/toolkit";
 import {RootState} from "@publish/publishInterface/videoUpdater/data/store";
 //
-import * as courseApi from '@/canvas/course/index'
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
+import { getCourseData } from '@ueu/ueu-canvas/course/index'
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 
-const getCourseDataSpy = jest.spyOn(courseApi, 'getCourseData')
+jest.mock('@ueu/ueu-canvas/course/index', () => ({
+    getCourseData: jest.fn(),
+}));
 const getNewState = (params?: Partial<RootState>) => {
     return configureStore({
         reducer: rootReducer,
@@ -47,7 +49,7 @@ type StoreType = typeof store
 
 async function renderComponent(store: StoreType) {
     await act(async () => {
-        getCourseDataSpy.mockResolvedValue({...mockCourseData, name: "Test Course"})
+        (getCourseData as jest.Mock).mockResolvedValue({...mockCourseData, name: "Test Course"})
         render(
             <Provider store={store}>
                 <VideoUpdateInterface courseId={123}/>

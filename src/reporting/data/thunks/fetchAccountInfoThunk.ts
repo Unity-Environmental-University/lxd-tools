@@ -1,6 +1,6 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {setAccountId, setRootAccountId, setStatus} from "@/reporting/data/accountsSlice";
-import { Account, getAccountIdFromUrl } from "ueu_canvas";
+import { Account, getAccountIdFromUrl } from "@ueu/ueu-canvas";
 
 type FetchAccountInfoParams = object | undefined;
 

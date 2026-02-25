@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
-import { IPageData } from "@canvas/content/pages/types";
-import PageKind from "@canvas/content/pages/PageKind";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 // Define types for your state
 type CoursePagesState = {

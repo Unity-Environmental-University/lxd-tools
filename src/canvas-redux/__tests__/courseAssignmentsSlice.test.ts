@@ -1,11 +1,11 @@
-import {mockAssignmentData} from "@canvas/content/__mocks__/mockContentData"; // Adjust import for assignment mock data
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData"; // Adjust import for assignment mock data
 import { configureStore } from '@reduxjs/toolkit';
 import {courseAssignmentsReducer, fetchCourseAssignments, updateCourseAssignments} from '../courseAssignmentsSlice'; // Update the path as needed
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {IAssignmentData} from "@canvas/content/types";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 // Mock dataGenerator as an async generator function
-jest.mock('@canvas/content/assignments/AssignmentKind', () => ({
+jest.mock('@ueu/ueu-canvas/content/assignments/AssignmentKind', () => ({
   dataGenerator: jest.fn(async function* () {
     yield {
       ...mockAssignmentData, // Change this to appropriate mock assignment data

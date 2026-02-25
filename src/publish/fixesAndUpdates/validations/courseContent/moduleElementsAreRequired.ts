@@ -1,5 +1,5 @@
 import {CourseValidation, FixTestFunction} from "@publish/fixesAndUpdates/validations/types";
-import {IModuleItemData} from "@canvas/canvasDataDefs";
+import {IModuleItemData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {errorMessageResult, MessageResult, testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {
     AssignmentItemData,
@@ -7,7 +7,7 @@ import {
     moduleGenerator,
     PageItemData,
     saveModuleItem
-} from "@canvas/course/modules";
+} from "@ueu/ueu-canvas/course/modules";
 
 type AffectedModuleItem = IModuleItemData & { completion_requirement: {type: "min-score", min_score: number} | undefined };
 

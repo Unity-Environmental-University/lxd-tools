@@ -1,5 +1,5 @@
-import {IContentHaver} from "@canvas/course/courseTypes";
-import {BaseContentItem} from "@canvas/content/BaseContentItem";
+import {IContentHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
 import {badContentFixFunc, badContentRunFunc} from "@publish/fixesAndUpdates/validations/utils";
 
 export default function badContentReplaceFuncs<

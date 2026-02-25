@@ -1,8 +1,8 @@
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import PageKind from "@canvas/content/pages/PageKind";
-import {renderAsyncGen} from "@canvas/canvasUtils";
-import {Course} from "@canvas/course/Course";
-import {IPageData} from "@canvas/content/pages/types";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
 

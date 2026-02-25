@@ -1,9 +1,9 @@
 import footerOnFrontPageTest from "@publish/fixesAndUpdates/validations/courseContent/footerOnFrontPageTest";
 
-import { IPageData } from "@canvas/content/pages/types";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import { jest } from "@jest/globals";
-import {Course} from "@canvas/course/Course";
-import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {mockPageData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
 describe("removeGradeTable Fix", () => {
   let mockCourse: Course;

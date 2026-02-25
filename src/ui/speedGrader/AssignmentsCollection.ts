@@ -1,9 +1,9 @@
 // noinspection GrazieInspection
 
-import {CanvasData, IModuleItemData, ModuleItemType} from "@/canvas/canvasDataDefs";
-import {IAssignmentData, IDiscussionData} from "@canvas/content/types";
+import {CanvasData, IModuleItemData, ModuleItemType} from "@ueu/ueu-canvas/canvasDataDefs";
+import {IAssignmentData, IDiscussionData} from "@ueu/ueu-canvas/content/types";
 
-import DiscussionKind from "@canvas/content/discussions/DiscussionKind";
+import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 
 
 type LookUpTable<T> = Record<string, T>

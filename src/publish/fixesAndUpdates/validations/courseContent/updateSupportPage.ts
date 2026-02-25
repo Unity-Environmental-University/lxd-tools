@@ -1,6 +1,6 @@
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import pageKind from "@canvas/content/pages/PageKind";
+import pageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 
 type CourseInterface = {

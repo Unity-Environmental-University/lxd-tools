@@ -1,6 +1,6 @@
 
 import {createSelector} from "@reduxjs/toolkit";
-import {EnrollmentData} from "ueu_canvas";
+import {EnrollmentData} from "@ueu/ueu-canvas";
 import {generateGroupGetter} from "@/reporting/data/selectors/generateGroupGetter";
 import {EnrollmentsState} from "@/reporting/data/enrollmentsSlice";
 

@@ -9,7 +9,7 @@ const goodUrl = "https://community.instructure.com/en/kb/articles/662765-what-ar
 const badHTML = `For more information, read this Canvas Guide about updating your profile</span><span> blahblah </span><span> blah </span></p><p>For more information, read this <a id="" class="" title="" href="${badUrl}" target="">Canvas Guide about updating your profile</a>.</p>`;
 const goodHTML = `</span>For more information, read this <a class="inline_disabled" href="${goodUrl}" target="_blank" rel="noopener">Canvas Guide about updating your profile</a>.</p>`;
 
-jest.mock('@/canvas/fetch/fetchJson')
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson')
 describe("Introductions double language validation tests", () => {
     describe('works for double profile settings language in Introductions Discussion', () => {
         test("double language in introduction detection test works", badContentTextValidationTest(doubleProfileLanguageIntro, badHTML, goodHTML));

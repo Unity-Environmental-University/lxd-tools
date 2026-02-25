@@ -1,9 +1,9 @@
 import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
 import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
-import {ICourseData, SectionData} from "@/canvas/courseTypes";
+import {ICourseData, SectionData} from "@ueu/ueu-canvas/courseTypes";
 
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 export async function exportData(course: ICourseData, {
     popUp,

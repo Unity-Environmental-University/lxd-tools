@@ -1,12 +1,12 @@
-import {Course} from "@/canvas/course/Course";
-import DiscussionKind from "@/canvas/content/discussions/DiscussionKind";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 import {discussionThreadingValidation} from "../discussionThreading";
 import {mockAsyncGen} from "@/__mocks__/utils";
 
 
-import {IDiscussionData} from "@canvas/content/types";
+import {IDiscussionData} from "@ueu/ueu-canvas/content/types";
 
-jest.mock("@/canvas/content/discussions/DiscussionKind", () => ({
+jest.mock("@ueu/ueu-canvas/content/discussions/DiscussionKind", () => ({
         dataGenerator: jest.fn(),
         put: jest.fn(),
         getHtmlUrl: jest.fn(),

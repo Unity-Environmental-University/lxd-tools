@@ -10,7 +10,7 @@ import React, {useEffect} from "react";
 import {fetchCourseThunk} from "@/reporting/data/thunks/fetchCourseThunk";
 import {Col, Row} from "react-bootstrap";
 import {fetchEnrollmentsThunk} from "@/reporting/data/thunks/fetchEnrollmentsThunk";
-import {EnrollmentData} from "ueu_canvas";
+import {EnrollmentData} from "@ueu/ueu-canvas";
 
 type FacultyRowProps = { userId: number }
 export const FacultyRow = ({userId}: FacultyRowProps) => {

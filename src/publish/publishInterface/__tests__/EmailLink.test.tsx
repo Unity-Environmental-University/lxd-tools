@@ -7,9 +7,9 @@ import publishEmailMock, {
     mockFilled, mockFilledSpecific, mockTocXml,
     mockValues
 } from "@/publish/publishInterface/__mocks__/publishEmailMock";
-import {Course} from "@canvas/course/Course";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
-import PageKind from "@canvas/content/pages/PageKind";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 window.fetch = jest.fn();
 const fetchMock = fetch as jest.Mock;

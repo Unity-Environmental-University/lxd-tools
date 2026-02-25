@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/dom';
 
 
 import ReactDOM from 'react-dom/client';
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 import {act} from "react";
 
 import {main} from "../main";
@@ -16,23 +16,24 @@ import {
     addSectionsButton
 } from "../addButtons"
 import assert from "assert";
-import {Course} from "@/canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
 
-import * as courseApi from '@/canvas/course';
-import {getSingleCourse} from "@/canvas/course";
+import {getSingleCourse} from "@ueu/ueu-canvas/course";
 
-import * as determineContent from "@/canvas/content/determineContent";
-import {getContentClassFromUrl} from "@/canvas/content/determineContent";
-jest.mock('@/canvas/fetch/getPagedDataGenerator')
-jest.mock('@/canvas/fetch/fetchJson')
+import {getContentClassFromUrl} from "@ueu/ueu-canvas/content/determineContent";
+jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator')
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson')
 jest.mock('../addButtons')
+jest.mock('@ueu/ueu-canvas/course', () => ({
+    getSingleCourse: jest.fn(),
+}));
+jest.mock('@ueu/ueu-canvas/content/determineContent', () => ({
+    getContentClassFromUrl: jest.fn(),
+}));
 
 jest.mock('@/ui/course/BpButton');
 jest.mock('react-dom/client');
-
-const getSingleCourseSpy = jest.spyOn(courseApi, 'getSingleCourse');
-const getContentClassFromUrlSpy = jest.spyOn(determineContent, 'getContentClassFromUrl')
 describe('Base level async call', () => {
     let header: HTMLElement;
     let homeTileHost: HTMLElement;
@@ -59,8 +60,8 @@ describe('Base level async call', () => {
 
     test('Base level async call workflow', async () => {
         Object.defineProperty(document, 'documentURI', { value:'https://example.com/courses/123/assignments/321'});
-        Object.defineProperty(document, 'URL', { value: 'https://example.com/courses/123/assignments/321'})
-        getSingleCourseSpy.mockResolvedValue(new Course({...mockCourseData, blueprint: true}));
+        Object.defineProperty(document, 'URL', { value: 'https://example.com/courses/123/assignments/321'});
+        (getSingleCourse as jest.Mock).mockResolvedValue(new Course({...mockCourseData, blueprint: true}));
         const course = await Course.getFromUrl(document.documentURI) as Course;
         const frontPageSpy = jest.spyOn(course, 'getFrontPage')
 

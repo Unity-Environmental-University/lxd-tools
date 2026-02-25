@@ -1,7 +1,7 @@
 import {csvRowsForCourse} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {MAX_SECTION_SLICE_SIZE} from "@/ui/speedGrader/consts";
-import {ICourseData, SectionData} from "@/canvas/courseTypes";
+import {ICourseData, SectionData} from "@ueu/ueu-canvas/courseTypes";
 
 export async function getRowsForSections(sections: SectionData[] | ICourseData[], sectionsAtATime = MAX_SECTION_SLICE_SIZE) {
     const allSectionRows: string[] = [];

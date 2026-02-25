@@ -1,7 +1,7 @@
-import {IContentHaver} from "@canvas/course/courseTypes";
-import {Page} from "@canvas/content/pages/Page";
-import PageKind from "@canvas/content/pages/PageKind";
-import {renderAsyncGen} from "@canvas/canvasUtils";
+import {IContentHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 import badContentReplaceFuncs from "@publish/fixesAndUpdates/validations/courseContent/badContentReplaceFuncs";
 import {ContentTextReplaceFix} from "@publish/fixesAndUpdates/validations/types";
 

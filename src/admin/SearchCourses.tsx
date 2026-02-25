@@ -1,9 +1,9 @@
-import {getCourseGenerator} from "../canvas/course/index";
+import {getCourseGenerator} from '@ueu/ueu-canvas/course';
 import {IMultiSelectOption, optionize} from "../ui/widgets/MuliSelect";
 import React, {FormEventHandler, useEffect, useState} from "react";
 import {Form, Spinner} from "react-bootstrap";
-import {Course} from "../canvas/course/Course";
-import {Account, RootAccountNotFoundError} from "@/canvas/Account";
+import {Course} from '@ueu/ueu-canvas/course/Course';
+import {Account, RootAccountNotFoundError} from "@ueu/ueu-canvas/Account";
 
 interface ISearchCoursesProps {
     onlySearchBlueprints: boolean,
