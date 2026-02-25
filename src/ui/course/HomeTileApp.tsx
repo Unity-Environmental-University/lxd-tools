@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { getCroppedSquareBlob, getResizedBlob } from "@/utils/image";
 import { Course } from "@ueu/ueu-canvas";
-import { getHometileSrcPage } from "@/ui/course/hometile";
+import { getHometileSrcPage, regenerateHomeTiles } from "@/ui/course/hometile";
 import { getBannerImage } from "@ueu/ueu-canvas";
 import { Row } from "react-bootstrap";
 
@@ -22,7 +22,7 @@ export function HomeTileApp({ course, el }: HomeTileAppProps) {
   async function regenerate() {
     setRunning(true);
     setShowModal(true);
-    await course.regenerateHomeTiles();
+    await regenerateHomeTiles(course);
     // eslint-disable-next-line @/no-undef
     const homeTiles = document.querySelectorAll(".cbt-module-card-img img") as NodeListOf<HTMLImageElement>;
     try {

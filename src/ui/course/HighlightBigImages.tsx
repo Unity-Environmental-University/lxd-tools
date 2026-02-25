@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import Modal from "../widgets/Modal/index";
 import "./bigImages.scss";
-import { BaseContentItem } from "@ueu/ueu-canvas";
-
 interface IHighlightBigImagesProps {
   el: HTMLElement;
   bannerImage: HTMLImageElement;
   resizeTo: number;
-  currentContentItem: BaseContentItem | null;
+  currentContentItem: { courseId?: number; resizeBanner?: (maxWidth?: number) => Promise<any> } | null;
 }
 
 export function HighlightBigImages({ el, bannerImage, currentContentItem, resizeTo = 1200 }: IHighlightBigImagesProps) {
@@ -20,7 +18,7 @@ export function HighlightBigImages({ el, bannerImage, currentContentItem, resize
   async function resizeBanner() {
     setRunning(true);
     setShowModal(true);
-    await currentContentItem?.resizeBanner(resizeTo);
+    await currentContentItem?.resizeBanner?.(resizeTo);
     await fetch(bannerImage.src, { cache: "reload", mode: "no-cors" });
     bannerImage.src = bannerImage.src + "?" + Date.now();
     setRunning(false);
