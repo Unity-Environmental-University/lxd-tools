@@ -403,7 +403,7 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
       return testResult(!honorCodeTable, {
         failureMessage: "Syllabus contains incorrect honor code language.",
         notFailureMessage: "Honor code table is up to date.",
-        userData: { parsedSyllabus, honorCodeTable } as HonorCodeUserData,
+        userData: { parsedSyllabus, honorCodeTable, course } as HonorCodeUserData,
       });
     }
 
