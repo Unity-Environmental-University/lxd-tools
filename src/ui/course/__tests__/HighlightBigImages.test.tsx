@@ -29,7 +29,7 @@ describe("HighlightBigImages", () => {
 
     currentContentItem = {
       resizeBanner: jest.fn().mockResolvedValue(null),
-    } as any as BaseContentItem;
+    } as BaseContentItem & { resizeBanner: jest.Mock };
   });
 
   afterEach(() => {
