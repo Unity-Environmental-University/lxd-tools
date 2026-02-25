@@ -17,13 +17,11 @@ import {
   aiPolicyMediaTest,
   supportPhoneNumberFix,
 } from "../syllabusTests";
-import { ISyllabusHaver } from "@ueu/ueu-canvas/course/courseTypes";
+import { ISyllabusHaver, ICourseDataHaver } from "@ueu/ueu-canvas/course/courseTypes";
 import assert from "assert";
 import { CourseValidation, TextReplaceValidation } from "@publish/fixesAndUpdates/validations/types";
 import { mockSyllabusHaver } from "@publish/fixesAndUpdates/validations/__mocks__/validations";
-import fetchMock from "jest-fetch-mock";
-
-fetchMock.enableMocks();
+import { mockCourseData } from "@ueu/ueu-canvas";
 
 import gallantSyllabusHtml from "@/__mocks__/syllabus.gallant.html";
 import goofusSyllabusHtml from "@/__mocks__/syllabus.goofus.html";
@@ -49,18 +47,29 @@ describe("Syllabus validation", () => {
   test("Support Phone Number Fix", syllabusTestTest(supportPhoneNumberFix));
 });
 
-export function syllabusTestTest(test: CourseValidation<ISyllabusHaver> | TextReplaceValidation<ISyllabusHaver>) {
+export function syllabusTestTest(
+  test:
+    | CourseValidation<ISyllabusHaver>
+    | TextReplaceValidation<ISyllabusHaver>
+    | CourseValidation<ISyllabusHaver & ICourseDataHaver>
+) {
   return async () => {
     const beforeAndAfters =
       "beforeAndAfters" in test ? test.beforeAndAfters : [[goofusSyllabusHtml, gallantSyllabusHtml]];
     console.log(beforeAndAfters);
 
     for (const [goofusHtml, gallantHtml] of beforeAndAfters) {
-      const gallantCourse: ISyllabusHaver = mockSyllabusHaver(gallantHtml);
+      const gallantCourse: ISyllabusHaver & ICourseDataHaver = {
+        ...mockSyllabusHaver(gallantHtml),
+        rawData: mockCourseData,
+      };
       const gallantResult = await test.run(gallantCourse);
       expect(gallantResult).toHaveProperty("success", true);
 
-      const goofusCourse: ISyllabusHaver = mockSyllabusHaver(goofusHtml);
+      const goofusCourse: ISyllabusHaver & ICourseDataHaver = {
+        ...mockSyllabusHaver(goofusHtml),
+        rawData: mockCourseData,
+      };
       const goofusResult = await test.run(goofusCourse);
       assert(!goofusResult.success, JSON.stringify(goofusResult.messages));
     }
