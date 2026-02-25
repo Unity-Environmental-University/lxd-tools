@@ -1,9 +1,8 @@
 import Modal from "../widgets/Modal/index";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
 import { getCroppedSquareBlob, getResizedBlob } from "@/utils/image";
-import { Course } from "@ueu/ueu-canvas/course/Course";
+import { Course } from "@ueu/ueu-canvas";
 import { getHometileSrcPage, regenerateHomeTiles } from "@/ui/course/hometile";
 import { getBannerImage } from "@ueu/ueu-canvas";
 import { Row } from "react-bootstrap";
@@ -24,7 +23,7 @@ export function HomeTileApp({ course, el }: HomeTileAppProps) {
     setRunning(true);
     setShowModal(true);
     await regenerateHomeTiles(course);
-
+    // eslint-disable-next-line @/no-undef
     const homeTiles = document.querySelectorAll(".cbt-module-card-img img") as NodeListOf<HTMLImageElement>;
     try {
       await Promise.all(

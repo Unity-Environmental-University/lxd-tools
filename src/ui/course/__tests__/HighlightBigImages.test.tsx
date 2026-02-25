@@ -2,6 +2,7 @@ import React, { act } from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { HighlightBigImages } from "../HighlightBigImages";
+
 import { BaseContentItem } from "@ueu/ueu-canvas";
 
 // Mock dependencies
