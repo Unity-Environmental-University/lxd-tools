@@ -1,10 +1,10 @@
 import Modal from "../widgets/Modal/index";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { getCroppedSquareBlob, getResizedBlob } from "@canvas/image";
-import { Course } from "@canvas/course/Course";
-import { getHometileSrcPage } from "@canvas/course/modules";
-import { getBannerImage } from "@/canvas";
+import { getCroppedSquareBlob, getResizedBlob } from "@/utils/image";
+import { Course } from "@ueu/ueu-canvas";
+import { getHometileSrcPage } from "@/ui/course/hometile";
+import { getBannerImage } from "@ueu/ueu-canvas";
 import { Row } from "react-bootstrap";
 
 type HomeTileAppProps = {
