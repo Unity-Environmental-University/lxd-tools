@@ -16,7 +16,7 @@ jest.mock(
 describe("HighlightBigImages", () => {
   let el: HTMLElement;
   let bannerImage: HTMLImageElement;
-  let currentContentItem: BaseContentItem;
+  let currentContentItem: BaseContentItem & { resizeBanner: jest.Mock };
 
   window.fetch = jest.fn();
   beforeEach(() => {
