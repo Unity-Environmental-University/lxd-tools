@@ -3,7 +3,7 @@ name: lxd-tools build
 on:
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 permissions:
   pull-requests: write
@@ -20,12 +20,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install lxd-tools dependencies
         working-directory: lxd-tools
         run: |
-          npm install --legacy-peer-deps
+          npm config set registry https://registry.npmjs.org/
+          npm cache clean --force
+          npm install
           npm install @testing-library/react --save-dev
 
       - name: Run ESLint
@@ -71,7 +73,7 @@ jobs:
         with:
           name: lxd-tools
           path: dist
-          if-no-files-found: 'error'
+          if-no-files-found: "error"
           retention-days: 30
 
       - name: Comment download link on PR
