@@ -2,7 +2,8 @@ import React, { act } from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { HighlightBigImages } from "../HighlightBigImages";
-import { BaseContentItem } from "@ueu/ueu-canvas";
+
+import { BaseContentItem } from "@/canvas/content/BaseContentItem";
 
 // Mock dependencies
 jest.mock(
@@ -15,7 +16,7 @@ jest.mock(
 describe("HighlightBigImages", () => {
   let el: HTMLElement;
   let bannerImage: HTMLImageElement;
-  let currentContentItem: BaseContentItem & { resizeBanner: jest.Mock };
+  let currentContentItem: BaseContentItem;
 
   window.fetch = jest.fn();
   beforeEach(() => {
@@ -28,7 +29,7 @@ describe("HighlightBigImages", () => {
 
     currentContentItem = {
       resizeBanner: jest.fn().mockResolvedValue(null),
-    } as BaseContentItem & { resizeBanner: jest.Mock };
+    } as any as BaseContentItem;
   });
 
   afterEach(() => {
