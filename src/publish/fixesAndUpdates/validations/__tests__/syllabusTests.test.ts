@@ -16,6 +16,7 @@ import {
   gradingDeadlineLanguageTest,
   aiPolicyMediaTest,
   supportPhoneNumberFix,
+  gradingPolicyTest,
 } from "../syllabusTests";
 import { ISyllabusHaver, ICourseDataHaver } from "@ueu/ueu-canvas/course/courseTypes";
 import assert from "assert";
@@ -45,6 +46,7 @@ describe("Syllabus validation", () => {
   test("Grading Deadline Language", syllabusTestTest(gradingDeadlineLanguageTest));
   test("AI Policy Media", syllabusTestTest(aiPolicyMediaTest));
   test("Support Phone Number Fix", syllabusTestTest(supportPhoneNumberFix));
+  test("Grading Policy Test", syllabusTestTest(gradingPolicyTest));
 });
 
 export function syllabusTestTest(
