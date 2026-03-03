@@ -5,10 +5,11 @@ import {createAsyncThunk} from "@reduxjs/toolkit";
 import {
     deepObjectMerge,
     GetCoursesFromAccountOptions,
-    ICanvasCallConfig
-} from "ueu_canvas";
+    ICanvasCallConfig,
+    ICourseData
+} from "@ueu/ueu-canvas";
 import {RootReportingState} from "@/reporting/data/reportingStore";
-import {getPagedDataGenerator} from "ueu_canvas";
+import {getPagedDataGenerator} from "@ueu/ueu-canvas";
 
 
 export type FetchCoursesParams = {
@@ -49,7 +50,7 @@ export const fetchCoursesThunk = createAsyncThunk(
                 const state = getState() as RootReportingState;
                 console.log(state.courses.courseStatus[course.id])
                 if (state.courses.courseStatus[course.id] === 'loading') continue;
-                dispatch(addCourse(course));
+                dispatch(addCourse(course as ICourseData));
                 dispatch(setCourseStatus({courseId: course.id, status: 'fulfilled'}))
             }
         }

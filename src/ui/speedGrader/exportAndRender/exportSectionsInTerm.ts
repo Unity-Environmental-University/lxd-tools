@@ -1,12 +1,12 @@
-import {ITermData, Term} from "@/canvas/term/Term";
+import {ITermData, Term} from "@ueu/ueu-canvas/term/Term";
 import assert from "assert";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
-import {sectionDataGenerator} from "@/canvas/course/blueprint";
-import {ICourseData} from "@/canvas/courseTypes";
-import getCourseIdFromUrl from "@/canvas/course/getCourseIdFromUrl";
-import {getCourseData} from "@/canvas/course";
-import {renderAsyncGen} from "@canvas/canvasUtils";
+import {sectionDataGenerator} from "@ueu/ueu-canvas/course/blueprint";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import getCourseIdFromUrl from "@ueu/ueu-canvas/course/getCourseIdFromUrl";
+import {getCourseData} from "@ueu/ueu-canvas/course";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 
 
 export async function exportSectionsInTerm(course: ICourseData & { term: ITermData } | null = null, term: Term | number | null = null) {

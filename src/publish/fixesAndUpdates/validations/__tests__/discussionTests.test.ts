@@ -51,7 +51,7 @@ describe('discussionTests', () => {
 
     it('should return failure when Introductions discussion is not found', async () => {
         (discussionKindMock.dataGenerator as jest.Mock).mockReturnValueOnce(mockAsyncGen([])); // TODO we repeat this code a lot...
-        (discussionKindMock.dataIsThisKind as jest.Mock).mockReturnValue(false);
+        (discussionKindMock.dataIsThisKind as unknown as jest.Mock).mockReturnValue(false);
 
         const result = await discussionTests.run({id: 1});
 
@@ -67,7 +67,7 @@ describe('discussionTests', () => {
         };
 
         (discussionKindMock.dataGenerator as jest.Mock).mockReturnValueOnce(mockAsyncGen([_mockDiscussionData]));
-        (discussionKindMock.dataIsThisKind as jest.Mock).mockReturnValue(true);
+        (discussionKindMock.dataIsThisKind as unknown as jest.Mock).mockReturnValue(true);
 
         const result = await discussionTests.run({id: 1});
 
@@ -85,7 +85,7 @@ describe('discussionTests', () => {
         };
 
         (discussionKindMock.dataGenerator as jest.Mock).mockReturnValueOnce(mockAsyncGen([_mockDiscussionData]));
-        (discussionKindMock.dataIsThisKind as jest.Mock).mockReturnValue(true);
+        (discussionKindMock.dataIsThisKind as unknown as jest.Mock).mockReturnValue(true);
 
         const result = await discussionTests.run({id: 1});
 
@@ -102,7 +102,7 @@ describe('discussionTests', () => {
         };
 
         (discussionKindMock.dataGenerator as jest.Mock).mockReturnValueOnce(mockAsyncGen([_mockDiscussionData]));
-        (discussionKindMock.dataIsThisKind as jest.Mock).mockReturnValue(true);
+        (discussionKindMock.dataIsThisKind as unknown as jest.Mock).mockReturnValue(true);
 
         const result = await discussionTests.run({id: 1});
 

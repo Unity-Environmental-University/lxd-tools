@@ -2,8 +2,8 @@ import {render, waitFor} from "@testing-library/react";
 import "@testing-library/jest-dom"
 import React from "react";
 import {CourseUpdateInterface, CourseUpdateInterfaceProps} from "../CourseUpdateInterface";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
-import {Course} from "@/canvas/course/Course";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import { Course } from "@ueu/ueu-canvas/course/Course"
 import {mockFailedValidation, mockValidation} from "../validations/__mocks__/mockValidation";
 
 import {screen} from "@testing-library/react";

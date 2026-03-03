@@ -1,9 +1,9 @@
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import textSubmissionEnabled from "@publish/fixesAndUpdates/validations/assignments/textSubmissionEnabled";
-import {Course} from "@canvas/course/Course";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 
 

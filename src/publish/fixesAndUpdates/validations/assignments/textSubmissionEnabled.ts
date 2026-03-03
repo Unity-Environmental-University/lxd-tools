@@ -1,10 +1,10 @@
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {Course} from "@canvas/course/Course";
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import assignmentKind from "@canvas/content/assignments/AssignmentKind";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import assignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import {CourseFixValidation, RunTestFunction} from "@publish/fixesAndUpdates/validations/types";
 import {validateTestFuncGen} from "@publish/fixesAndUpdates/validations/validateTestFuncGen";
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 // Updated skip function to include checks for problematic combinations
 const shouldSkipAssignment = validateTestFuncGen<IAssignmentData>(

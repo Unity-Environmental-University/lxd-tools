@@ -6,22 +6,22 @@ import {
     IPagesHaver,
     IQuizzesHaver,
     ISyllabusHaver
-} from "@/canvas/course/courseTypes";
+} from "@ueu/ueu-canvas/course/courseTypes";
 import assert from "assert";
 import {
     mockAssignmentData,
     mockDiscussionData,
     mockPageData,
     mockQuizData
-} from "@/canvas/content/__mocks__/mockContentData";
-import {ILatePolicyUpdate} from "@/canvas/canvasDataDefs";
-import mockLatePolicy from "@/canvas/course/__mocks__/mockLatePolicy";
+} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {ILatePolicyUpdate} from "@ueu/ueu-canvas/canvasDataDefs";
+import mockLatePolicy from "@ueu/ueu-canvas/course/__mocks__/mockLatePolicy";
 
 import {BaseContentItem} from "@ueu/ueu-canvas";
-import {Quiz} from "@/canvas/content/quizzes/Quiz";
-import {Page} from "@/canvas/content/pages/Page";
-import {Discussion} from "@/canvas/content/discussions/Discussion";
-import {Assignment} from "@/canvas/content/assignments/Assignment";
+import {Quiz} from "@ueu/ueu-canvas/content/quizzes/Quiz";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
+import {Discussion} from "@ueu/ueu-canvas/content/discussions/Discussion";
+import {Assignment} from "@ueu/ueu-canvas/content/assignments/Assignment";
 import {
     ContentTextReplaceFix,
     CourseValidation

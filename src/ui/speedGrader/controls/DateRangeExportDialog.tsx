@@ -3,10 +3,10 @@ import {Button, Card, Col, Modal, Row} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import {saveDataGenFunc} from "@/ui/speedGrader/saveDataGenFunc";
 import {getRowsForSections} from "@/ui/speedGrader/getData/getRowsForSections";
-import {ICourseData} from "@/canvas/courseTypes";
-import {getCourseDataGenerator} from "@/canvas/course";
-import {baseCourseCode} from "@/canvas/course/code";
-import {renderAsyncGen} from "@canvas/canvasUtils";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {getCourseDataGenerator} from "@ueu/ueu-canvas/course";
+import {baseCourseCode} from "@ueu/ueu-canvas/course/code";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 
 
 export interface IDateRangeExportProps {

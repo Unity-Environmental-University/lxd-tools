@@ -1,12 +1,12 @@
 
 import { testResult } from "@publish/fixesAndUpdates/validations/utils";
-import QuizKind from "@canvas/content/quizzes/QuizKind";
+import QuizKind from "@ueu/ueu-canvas/content/quizzes/QuizKind";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {
     courseHasUnlimitedAttemptQuizzes
 } from "@publish/fixesAndUpdates/validations/courseContent/courseHasUnlimitedAttemptQuizzes";
 
-jest.mock("@canvas/content/quizzes/QuizKind", () => ({
+jest.mock("@ueu/ueu-canvas/content/quizzes/QuizKind", () => ({
     dataGenerator: jest.fn()
 }));
 

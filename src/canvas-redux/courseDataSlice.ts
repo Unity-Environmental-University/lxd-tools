@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
-import { ICourseData } from "@canvas/courseTypes";
-import { getCourseData } from "@canvas/course";
-import { GetCourseOptions } from "@canvas/course/courseTypes";
+import { ICourseData } from "@ueu/ueu-canvas/courseTypes";
+import { getCourseData } from "@ueu/ueu-canvas/course";
+import { GetCourseOptions } from "@ueu/ueu-canvas/course/courseTypes";
 
 // Define a type for the fetch parameters
 type FetchCourseDataParams = {

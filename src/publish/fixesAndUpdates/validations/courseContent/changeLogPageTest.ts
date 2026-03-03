@@ -1,9 +1,8 @@
-import PageKind from "@canvas/content/pages/PageKind";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import {CourseValidation, RunTestFunction, FixTestFunction} from "@publish/fixesAndUpdates/validations/types";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {IPageData} from "@canvas/content/pages/types";
-import {postContentFunc} from "@/canvas";
-import {Course} from "@canvas/course/Course";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
 const run: RunTestFunction<Course, IPageData> = async (course) => {
 
@@ -87,10 +86,7 @@ const fix: FixTestFunction<Course, IPageData> = async (course: Course) => {
                 </table>
                 <p>&nbsp;</p>`;
 
-            const getPagePostUrl = (courseId: number) => `/api/v1/courses/${courseId}/pages`;
-            const postChangePage = postContentFunc(getPagePostUrl);
-
-            await postChangePage(course.id, {
+            await PageKind.post(course.id, {
                 wiki_page: {title, body}
             });
 

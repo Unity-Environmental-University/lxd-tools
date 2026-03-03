@@ -1,14 +1,14 @@
-import {SubmissionType} from "@/canvas";
+import {SubmissionType} from "@ueu/ueu-canvas";
 
-jest.mock("@canvas/canvasUtils");
-jest.mock("@canvas/course/modules");
-jest.mock("@canvas/content/assignments");
+jest.mock("@ueu/ueu-canvas/canvasUtils");
+jest.mock("@ueu/ueu-canvas/course/modules");
+jest.mock("@ueu/ueu-canvas/content/assignments");
 jest.mock("@publish/fixesAndUpdates/validations/utils");
 
 import { courseHasUnusedAssignments } from "../courseHasUnusedAssignments"; // Adjust the import path
-import { renderAsyncGen } from "@canvas/canvasUtils";
-import { moduleGenerator } from "@canvas/course/modules";
-import { assignmentDataGen } from "@canvas/content/assignments";
+import { renderAsyncGen } from "@ueu/ueu-canvas/canvasUtils";
+import { moduleGenerator } from "@ueu/ueu-canvas/course/modules";
+import { assignmentDataGen } from "@ueu/ueu-canvas/content/assignments";
 import { testResult } from "@publish/fixesAndUpdates/validations/utils";
 import {mockAsyncGen} from "@/__mocks__/utils";
 

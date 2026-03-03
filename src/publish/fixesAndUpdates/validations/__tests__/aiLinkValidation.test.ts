@@ -3,7 +3,7 @@ import aiLinkValidation from "../aiLinkValidation";
 import {badContentTextValidationFixTest, badContentTextValidationTest} from "../__mocks__/validations";
 
 
-jest.mock('@/canvas/fetch/fetchJson')
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson')
 describe("Bad Link Tests and Fixes", () => {
     describe('works for AI link', () => {
         const badAiLinkPageHtml = `<div><a href="https://unity.edu/commhub/using-generative-ai/citing-generative-ai/">AI LINK</a></div>`;

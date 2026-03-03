@@ -1,23 +1,23 @@
 import React, {useEffect, useReducer, useState} from "react";
-import {renderProfileIntoCurioFrontPage} from "@canvas/profile";
+import {renderProfileIntoCurioFrontPage} from "@ueu/ueu-canvas/profile";
 import {useEffectAsync} from "@/ui/utils";
 import {Alert, Button} from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal/index";
 import {SectionDetails} from "./sectionDetails/SectionDetails";
-import {IUserData} from "@/canvas/canvasDataDefs";
+import {IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {Temporal} from "temporal-polyfill";
 import {EmailLink} from "./EmailLink";
 import {SectionRows} from "./SectionRows";
 import {MakeBp} from "./MakeBp";
-import {Course} from "@/canvas/course/Course";
-import {Term} from "@/canvas/term/Term";
-import {getStartDateAssignments} from "@/canvas/course/changeStartDate";
+import {Course} from '@ueu/ueu-canvas/course/Course';
+import {Term} from "@ueu/ueu-canvas/term/Term";
+import {getStartDateAssignments} from "@ueu/ueu-canvas/course/changeStartDate";
 import {IListAction, lutDispatcher, LutSetAction} from "@/ui/reducerDispatchers";
-import {sectionDataGenerator} from "@/canvas/course/blueprint";
-import {batchGen} from "@/canvas/canvasUtils";
-import {getCourseData} from "@canvas/course";
+import {sectionDataGenerator} from "@ueu/ueu-canvas/course/blueprint";
+import {batchGen} from "@ueu/ueu-canvas/canvasUtils";
+import {getCourseData} from "@ueu/ueu-canvas/course";
 import {sleep} from "@/utils/toolbox";
-import {IProfile, IProfileWithUser} from "@canvas/type";
+import {IProfile, IProfileWithUser} from "@ueu/ueu-canvas/type";
 import isEqual from "lodash/isEqual";
 
 
@@ -113,7 +113,7 @@ export function PublishInterface({course, user}: IPublishInterfaceProps) {
         await Course.publishAll(toPublish, accountId)
         //Waits half a second to allow changes to propagate on the server
         window.setTimeout(async () => {
-            let newAssocCourses = await course?.getAssociatedCourses();
+            let newAssocCourses = await course?.getAssociatedCourses() as Course[] | undefined;
             if (newAssocCourses) {
                 newAssocCourses = [...newAssocCourses];
             } else {

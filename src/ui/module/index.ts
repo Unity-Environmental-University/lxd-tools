@@ -1,10 +1,10 @@
 import assert from "assert";
 
 
-import {lockBlueprint} from "../../canvas/course/blueprint";
-import {Course} from "../../canvas/course/Course";
-import {assignmentDataGen, updateAssignmentDueDates} from "@/canvas/content/assignments";
-import {renderAsyncGen} from "@canvas/canvasUtils";
+import {lockBlueprint} from '@ueu/ueu-canvas/course/blueprint';
+import {Course} from '@ueu/ueu-canvas/course/Course';
+import {assignmentDataGen, updateAssignmentDueDates} from "@ueu/ueu-canvas/content/assignments";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 
 
 

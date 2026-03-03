@@ -1,4 +1,4 @@
-import {createNewCourse, getCourseById, getCourseName} from "@/canvas/course";
+import {createNewCourse, getCourseById, getCourseName} from "@ueu/ueu-canvas/course";
 import {Alert, Button, Col, FormControl, FormText, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
@@ -6,25 +6,25 @@ import {
     getBlueprintsFromCode,
     lockBlueprint,
     sectionDataGenerator, setAsBlueprint
-} from "@/canvas/course/blueprint";
+} from "@ueu/ueu-canvas/course/blueprint";
 import {bpify} from "@/admin";
-import {migrationsForCourseGen, IMigrationData, startMigration} from "@/canvas/course/migration";
-import {Course} from "@/canvas/course/Course";
+import {migrationsForCourseGen, IMigrationData, startMigration} from "@ueu/ueu-canvas/course/migration";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import {listDispatcher} from "@/ui/reducerDispatchers";
 import {
     loadCachedCourseMigrations,
     SavedMigration,
     cacheCourseMigrations
-} from "@/canvas/course/migration/migrationCache";
+} from "@ueu/ueu-canvas/course/migration/migrationCache";
 import {DevToBpMigrationBar} from "./DevToBpMigrationBar";
 import assert from "assert";
-import {SectionData} from "@/canvas/courseTypes";
-import dateFromTermName from "@/canvas/term/dateFromTermName";
+import {SectionData} from "@ueu/ueu-canvas/courseTypes";
+import dateFromTermName from "@ueu/ueu-canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
-import {retireBlueprint} from "@canvas/course/retireBlueprint";
+import {retireBlueprint} from "@ueu/ueu-canvas/course/retireBlueprint";
 import { academicIntegritySetup } from "./academicIntegritySetup";
-import {fetchJson} from "@canvas/fetch/fetchJson";
-import {formDataify} from "@canvas/canvasUtils";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {formDataify} from "@ueu/ueu-canvas/canvasUtils";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'

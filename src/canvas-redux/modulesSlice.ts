@@ -1,7 +1,7 @@
 // modulesSlice.ts
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
-import {moduleGenerator} from "@canvas/course/modules";
-import {IModuleData} from "@canvas/canvasDataDefs";
+import {moduleGenerator} from "@ueu/ueu-canvas/course/modules";
+import {IModuleData} from "@ueu/ueu-canvas/canvasDataDefs";
 
 export const fetchModules = createAsyncThunk(
     'modules/fetchModules',

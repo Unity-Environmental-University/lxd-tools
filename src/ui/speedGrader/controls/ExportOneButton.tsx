@@ -1,9 +1,9 @@
 import {UiHandlerProps} from "@/ui/speedGrader/controls/UiHandlerProps";
 import {exportData} from "@/ui/speedGrader/exportAndRender/exportData";
 import React from "react";
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
 
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 export type ExportOneButtonProps = UiHandlerProps & { course: ICourseData, assignment?: IAssignmentData | null };
 

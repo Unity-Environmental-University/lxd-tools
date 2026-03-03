@@ -1,8 +1,8 @@
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
-import {renderAsyncGen} from "@canvas/canvasUtils";
-import {moduleGenerator} from "@canvas/course/modules";
-import {assignmentDataGen} from "@canvas/content/assignments";
-import {IAssignmentData, SubmissionType} from "@canvas/content/types";
+import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
+import {moduleGenerator} from "@ueu/ueu-canvas/course/modules";
+import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
+import {IAssignmentData, SubmissionType} from "@ueu/ueu-canvas/content/types";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 
 export type UnusedAssignmentsCourse = {

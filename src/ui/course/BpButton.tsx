@@ -1,12 +1,12 @@
 import React, {FormEvent, useReducer, useState} from "react";
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
 import {useEffectAsync} from "@/ui/utils";
-import {genBlueprintDataForCode} from "@/canvas/course/blueprint";
+import {genBlueprintDataForCode} from "@ueu/ueu-canvas/course/blueprint";
 import assert from "assert";
-import openThisContentInTarget from "@/canvas/content/openThisContentInTarget";
+import openThisContentInTarget from "@ueu/ueu-canvas/content/openThisContentInTarget";
 import {Button, Col, Row} from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal";
-import {Course} from "@/canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import {listDispatcher} from "@/ui/reducerDispatchers";
 
 import {bMinusASortFn} from "@/utils/toolbox";

@@ -2,12 +2,12 @@ import React, {useEffect, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
-import {fixLmAnnotations} from "../../canvas/fixes/annotations";
+import {fixLmAnnotations} from '@ueu/ueu-canvas/fixes/annotations';
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {Course} from "../../canvas/course/Course";
-import {Page} from "@/canvas/content/pages/Page";
+import {Course} from '@ueu/ueu-canvas/course/Course';
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export type CourseUpdateInterfaceProps = {

@@ -1,8 +1,8 @@
-import {Course} from "@canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 
 function hasEmptyMetadata(assignment: IAssignmentData) {

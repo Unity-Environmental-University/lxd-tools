@@ -1,13 +1,14 @@
 import { changelogPageTest } from "../changeLogPageTest";
-import { Course } from "@canvas/course/Course";
-import { IPageData } from "@canvas/content/pages/types";
+import { Course } from "@ueu/ueu-canvas/course/Course";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import { jest } from "@jest/globals";
-import PageKind from "@canvas/content/pages/PageKind";
-import { postContentFunc } from "@/canvas";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 // Mock dependencies
-jest.mock("@canvas/content/pages/PageKind");
-jest.mock("@/canvas");
+jest.mock("@ueu/ueu-canvas/content/pages/PageKind");
+const mockPagePost = PageKind.post as unknown as jest.MockedFunction<
+    (courseId: number, content: Record<string, any>) => Promise<IPageData>
+>;
 
 describe("Changelog Page Validation", () => {
     let mockCourse: Course;
@@ -135,10 +136,7 @@ describe("Changelog Page Validation", () => {
                 front_page: false,
             } as IPageData;
 
-            // Mock postContentFunc
-            const mockPostChangePage = jest.fn<(page: IPageData) => Promise<IPageData>>();
-            mockPostChangePage.mockResolvedValue(createdPage);
-            (postContentFunc as jest.Mock).mockReturnValue(mockPostChangePage);
+            mockPagePost.mockResolvedValue(createdPage);
 
             // Mock the page generator for verification (should find the page after creation)
             const mockGeneratorAfterCreate = async function* () {
@@ -150,7 +148,7 @@ describe("Changelog Page Validation", () => {
             if(changelogPageTest.fix) {
                 const result = await changelogPageTest.fix(mockCourse);
 
-                expect(mockPostChangePage).toHaveBeenCalledWith(
+                expect(mockPagePost).toHaveBeenCalledWith(
                     mockCourse2.id,
                     expect.objectContaining({
                         wiki_page: expect.objectContaining({
@@ -180,9 +178,7 @@ describe("Changelog Page Validation", () => {
                 front_page: false,
             } as IPageData;
 
-            const mockPostChangePage = jest.fn<(page: IPageData) => Promise<IPageData>>();
-            mockPostChangePage.mockResolvedValue(createdPage);
-            (postContentFunc as jest.Mock).mockReturnValue(mockPostChangePage);
+            mockPagePost.mockResolvedValue(createdPage);
 
             const mockGeneratorAfterCreate = async function* () {
                 yield createdPage;
@@ -193,7 +189,7 @@ describe("Changelog Page Validation", () => {
             if(changelogPageTest.fix) {
             const result = await changelogPageTest.fix(mockCourse3);
 
-            expect(mockPostChangePage).toHaveBeenCalledWith(
+            expect(mockPagePost).toHaveBeenCalledWith(
                 mockCourse3.id,
                 expect.objectContaining({
                     wiki_page: expect.objectContaining({
@@ -207,9 +203,7 @@ describe("Changelog Page Validation", () => {
 
         test("should fail if page is not found after creation", async () => {
 
-            const mockPostChangePage = jest.fn<(page: IPageData) => Promise<IPageData>>();
-            mockPostChangePage.mockResolvedValue({} as IPageData);
-            (postContentFunc as jest.Mock).mockReturnValue(mockPostChangePage);
+            mockPagePost.mockResolvedValue({} as IPageData);
 
             // Mock the page generator for verification (page NOT found after creation)
             const mockGeneratorAfterCreate = async function* () {
@@ -231,9 +225,7 @@ describe("Changelog Page Validation", () => {
         test("should handle errors during page creation", async () => {
 
             const mockError = new Error("API Error");
-            const mockPostChangePage = jest.fn<(page: IPageData) => Promise<IPageData>>();
-            mockPostChangePage.mockRejectedValue(mockError);
-            (postContentFunc as jest.Mock).mockReturnValue(mockPostChangePage);
+            mockPagePost.mockRejectedValue(mockError);
 
             if(changelogPageTest.fix) {
                 const result = await changelogPageTest.fix(mockCourse);
@@ -257,9 +249,7 @@ describe("Changelog Page Validation", () => {
                 front_page: false,
             } as IPageData;
 
-            const mockPostChangePage = jest.fn<(page: IPageData, content: Record<string, any>) => Promise<IPageData>>();
-            mockPostChangePage.mockResolvedValue(createdPage);
-            (postContentFunc as jest.Mock).mockReturnValue(mockPostChangePage);
+            mockPagePost.mockResolvedValue(createdPage);
 
             const mockGeneratorAfterCreate = async function* () {
                 yield createdPage;
@@ -270,7 +260,7 @@ describe("Changelog Page Validation", () => {
             if(changelogPageTest.fix) {
                 await changelogPageTest.fix(mockCourse);
 
-                const callArgs = mockPostChangePage.mock.calls[0][1];
+                const callArgs = mockPagePost.mock.calls[0][1];
                 const bodyContent = callArgs.wiki_page.body;
 
                 // Verify table structure
@@ -318,9 +308,7 @@ describe("Changelog Page Validation", () => {
                 front_page: false,
             } as IPageData;
 
-            const mockPostChangePage = jest.fn<(page: IPageData) => Promise<IPageData>>();
-            mockPostChangePage.mockResolvedValue(createdPage);
-            (postContentFunc as jest.Mock).mockReturnValue(mockPostChangePage);
+            mockPagePost.mockResolvedValue(createdPage);
 
             const mockGeneratorAfterCreate = async function* () {
                 yield createdPage;

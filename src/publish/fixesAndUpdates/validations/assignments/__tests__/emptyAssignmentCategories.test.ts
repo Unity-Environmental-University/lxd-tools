@@ -1,18 +1,18 @@
 
-import genAssignmentGroups from "@canvas/content/assignments/genAssignmentGroups";
-import deleteAssignmentGroup from "@canvas/content/assignments/deleteAssignmentGroup";
-import {Course} from "@canvas/course/Course";
+import genAssignmentGroups from "@ueu/ueu-canvas/content/assignments/genAssignmentGroups";
+import deleteAssignmentGroup from "@ueu/ueu-canvas/content/assignments/deleteAssignmentGroup";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import emptyAssignmentCategories from "@publish/fixesAndUpdates/validations/assignments/emptyAssignmentCategories";
 import {mockAsyncGen} from "@/__mocks__/utils";
-import {AssignmentGroup, IAssignmentData} from "@canvas/content/types";
+import {AssignmentGroup, IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 // Mock data
 const mockCourse = { id: 1 } as Course;
 const mockEmptyGroup = { id: 1, name: "Empty Group", assignments: [] as IAssignmentData[] } as AssignmentGroup;
 const mockNonEmptyGroup = { id: 2, name: "Non-Empty Group", assignments: [{}] } as AssignmentGroup;
 
-jest.mock("@canvas/content/assignments/genAssignmentGroups", () => jest.fn());
-jest.mock("@canvas/content/assignments/deleteAssignmentGroup", () => jest.fn());
+jest.mock("@ueu/ueu-canvas/content/assignments/genAssignmentGroups", () => jest.fn());
+jest.mock("@ueu/ueu-canvas/content/assignments/deleteAssignmentGroup", () => jest.fn());
 
 describe("emptyAssignmentCategories", () => {
 

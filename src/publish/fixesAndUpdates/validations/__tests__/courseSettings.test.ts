@@ -5,28 +5,28 @@ import {
     latePolicyTest,
     noEvaluationTest
 } from "../courseSettings";
-import {deFormDataify, ICanvasCallConfig, range} from "@canvas/canvasUtils";
-import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
-import {mockGradModules, mockUgModules} from "@/canvas/course/__mocks__/mockModuleData";
-import {IModuleData} from "@canvas/canvasDataDefs";
-import {getModulesByWeekNumber} from "@canvas/course/modules";
+import {deFormDataify, ICanvasCallConfig, range} from "@ueu/ueu-canvas/canvasUtils";
+import {mockPageData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {mockGradModules, mockUgModules} from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
+import {IModuleData} from "@ueu/ueu-canvas/canvasDataDefs";
+import {getModulesByWeekNumber} from "@ueu/ueu-canvas/course/modules";
 import {
     IGradingStandardData,
     IPagesHaver
-} from "@canvas/course/courseTypes";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
-import {Course} from "@canvas/course/Course";
-import mockTabData from "@canvas/__mocks__/mockTabData";
+} from "@ueu/ueu-canvas/course/courseTypes";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import mockTabData from "@ueu/ueu-canvas/__mocks__/mockTabData";
 import {getDummyLatePolicyHaver} from "../__mocks__/validations";
 import assert from "assert";
 
-import {ICourseData, ITabData} from "@/canvas/courseTypes";
-import {fetchJson} from "@/canvas/fetch/fetchJson";
-import {Page} from "@/canvas/content/pages/Page";
+import {ICourseData, ITabData} from "@ueu/ueu-canvas/courseTypes";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 
 import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
 
-jest.mock('@/canvas/fetch/fetchJson')
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson')
 
 test('Late policy test works', async () => {
     const gallant = getDummyLatePolicyHaver({missing_submission_deduction_enabled: true});

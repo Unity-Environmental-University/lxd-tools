@@ -1,8 +1,8 @@
 
 import {MessageResult, testResult} from "@publish/fixesAndUpdates/validations/utils";
 import {UnusedAssignmentsCourse} from "@publish/fixesAndUpdates/validations/assignments/courseHasUnusedAssignments";
-import QuizKind from "@canvas/content/quizzes/QuizKind";
-import {IQuizData} from "@canvas/content/quizzes/types";
+import QuizKind from "@ueu/ueu-canvas/content/quizzes/QuizKind";
+import {IQuizData} from "@ueu/ueu-canvas/content/quizzes/types";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 

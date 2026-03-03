@@ -1,7 +1,7 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
 
 
-import {deepObjectMerge, getCourseData, GetCourseOptions } from "ueu_canvas";
+import {deepObjectMerge, getCourseData, GetCourseOptions } from "@ueu/ueu-canvas";
 import {setCourseStatus} from "@/reporting/data/coursesSlice";
 import {RootReportingState} from "@/reporting/data/reportingStore";
 
@@ -21,7 +21,7 @@ export const fetchCourseThunk = createAsyncThunk(
         if(state.courses.status === 'loading')
 
         dispatch(setCourseStatus({courseId, status: "loading"}));
-        const data = await getCourseData(courseId, deepObjectMerge(options, defaults))
+        const data = await getCourseData(courseId, { queryParams: deepObjectMerge(options, defaults) })
         dispatch(setCourseStatus({courseId, status: "fulfilled"}));
 
         return data;
