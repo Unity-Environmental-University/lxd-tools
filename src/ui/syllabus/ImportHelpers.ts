@@ -46,8 +46,16 @@ export function clearMatsSection(syllabusBody: string): string {
 
     targetChildren.forEach(child => {
         const tag = child.tagName.toLowerCase();
-        if (tag !== "p" && tag !== "h3") {  //h3 contains Wk1 Lmats title so we want to keep it, p we use to recognize where to insert
-            child.remove();
+        if (tag === "h3") {
+            if (!child.textContent?.includes(textHeader)) { // remove h3s that aren't the section header
+                child.remove();
+            }
+        } 
+        else if (tag === "p") {
+            child.innerHTML = ""; // clear content, keep the element - p used as reference point
+        } 
+        else {
+            child.remove(); // remove all other elements
         }
     });
 

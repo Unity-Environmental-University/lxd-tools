@@ -89,14 +89,15 @@ describe("clearMatsSection", () => {
     expect(targetDiv.querySelector("h3")).not.toBeNull();
   });
 
-  it("keeps <p> and <h3> elements", () => {
-    const syllabus = makeSyllabusWithMats(`<p>Keep</p><h3>Also keep</h3>`);
+  it("clears & keeps <p> and Wk1 Mats <h3> elements", () => {
+    const syllabus = makeSyllabusWithMats(`<p>Keep</p>`);
     const result = clearMatsSection(syllabus);
     const doc = new DOMParser().parseFromString(result, "text/html");
     const targetDiv = Array.from(doc.querySelectorAll(".content"))
       .find(d => d.textContent?.includes("Week 1 Learning Materials"))!;
     expect(targetDiv.querySelectorAll("p")).toHaveLength(1);
-    expect(targetDiv.querySelectorAll("h3")).toHaveLength(2); // the original h3 + the inner one
+    expect(targetDiv.querySelectorAll("p")[0].textContent).toEqual("");
+    expect(targetDiv.querySelectorAll("h3")).toHaveLength(1); // the original h3 + the inner one
   });
 
   it("adds a <p> if none exist after clearing", () => {
