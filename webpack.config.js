@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports,@/no-undef */
+/* eslint-disable @typescript-eslint/no-require-imports */
 //via https://medium.com/@tharshita13/creating-a-chrome-extension-with-react-a-step-by-step-guide-47fe9bab24a1
 
 const path = require("path");
@@ -132,9 +132,13 @@ const transformUpdates = (content) => {
   updates.addons["lxd-extension@unity.edu"].updates[0].version = packageJson.version;
   updates.addons[
     "lxd-extension@unity.edu"
-  ].updates[0].update_link = `ai2.unity.edu/lxd-tools/lxd-extension-${packageJson.version}.xpi`;
+  ].updates[0].update_link = `https://ai2.unity.edu/lxd-tools/lxd-extension-${packageJson.version}.xpi`;
 
   return JSON.stringify(updates, null, 2);
+};
+
+const transformUpdateXml = (content) => {
+  return content.toString().replace(/\$VERSION\$/g, packageJson.version);
 };
 
 const createPlugins = () => [
@@ -150,7 +154,6 @@ const createPlugins = () => [
     patterns: [
       { from: "./README.dist.md", to: "README.md" },
       {
-        // eslint-disable-next-line @/no-undef
         from: path.resolve(__dirname, "manifest.source.json"),
         to: "manifest.json",
         transform: transformManifest,
@@ -159,6 +162,11 @@ const createPlugins = () => [
         from: path.resolve(__dirname, "updates.source.json"),
         to: "updates.json",
         transform: transformUpdates,
+      },
+      {
+        from: path.resolve(__dirname, "update.source.xml"),
+        to: "update.xml",
+        transform: transformUpdateXml,
       },
       { from: "./img/*", to: "img/[name][ext]" },
     ],

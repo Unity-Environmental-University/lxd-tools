@@ -88,6 +88,7 @@
     "build:dev": "cross-env BUILD_OUTPUT_DIR=../lxd-extension-build webpack --config webpack.config.js",
     "watch": "webpack -w --config webpack.config.js",
     "watch:dev": "cross-env BUILD_OUTPUT_DIR=../lxd-extension-build webpack -w --config webpack.config.js",
+    "pack:crx": "google-chrome --pack-extension=../dist --pack-extension-key=chrome-key.pem && mv ../dist.crx \"../dist/lxd-extension-$(node -p 'require(\"./package.json\").version').crx\"",
     "publish": "node publish.mjs",
     "test": "jest",
     "lint": "eslint",

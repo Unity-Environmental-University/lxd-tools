@@ -1,9 +1,3 @@
-# TODO; Figure out what files are needed for Chrome to update automatically -- XPI and JSON file for Firefox, CRX and XML for Chrome
-# TODO; Gain clarity on hosting extension with Chrome/Firefox privately(don't want it on the extension marketplaces, just want it available to internal team)
-# TODO; CI/CD Workflow confirmed working.
-# TODO; Get extensions hosted on Chrome/Firefox
-# TODO; Make sure the auto-updates are working
-
 name: Deploy Extension Updates
 
 on:
@@ -46,12 +40,12 @@ jobs:
             --limit 5 \
             | jq --raw-output ".[] | select(.headSha==\"$PR_SHA\") | .databaseId" \
             | head -n1)
-          
+
           if [ -z "$RUN_ID" ]; then
             echo "Error: Could not find build run for SHA $PR_SHA"
             exit 1
           fi
-          
+
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download build artifact
@@ -62,51 +56,39 @@ jobs:
             --name lxd-tools \
             --dir dist
 
-      - name: Verify deployment files
-        working-directory: lxd-tools/dist
+      - name: Checkout lxd-tools-build & update beta branch
         run: |
-          # Verify both required files exist
-          if [ ! -f updates.json ]; then
-            echo "Error: updates.json not found"
-            exit 1
+          git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
+          cd lxd-tools-build
+          git fetch origin
+          if git ls-remote --exit-code --heads origin beta; then
+            git checkout beta
+            git reset --hard origin/beta
+          else
+            git checkout -b beta
+            git push -u origin beta
           fi
-          
-          XPI_FILE=$(ls lxd-extension-*.xpi 2>/dev/null | head -n1)
-          if [ -z "$XPI_FILE" ]; then
-            echo "Error: No .xpi file found"
-            exit 1
-          fi
-          
-          echo "Found files:"
-          ls -lh updates.json "$XPI_FILE"
-          
-          # Export for next step
-          echo "xpi_file=$XPI_FILE" >> "$GITHUB_OUTPUT"
-        id: verify
 
-      - name: Deploy to server
-        working-directory: lxd-tools/dist
+      - name: Deploy to lxd-tools-build
         run: |
-          # TODO: Configure deployment mechanism
-          # Files to deploy:
-          #   - updates.json
-          #   - ${{ steps.verify.outputs.xpi_file }}
-          
-          echo "Ready to deploy:"
-          echo "  - updates.json"
-          echo "  - ${{ steps.verify.outputs.xpi_file }}"
+          cd lxd-tools-build
+          rm -rf ./*
+          cp -r ../lxd-tools/dist/* .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}" || echo "No changes to commit"
+          git push origin beta
 
-      # Example rsync deployment (uncomment and configure):
-      # - name: Deploy via SSH
-      #   working-directory: lxd-tools/dist
-      #   run: |
-      #     mkdir -p ~/.ssh
-      #     echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-      #     chmod 600 ~/.ssh/deploy_key
-      #     
-      #     rsync -avz -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-      #       updates.json \
-      #       ${{ steps.verify.outputs.xpi_file }} \
-      #       ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
-
-    #TODO: Create a new release branch called 'feature/{version}'
+      - name: Tag beta with version
+        run: |
+          cd lxd-tools-build
+          VERSION=$(jq -r .version manifest.json)
+          TAG="beta-$VERSION"
+          echo "Tagging as $TAG"
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            git tag "$TAG"
+            git push origin "$TAG"
+          else
+            echo "Tag $TAG already exists, skipping"
+          fi
