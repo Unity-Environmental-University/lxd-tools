@@ -35,3 +35,4 @@ dist/
 **/.vs
 /src/.vscode
 .claude/
+*.pem
