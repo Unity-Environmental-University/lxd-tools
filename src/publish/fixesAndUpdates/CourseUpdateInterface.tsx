@@ -10,7 +10,7 @@ import {Course} from '@ueu/ueu-canvas/course/Course';
 import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 import {useSyllabusStore} from "@publish/fixesAndUpdates/validations/syllabusTests";
-import {ISyllabusHaver} from "@canvas/course/courseTypes";
+import { ISyllabusHaver } from "@ueu/ueu-canvas";
 
 export type CourseUpdateInterfaceProps = {
     course?: Course,
