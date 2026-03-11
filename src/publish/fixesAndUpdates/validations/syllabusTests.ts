@@ -18,6 +18,7 @@ import {
 } from "@publish/fixesAndUpdates/validations/types";
 import { paraify } from "@/testing/DomUtils";
 import { create } from "zustand";
+import { Course } from "@ueu/ueu-canvas";
 
 type SyllabusState = {
   originalHtml: string;
@@ -66,7 +67,6 @@ export const useSyllabusStore = create<SyllabusState>((set, get) => ({
 // TODO; Initialize syllabus with fetchSyllabus -- This is being done in CourseUpdateInterface when Run Validations button is pressed
 // TODO; Refactor validations to use store
 //  This would require us to replace the input for each from a course object to the syllabus store
-import { getCourseById, Course } from "@ueu/ueu-canvas";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
