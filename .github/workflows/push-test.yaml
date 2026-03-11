@@ -29,3 +29,23 @@ jobs:
       - name: Run tests
         working-directory: lxd-tools
         run: npm test
+
+      - name: Run ESLint
+        working-directory: lxd-tools
+        run: |
+          if npm run lint --if-present; then
+            echo "✅ ESLint passed"
+          else
+            echo "❌ ESLint failed"
+            exit 1
+          fi
+
+      - name: Check TypeScript types
+        working-directory: lxd-tools
+        run: |
+          if npm run typecheck --if-present; then
+            echo "✅ TypeScript compilation passed"
+          else
+            echo "❌ TypeScript compilation failed"
+            exit 1
+          fi
