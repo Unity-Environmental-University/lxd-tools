@@ -3,7 +3,6 @@ import {
   AddPosition,
   addSyllabusSectionFix,
   badSyllabusFixFunc,
-  badSyllabusStateFixFunc,
   badSyllabusRunFunc,
   errorMessageResult,
   inSyllabusSectionFunc,
@@ -17,12 +16,7 @@ import {
   TextReplaceValidation,
 } from "@publish/fixesAndUpdates/validations/types";
 import { paraify } from "@/testing/DomUtils";
-import { Course } from "@ueu/ueu-canvas";
-import { useSyllabusStore } from "@/publish/fixesAndUpdates/validations/syllabusStore";
-
-// TODO; Initialize syllabus with fetchSyllabus -- This is being done in CourseUpdateInterface when Run Validations button is pressed
-// TODO; Refactor validations to use store
-//  This would require us to replace the input for each from a course object to the syllabus store
+import { getCourseById, Course } from "@ueu/ueu-canvas";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
@@ -30,15 +24,14 @@ export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHav
   beforeAndAfters: [["off the final grade", "off the grade"]],
   description: 'Remove "final" from the grading policy paragraphs of syllabus',
   run: async (course, config) => {
-    // Now using state instead of course.getSyllabus()
-    const syllabus = await useSyllabusStore.getState().draftHtml;
+    const syllabus = await course.getSyllabus();
     const match = /off the final grade/gi.test(syllabus);
     return testResult(!match, {
       failureMessage: ["'off the final grade' found in syllabus"],
       links: [`/courses/${course.id}/assignments/syllabus`],
     });
   },
-  fix: badSyllabusStateFixFunc(/off the final grade/gi, "off the grade"),
+  fix: badSyllabusFixFunc(/off the final grade/gi, "off the grade"),
 };
 
 export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
@@ -48,7 +41,7 @@ export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
     "conduct all correspondence with students related to the class in Canvas, and you should " +
     'expect to receive a response to emails within 24 hours."',
   run: async (course, config) => {
-    const syllabus = await useSyllabusStore.getState().originalHtml;
+    const syllabus = await course.getSyllabus();
     const testString =
       "The instructor will conduct all correspondence with students related to the class in Canvas, and you should expect to receive a response to emails within 24 hours".toLowerCase();
     const el = document.createElement("div");

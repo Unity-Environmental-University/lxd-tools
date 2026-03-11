@@ -9,8 +9,6 @@ import {CourseValidator} from "./CourseValidator";
 import {Course} from '@ueu/ueu-canvas/course/Course';
 import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
-import {useSyllabusStore} from "@publish/fixesAndUpdates/validations/syllabusTests";
-import { ISyllabusHaver } from "@ueu/ueu-canvas";
 
 export type CourseUpdateInterfaceProps = {
     course?: Course,
@@ -82,7 +80,6 @@ export function CourseUpdateInterface({
     const runValidations = () => async () => {
         if(batchingValidations) return;
         setBatchingValidations(true);
-        await useSyllabusStore.getState().fetchSyllabus(course as ISyllabusHaver);
         await batchValidationsOverTime(allValidations, 10, 2);
         setBatchingValidations(false);
     }
