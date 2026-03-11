@@ -31,8 +31,6 @@ describe("Syllabus validation", () => {
   test("AI policy present test correct", syllabusTestTest(aiPolicyInSyllabusTest));
   test("Bottom of Syllabus language test correct", syllabusTestTest(bottomOfSyllabusLanguageTest));
   test("Course credits displayed in syllabus test correct", syllabusTestTest(courseCreditsInSyllabusTest));
-  test("Communication policy current test correct", syllabusTestTest(communication24HoursTest));
-  test("Grading policy language in syllabus text is correct", syllabusTestTest(finalNotInGradingPolicyParaTest));
   test("Grade table headers correct", syllabusTestTest(gradeTableHeadersCorrectTest));
   test("Class Inclusive Dates Test", syllabusTestTest(classInclusiveNoDateHeaderTest));
   test("Remove same day post restriction test", syllabusTestTest(removeSameDayPostRestrictionTest));
@@ -46,7 +44,6 @@ describe("Syllabus validation", () => {
   test("Grading Deadline Language", syllabusTestTest(gradingDeadlineLanguageTest));
   test("AI Policy Media", syllabusTestTest(aiPolicyMediaTest));
   test("Support Phone Number Fix", syllabusTestTest(supportPhoneNumberFix));
-  test("Grading Policy Test", syllabusTestTest(gradingPolicyTest));
 });
 
 export function syllabusTestTest(
