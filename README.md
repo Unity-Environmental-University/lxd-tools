@@ -39,7 +39,9 @@ Note: These dependencies are also defined in the package.json of lxd-tools.
 
 1. At this point, you should test if you're able to build the extension locally. In the `lxd-tools` directory, run `npm run build`. If that fails, you will need to address any errors.
 
-2. If your build successful, you are ready to start working on code. Work can be done either in the current release branch, your own testing branch, or a feature branch(if the work you're doing will go on to be it's own feature.) Make sure you checkout/create a branch that isn't main before you begin working.
+2. If your build is successful, you are ready to start working on code. Work can be done either in the current release branch(for small changes), your own testing branch, or a feature branch(if the work you're doing will go on to be it's own feature.) Make sure you checkout/create a branch that isn't main before you begin working.
+
+3. After you made changes, please document them in the Unreleased section of the [change log](./CHANGELOG.md)
 
 #### 3. Testing Your Changes
 
@@ -66,7 +68,6 @@ This guide explains how to publish the LXD Extension.
 ### 2. Update the Version Number
 
 - **Increment the Version in package.json:**
-
   - Open `package.json` and update the `version` field to the next release version (e.g., from `2.9.1.2` to `2.9.1.3`).
 
   - Versioning in incremented based on the following:
