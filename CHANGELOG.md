@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - ImportHelpers created to house helper functions for extracting & importing content into syllabus body
 - handleImportClicks created as main handler for import button click
 - Test coverage for the import suite
+- CHANGELOG.md added(very meta)
+- Information about CHANGELOG added to README
+- docs/KNOWLEDGE_BASE.md created to host specific knowledge about this code base
 
 ### Changed
 
@@ -21,5 +24,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - resizeBanner.ts change so fileName will end with .png
 - copy-webpack-plugin dependency updated
 - updateStartDate refactored to handle edge case where malformed syllabus error throws silently
+- push-test now includes linting and type checks
 
 ### Removed
