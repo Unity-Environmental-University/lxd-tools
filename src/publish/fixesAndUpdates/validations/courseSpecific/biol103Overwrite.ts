@@ -1,8 +1,8 @@
 import {
     testResult
 } from "@publish/fixesAndUpdates/validations/utils";
-import {Course} from "@/canvas/course/Course";
-import {IPageData} from "@/canvas/content/pages/types";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
 import {oldDateToPlainDate} from "@/date";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 

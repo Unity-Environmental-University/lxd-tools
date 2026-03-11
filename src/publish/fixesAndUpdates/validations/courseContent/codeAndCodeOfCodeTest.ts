@@ -1,5 +1,5 @@
-import {IContentHaver} from "@canvas/course/courseTypes";
-import {Page} from "@canvas/content/pages/Page";
+import {IContentHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import badContentReplaceFuncs from "@publish/fixesAndUpdates/validations/courseContent/badContentReplaceFuncs";
 import {ContentTextReplaceFix} from "@publish/fixesAndUpdates/validations/types";
 

@@ -1,11 +1,11 @@
-import {ModuleItemType} from "../canvas/canvasDataDefs";
+import {ModuleItemType} from '@ueu/ueu-canvas/canvasDataDefs';
 import {runtime} from "webextension-polyfill";
 
 
-import {Course} from "../canvas/course/Course";
-import {stringIsCourseCode} from "@/canvas/course/code";
+import {Course} from '@ueu/ueu-canvas/course/Course';
+import {stringIsCourseCode} from "@ueu/ueu-canvas/course/code";
 
-import {ICourseData} from "@/canvas/courseTypes";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
 
 runtime.onMessage.addListener(async(
     message: Record<string, any>,

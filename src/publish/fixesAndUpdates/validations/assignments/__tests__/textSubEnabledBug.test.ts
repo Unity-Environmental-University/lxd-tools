@@ -1,9 +1,9 @@
-import {Course} from "@canvas/course/Course";
-import {IAssignmentData, UpdateAssignmentDataOptions} from "@canvas/content/types";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {IAssignmentData, UpdateAssignmentDataOptions} from "@ueu/ueu-canvas/content/types";
 import {textSubEnabledBug} from "@publish/fixesAndUpdates/validations/assignments/textSubEnabledBug"; // Import the validation itself
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {mockCourseData} from "@canvas/course/__mocks__/mockCourseData";
-import {mockAssignmentData, mockDiscussionData} from "@canvas/content/__mocks__/mockContentData";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
+import {mockAssignmentData, mockDiscussionData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 import {mockAsyncGen} from "@/__mocks__/utils";
 import {testResult} from "@publish/fixesAndUpdates/validations/utils";
 

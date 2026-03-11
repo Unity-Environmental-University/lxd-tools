@@ -5,17 +5,17 @@ import {
     ILatePolicyHaver,
     IModulesHaver,
     IPagesHaver
-} from "@canvas/course/courseTypes";
-import {Course} from "@canvas/course/Course";
+} from "@ueu/ueu-canvas/course/courseTypes";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import assert from "assert";
-import {setGradingStandardForCourse} from "@canvas/course";
+import {setGradingStandardForCourse} from "@ueu/ueu-canvas/course";
 
-import {ICourseData, ICourseSettings} from "@/canvas/courseTypes";
+import {ICourseData, ICourseSettings} from "@ueu/ueu-canvas/courseTypes";
 import {CourseFixValidation, CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export const extensionsInstalledTest: CourseValidation<Course> = {
     name: "Extensions Installed",
-    description: 'Big Blue Button and Dropout Detective in nav bar',
+    description: 'Dropout Detective in nav bar',
     run: async (course, config) => {
         const missing: Set<string> = new Set(extensionsToTest);
         const tabs = await course.getTabs(config);
@@ -28,7 +28,7 @@ export const extensionsInstalledTest: CourseValidation<Course> = {
         }
     }
 }
-export const extensionsToTest = ['Dropout Detective', "BigBlueButton"];
+export const extensionsToTest = ['Dropout Detective'];
 
 
 /**

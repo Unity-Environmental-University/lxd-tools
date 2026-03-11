@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from "react";
-import {ITermData} from "@canvas/term/Term";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
 import {Card, CardTitle, Form, Row, Spinner} from "react-bootstrap";
 import Select from "react-select";
 import {useTerms} from "@/reporting/hooks/useTerms";

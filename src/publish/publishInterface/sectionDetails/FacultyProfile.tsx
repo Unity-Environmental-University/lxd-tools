@@ -1,7 +1,7 @@
 import {Button} from "react-bootstrap";
 import React from "react";
 
-import {IProfile} from "@canvas/type";
+import {IProfile} from "@ueu/ueu-canvas/type";
 
 interface IFacultyProfileProps {
     profile: IProfile,

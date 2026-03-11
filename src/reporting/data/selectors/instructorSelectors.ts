@@ -1,6 +1,6 @@
 import {createSelector} from "@reduxjs/toolkit";
 
-import {IUserData} from "@canvas/canvasDataDefs";
+import {IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {InstructorsState} from "@/reporting/data/instructorsSlice";
 
 

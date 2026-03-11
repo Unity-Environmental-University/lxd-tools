@@ -1,10 +1,10 @@
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
-import {ICourseData} from "@canvas/courseTypes";
-import {getCourseDataGenerator} from "@canvas/course";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {getCourseDataGenerator} from "@ueu/ueu-canvas/course";
 import {MessageResult, testResult, ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
-import {Course} from "@canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 
-import {batchify, renderAsyncGen} from "@canvas/canvasUtils";
+import {batchify, renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
 import {
     courseHasUnlimitedAttemptQuizzes
 } from "@publish/fixesAndUpdates/validations/courseContent/courseHasUnlimitedAttemptQuizzes";

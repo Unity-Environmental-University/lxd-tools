@@ -1,13 +1,13 @@
 import {mockAsyncGen} from "@/__mocks__/utils";
 
-import QuizKind from "@canvas/content/quizzes/QuizKind";
+import QuizKind from "@ueu/ueu-canvas/content/quizzes/QuizKind";
 
 import {
     courseHasDoubleQuizzes,
     DoubleQuizCourse
 } from "@publish/fixesAndUpdates/validations/assignments/courseHasDoubleQuizzes";
-import {IQuizData} from "@canvas/content/quizzes/types";
-import {mockQuizData} from "@canvas/content/__mocks__/mockContentData";
+import {IQuizData} from "@ueu/ueu-canvas/content/quizzes/types";
+import {mockQuizData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
 
 
 

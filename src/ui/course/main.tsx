@@ -1,5 +1,5 @@
-import {Course} from "@/canvas/course/Course";
-import {getContentClassFromUrl} from "@/canvas/content/determineContent";
+import {Course} from "@ueu/ueu-canvas/course/Course";
+import {getContentClassFromUrl} from "@ueu/ueu-canvas/content/determineContent";
 import {
     addBpButton,
     addDevButton,
@@ -8,7 +8,7 @@ import {
     addOpenAllLinksButton, addRubricButton,
     addSectionsButton
 } from "@/ui/course/addButtons";
-import {getSingleCourse} from "@/canvas/course";
+import {getSingleCourse} from "@ueu/ueu-canvas/course";
 
 export async function main() {
     const currentCourse = await Course.getFromUrl(document.documentURI);
@@ -24,8 +24,8 @@ export async function main() {
 
     await addDevButton(header, currentCourse);
     const bp = currentCourse.isBlueprint()? currentCourse : await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+    await addBpButton(header, currentCourse, bp);
     if (bp) {
-        await addBpButton(header, currentCourse, bp);
         await addSectionsButton(header, bp, currentCourse);
     }
 

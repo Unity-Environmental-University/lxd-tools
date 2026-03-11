@@ -1,10 +1,9 @@
 import {ImportButton} from "@/ui/syllabus/ImportButton";
 import ReactDOM from "react-dom/client";
 
-// will add the import button to the given location
-function addImportButton(location: HTMLElement) {
-    // TODO this is super scuffed and hardcoded - what if syllabus template changes?
-    const correctParent = location.parentElement?.parentElement?.parentElement?.parentElement;
+// will add the import button to the given location's grandparent if it exists
+function addImportButton(location: Element) {
+    const correctParent = location.parentElement?.parentElement;
     if (correctParent) {
         const rootDiv = document.createElement('div');
         correctParent.insertBefore(rootDiv, correctParent.firstElementChild);
@@ -17,10 +16,9 @@ function addImportButton(location: HTMLElement) {
 }
 
 export function main() {
-    // grab the location to add the button
-    // TODO might need to get more specific with how I grab the location than a selector can be - this is hardcoded to the syllabus template right now and not working elsewhere
-    //const location: HTMLElement | null = document.body.querySelector("div.scaffold-media-box.cbt-content > div.cbt-callout-box > div.content > h3 > strong"); 
-    const location: HTMLElement | null = document.getElementById('right-side');
+    // grab the location to add the button to
+    const location = Array.from(document.querySelectorAll(".content"))
+        .find(h3 => h3.textContent?.includes("Week 1 Learning Materials"));
     if (location){
         console.log("adding import button to syllabus")
         addImportButton(location);

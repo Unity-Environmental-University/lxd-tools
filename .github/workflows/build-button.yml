@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to build'
+        description: "Branch to build"
         required: true
-        default: 'main'
+        default: "main"
 
 jobs:
   build:
@@ -21,12 +21,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install lxd-tools dependencies
         working-directory: lxd-tools
         run: |
-          npm install --legacy-peer-deps
+          npm config set registry https://registry.npmjs.org/
+          npm cache clean --force
+          npm install
           npm install @testing-library/react --save-dev
 
       - name: Run ESLint
@@ -50,5 +52,5 @@ jobs:
           path: |
             dist/
             build/
-          if-no-files-found: 'error'
+          if-no-files-found: "error"
           retention-days: 7

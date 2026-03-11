@@ -1,5 +1,5 @@
 import assert from "assert";
-import {range} from "@canvas/canvasUtils";
+import {range} from "@ueu/ueu-canvas/canvasUtils";
 import {Temporal} from "temporal-polyfill";
 
 function getMonthNames(style: "numeric" | "2-digit" | "long" | "short" | "narrow" = "long", locale = 'en-US') {

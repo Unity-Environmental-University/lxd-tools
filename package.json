@@ -1,13 +1,13 @@
 {
   "name": "lxd-tools-react",
-  "version": "2.9.7",
+  "version": "3.0.0",
   "private": true,
   "main": "src/publish/index.tsx",
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@reduxjs/toolkit": "^2.3.0",
-    "@ueu/ueu-canvas": "^0.0.3",
+    "@ueu/ueu-canvas": "^0.0.5",
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.18",
     "bootstrap": "^5.3.3",
@@ -48,7 +48,7 @@
     "@types/webextension-polyfill": "^0.10.7",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
-    "copy-webpack-plugin": "^12.0.2",
+    "copy-webpack-plugin": "^14.0.0",
     "cross-env": "^10.0.0",
     "css-loader": "^6.10.0",
     "eslint": "^9.39.1",
@@ -76,12 +76,13 @@
     "typescript-eslint": "^8.49.0",
     "typescript-plugin-css-modules": "^5.1.0",
     "webpack": "^5.90.3",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "zip-webpack-plugin": "^4.0.3"
   },
   "overrides": {
     "postcss": "^8.4.41",
-    "jsdom": "^24.0.0",
-    "glob": "^10.4.5"
+    "minimatch": "^10.2.1",
+    "glob": "^10.5.0"
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",

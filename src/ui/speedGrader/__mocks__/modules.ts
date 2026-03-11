@@ -1,7 +1,7 @@
-import {CanvasData, IModuleData, IModuleItemData} from "@/canvas/canvasDataDefs";
+import {CanvasData, IModuleData, IModuleItemData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
 import {IModuleInfo} from "@/ui/speedGrader/types";
-import {mockModuleItemData} from "@/canvas/course/__mocks__/mockModuleData";
+import {mockModuleItemData} from "@ueu/ueu-canvas/course/__mocks__/mockModuleData";
 
 export const getModuleInfo = jest.fn((contentItem: CanvasData, modules: IModuleData[], assignmentsCollection: AssignmentsCollection): IModuleInfo => {
     return {

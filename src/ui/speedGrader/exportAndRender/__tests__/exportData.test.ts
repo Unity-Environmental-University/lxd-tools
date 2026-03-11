@@ -2,11 +2,11 @@ import { exportData } from '@/ui/speedGrader/exportAndRender/exportData';
 import { csvRowsForCourse } from '@/ui/speedGrader/exportAndRender/csvRowsForCourse';
 import { saveDataGenFunc } from '@/ui/speedGrader/saveDataGenFunc';
 import { UiHandlerProps } from '@/ui/speedGrader/controls/UiHandlerProps';
-import {mockAssignmentData} from "@/canvas/content/__mocks__/mockContentData";
-import {ICourseData} from "@/canvas/courseTypes";
-import {mockCourseData} from "@/canvas/course/__mocks__/mockCourseData";
+import {mockAssignmentData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {mockCourseData} from "@ueu/ueu-canvas/course/__mocks__/mockCourseData";
 
-import {IAssignmentData} from "@canvas/content/types";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 jest.mock('@/ui/speedGrader/exportAndRender/csvRowsForCourse');
 jest.mock('@/ui/speedGrader/saveDataGenFunc');

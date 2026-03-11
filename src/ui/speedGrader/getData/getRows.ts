@@ -1,15 +1,17 @@
-import {ICourseData, SectionData} from "@/canvas/courseTypes";
-import {CanvasData, IEnrollmentData, IModuleData, IUserData} from "@/canvas/canvasDataDefs";
+import {ICourseData, SectionData} from "@ueu/ueu-canvas/courseTypes";
+import {CanvasData, IModuleData, IUserData} from "@ueu/ueu-canvas/canvasDataDefs";
+// TODO: This is currently in the canvas folder and needs to either be found in ueu-canvas, imported into ueu-canvas, or kept local.
+import {IEnrollmentData} from "@ueu/ueu-canvas/canvasDataDefs";
 import {AssignmentsCollection} from "@/ui/speedGrader/AssignmentsCollection";
-import {ITermData} from "@/canvas/term/Term";
+import {ITermData} from "@ueu/ueu-canvas/term/Term";
 import {getModuleInfo} from "@/ui/speedGrader/modules";
 import assert from "assert";
 
 import {csvEncode} from "@/ui/speedGrader/exportAndRender/csvRowsForCourse";
 
-import {IAssignmentData, IAssignmentSubmission} from "@canvas/content/types";
+import {IAssignmentData, IAssignmentSubmission} from "@ueu/ueu-canvas/content/types";
 
-import {IRubricCriterionData, RubricAssessment} from "@/canvas";
+import {IRubricCriterionData, RubricAssessment} from "@ueu/ueu-canvas";
 
 
 type LookUpTable<T> = Record<string, T>

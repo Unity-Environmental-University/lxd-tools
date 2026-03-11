@@ -2,7 +2,7 @@ import {ValidationResult} from "@publish/fixesAndUpdates/validations/utils";
 import courseContent from "@publish/fixesAndUpdates/validations/courseContent";
 import courseSettings from "../publish/fixesAndUpdates/validations/courseSettings";
 import syllabusTests from "../publish/fixesAndUpdates/validations/syllabusTests";
-import {Course} from "@/canvas/course/Course";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export function bpify(code: string) {

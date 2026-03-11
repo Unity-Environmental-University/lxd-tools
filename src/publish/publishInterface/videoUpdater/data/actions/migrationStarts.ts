@@ -7,11 +7,11 @@ import {
     MIGRATE_ASSIGNMENT_START_SUCCESS,
     MIGRATE_ASSIGNMENT_START_FAILURE, MIGRATE_DETAIL_START_SUCCESS, MIGRATE_DETAIL_START_FAILURE,
 } from './actionTypes';
-import {IPageData} from "@canvas/content/pages/types";
+import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
 import {KalturaMigrationDetails} from "@publish/publishInterface/videoUpdater/data/types";
-import PageKind from "@canvas/content/pages/PageKind";
-import AssignmentKind from "@canvas/content/assignments/AssignmentKind";
-import {IAssignmentData} from "@canvas/content/types";
+import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
+import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
+import {IAssignmentData} from "@ueu/ueu-canvas/content/types";
 
 
 

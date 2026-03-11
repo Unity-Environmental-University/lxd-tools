@@ -1,4 +1,4 @@
-import {createNewCourse, getCourseById, getCourseName} from "@/canvas/course";
+import {createNewCourse, getCourseById, getCourseName} from "@ueu/ueu-canvas/course";
 import {Alert, Button, Col, FormControl, FormText, Row} from "react-bootstrap";
 import {FormEvent, useEffect, useReducer, useState} from "react";
 import {useEffectAsync} from "@/ui/utils";
@@ -6,23 +6,25 @@ import {
     getBlueprintsFromCode,
     lockBlueprint,
     sectionDataGenerator, setAsBlueprint
-} from "@/canvas/course/blueprint";
+} from "@ueu/ueu-canvas/course/blueprint";
 import {bpify} from "@/admin";
-import {migrationsForCourseGen, IMigrationData, startMigration} from "@/canvas/course/migration";
-import {Course} from "@/canvas/course/Course";
+import {migrationsForCourseGen, IMigrationData, startMigration} from "@ueu/ueu-canvas/course/migration";
+import {Course} from "@ueu/ueu-canvas/course/Course";
 import {listDispatcher} from "@/ui/reducerDispatchers";
 import {
     loadCachedCourseMigrations,
     SavedMigration,
     cacheCourseMigrations
-} from "@/canvas/course/migration/migrationCache";
+} from "@ueu/ueu-canvas/course/migration/migrationCache";
 import {DevToBpMigrationBar} from "./DevToBpMigrationBar";
 import assert from "assert";
-import {SectionData} from "@/canvas/courseTypes";
-import dateFromTermName from "@/canvas/term/dateFromTermName";
+import {SectionData} from "@ueu/ueu-canvas/courseTypes";
+import dateFromTermName from "@ueu/ueu-canvas/term/dateFromTermName";
 import {Temporal} from "temporal-polyfill";
-import {retireBlueprint} from "@canvas/course/retireBlueprint";
-import { academicIntegritySetup, waitForMigrationCompletion } from "./academicIntegritySetup";
+import {retireBlueprint} from "@ueu/ueu-canvas/course/retireBlueprint";
+import { academicIntegritySetup } from "./academicIntegritySetup";
+import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
+import {formDataify} from "@ueu/ueu-canvas/canvasUtils";
 
 
 export const TERM_NAME_PLACEHOLDER = 'Fill in term name here to archive.'
@@ -43,6 +45,25 @@ export interface IMakeBpProps {
     onTermNameSet?: (termName: string | null) => void,
     onSectionsSet?: (sections: SectionData[]) => void,
     onActiveImports?: (migrations: IMigrationData[]) => void,
+}
+
+export async function waitForMigrationCompletion(courseId: number, migrationId: number, intervalMs = 5000, timeoutMs = 300000) {
+    const start = Date.now();
+
+    while (true) {
+        const migration = await fetchJson(`/api/v1/courses/${courseId}/content_migrations/${migrationId}`);
+
+        if (migration.workflow_state === "completed" || migration.workflow_state === "failed") {
+            return migration;
+        }
+
+        if (Date.now() - start > timeoutMs) {
+            throw new Error("Migration wait timed out after 5 minutes.");
+        }
+
+        console.log(`Migration still ${migration.workflow_state}... waiting ${intervalMs / 1000}s`);
+        await new Promise(res => setTimeout(res, intervalMs));
+    }
 }
 
 export function MakeBp({
@@ -240,7 +261,18 @@ export function MakeBp({
 
                 for (const group of bpAssignmentGroups) {
                     if (group.name === "Assignments" && group.group_weight === 0) {
-                        alert("An empty assignments group was created in the BP. Remove it in the Assignments tab of the BP.");
+                        const deleteGroup = await fetchJson(
+                            `/api/v1/courses/${bpCourse.id}/assignment_groups/${group.id}`,
+                            {
+                                fetchInit: {
+                                    method: 'DELETE',
+                                    body: formDataify({}),
+                                }
+                            }
+                        );
+                        if (deleteGroup.errors) {
+                            alert("Failed to delete empty Assignments group in BP. You will need to remove it manually.");
+                        }
                     }
                 }
             } catch (e) {
@@ -268,10 +300,7 @@ export function MakeBp({
 
     }
 
-
-
-
-    return <div>
+        return <div>
         {!isDev && <Row><Col className={'alert alert-warning'}>This is not a DEV course</Col></Row>}
         {currentBp && <Row>
             <Col sm={3}>

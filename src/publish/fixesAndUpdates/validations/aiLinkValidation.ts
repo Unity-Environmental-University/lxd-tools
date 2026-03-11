@@ -1,6 +1,6 @@
-import {IContentHaver} from "@/canvas/course/courseTypes";
+import {IContentHaver} from "@ueu/ueu-canvas/course/courseTypes";
 
-import {BaseContentItem} from "@/canvas/content/BaseContentItem";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
 import {
     badContentFixFunc,
     badContentRunFunc

@@ -1,4 +1,4 @@
-import {filterUniqueFunc} from "../canvas/canvasUtils";
+import {filterUniqueFunc} from '@ueu/ueu-canvas/canvasUtils';
 
 
 type RecordKeyType = string | number | symbol

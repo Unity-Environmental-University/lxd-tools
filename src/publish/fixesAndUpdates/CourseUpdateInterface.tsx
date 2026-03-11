@@ -2,12 +2,12 @@ import React, {useEffect, useState} from "react";
 import {useEffectAsync} from "../../ui/utils";
 import {Button} from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
-import {fixLmAnnotations} from "../../canvas/fixes/annotations";
+import {fixLmAnnotations} from '@ueu/ueu-canvas/fixes/annotations';
 import assert from "assert";
 import {UpdateStartDate} from "./UpdateStartDate";
 import {CourseValidator} from "./CourseValidator";
-import {Course} from "../../canvas/course/Course";
-import {Page} from "@/canvas/content/pages/Page";
+import {Course} from '@ueu/ueu-canvas/course/Course';
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 import {useSyllabusStore} from "@publish/fixesAndUpdates/validations/syllabusTests";
 import {ISyllabusHaver} from "@canvas/course/courseTypes";
@@ -47,9 +47,24 @@ export function CourseUpdateInterface({
     const [startDateSetMode, setStartDateSetMode] = useState(false);
     const [batchingValidations, setBatchingValidations] = useState(false);
     const [showUpdateStartDate, setShowUpdateStartDate] = useState(false);
+    const [isChangingStartDate, setIsChangingStartDate] = useState(false);
 
     const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
+    // Prevent page unload when processing
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            if (deannotatingCount > 0 || batchingValidations || isChangingStartDate) {
+                event.preventDefault();
+                event.returnValue = "";
+            }
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [deannotatingCount, batchingValidations, isChangingStartDate]);
 
     const batchValidationsOverTime = async (inValidations: CourseValidation<Course, any, any>[], batchSize:number = 10, delay=2) => {
         let localValidations = [...validations];
@@ -163,7 +178,7 @@ export function CourseUpdateInterface({
             <h2>Content Fixes for {course.name}</h2>
             {course.isBlueprint() && <RemoveAnnotationsSection/>}
 
-            <Button onClick={() => toggleStartDateUI()}>Update Start Date</Button>
+            <Button onClick={() => toggleStartDateUI()} disabled={isChangingStartDate}>Update Start Date</Button>
 
             <hr/>
 
@@ -177,6 +192,8 @@ export function CourseUpdateInterface({
                     isDisabled={deannotatingCount > 0}
                     startLoading={startLoading}
                     endLoading={endLoading}
+                    onStartDateChangeStart={() => setIsChangingStartDate(true)}
+                    onStartDateChangeEnd={() => setIsChangingStartDate(false)}
                 />
                 )}
 
@@ -204,7 +221,7 @@ export function CourseUpdateInterface({
     return (course && <>
         <Button disabled={isDisabled()} role={'button'} className={"ui-button"} onClick={(e) => setShow(true)}
         >{buttonText}</Button>
-        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!deannotatingCount}>
+        <Modal isOpen={show} requestClose={() => setShow(false)} canClose={!deannotatingCount && !isChangingStartDate}>
             <div className={'d-flex justify-content-end'}>
                 {mode === 'fix' && <Button onClick={() => setMode("unitTest")}>Show All Tests</Button>}
                 {mode === 'unitTest' && <Button onClick={() => setMode("fix")}>Hide Successful Tests</Button>}

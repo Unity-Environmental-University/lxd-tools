@@ -1,5 +1,5 @@
 import {MessageResult, testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {IPagesHaver} from "@canvas/course/courseTypes";
+import {IPagesHaver} from "@ueu/ueu-canvas/course/courseTypes";
 import {CourseValidation} from "@publish/fixesAndUpdates/validations/types";
 
 export const courseProjectOutlineTest: CourseValidation<IPagesHaver> = {

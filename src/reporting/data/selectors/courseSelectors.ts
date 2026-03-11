@@ -1,5 +1,5 @@
 import {createSelector} from "@reduxjs/toolkit";
-import {ICourseData} from "@/canvas";
+import {ICourseData} from "@ueu/ueu-canvas";
 import {LoadStatus} from "@/reporting/data/loadStatus";
 import {CoursesState} from "@/reporting/data/coursesSlice";
 

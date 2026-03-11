@@ -1,13 +1,13 @@
-import {range} from "@canvas/canvasUtils";
-import {mockPageData} from "@canvas/content/__mocks__/mockContentData";
-import {IPagesHaver} from "@canvas/course/courseTypes";
+import {range} from "@ueu/ueu-canvas/canvasUtils";
+import {mockPageData} from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
+import {IPagesHaver} from "@ueu/ueu-canvas/course/courseTypes";
 import {
     badContentTextValidationFixTest,
     badContentTextValidationTest,
     mockContentHaver,
     mockPagesHaver
 } from "../../__mocks__/validations";
-import {Page} from "@canvas/content/pages/Page";
+import {Page} from "@ueu/ueu-canvas/content/pages/Page";
 import {weeklyObjectivesTest} from "@publish/fixesAndUpdates/validations/courseContent/weeklyObjectivesTest";
 import {courseProjectOutlineTest} from "@publish/fixesAndUpdates/validations/courseContent/courseProjectOutlineTest";
 import {codeAndCodeOfCodeTest} from "@publish/fixesAndUpdates/validations/courseContent/codeAndCodeOfCodeTest";
@@ -17,11 +17,11 @@ import {
 import studentHandbookTest from "../studentHanbookTest";
 import technologyLinkTest from "@publish/fixesAndUpdates/validations/courseContent/technologyForSuccess";
 
-jest.mock('@canvas/fetch/fetchJson', () => ({
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson', () => ({
     fetchJson: jest.fn(),
 }));
 
-jest.mock('@canvas/fetch/getPagedDataGenerator', () => ({
+jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator', () => ({
     getPagedDataGenerator: jest.fn(),
 }));
 

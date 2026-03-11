@@ -1,10 +1,9 @@
-import {ICanvasCallConfig} from "@canvas/canvasUtils";
-import {IContentHaver, ICourseDataHaver, IIdHaver, ISyllabusHaver} from "@canvas/course/courseTypes";
-import {BaseContentItem} from "@canvas/content/BaseContentItem";
-import {overrideConfig} from "@canvas/fetch/utils";
-import {ICourseData} from "@canvas/courseTypes";
+import {ICanvasCallConfig} from "@ueu/ueu-canvas/canvasUtils";
+import {IContentHaver, ICourseDataHaver, IIdHaver, ISyllabusHaver} from "@ueu/ueu-canvas/course/courseTypes";
+import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
+import {overrideConfig} from "@ueu/ueu-canvas/fetch/utils";
+import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
 import {useSyllabusStore} from "@publish/fixesAndUpdates/validations/syllabusTests";
-import {getCourseById} from "@canvas/course";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
