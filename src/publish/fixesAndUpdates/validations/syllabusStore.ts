@@ -6,8 +6,8 @@ import { create } from "zustand";
 type SyllabusState = {
   originalHtml: string;
   draftHtml: string;
-  status: "idle" | "loading" | "loaded" | "saving" | "success" | "error";
-  validationResults: string[];
+  status: "idle" | "fetching" | "loaded" | "saving" | "success" | "error";
+  results: string[];
   fetchSyllabus: (course: ISyllabusHaver) => Promise<void>;
   updateSyllabus: (course: ISyllabusHaver, html: string) => Promise<void>;
 };
@@ -15,18 +15,18 @@ type SyllabusState = {
 export const useSyllabusStore = create<SyllabusState>((set, get) => ({
   originalHtml: "", // What is pulled from Canvas
   draftHtml: "", // The currently modified version
-  status: "idle", // 'validating', 'saving', 'success', 'error'
-  validationResults: [], // List of discovered issues
+  status: "idle",
+  results: [], // List of discovered issues
 
   fetchSyllabus: async (course: ISyllabusHaver) => {
     if (get().originalHtml !== "") return;
 
-    useSyllabusStore.setState({ status: "loading", originalHtml: "", draftHtml: "" });
+    useSyllabusStore.setState({ status: "fetching", originalHtml: "", draftHtml: "" });
     try {
       const syllabus = await course.getSyllabus();
       set({ originalHtml: syllabus, draftHtml: syllabus, status: "loaded" });
     } catch (e) {
-      set({ status: "error", validationResults: ["Error fetching syllabus", e as string] });
+      set({ status: "error", results: ["Error fetching syllabus", e as string] });
     }
   },
 
@@ -34,7 +34,7 @@ export const useSyllabusStore = create<SyllabusState>((set, get) => ({
     set({ status: "saving" });
 
     if (html === get().originalHtml) {
-      set({ status: "success", validationResults: ["No changes needed!"] });
+      set({ status: "success", results: ["No changes needed!"] });
       return;
     }
 
@@ -42,7 +42,7 @@ export const useSyllabusStore = create<SyllabusState>((set, get) => ({
       await course.changeSyllabus(html);
       set({ status: "success" });
     } catch (e) {
-      set({ status: "error", validationResults: ["Error saving syllabus: ", e as string] });
+      set({ status: "error", results: ["Error saving syllabus: ", e as string] });
     }
   },
 }));
