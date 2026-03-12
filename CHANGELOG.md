@@ -29,3 +29,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Information about CHANGELOG added to README
 - docs/KNOWLEDGE_BASE.md created to host specific knowledge about this code base
 - Deployed dependabot for dependency alerts/updates
+- Intentionally unused variables now universally feature a leading underscore
+- URL checking patterns updated to avoid partial match injection
