@@ -86,8 +86,7 @@ export default function DateRangeExportDialog({
 
             sections ??= [];
             sections.sort((a: ICourseData, b: ICourseData) => {
-              // TODO; Right now, this seems that it would always return 0. Is one supposed to be a?
-              return new Date(b.start_at).getTime() - new Date(b.start_at).getTime();
+              return new Date(a.start_at).getTime() - new Date(b.start_at).getTime();
             });
             const allSectionRows: string[] = sections ? await getRowsForSections(sections) : [];
 

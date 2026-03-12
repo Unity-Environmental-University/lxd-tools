@@ -1,5 +1,5 @@
 import { createNewCourse, getCourseById, getCourseName } from "@ueu/ueu-canvas/course";
-import { Alert, Button, Col, FormControl, FormText, Row } from "react-bootstrap";
+import { Alert, Button, Col, FormControl, Row } from "react-bootstrap";
 import { FormEvent, useEffect, useReducer, useState } from "react";
 import { useEffectAsync } from "@/ui/utils";
 import {
@@ -82,7 +82,8 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   const [termName, setTermName] = useState<string>("");
   const [allMigrations, allMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
   const [activeMigrations, activeMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
-  const [isLocking, setIsLocking] = useState(false);
+  // TODO; Handle no-unused-vars error
+  const [_isLocking, setIsLocking] = useState(false);
   const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
   const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
   const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);

@@ -2,14 +2,8 @@ import { bannerHeadingValidation } from "../bannerHeadingValidation";
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import { assignmentDataGen } from "@ueu/ueu-canvas/content/assignments";
 import { mockAsyncGen } from "@/__mocks__/utils";
-import { mockPageData } from "@ueu/ueu-canvas/content/__mocks__/mockContentData";
-import { badContentTextValidationTest } from "../__mocks__/validations";
 import { badContentTextValidationFixTest } from "../__mocks__/validations";
-import { mockContentHaver } from "../__mocks__/validations";
-import { Page } from "@ueu/ueu-canvas/content/pages/Page";
-import { ContentTextReplaceFix, CourseValidation } from "@publish/fixesAndUpdates/validations/types";
-import { IContentHaver } from "@ueu/ueu-canvas/course/courseTypes";
-import { BaseContentItem } from "@ueu/ueu-canvas";
+import { ContentTextReplaceFix } from "@publish/fixesAndUpdates/validations/types";
 
 jest.mock("@ueu/ueu-canvas/content/pages/PageKind");
 jest.mock("@ueu/ueu-canvas/content/assignments/AssignmentKind");
@@ -149,7 +143,7 @@ describe("bannerHeadingValidation", () => {
     describe("Replace old banner heading", () => {
       expect(Array.isArray(bannerHeadingValidation.beforeAndAfters)).toBe(true);
 
-      for (const [,] of bannerHeadingValidation.beforeAndAfters) {
+      for (const [_bad, _good] of bannerHeadingValidation.beforeAndAfters) {
         it(`fixes bad to good in beforeAndAfters`, () => {
           void badContentTextValidationFixTest(bannerHeadingValidation as ContentTextReplaceFix<any, any>);
         });

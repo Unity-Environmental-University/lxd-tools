@@ -4,9 +4,7 @@ import {
   aiPolicyInSyllabusTest,
   bottomOfSyllabusLanguageTest,
   classInclusiveNoDateHeaderTest,
-  communication24HoursTest,
   courseCreditsInSyllabusTest,
-  finalNotInGradingPolicyParaTest,
   fixSupportEmailTest,
   gradeTableHeadersCorrectTest,
   removeSameDayPostRestrictionTest,
@@ -16,7 +14,6 @@ import {
   gradingDeadlineLanguageTest,
   aiPolicyMediaTest,
   supportPhoneNumberFix,
-  gradingPolicyTest,
 } from "../syllabusTests";
 import { ISyllabusHaver, ICourseDataHaver } from "@ueu/ueu-canvas/course/courseTypes";
 import assert from "assert";

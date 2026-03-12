@@ -31,7 +31,8 @@ export interface IGetRowsConfig {
 }
 
 export async function getRows(args: IGetRowsConfig) {
-  const { course, enrollment, modules, userSubmissions, assignmentsCollection, instructors, term } = args;
+  // TODO; Can't just add underscore to fix this
+  const { course, enrollment, userSubmissions, instructors, term } = args;
   const { user } = enrollment;
 
   const { course_code } = course;
@@ -44,44 +45,41 @@ export async function getRows(args: IGetRowsConfig) {
   // Let's not actually do this if we can't find the user's submissions.
 
   const baseRow = [term.name, instructorName, baseCode, section];
-  const rows = parseSubmissions(user, userSubmissions).reduce(
-    (rows, submission) => {
-      if (!user) return rows;
+  const rows = parseSubmissions(user, userSubmissions).reduce((rows, submission) => {
+    if (!user) return rows;
 
-      const { assignment } = submission;
-      let rubricSettings;
-      if (!assignment) {
-        console.warn("No assignment associated with submission");
-        return [];
-      }
-      if (assignment.hasOwnProperty("rubric_settings")) {
-        rubricSettings = assignment.rubric_settings;
-      }
-      const criteriaInfo = getCriteriaInfo(assignment);
+    const { assignment } = submission;
+    let rubricSettings;
+    if (!assignment) {
+      console.warn("No assignment associated with submission");
+      return [];
+    }
+    if (assignment.hasOwnProperty("rubric_settings")) {
+      rubricSettings = assignment.rubric_settings;
+    }
+    const criteriaInfo = getCriteriaInfo(assignment);
 
-      course_code.replace(/^(.*)_?(\[A-Za-z]{4}\d{3}).*$/, "$1$2");
+    course_code.replace(/^(.*)_?(\[A-Za-z]{4}\d{3}).*$/, "$1$2");
 
-      const { rubric_assessment: rubricAssessment } = submission;
-      const rubricId =
-        typeof rubricSettings !== "undefined" && rubricSettings.hasOwnProperty("id")
-          ? rubricSettings.id
-          : "No Rubric Settings";
+    const { rubric_assessment: rubricAssessment } = submission;
+    const rubricId =
+      typeof rubricSettings !== "undefined" && rubricSettings.hasOwnProperty("id")
+        ? rubricSettings.id
+        : "No Rubric Settings";
 
-      const submissionBaseRow = getSubmissionBaseRow({
-        ...args,
-        baseRow,
-        submission,
-      });
+    const submissionBaseRow = getSubmissionBaseRow({
+      ...args,
+      baseRow,
+      submission,
+    });
 
-      const out = [
-        ...rows,
-        submissionHeader(submissionBaseRow, submission, assignment, rubricId.toString()),
-        ...criteriaAssessmentRows(rubricAssessment, criteriaInfo, submissionBaseRow),
-      ];
-      return out;
-    },
-    [] as Array<string | number | undefined | null>[]
-  );
+    const out = [
+      ...rows,
+      submissionHeader(submissionBaseRow, submission, assignment, rubricId.toString()),
+      ...criteriaAssessmentRows(rubricAssessment, criteriaInfo, submissionBaseRow),
+    ];
+    return out;
+  }, [] as Array<string | number | undefined | null>[]);
 
   return rows.map((row) => row.map(csvEncode).join(",") + "\n");
 }

@@ -4,7 +4,7 @@ import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
 import { testResult } from "@publish/fixesAndUpdates/validations/utils";
 import { IAssignmentData } from "@ueu/ueu-canvas/content/types";
 
-function hasEmptyMetadata(assignment: IAssignmentData) {
+function _hasEmptyMetadata(assignment: IAssignmentData) {
   if (assignment.submission_types.includes("online_text_entry")) return null; //falsy but not false -- we dont care about it because we can't tell right now because we know it just wont
   if (assignment.submission_types.includes("discussion_topic") && !assignment.discussion_topic) return true;
   if (assignment.submission_types.includes("online_quiz") && !assignment.quiz_id) return true;

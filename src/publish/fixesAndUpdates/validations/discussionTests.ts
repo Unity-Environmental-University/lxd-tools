@@ -1,8 +1,4 @@
-import {
-  CourseFixValidation,
-  CourseValidation,
-  TextReplaceValidation,
-} from "@/publish/fixesAndUpdates/validations/types";
+import { CourseFixValidation, CourseValidation } from "@/publish/fixesAndUpdates/validations/types";
 import { DiscussionKind } from "@ueu/ueu-canvas";
 import { IDiscussionData } from "@ueu/ueu-canvas";
 import { testResult } from "@publish/fixesAndUpdates/validations/utils";
@@ -20,7 +16,7 @@ const run: CourseValidation<{ id: number }>["run"] = async ({ id }) => {
   // get the discussion by searching for 'Introductions'
   const discGen = DiscussionKind.dataGenerator(id, { queryParams: { search_term: "Introductions" } });
   // assume the first one is the right one
-  const { done, value } = await discGen.next();
+  const { value } = await discGen.next();
   // only accept if we really got a discussion back
   if (DiscussionKind.dataIsThisKind(value)) {
     discussion = value;

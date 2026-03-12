@@ -1,6 +1,6 @@
 // PublishApp.test.tsx
 
-// eslint-disable-next-line @/no-undef,@typescript-eslint/no-require-imports
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 global.TextEncoder = require("util").TextEncoder;
 
 import { Course } from "@ueu/ueu-canvas/course/Course";
@@ -50,7 +50,6 @@ beforeEach(() => {
 });
 
 test("TextEncoder is globally defined in Jest", () => {
-  // eslint-disable-next-line @/no-undef
   expect(global.TextEncoder).toBeDefined();
 });
 
@@ -59,7 +58,7 @@ describe("PublishApp Component", () => {
     (PublishInterface as jest.Mock).mockImplementation(({ course, user }) => (
       <div>PublishInterface: {course && user && "Loaded"}</div>
     ));
-    (CourseUpdateInterface as jest.Mock).mockImplementation(({ course, parentCourse, refreshCourse }) => (
+    (CourseUpdateInterface as jest.Mock).mockImplementation(({ course, parentCourse }) => (
       <div>ContentUpdateInterface: {course && parentCourse && "Loaded"}</div>
     ));
     (AdminApp as jest.Mock).mockImplementation(({ course }) => <div>AdminApp: {course && "Loaded"}</div>);

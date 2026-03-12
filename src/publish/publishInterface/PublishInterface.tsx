@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
 import { useEffectAsync } from "@/ui/utils";
-import { Alert, Button } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal/index";
 import { SectionDetails } from "./sectionDetails/SectionDetails";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
@@ -168,7 +168,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   async function applySectionProfiles(_?: React.MouseEvent) {
     setLoading(true);
     inform("Updating section profiles...");
-    const currentProfiles = { ...frontPageProfilesByCourseId };
+    const _currentProfiles = { ...frontPageProfilesByCourseId };
     setErrorsByCourseId({});
     for (const section of Object.values(sections)) {
       const profiles = potentialProfilesByCourseId[section.id];
@@ -212,7 +212,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     if (coursesLoading) return;
     setCoursesLoading(true);
     const sectionGen = sectionDataGenerator(course.id, { queryParams: { per_page: 5 } });
-    const allInstructors: Record<number, IUserData[]> = {};
+    const _allInstructors: Record<number, IUserData[]> = {};
     const allEmails = new Set<string>();
     let sectionStartSet = false;
 
@@ -378,7 +378,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         {workingSection && (
           <div>
             <SectionDetails
-              onUpdateFrontPageProfile={(newProfile) =>
+              onUpdateFrontPageProfile={(_newProfile) =>
                 workingSection &&
                 dispatchFrontPageProfilesByCourseId({
                   set: [workingSection.id, frontPageProfilesByCourseId],
@@ -447,7 +447,7 @@ export function OpenButton({ isDev, isBlueprint, setShow }: OpenButtonProps) {
   if (isDev) label = "Manage DEV->BP";
 
   return (
-    <Button disabled={disabled} className={disabled ? "" : "ui-button"} onClick={(e) => setShow(true)}>
+    <Button disabled={disabled} className={disabled ? "" : "ui-button"} onClick={(_e) => setShow(true)}>
       {label}
     </Button>
   );

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports,@/no-undef */
+/* eslint-disable @typescript-eslint/no-require-imports */
 //via https://medium.com/@tharshita13/creating-a-chrome-extension-with-react-a-step-by-step-guide-47fe9bab24a1
 
 const path = require("path");
@@ -7,7 +7,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const packageJson = require("./package.json");
 const { TsconfigPathsPlugin } = require("tsconfig-paths-webpack-plugin");
-const dotenv = require("dotenv").config({ path: __dirname + "/.env" });
+const _dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 const isDevelopment = process.env.NODE_ENV !== "production";
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
@@ -150,7 +150,6 @@ const createPlugins = () => [
     patterns: [
       { from: "./README.dist.md", to: "README.md" },
       {
-        // eslint-disable-next-line @/no-undef
         from: path.resolve(__dirname, "manifest.source.json"),
         to: "manifest.json",
         transform: transformManifest,
