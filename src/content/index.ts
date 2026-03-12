@@ -27,7 +27,7 @@ async function openTargetCourse(queryString: string, subAccount: number) {
   if (!searchCode) throw new Error("No search code provided");
 
   let queryUrl = `/api/v1/accounts/${subAccount}/courses?search_term=${searchCode}`;
-  if (!document.documentURI.includes(".instructure.com")) {
+  if (!new URL(document.documentURI).hostname.endsWith(".instructure.com")) {
     queryUrl = `https://unity.instructure.com/accounts/${subAccount}?search_term=${searchCode}`;
     window.open(queryUrl, "_blank");
     return;

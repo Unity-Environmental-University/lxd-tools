@@ -622,17 +622,19 @@ const aiPolicyInfographicLink = "https://drive.google.com/file/d/1Gzbgp5piaQk9PQ
 
 const aiPolicyMediaRun = async (course: ISyllabusHaver) => {
   const syllabus = await course.getSyllabus();
+  const hasVideoLink = syllabus.includes(`"${aiPolicyVideoLink}"`);
+  const hasInfographicLink = syllabus.includes(`"${aiPolicyInfographicLink}"`);
 
-  if (syllabus.includes(aiPolicyVideoLink) && syllabus.includes(aiPolicyInfographicLink)) {
+  if (hasVideoLink && hasInfographicLink) {
     return testResult(true, {
       notFailureMessage: "Syllabus already has infographic and video links in AI Policy section.",
     });
-  } else if (syllabus.includes(aiPolicyVideoLink) && !syllabus.includes(aiPolicyInfographicLink)) {
+  } else if (hasVideoLink && !hasInfographicLink) {
     return testResult(false, {
       failureMessage: "Syllabus does not have infographic link in AI Policy section.",
       links: [`/courses/${course.id}/assignments/syllabus`],
     });
-  } else if (!syllabus.includes(aiPolicyVideoLink) && syllabus.includes(aiPolicyInfographicLink)) {
+  } else if (!hasVideoLink && hasInfographicLink) {
     return testResult(false, {
       failureMessage: "Syllabus does not have video link in AI Policy section.",
       links: [`/courses/${course.id}/assignments/syllabus`],
@@ -736,7 +738,8 @@ const makeBeforeAndAfters = (badUrlData: BadUrlData) => {
 const makeSyllabusUrlCheck: (data: BadUrlData) => CourseFixValidation<ISyllabusHaver> = (data: BadUrlData) => {
   const { badUrl, goodUrl, name } = data;
   let description = data.description;
-  const badUrlRegex = new RegExp(badUrl, "ig");
+  const escapedBadUrl = badUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const badUrlRegex = new RegExp(escapedBadUrl, "ig");
   const run = badSyllabusRunFunc(badUrlRegex);
   const fix = badSyllabusFixFunc(badUrlRegex, goodUrl);
   description ??= `Change ${badUrl} to ${goodUrl} in the syllabus.`;

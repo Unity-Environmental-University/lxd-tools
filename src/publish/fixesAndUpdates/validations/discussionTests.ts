@@ -27,10 +27,10 @@ const run: CourseValidation<{ id: number }>["run"] = async ({ id }) => {
   }
 
   // fail if the bad URL is found in the discussion body
-  if (discussion.message.includes(badUrl)) {
+  if (discussion.message.includes(`"${badUrl}"`)) {
     success = false;
     errorMessage = `Discussion contains outdated link: ${badUrl}`;
-  } else if (!discussion.message.includes(goodUrl)) {
+  } else if (!discussion.message.includes(`"${goodUrl}"`)) {
     // also fail if neither bad nor good URL is found
     success = false;
     errorMessage = "Discussion does not contain profile settings link.";
