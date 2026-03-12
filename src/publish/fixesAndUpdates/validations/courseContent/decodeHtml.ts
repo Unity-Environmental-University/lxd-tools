@@ -1,8 +1,8 @@
-import { sanitize } from "dompurify";
+import DOMPurify from "dompurify";
 
 export function decodeHtml(html: string) {
   const text = document.createElement("textarea");
-  text.innerHTML = sanitize(html);
+  text.innerHTML = DOMPurify.sanitize(html);
   return text.value;
 }
 
