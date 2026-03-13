@@ -2,14 +2,9 @@ import { getCourseById } from "@ueu/ueu-canvas/course";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
 import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
-import { moduleGenerator } from "@ueu/ueu-canvas/course/modules";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
-import { lockBlueprint } from "@ueu/ueu-canvas/course/blueprint";
-import { getItemTypeAndId, IModuleItemData } from "@ueu/ueu-canvas";
-import { getItemInModule } from "@/ui/speedGrader/modules";
-import { aiPolicyInSyllabusTest } from "@/publish/fixesAndUpdates/validations/syllabusTests";
 
 export interface AcademicIntegritySetupProps {
   currentBp: Course | null;
@@ -17,6 +12,14 @@ export interface AcademicIntegritySetupProps {
 }
 
 export async function academicIntegritySetup({ currentBp, setIsRunningIntegritySetup }: AcademicIntegritySetupProps) {
+  // TODO; refactor every mention of academic integrity?
+
+  const moduleName = "Academic Integrity";
+  const academicIntegrityCourseId = 7724480;
+  const academicIntegrityModuleId = 12366435;
+  const aiInstructorGuideModuleId = 12366470;
+  const academicIntegrityCourse = await getCourseById(academicIntegrityCourseId);
+
   setIsRunningIntegritySetup(true);
   // Get BP
   const bp = currentBp;
@@ -35,7 +38,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   // Check if the academic integrity module exists, find the instructor guide module
   for (const module of modules) {
     // TODO; Change this to new name
-    if (module.name === "Academic Integrity") {
+    if (module.name === moduleName) {
       // If the academic integrity module already exists, alert the use and stop
       alert("Academic integrity module already exists in BP.");
       setIsRunningIntegritySetup(false);
@@ -61,13 +64,6 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
     assignmentGroupId = assignmentGroups[0]?.id || 0;
   }
 
-  // TODO; refactor every mention of academic integrity?
-
-  const academicIntegrityCourseId = 7724480;
-  const academicIntegrityModuleId = 12366435;
-  const aiInstructorGuideModuleId = 12366470;
-  const academicIntegrityCourse = await getCourseById(academicIntegrityCourseId);
-
   // This gets the module data for the instructor guide module in the template course, so we can pull the items that are in it
   const aiInstructorGuideModule: IModuleData = await fetchJson(
     `/api/v1/courses/${academicIntegrityCourseId}/modules/${aiInstructorGuideModuleId}/items`,
@@ -81,8 +77,9 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
 
   // This sequence defines the items and then maps ids and urls to their own arrays
   const aiInstructorGuideModuleItems = aiInstructorGuideModule.items;
+  // WARN; This may be incorrect, old version was pulling rawData.page_id.
   const aiInstructorGuideItemIds = aiInstructorGuideModuleItems.map((item) => item.id);
-  const aiInstructorGuideItemUrls = aiInstructorGuideModuleItems.map((item) => item.url);
+  const aiInstructorGuideItemUrls = aiInstructorGuideModuleItems.map((item) => item.page_url);
 
   if (!academicIntegrityCourse) {
     alert("Academic integrity course not found.");
@@ -121,8 +118,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   let instructorResourcesModule: IModuleData | undefined = undefined;
 
   for (const module of updatedModules) {
-    // TODO; Change this to new name
-    if (module.name === "Academic Integrity") {
+    if (module.name === moduleName) {
       bpAcademicIntegrityModule = module;
     } else if (module.name.toLocaleLowerCase().includes("leave unpublished")) {
       instructorResourcesModule = module;
