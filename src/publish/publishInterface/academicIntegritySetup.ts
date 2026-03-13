@@ -9,6 +9,7 @@ import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
 import { lockBlueprint } from "@ueu/ueu-canvas/course/blueprint";
 import { getItemTypeAndId, IModuleItemData } from "@ueu/ueu-canvas";
 import { getItemInModule } from "@/ui/speedGrader/modules";
+import { aiPolicyInSyllabusTest } from "@/publish/fixesAndUpdates/validations/syllabusTests";
 
 export interface AcademicIntegritySetupProps {
   currentBp: Course | null;
@@ -33,6 +34,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
 
   // Check if the academic integrity module exists, find the instructor guide module
   for (const module of modules) {
+    // TODO; Change this to new name
     if (module.name === "Academic Integrity") {
       // If the academic integrity module already exists, alert the use and stop
       alert("Academic integrity module already exists in BP.");
@@ -59,13 +61,28 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
     assignmentGroupId = assignmentGroups[0]?.id || 0;
   }
 
-  const academicIntegrityCourse = await getCourseById(7724480);
-  const academicIntegrityModules = await academicIntegrityCourse.getModules();
-  const academicIntegrityPages = await academicIntegrityCourse.getPages();
-  const academicIntegrityModuleIds: number[] = [];
-  let aiInstructorGuideModule: IModuleData | null = null;
-  const aiInstructorGuideItemIds: number[] = [];
-  const aiInstructorGuideItemUrls: Array<string | undefined> = [];
+  // TODO; refactor every mention of academic integrity?
+
+  const academicIntegrityCourseId = 7724480;
+  const academicIntegrityModuleId = 12366435;
+  const aiInstructorGuideModuleId = 12366470;
+  const academicIntegrityCourse = await getCourseById(academicIntegrityCourseId);
+
+  // This gets the module data for the instructor guide module in the template course, so we can pull the items that are in it
+  const aiInstructorGuideModule: IModuleData = await fetchJson(
+    `/api/v1/courses/${academicIntegrityCourseId}/modules/${aiInstructorGuideModuleId}/items`,
+    {
+      fetchInit: {
+        method: "GET",
+        body: formDataify({}),
+      },
+    }
+  );
+
+  // This sequence defines the items and then maps ids and urls to their own arrays
+  const aiInstructorGuideModuleItems = aiInstructorGuideModule.items;
+  const aiInstructorGuideItemIds = aiInstructorGuideModuleItems.map((item) => item.id);
+  const aiInstructorGuideItemUrls = aiInstructorGuideModuleItems.map((item) => item.url);
 
   if (!academicIntegrityCourse) {
     alert("Academic integrity course not found.");
@@ -73,41 +90,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
     return;
   }
 
-  for (const module of academicIntegrityModules) {
-    let academicIntegrityModuleFound = false;
-    let aiInstructorGuideModuleFound = false;
-
-    if (module.name === "Academic Integrity") {
-      academicIntegrityModuleIds.push(module.id);
-      academicIntegrityModuleFound = true;
-    } else if (module.name.toLocaleLowerCase().includes("instructor guide resources")) {
-      aiInstructorGuideModule = module;
-      aiInstructorGuideModuleFound = true;
-    }
-
-    if (academicIntegrityModuleFound && aiInstructorGuideModuleFound) {
-      break; // Exit loop early if both modules are found
-    }
-  }
-
-  if (aiInstructorGuideModule && aiInstructorGuideModule.items) {
-    for (const item of aiInstructorGuideModule.items) {
-      aiInstructorGuideItemUrls.push(item.page_url);
-      const page = academicIntegrityPages.find((p) => p.rawData.url === item.page_url);
-      if (page) aiInstructorGuideItemIds.push(page.rawData.page_id);
-      console.log("Found AI Instructor Guide Page ID: ", page?.rawData.page_id);
-    }
-  }
-
-  console.log("AI Instructor Guide Item IDs: ", aiInstructorGuideItemIds);
-
-  if (!academicIntegrityModules) {
-    alert("No modules found in academic integrity course.");
-    setIsRunningIntegritySetup(false);
-    return;
-  }
-
-  // Get module/pages from academic integrity course
+  // Feed module and pages to new course
   const academicIntegrityMigration = await startMigration(academicIntegrityCourse.id, bp.id, {
     fetchInit: {
       body: formDataify({
@@ -117,7 +100,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
           move_to_assignment_group_id: assignmentGroupId,
         },
         select: {
-          modules: academicIntegrityModuleIds,
+          modules: academicIntegrityModuleId,
           pages: aiInstructorGuideItemIds,
         },
       }),
@@ -138,6 +121,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   let instructorResourcesModule: IModuleData | undefined = undefined;
 
   for (const module of updatedModules) {
+    // TODO; Change this to new name
     if (module.name === "Academic Integrity") {
       bpAcademicIntegrityModule = module;
     } else if (module.name.toLocaleLowerCase().includes("leave unpublished")) {
