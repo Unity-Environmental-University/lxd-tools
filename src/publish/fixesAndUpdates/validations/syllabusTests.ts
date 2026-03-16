@@ -731,8 +731,8 @@ type BadUrlData = {
 const makeBeforeAndAfters = (badUrlData: BadUrlData) => {
   const { badUrl, goodUrl } = badUrlData;
   return [
-    [`<a href="${badUrl}">`, `<a href="${goodUrl || badUrl}">`],
-    [`<a href="${badUrl}" target="_blank">`, `<a href="${goodUrl || badUrl}" target="_blank">`],
+    [`<a href="${badUrl}">`, `<a href="${goodUrl}">`],
+    [`<a href="${badUrl}" target="_blank">`, `<a href="${goodUrl}" target="_blank">`],
   ];
 };
 const makeSyllabusUrlCheck: (data: BadUrlData) => CourseFixValidation<ISyllabusHaver> = (data: BadUrlData) => {
