@@ -43,7 +43,6 @@ export function UpdateStartDate({
   endLoading,
   refreshCourse,
   setAffectedItems,
-  setUnaffectedItems,
   setFailedItems,
   setStartDateOutcome,
   onStartDateChangeStart,
@@ -53,12 +52,12 @@ export function UpdateStartDate({
   const [workingStartDate, setWorkingStartDate] = useState<Temporal.PlainDate | null>();
   const [modules, setModules] = useState<IModuleData[] | undefined>();
   const [syllabusText, setSyllabusText] = useState<string | null>(null);
-  const [assignments, setAssignments] = useState<IAssignmentData[] | undefined>();
+  const [_assignments, _setAssignments] = useState<IAssignmentData[] | undefined>();
   const [mismatchError, setMismatchError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
-  const [moduleStartDate, setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
+  const [_moduleStartDate, _setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
   const [assignmentsStartDate, setAssignmentsStartDate] = useState<Temporal.PlainDate | null>(null);
 
   const recalculateStartDate = async () => {

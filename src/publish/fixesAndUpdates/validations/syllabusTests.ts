@@ -16,14 +16,14 @@ import {
   TextReplaceValidation,
 } from "@publish/fixesAndUpdates/validations/types";
 import { paraify } from "@/testing/DomUtils";
-import { getCourseById, Course } from "@ueu/ueu-canvas";
+import { Course } from "@ueu/ueu-canvas";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
   name: "Remove Final",
   beforeAndAfters: [["off the final grade", "off the grade"]],
   description: 'Remove "final" from the grading policy paragraphs of syllabus',
-  run: async (course, config) => {
+  run: async (course, _config) => {
     const syllabus = await course.getSyllabus();
     const match = /off the final grade/gi.test(syllabus);
     return testResult(!match, {
@@ -40,7 +40,7 @@ export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
     'Revise the top sentence of the "Communication" section of the syllabus to read: "The instructor will ' +
     "conduct all correspondence with students related to the class in Canvas, and you should " +
     'expect to receive a response to emails within 24 hours."',
-  run: async (course, config) => {
+  run: async (course, _config) => {
     const syllabus = await course.getSyllabus();
     const testString =
       "The instructor will conduct all correspondence with students related to the class in Canvas, and you should expect to receive a response to emails within 24 hours".toLowerCase();
@@ -57,7 +57,7 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
   name: "Syllabus Credits",
   description: "Credits displayed in summary box of syllabus",
 
-  run: async (course: ISyllabusHaver, config) => {
+  run: async (course: ISyllabusHaver, _config) => {
     const syllabus = await course.getSyllabus();
     const el = document.createElement("div");
     el.innerHTML = syllabus;
@@ -622,17 +622,19 @@ const aiPolicyInfographicLink = "https://drive.google.com/file/d/1Gzbgp5piaQk9PQ
 
 const aiPolicyMediaRun = async (course: ISyllabusHaver) => {
   const syllabus = await course.getSyllabus();
+  const hasVideoLink = syllabus.includes(`"${aiPolicyVideoLink}"`);
+  const hasInfographicLink = syllabus.includes(`"${aiPolicyInfographicLink}"`);
 
-  if (syllabus.includes(aiPolicyVideoLink) && syllabus.includes(aiPolicyInfographicLink)) {
+  if (hasVideoLink && hasInfographicLink) {
     return testResult(true, {
       notFailureMessage: "Syllabus already has infographic and video links in AI Policy section.",
     });
-  } else if (syllabus.includes(aiPolicyVideoLink) && !syllabus.includes(aiPolicyInfographicLink)) {
+  } else if (hasVideoLink && !hasInfographicLink) {
     return testResult(false, {
       failureMessage: "Syllabus does not have infographic link in AI Policy section.",
       links: [`/courses/${course.id}/assignments/syllabus`],
     });
-  } else if (!syllabus.includes(aiPolicyVideoLink) && syllabus.includes(aiPolicyInfographicLink)) {
+  } else if (!hasVideoLink && hasInfographicLink) {
     return testResult(false, {
       failureMessage: "Syllabus does not have video link in AI Policy section.",
       links: [`/courses/${course.id}/assignments/syllabus`],
@@ -705,7 +707,7 @@ export const gradingPolicyTest: TextReplaceValidation<ISyllabusHaver> = {
     ],
   ],
   description: "Update the extenuating circumstances sentence in the grading section of the syllabus",
-  run: async (course, config) => {
+  run: async (course, _config) => {
     const syllabus = await course.getSyllabus();
     const match = /reach out to your instructor as soon as possible/gi.test(syllabus);
     return testResult(!match, {
@@ -736,7 +738,8 @@ const makeBeforeAndAfters = (badUrlData: BadUrlData) => {
 const makeSyllabusUrlCheck: (data: BadUrlData) => CourseFixValidation<ISyllabusHaver> = (data: BadUrlData) => {
   const { badUrl, goodUrl, name } = data;
   let description = data.description;
-  const badUrlRegex = new RegExp(badUrl, "ig");
+  const escapedBadUrl = badUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const badUrlRegex = new RegExp(escapedBadUrl, "ig");
   const run = badSyllabusRunFunc(badUrlRegex);
   const fix = badSyllabusFixFunc(badUrlRegex, goodUrl);
   description ??= `Change ${badUrl} to ${goodUrl} in the syllabus.`;
