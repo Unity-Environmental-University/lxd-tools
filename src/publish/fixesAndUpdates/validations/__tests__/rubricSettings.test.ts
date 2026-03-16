@@ -43,7 +43,7 @@ const rubricsForCourseGen = jest.spyOn(rubricApi, "rubricsForCourseGen");
 const updateRubricAssociation = jest.spyOn(rubricApi, "updateRubricAssociation");
 
 describe("rubrics are set to grade assignments", () => {
-  const config: ICanvasCallConfig = {};
+  const _config: ICanvasCallConfig = {};
 
   it("passes when all rubrics are linked to grade their assignments", async () => {
     const validation = rubricsTiedToGradesTest;

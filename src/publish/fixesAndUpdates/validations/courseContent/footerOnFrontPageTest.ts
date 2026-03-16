@@ -48,7 +48,7 @@ export const footerOnFrontPageFix: OverviewFix = {
     });
 
     const frontPage = await course.getFrontPage();
-    const frontPageData = frontPage?.data;
+    const _frontPageData = frontPage?.data;
     if(footerCheck) return testResult(false, {
        failureMessage: "Failed to find front page on fix"
     });
@@ -79,7 +79,7 @@ function findFooter(body: string | HTMLElement) {
 
 }
 
-async function getContent(courseId: number) {
+async function _getContent(courseId: number) {
     const pageGen = PageKind.dataGenerator(courseId, {
         queryParams: {
             search_term: 'Home',

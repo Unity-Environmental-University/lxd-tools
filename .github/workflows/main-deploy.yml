@@ -46,12 +46,12 @@ jobs:
             --limit 5 \
             | jq --raw-output ".[] | select(.headSha==\"$PR_SHA\") | .databaseId" \
             | head -n1)
-          
+
           if [ -z "$RUN_ID" ]; then
             echo "Error: Could not find build run for SHA $PR_SHA"
             exit 1
           fi
-          
+
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download build artifact
@@ -70,16 +70,16 @@ jobs:
             echo "Error: updates.json not found"
             exit 1
           fi
-          
+
           XPI_FILE=$(ls lxd-extension-*.xpi 2>/dev/null | head -n1)
           if [ -z "$XPI_FILE" ]; then
             echo "Error: No .xpi file found"
             exit 1
           fi
-          
+
           echo "Found files:"
           ls -lh updates.json "$XPI_FILE"
-          
+
           # Export for next step
           echo "xpi_file=$XPI_FILE" >> "$GITHUB_OUTPUT"
         id: verify
@@ -91,7 +91,7 @@ jobs:
           # Files to deploy:
           #   - updates.json
           #   - ${{ steps.verify.outputs.xpi_file }}
-          
+
           echo "Ready to deploy:"
           echo "  - updates.json"
           echo "  - ${{ steps.verify.outputs.xpi_file }}"
@@ -103,7 +103,7 @@ jobs:
       #     mkdir -p ~/.ssh
       #     echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
       #     chmod 600 ~/.ssh/deploy_key
-      #     
+      #
       #     rsync -avz -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
       #       updates.json \
       #       ${{ steps.verify.outputs.xpi_file }} \
