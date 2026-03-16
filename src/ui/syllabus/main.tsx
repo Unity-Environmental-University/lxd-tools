@@ -18,7 +18,7 @@ function addImportButton(location: Element) {
 export function main() {
     // grab the location to add the button to
     const location = Array.from(document.querySelectorAll(".content"))
-        .find(h3 => h3.textContent?.includes("Week 1 Learning Materials"));
+        .find(h3 => h3.textContent?.includes("Week 1 Learning Materials")); // TODO I re-use this little snippet a lot - make a func?
     if (location){
         console.log("adding import button to syllabus")
         addImportButton(location);

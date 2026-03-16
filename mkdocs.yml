@@ -1,0 +1,5 @@
+# This file tells the portal how to handle this repo
+edit_uri: edit/release/3.0.0/docs/
+
+nav:
+  - Knowledge Base: KNOWLEDGE_BASE.md
