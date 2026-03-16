@@ -1,5 +1,5 @@
 import { createNewCourse, getCourseById, getCourseName } from "@ueu/ueu-canvas/course";
-import { Alert, Button, Col, FormControl, FormText, Row } from "react-bootstrap";
+import { Alert, Button, Col, FormControl, Row } from "react-bootstrap";
 import { FormEvent, useEffect, useReducer, useState } from "react";
 import { useEffectAsync } from "@/ui/utils";
 import {
@@ -82,12 +82,13 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   const [termName, setTermName] = useState<string>("");
   const [allMigrations, allMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
   const [activeMigrations, activeMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
-  const [isLocking, setIsLocking] = useState(false);
+  // TODO; Handle no-unused-vars error
+  const [_isLocking, setIsLocking] = useState(false);
   const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
   const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
   const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);
   const [isCloningBp, setCloningBp] = useState(false);
-  const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Set up Academic Integrity`;
+  const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Setup Academic Integrity`;
   useEffect(...callOnChangeFunc(currentBp, onBpSet));
   useEffect(...callOnChangeFunc(termName, onTermNameSet));
   useEffect(...callOnChangeFunc(sections, onSectionsSet));
@@ -334,7 +335,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
                   id={"academicIntegrityButton"}
                   onClick={() => academicIntegritySetup({ currentBp, setIsRunningIntegritySetup })}
                   disabled={isRunningIntegritySetup || !currentBp || isCloningBp}
-                  aria-label={"Set up Academic Integrity in New BP"}
+                  aria-label={"Setup Academic Integrity in New BP"}
                   title="Set up the Academic Integrity content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
                 >
                   {academicIntegrityText}

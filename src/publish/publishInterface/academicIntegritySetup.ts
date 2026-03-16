@@ -2,9 +2,13 @@ import { getCourseById } from "@ueu/ueu-canvas/course";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
 import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
+import "@ueu/ueu-canvas/course/modules";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
+import "@ueu/ueu-canvas/course/blueprint";
+import "@ueu/ueu-canvas";
+import "@/ui/speedGrader/modules";
 
 export interface AcademicIntegritySetupProps {
   currentBp: Course | null;
