@@ -64,80 +64,85 @@ export function UpdateStartDate({
   const recalculateStartDate = async () => {
     setIsLoading(true);
 
-    //Assignment
+    try {
+      //Assignment
 
-    const _assignmentsStartDate = await getStartDateAssignments(course.id);
-    console.log("Assignment Start Date", _assignmentsStartDate?.toLocaleString());
-    setAssignmentsStartDate(_assignmentsStartDate);
+      const _assignmentsStartDate = await getStartDateAssignments(course.id);
+      console.log("Assignment Start Date", _assignmentsStartDate?.toLocaleString());
+      setAssignmentsStartDate(_assignmentsStartDate);
 
-    //Syllabus
-    const localSyllabusText = syllabusText ?? (await course.getSyllabus());
-    if (!syllabusText) {
-      setSyllabusText(localSyllabusText);
-    }
+      //Syllabus
+      const localSyllabusText = syllabusText ?? (await course.getSyllabus());
+      if (!syllabusText) {
+        setSyllabusText(localSyllabusText);
+      }
 
-    const _syllabusStartDate = getStartDateFromSyllabus(localSyllabusText);
-    console.log("Syllabus Start Date", _syllabusStartDate.toLocaleString());
-    setSyllabusStartDate(_syllabusStartDate);
+      const _syllabusStartDate = getStartDateFromSyllabus(localSyllabusText);
+      console.log("Syllabus Start Date", _syllabusStartDate.toLocaleString());
+      setSyllabusStartDate(_syllabusStartDate);
 
-    //Modules
-    const localModules = modules ?? (await renderAsyncGen(moduleGenerator(course.id)));
-    if (modules === undefined) setModules(localModules);
+      //Modules
+      const localModules = modules ?? (await renderAsyncGen(moduleGenerator(course.id)));
+      if (modules === undefined) setModules(localModules);
 
-    /*This isn't necessary anymore because the module start date is hard-set and doesn't flag any problems.
-          Leaving it in incase something changes in the future.
-        if(localModules[0].unlock_at) {
-            const _moduleStartDate = getModuleUnlockStartDate(localModules);
-            console.log("Module Start Date", _moduleStartDate?.toLocaleString());
-            setModuleStartDate(_moduleStartDate);
-        }*/
+      /*This isn't necessary anymore because the module start date is hard-set and doesn't flag any problems.
+            Leaving it in incase something changes in the future.
+          if(localModules[0].unlock_at) {
+              const _moduleStartDate = getModuleUnlockStartDate(localModules);
+              console.log("Module Start Date", _moduleStartDate?.toLocaleString());
+              setModuleStartDate(_moduleStartDate);
+          }*/
 
-    const errors: string[] = [];
+      const errors: string[] = [];
 
-    const syllabusStartMonth = _syllabusStartDate.month;
-    const syllabusStartDay = _syllabusStartDate.day;
+      const syllabusStartMonth = _syllabusStartDate.month;
+      const syllabusStartDay = _syllabusStartDate.day;
 
-    //if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment and module lock do not match");
-    //if(syllabusStartMonth != _moduleStartDate?.month || syllabusStartDay != _moduleStartDate?.day) errors.push("Syllabus and module lock do not match");
-    if (syllabusStartMonth != _assignmentsStartDate.month || syllabusStartDay != _assignmentsStartDate.day)
-      errors.push("Syllabus and assignment dates do not match");
+      //if(!_moduleStartDate || _assignmentsStartDate.until(_moduleStartDate).days != 0) errors.push("Assignment and module lock do not match");
+      //if(syllabusStartMonth != _moduleStartDate?.month || syllabusStartDay != _moduleStartDate?.day) errors.push("Syllabus and module lock do not match");
+      if (syllabusStartMonth != _assignmentsStartDate.month || syllabusStartDay != _assignmentsStartDate.day)
+        errors.push("Syllabus and assignment dates do not match");
 
-    if (errors.length > 0) {
-      const errorString =
-        "Start date mismatch: Syllabus: " +
-        _syllabusStartDate.toLocaleString() +
-        ", Assignments: " +
-        _assignmentsStartDate.toLocaleString();
-      setMismatchError(errorString);
-      setStartDateOutcome?.(errorString);
+      if (errors.length > 0) {
+        const errorString =
+          "Start date mismatch: Syllabus: " +
+          _syllabusStartDate.toLocaleString() +
+          ", Assignments: " +
+          _assignmentsStartDate.toLocaleString();
+        setMismatchError(errorString);
+        setStartDateOutcome?.(errorString);
+        return;
+      }
+
+      console.log("Start Date", _assignmentsStartDate?.toLocaleString());
+      setStartDate(_assignmentsStartDate);
+      setWorkingStartDate(_assignmentsStartDate);
+      setStartDateOutcome?.("success");
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    console.log("Start Date", _assignmentsStartDate?.toLocaleString());
-    setStartDate(_assignmentsStartDate);
-    setWorkingStartDate(_assignmentsStartDate);
-    setStartDateOutcome?.("success");
-
-    setIsLoading(false);
   };
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || mismatchError) return;
     if (!course || !course.id) return;
     if (!assignmentsStartDate || !syllabusStartDate) {
-      recalculateStartDate().catch(console.error);
+      recalculateStartDate().catch((error) => {
+        console.error(error);
+        setMismatchError(error instanceof Error ? error.message : String(error));
+      });
     }
-  }, [recalculateStartDate, course, isLoading]);
+  }, [recalculateStartDate, course, isLoading, mismatchError]);
 
   async function changeStartDate() {
     startLoading();
     onStartDateChangeStart?.();
-    if (!workingStartDate) throw new StartDateNotSetError();
-    const syllabusText = await course.getSyllabus();
     let affectedItems: React.ReactElement[] = [];
 
     try {
+      if (!workingStartDate) throw new StartDateNotSetError();
+      // I've changed this from syllabusText to _syllabusText because syllabusText exists at the top level.
+      const _syllabusText = syllabusText ?? (await course.getSyllabus());
       if (!startDate) throw new StartDateNotSetError();
       const modules = await renderAsyncGen(moduleGenerator(course.id));
       await changeModuleLockDate(course.id, modules[0], workingStartDate);
@@ -165,9 +170,12 @@ export function UpdateStartDate({
         affectedItems.push(ContentAffectedRow(discussion));
       }
 
-      if (!syllabusText) throw new MalformedSyllabusError();
-      const syllabusChanges = await updateSyllabus(syllabusText, workingStartDate, course, startDate);
-      if (syllabusChanges) affectedItems.concat(syllabusChanges);
+      if (!_syllabusText) {
+        alert("There was an issue finding the start date in the syllabus.");
+        throw new MalformedSyllabusError();
+      }
+      const syllabusChanges = await updateSyllabus(_syllabusText, workingStartDate, course, startDate);
+      if (syllabusChanges) affectedItems = affectedItems.concat(syllabusChanges);
 
       setAffectedItems?.(affectedItems);
       await refreshCourse(true);
@@ -183,9 +191,10 @@ export function UpdateStartDate({
         </div>,
       ]);
       console.error(error);
+    } finally {
+      endLoading();
+      onStartDateChangeEnd?.();
     }
-    endLoading();
-    onStartDateChangeEnd?.();
   }
 
   function updateStartDateValue(inDate: Date | null) {
@@ -293,7 +302,7 @@ async function updateAssignmentDates(courseId: number, startDate: PlainDate, wor
   const contentDateOffset = startDate.until(workingStartDate).days;
 
   // Compute expected new dates from raw data BEFORE updateAssignmentDueDates modifies canvasData
-  const newDueDates = rawAssignments.map(a => {
+  const newDueDates = rawAssignments.map((a) => {
     if (!a.due_at) return null;
     const d = new Date(a.due_at);
     d.setDate(d.getDate() + contentDateOffset);

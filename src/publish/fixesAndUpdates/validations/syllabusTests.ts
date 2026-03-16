@@ -676,6 +676,29 @@ export const supportPhoneNumberFix: CourseFixValidation<ISyllabusHaver> = {
   fix: badSyllabusFixFunc(new RegExp(badSupportNumber, "ig"), goodSupportNumber),
 };
 
+export const gradingPolicyTest: TextReplaceValidation<ISyllabusHaver> = {
+  name: "Change 'Extenuating Circumstances' Sentence",
+  beforeAndAfters: [
+    [
+      "If you experience extenuating circumstances that prevent you from completing your work on time, reach out to your instructor as soon as possible.",
+      "If you experience extenuating circumstances that prevent you from completing your work on time, reach out to your instructor before the due date to request an extension.",
+    ],
+  ],
+  description: "Update the extenuating circumstances sentence in the grading section of the syllabus",
+  run: async (course, config) => {
+    const syllabus = await course.getSyllabus();
+    const match = /reach out to your instructor as soon as possible/gi.test(syllabus);
+    return testResult(!match, {
+      failureMessage: ["Outdated sentence found in syllabus"],
+      links: [`/courses/${course.id}/assignments/syllabus`],
+    });
+  },
+  fix: badSyllabusFixFunc(
+    /reach out to your instructor as soon as possible/gi,
+    "reach out to your instructor before the due date to request an extension"
+  ),
+};
+
 type BadUrlData = {
   name: string;
   description?: string;
@@ -736,4 +759,5 @@ export default [
   gradingDeadlineLanguageTest,
   aiPolicyMediaTest,
   supportPhoneNumberFix,
+  gradingPolicyTest,
 ];
