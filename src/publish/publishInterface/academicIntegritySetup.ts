@@ -1,7 +1,7 @@
 import { getCourseById } from "@ueu/ueu-canvas/course";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
-import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
+import { IModuleData, IModuleItemData } from "@ueu/ueu-canvas/canvasDataDefs";
 import "@ueu/ueu-canvas/course/modules";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
 import { Course } from "@ueu/ueu-canvas/course/Course";
@@ -16,8 +16,6 @@ export interface AcademicIntegritySetupProps {
 }
 
 export async function academicIntegritySetup({ currentBp, setIsRunningIntegritySetup }: AcademicIntegritySetupProps) {
-  // TODO; refactor every mention of academic integrity?
-
   const moduleName = "Academic Integrity";
   const academicIntegrityCourseId = 7724480;
   const academicIntegrityModuleId = 12366435;
@@ -69,21 +67,22 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   }
 
   // This gets the module data for the instructor guide module in the template course, so we can pull the items that are in it
-  const aiInstructorGuideModule: IModuleData = await fetchJson(
-    `/api/v1/courses/${academicIntegrityCourseId}/modules/${aiInstructorGuideModuleId}/items`,
-    {
-      fetchInit: {
-        method: "GET",
-        body: formDataify({}),
-      },
-    }
+  const aiInstructorGuideModuleItems: IModuleItemData[] = await fetchJson(
+    `/api/v1/courses/${academicIntegrityCourseId}/modules/${aiInstructorGuideModuleId}/items`
   );
 
-  // This sequence defines the items and then maps ids and urls to their own arrays
-  const aiInstructorGuideModuleItems = aiInstructorGuideModule.items;
-  // WARN; This may be incorrect, old version was pulling rawData.page_id.
-  const aiInstructorGuideItemIds = aiInstructorGuideModuleItems.map((item) => item.id);
-  const aiInstructorGuideItemUrls = aiInstructorGuideModuleItems.map((item) => item.page_url);
+  const academicIntegrityCoursePages = await academicIntegrityCourse.getPages();
+  const aiInstructorGuidePageIds: number[] = [];
+  // Will be 3-20 items max.
+  for (const page of academicIntegrityCoursePages) {
+    // Will only loop for 2-4 items.
+    for (const item of aiInstructorGuideModuleItems) {
+      if (page.name === item.title) {
+        aiInstructorGuidePageIds.push(page.rawData.page_id);
+      }
+    }
+  }
+  const aiInstructorGuidePageUrls = aiInstructorGuideModuleItems.map((item) => item.page_url);
 
   if (!academicIntegrityCourse) {
     alert("Academic integrity course not found.");
@@ -92,17 +91,19 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   }
 
   // Feed module and pages to new course
-  const academicIntegrityMigration = await startMigration(academicIntegrityCourse.id, bp.id, {
+  // WARN; Migration is silently failing
+  // TODO; Use a diff to figure out what is different between this and the version in release/3.0.0(which passes) to figure out what is going wrong here
+  const academicIntegrityMigration = await startMigration(academicIntegrityCourseId, bp.id, {
     fetchInit: {
       body: formDataify({
         migration_type: "course_copy_importer",
         settings: {
-          source_course_id: academicIntegrityCourse.id,
+          source_course_id: academicIntegrityCourseId,
           move_to_assignment_group_id: assignmentGroupId,
         },
         select: {
           modules: academicIntegrityModuleId,
-          pages: aiInstructorGuideItemIds,
+          pages: aiInstructorGuidePageIds,
         },
       }),
     },
@@ -129,6 +130,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
     }
   }
 
+  // WARN; Getting stuck here.
   if (!bpAcademicIntegrityModule) {
     alert("There was an error finding the Academic Integrity module in the BP after migration.");
     setIsRunningIntegritySetup(false);
@@ -178,8 +180,8 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
 
   const pages = await bp.getPages();
   console.log("All BP Pages: ", pages);
-  console.log("AI Instructor Guide Item URLs: ", aiInstructorGuideItemUrls);
-  const aiInstructorGuideItems = pages?.filter((page) => aiInstructorGuideItemUrls.includes(page.rawData.url));
+  console.log("AI Instructor Guide Item URLs: ", aiInstructorGuidePageUrls);
+  const aiInstructorGuideItems = pages?.filter((page) => aiInstructorGuidePageUrls.includes(page.rawData.url));
 
   console.log("aiInstructorGuideItems after filter: ", aiInstructorGuideItems);
 
