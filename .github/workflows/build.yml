@@ -41,8 +41,8 @@ jobs:
       - name: Pack Chrome extension
         working-directory: lxd-tools
         run: |
-          google-chrome --no-sandbox --pack-extension=../dist --pack-extension-key=chrome-key.pem
-          mv ../dist.crx "../dist/lxd-extension-$(node -p 'require("./package.json").version').crx"
+          VERSION=$(node -p 'require("./package.json").version')
+          npx crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${VERSION}.crx"
 
       - name: Sign Firefox extension
         working-directory: lxd-tools
