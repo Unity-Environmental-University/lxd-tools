@@ -83,16 +83,16 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   for (const page of academicIntegrityCoursePages) {
     // Will only loop for 2-4 items.
     for (const item of aiInstructorGuideModuleItems) {
-      if (page.rawData.page_url === item.page_url) {
+      if (page.rawData.url === item.page_url) {
         aiInstructorGuidePageIds.push(page.rawData.page_id);
       }
     }
   }
+  console.log(aiInstructorGuidePageIds);
+
   const aiInstructorGuidePageUrls = aiInstructorGuideModuleItems.map((item) => item.page_url);
 
   // Feed module and pages to new course
-  // WARN; Migration is silently failing
-  // TODO; Use a diff to figure out what is different between this and the version in release/3.0.0(which passes) to figure out what is going wrong here
   const academicIntegrityMigration = await startMigration(academicIntegrityCourseId, bp.id, {
     fetchInit: {
       body: formDataify({
@@ -130,7 +130,6 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
     }
   }
 
-  // WARN; Getting stuck here.
   if (!bpAcademicIntegrityModule) {
     alert("There was an error finding the Academic Integrity module in the BP after migration.");
     setIsRunningIntegritySetup(false);
