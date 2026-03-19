@@ -12,8 +12,6 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
-const ZipPlugin = require("zip-webpack-plugin");
-
 const BASE_URL = "https://pub-e093b9937e354d06a34b1b37978bda8e.r2.dev";
 
 const entry = {
@@ -184,19 +182,6 @@ const createPlugins = () => [
     }
   }),
   ...getHtmlPlugins(["popup"]),
-  new ZipPlugin({
-    path: outputPath,
-    filename: `lxd-extension-${packageJson.version}`,
-    fileOptions: {
-      mtime: new Date(),
-      mode: 0o100644,
-    },
-    zipOptions: {
-      forceZip64: false,
-      zlib: { level: 9 },
-    },
-    extension: "xpi",
-  }),
 ];
 
 module.exports = {

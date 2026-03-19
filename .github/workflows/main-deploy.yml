@@ -75,7 +75,7 @@ jobs:
             --channel unlisted \
             --artifacts-dir ../dist
           VERSION=$(node -p 'require("./package.json").version')
-          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" -newer ../dist/manifest.json | head -1)
+          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
           mv "$SIGNED" "../dist/lxd-extension-${VERSION}.xpi"
 
       - name: Find necessary files
