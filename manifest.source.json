@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzQzhDuKyCO7xlRl7UCE9eL64eWTTT+6bHnClBDHcKWo/gVzS1nQKc4PYgtmJVgpT2rGOjcsmCp7WOidyxp4lkv9lADg3PVfah3q7wrIPfya6v3izkhxXh8x0A12yVd9NVDKaT/z7H0i9RwRYoWh9sZN20i2GVlt9uR6nka5tIk89Cn7hofh9VokKhePRiiTRUbTkqNJKSDhK2Q/Bcl5Qjj5WmRua0ayc94dUDxsWeA3k34a1SnFlnDmKqbXofndTOj3g+ZFO9uDoV09b+KhP/kHK3Ta58+XPQTUkbf7KbO5eJBDGCqMmSnssCWh+tk/wr6Yqqn6aakQGHvgcZlh4swIDAQAB%",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzQzhDuKyCO7xlRl7UCE9eL64eWTTT+6bHnClBDHcKWo/gVzS1nQKc4PYgtmJVgpT2rGOjcsmCp7WOidyxp4lkv9lADg3PVfah3q7wrIPfya6v3izkhxXh8x0A12yVd9NVDKaT/z7H0i9RwRYoWh9sZN20i2GVlt9uR6nka5tIk89Cn7hofh9VokKhePRiiTRUbTkqNJKSDhK2Q/Bcl5Qjj5WmRua0ayc94dUDxsWeA3k34a1SnFlnDmKqbXofndTOj3g+ZFO9uDoV09b+KhP/kHK3Ta58+XPQTUkbf7KbO5eJBDGCqMmSnssCWh+tk/wr6Yqqn6aakQGHvgcZlh4swIDAQAB",
   "name": "LXD Browser Extension",
   "description": "Extension for LXD team",
   "browser_specific_settings": {
