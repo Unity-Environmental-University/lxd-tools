@@ -1,0 +1,63 @@
+name: Build testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build"
+        required: true
+        default: "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          path: lxd-tools
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install lxd-tools dependencies
+        working-directory: lxd-tools
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm cache clean --force
+          npm install
+          npm install @testing-library/react --save-dev
+
+      - name: Build extension
+        working-directory: lxd-tools
+        run: npm run build
+
+      - name: Find necessary files
+        id: find_files
+        run: |
+          XPI=$(find dist/ -maxdepth 1 -name "lxd-extension-*.xpi" | head -1)
+          UPDATES_JSON="dist/updates.json"
+          UPDATE_XML="dist/update.xml"
+
+          if [ -z "$XPI" ]; then echo "ERROR: .xpi not found" && exit 1; fi
+          if [ ! -f "$UPDATES_JSON" ]; then echo "ERROR: updates.json not found" && exit 1; fi
+          if [ ! -f "$UPDATE_XML" ]; then echo "ERROR: update.xml not found" && exit 1; fi
+
+          echo "xpi=$XPI" >> $GITHUB_OUTPUT
+          echo "updates_json=$UPDATES_JSON" >> $GITHUB_OUTPUT
+          echo "update_xml=$UPDATE_XML" >> $GITHUB_OUTPUT
+          echo "Found: $XPI, $UPDATES_JSON, $UPDATE_XML"
+
+      - name: Send files to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+        run: |
+          aws s3 cp ${{ steps.find_files.outputs.xpi }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT
+          aws s3 cp ${{ steps.find_files.outputs.updates_json }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT
+          aws s3 cp ${{ steps.find_files.outputs.update_xml }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT
