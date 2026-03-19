@@ -66,6 +66,12 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
     assignmentGroupId = assignmentGroups[0]?.id || 0;
   }
 
+  if (!academicIntegrityCourse) {
+    alert("Academic integrity course not found.");
+    setIsRunningIntegritySetup(false);
+    return;
+  }
+
   // This gets the module data for the instructor guide module in the template course, so we can pull the items that are in it
   const aiInstructorGuideModuleItems: IModuleItemData[] = await fetchJson(
     `/api/v1/courses/${academicIntegrityCourseId}/modules/${aiInstructorGuideModuleId}/items`
@@ -77,18 +83,12 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   for (const page of academicIntegrityCoursePages) {
     // Will only loop for 2-4 items.
     for (const item of aiInstructorGuideModuleItems) {
-      if (page.name === item.title) {
+      if (page.rawData.page_url === item.page_url) {
         aiInstructorGuidePageIds.push(page.rawData.page_id);
       }
     }
   }
   const aiInstructorGuidePageUrls = aiInstructorGuideModuleItems.map((item) => item.page_url);
-
-  if (!academicIntegrityCourse) {
-    alert("Academic integrity course not found.");
-    setIsRunningIntegritySetup(false);
-    return;
-  }
 
   // Feed module and pages to new course
   // WARN; Migration is silently failing
@@ -102,7 +102,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
           move_to_assignment_group_id: assignmentGroupId,
         },
         select: {
-          modules: academicIntegrityModuleId,
+          modules: [academicIntegrityModuleId],
           pages: aiInstructorGuidePageIds,
         },
       }),
