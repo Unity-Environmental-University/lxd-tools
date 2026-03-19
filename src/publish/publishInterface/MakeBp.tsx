@@ -82,7 +82,6 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   const [termName, setTermName] = useState<string>("");
   const [allMigrations, allMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
   const [activeMigrations, activeMigrationDispatcher] = useReducer(listDispatcher<SavedMigration>, []);
-  // TODO; Handle no-unused-vars error
   const [_isLocking, setIsLocking] = useState(false);
   const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
   const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
