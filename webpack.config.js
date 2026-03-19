@@ -14,6 +14,8 @@ const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
 const ZipPlugin = require("zip-webpack-plugin");
 
+const BASE_URL = "https://pub-e093b9937e354d06a34b1b37978bda8e.r2.dev";
+
 const entry = {
   popup: "./src/popup",
   "js/background": "./src/background",
@@ -108,7 +110,7 @@ function getHtmlPlugins(chunks) {
 }
 
 const transformManifest = (content) => {
-  let manifest = JSON.parse(content.toString());
+  let manifest = JSON.parse(content.toString().replace(/\$BASE_URL\$/g, BASE_URL));
   manifest.version = packageJson.version;
 
   return JSON.stringify(manifest, null, 2);
@@ -132,13 +134,15 @@ const transformUpdates = (content) => {
   updates.addons["lxd-extension@unity.edu"].updates[0].version = packageJson.version;
   updates.addons[
     "lxd-extension@unity.edu"
-  ].updates[0].update_link = `https://pub-e093b9937e354d06a34b1b37978bda8e.r2.dev/lxd-extension-${packageJson.version}.xpi`;
+  ].updates[0].update_link = `${BASE_URL}/lxd-extension-${packageJson.version}.xpi`;
 
   return JSON.stringify(updates, null, 2);
 };
 
 const transformUpdateXml = (content) => {
-  return content.toString().replace(/\$VERSION\$/g, packageJson.version);
+  return content.toString()
+    .replace(/\$VERSION\$/g, packageJson.version)
+    .replace(/\$BASE_URL\$/g, BASE_URL);
 };
 
 const createPlugins = () => [

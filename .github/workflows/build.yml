@@ -56,6 +56,9 @@ jobs:
             --api-secret $WEB_EXT_API_SECRET \
             --channel unlisted \
             --artifacts-dir ../dist
+          VERSION=$(node -p 'require("./package.json").version')
+          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" -newer ../dist/manifest.json | head -1)
+          mv "$SIGNED" "../dist/lxd-extension-${VERSION}.xpi"
 
       - name: Find necessary files
         id: find_files

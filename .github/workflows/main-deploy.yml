@@ -5,90 +5,153 @@ on:
     branches:
       - main
     types: [closed]
+  # TODO: remove workflow_dispatch once pipeline is verified
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "lxd-tools-build target branch"
+        required: true
+        default: "beta"
 
 jobs:
   deploy_if_merged:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
 
     steps:
       - name: Checkout lxd-tools
         uses: actions/checkout@v4
         with:
           path: lxd-tools
+          fetch-tags: true
 
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gh
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-      - name: Authenticate GitHub CLI
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-
-      - name: Find pr-build run ID
-        id: find_run
+      - name: Install dependencies
         working-directory: lxd-tools
         run: |
-          PR_SHA=${{ github.event.pull_request.head.sha }}
-          RUN_ID=$(gh run list \
-            --workflow "lxd-tools build" \
-            --json databaseId,headSha \
-            --limit 5 \
-            | jq --raw-output ".[] | select(.headSha==\"$PR_SHA\") | .databaseId" \
-            | head -n1)
+          npm config set registry https://registry.npmjs.org/
+          npm cache clean --force
+          npm install
+          npm install @testing-library/react --save-dev
 
-          if [ -z "$RUN_ID" ]; then
-            echo "Error: Could not find build run for SHA $PR_SHA"
+      - name: Check version is not already deployed
+        working-directory: lxd-tools
+        run: |
+          VERSION=$(node -p 'require("./package.json").version')
+          if git tag | grep -qx "$VERSION"; then
+            echo "ERROR: Version $VERSION has already been deployed. Update package.json version before merging."
             exit 1
           fi
 
-          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+      - name: Write Chrome key
+        run: echo "${{ secrets.CHROME_KEY_PEM_B64 }}" | base64 -d > lxd-tools/chrome-key.pem
 
-      - name: Download build artifact
+      - name: Build extension
+        working-directory: lxd-tools
+        run: npm run build
+
+      - name: Pack Chrome extension
         working-directory: lxd-tools
         run: |
-          mkdir -p dist
-          gh run download ${{ steps.find_run.outputs.run_id }} \
-            --name lxd-tools \
-            --dir dist
+          VERSION=$(node -p 'require("./package.json").version')
+          npx crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${VERSION}.crx"
 
-      - name: Checkout lxd-tools-build & update beta branch
+      - name: Sign Firefox extension
+        working-directory: lxd-tools
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+        run: |
+          npx web-ext sign \
+            --source-dir ../dist \
+            --api-key $WEB_EXT_API_KEY \
+            --api-secret $WEB_EXT_API_SECRET \
+            --channel unlisted \
+            --artifacts-dir ../dist
+          VERSION=$(node -p 'require("./package.json").version')
+          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" -newer ../dist/manifest.json | head -1)
+          mv "$SIGNED" "../dist/lxd-extension-${VERSION}.xpi"
+
+      - name: Find necessary files
+        id: find_files
+        run: |
+          XPI=$(find dist/ -maxdepth 1 -name "*.xpi" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+          CRX=$(find dist/ -maxdepth 1 -name "lxd-extension-*.crx" | head -1)
+          UPDATES_JSON="dist/updates.json"
+          UPDATE_XML="dist/update.xml"
+
+          if [ -z "$XPI" ]; then echo "ERROR: .xpi not found" && exit 1; fi
+          if [ -z "$CRX" ]; then echo "ERROR: .crx not found" && exit 1; fi
+          if [ ! -f "$UPDATES_JSON" ]; then echo "ERROR: updates.json not found" && exit 1; fi
+          if [ ! -f "$UPDATE_XML" ]; then echo "ERROR: update.xml not found" && exit 1; fi
+
+          echo "xpi=$XPI" >> $GITHUB_OUTPUT
+          echo "crx=$CRX" >> $GITHUB_OUTPUT
+          echo "updates_json=$UPDATES_JSON" >> $GITHUB_OUTPUT
+          echo "update_xml=$UPDATE_XML" >> $GITHUB_OUTPUT
+          echo "Found: $XPI, $CRX, $UPDATES_JSON, $UPDATE_XML"
+
+      - name: Send files to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+        run: |
+          aws s3 cp ${{ steps.find_files.outputs.xpi }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/x-xpinstall"
+          aws s3 cp ${{ steps.find_files.outputs.crx }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/x-chrome-extension"
+          aws s3 cp ${{ steps.find_files.outputs.updates_json }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/json"
+          aws s3 cp ${{ steps.find_files.outputs.update_xml }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/xml"
+
+      - name: Prune old versions from R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          for ext in xpi crx; do
+            aws s3 ls s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT \
+              | awk '{print $4}' \
+              | grep "^lxd-extension-.*\.$ext$" \
+              | sort -V \
+              | head -n -5 \
+              | while read -r key; do
+                  echo "Deleting old version: $key"
+                  aws s3 rm s3://$R2_BUCKET/$key --endpoint-url $R2_ENDPOINT
+                done
+          done
+
+      - name: Push to lxd-tools-build
         run: |
           git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
           cd lxd-tools-build
           git fetch origin
-          if git ls-remote --exit-code --heads origin beta; then
-            git checkout beta
-            git reset --hard origin/beta
-          else
-            git checkout -b beta
-            git push -u origin beta
-          fi
-
-      - name: Deploy to lxd-tools-build
-        run: |
-          cd lxd-tools-build
+          DEPLOY_BRANCH=${{ github.event.inputs.build_branch || 'main' }}
+          git checkout $DEPLOY_BRANCH || git checkout -b $DEPLOY_BRANCH
+          git reset --hard origin/$DEPLOY_BRANCH 2>/dev/null || true
           rm -rf ./*
-          cp -r ../lxd-tools/dist/* .
+          cp -r ../dist/* .
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add --all
-          git commit -m "Deploy beta build from PR #${{ github.event.pull_request.number }}" || echo "No changes to commit"
-          git push origin beta
+          git commit -m "Deploy ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})" || echo "No changes to commit"
+          git push origin $DEPLOY_BRANCH
 
-      - name: Tag beta with version
+      - name: Tag deployed version and create release branch
+        working-directory: lxd-tools
         run: |
-          cd lxd-tools-build
-          VERSION=$(jq -r .version manifest.json)
-          TAG="beta-$VERSION"
-          echo "Tagging as $TAG"
-          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
-            git tag "$TAG"
-            git push origin "$TAG"
-          else
-            echo "Tag $TAG already exists, skipping"
-          fi
+          VERSION=$(node -p 'require("./package.json").version')
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+          git checkout -b "release/$VERSION"
+          git push origin "release/$VERSION"

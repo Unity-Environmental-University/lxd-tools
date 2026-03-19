@@ -10,7 +10,7 @@
         "required": ["none"]
       },
       "strict_min_version": "128.0",
-      "update_url": "https://pub-e093b9937e354d06a34b1b37978bda8e.r2.dev/updates.json"
+      "update_url": "$BASE_URL$/updates.json"
     }
   },
   "action": {
@@ -94,6 +94,6 @@
   "permissions": ["activeTab", "scripting", "storage", "downloads"],
   "host_permissions": ["*://*.inscloudgate.com/*", "*://*.canvas-user-content.com/*", "*://*.instructure.com/*"],
   "optional_host_permissions": [],
-  "update_url": "https://pub-e093b9937e354d06a34b1b37978bda8e.r2.dev/update.xml",
+  "update_url": "$BASE_URL$/update.xml",
   "version": "1.0.0"
 }
