@@ -31,25 +31,48 @@ jobs:
           npm install
           npm install @testing-library/react --save-dev
 
+      - name: Write Chrome key
+        run: echo "${{ secrets.CHROME_KEY_PEM_B64 }}" | base64 -d > lxd-tools/chrome-key.pem
+
       - name: Build extension
         working-directory: lxd-tools
         run: npm run build
 
+      - name: Pack Chrome extension
+        working-directory: lxd-tools
+        run: npm run pack:crx
+
+      - name: Sign Firefox extension
+        working-directory: lxd-tools
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+        run: |
+          npx web-ext sign \
+            --source-dir ../dist \
+            --api-key $WEB_EXT_API_KEY \
+            --api-secret $WEB_EXT_API_SECRET \
+            --channel unlisted \
+            --artifacts-dir ../dist
+
       - name: Find necessary files
         id: find_files
         run: |
-          XPI=$(find dist/ -maxdepth 1 -name "lxd-extension-*.xpi" | head -1)
+          XPI=$(find dist/ -maxdepth 1 -name "*.xpi" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+          CRX=$(find dist/ -maxdepth 1 -name "lxd-extension-*.crx" | head -1)
           UPDATES_JSON="dist/updates.json"
           UPDATE_XML="dist/update.xml"
 
           if [ -z "$XPI" ]; then echo "ERROR: .xpi not found" && exit 1; fi
+          if [ -z "$CRX" ]; then echo "ERROR: .crx not found" && exit 1; fi
           if [ ! -f "$UPDATES_JSON" ]; then echo "ERROR: updates.json not found" && exit 1; fi
           if [ ! -f "$UPDATE_XML" ]; then echo "ERROR: update.xml not found" && exit 1; fi
 
           echo "xpi=$XPI" >> $GITHUB_OUTPUT
+          echo "crx=$CRX" >> $GITHUB_OUTPUT
           echo "updates_json=$UPDATES_JSON" >> $GITHUB_OUTPUT
           echo "update_xml=$UPDATE_XML" >> $GITHUB_OUTPUT
-          echo "Found: $XPI, $UPDATES_JSON, $UPDATE_XML"
+          echo "Found: $XPI, $CRX, $UPDATES_JSON, $UPDATE_XML"
 
       - name: Send files to Cloudflare R2
         env:
@@ -58,6 +81,27 @@ jobs:
           AWS_DEFAULT_REGION: auto
           R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
         run: |
-          aws s3 cp ${{ steps.find_files.outputs.xpi }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT
-          aws s3 cp ${{ steps.find_files.outputs.updates_json }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT
-          aws s3 cp ${{ steps.find_files.outputs.update_xml }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT
+          aws s3 cp ${{ steps.find_files.outputs.xpi }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/x-xpinstall"
+          aws s3 cp ${{ steps.find_files.outputs.crx }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/x-chrome-extension"
+          aws s3 cp ${{ steps.find_files.outputs.updates_json }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/json"
+          aws s3 cp ${{ steps.find_files.outputs.update_xml }} s3://${{ secrets.R2_BUCKET_NAME }}/ --endpoint-url $R2_ENDPOINT --content-type "application/xml"
+
+      - name: Prune old versions from R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          for ext in xpi crx; do
+            aws s3 ls s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT \
+              | awk '{print $4}' \
+              | grep "^lxd-extension-.*\.$ext$" \
+              | sort -V \
+              | head -n -5 \
+              | while read -r key; do
+                  echo "Deleting old version: $key"
+                  aws s3 rm s3://$R2_BUCKET/$key --endpoint-url $R2_ENDPOINT
+                done
+          done
