@@ -12,6 +12,38 @@ jest.mock("@ueu/ueu-canvas/content/pages/PageKind");
 
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
+const ugValidBody = `
+  <div>By participating in this course, you agree:
+    unity de student handbook
+    what happens if this occurs more than once
+    in all terms:
+    first term:
+    second term:
+    third term:
+    why we do this
+    resubmission (if permitted) is limited to 50%
+    learning module
+    academic honor code supersedes the grading rubric
+  </div>
+  <div>Please confirm your agreement to the three numbered items above</div>
+`;
+
+const gradValidBody = `
+  <div>By participating in this course, you agree:
+    graduate academic honor code
+    expects graduate students
+    how violations are addressed
+    first low-level issue
+    level 1
+    level 2
+    level 3
+    level 4
+    cumulative across terms
+    capstone course
+  </div>
+  <div>you acknowledge that you have read and agree to comply. confirm your agreement</div>
+`;
+
 describe("courseOverviewLanguageTest - Full Suite", () => {
   let mockCourse: Course;
 
@@ -19,25 +51,19 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
     jest.clearAllMocks();
 
     mockCourse = new Course(mockCourseData);
-    PageKind.get = jest.fn().mockResolvedValue({...mockPageData, title: "Course Overview", url: "course-overview", body: `<div>By participating in this course, you agree: code of conduct unity de student handbook honor code academic integrity plagiarism what happens if this occurs more than once first term: second term: third term:</div>
-        <div>Please confirm your agreement to the three numbered items above</div>`});
 
     (getCourseById as jest.Mock).mockResolvedValue({
       isUndergrad: () => true,
+      isGrad: () => false,
     });
   });
 
   describe("run() logic", () => {
-    it("should succeed when all key phrases and confirmation text are present", async () => {
-      const validBody = `
-        <div>By participating in this course, you agree: code of conduct unity de student handbook honor code academic integrity plagiarism what happens if this occurs more than once first term: second term: third term:</div>
-        <div>Please confirm your agreement to the three numbered items above</div>
-      `;
-
+    it("should succeed for UG when all key phrases and confirmation text are present", async () => {
       mockCourse.getPages = jest.fn().mockResolvedValue([
         {
           title: "Course Overview",
-          body: validBody,
+          body: ugValidBody,
           rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
         },
       ]);
@@ -49,23 +75,94 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
       expect(result.userData?.overviewPage.title).toBe("Course Overview");
     });
 
-    it("should return 'not run' if no course overview page is found", async () => {
+    it("should fail for UG when key phrases are missing", async () => {
+      mockCourse.getPages = jest.fn().mockResolvedValue([
+        {
+          title: "Course Overview",
+          body: `<div>By participating in this course, you agree: some wrong text</div><div>confirm your agreement</div>`,
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+        },
+      ]);
+
+      const result = await courseOverviewLanguageTest.run(mockCourse);
+      expect(result.success).toBe(false);
+    });
+
+    it("should succeed for grad when all key phrases and confirmation text are present", async () => {
+      (getCourseById as jest.Mock).mockResolvedValue({
+        isUndergrad: () => false,
+        isGrad: () => true,
+      });
+
+      mockCourse.getPages = jest.fn().mockResolvedValue([
+        {
+          title: "Course Overview",
+          body: gradValidBody,
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+        },
+      ]);
+
+      const result = await courseOverviewLanguageTest.run(mockCourse);
+      expect(result.success).toBe(true);
+    });
+
+    it("should fail for grad when key phrases are missing", async () => {
+      (getCourseById as jest.Mock).mockResolvedValue({
+        isUndergrad: () => false,
+        isGrad: () => true,
+      });
+
+      mockCourse.getPages = jest.fn().mockResolvedValue([
+        {
+          title: "Course Overview",
+          body: `<div>By participating in this course, you agree: some wrong text</div><div>confirm your agreement</div>`,
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+        },
+      ]);
+
+      const result = await courseOverviewLanguageTest.run(mockCourse);
+      expect(result.success).toBe(false);
+    });
+
+    it("should return 'not run' if the course is neither undergrad nor grad", async () => {
+      (getCourseById as jest.Mock).mockResolvedValue({
+        isUndergrad: () => false,
+        isGrad: () => false,
+      });
+
+      mockCourse.getPages = jest.fn().mockResolvedValue([]);
+
+      const result = await courseOverviewLanguageTest.run(mockCourse);
+      expect(result.success).toBe("not run");
+    });
+
+    it("should return false if no pages are found", async () => {
       (mockCourse.getPages as jest.Mock).mockResolvedValue([]);
       const result = await courseOverviewLanguageTest.run(mockCourse);
       expect(result.success).toBe(false);
-      expect(result.messages).toEqual([{ bodyLines: ["Course Overview page not found"] }]);
+      expect(result.messages).toEqual([{ bodyLines: ["Unable to find pages in the course."] }]);
     });
   });
 
   describe("fix() logic", () => {
     const mockCourseOverviewPage: IPageData = {...mockPageData, title: "Course Overview", url: "course-overview", body: `<div>Wrong text.</div>
       <div>By participating in this course, you agree:</div>`};
-    
-    const mockUserData = {
+
+    const ugMockUserData = {
       overviewPage: mockCourseOverviewPage,
       honorCodeDiv: { innerHTML: "OLD_HONOR_CODE" } as HTMLDivElement,
       confirmDiv: { innerHTML: "OLD_CONFIRM" } as HTMLDivElement,
+      courseObj: { isUndergrad: () => true, isGrad: () => false } as unknown as Course,
     };
+
+    const gradMockUserData = {
+      overviewPage: mockCourseOverviewPage,
+      honorCodeDiv: { innerHTML: "OLD_HONOR_CODE" } as HTMLDivElement,
+      confirmDiv: { innerHTML: "OLD_CONFIRM" } as HTMLDivElement,
+      courseObj: { isUndergrad: () => false, isGrad: () => true } as unknown as Course,
+    };
+
+    const mockUserData = ugMockUserData;
 
     it("should skip the fix if the test was already a success", async () => {
       const successfulResult = testResult(true, {
@@ -111,6 +208,22 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
       expect(result.messages).toEqual([
         { bodyLines: ["Failed to update course overview page."] },
       ]);
+    });
+
+    it("should attempt to update the page for a grad course", async () => {
+      const failedResult = testResult(false, { userData: gradMockUserData });
+
+      const putMock = PageKind.put as jest.Mock;
+      putMock.mockResolvedValue({
+        ...mockPageData,
+        page_id: "course-overview",
+        body: "Some body text",
+      });
+
+      const result = await courseOverviewLanguageTest.fix(mockCourse, failedResult);
+
+      expect(result.success).toBe(true);
+      expect(result.messages).toEqual([{"bodyLines": ["Course overview updated successfully."]}]);
     });
 
     it("should return 'not run' if result or userData is missing", async () => {
