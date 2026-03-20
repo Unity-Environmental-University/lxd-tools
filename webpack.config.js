@@ -12,7 +12,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
-const BASE_URL = "https://pub-e093b9937e354d06a34b1b37978bda8e.r2.dev";
+const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu/";
 
 const entry = {
   popup: "./src/popup",
@@ -138,7 +138,8 @@ const transformUpdates = (content) => {
 };
 
 const transformUpdateXml = (content) => {
-  return content.toString()
+  return content
+    .toString()
     .replace(/\$VERSION\$/g, packageJson.version)
     .replace(/\$BASE_URL\$/g, BASE_URL);
 };
