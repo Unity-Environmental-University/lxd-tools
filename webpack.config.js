@@ -7,7 +7,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const packageJson = require("./package.json");
 const { TsconfigPathsPlugin } = require("tsconfig-paths-webpack-plugin");
-const dotenv = require("dotenv").config({ path: __dirname + "/.env" });
+const _dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 const isDevelopment = process.env.NODE_ENV !== "production";
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
@@ -26,7 +26,7 @@ const entry = {
   "js/ui/course": "./src/ui/course",
   "js/ui/account": "./src/ui/account",
   "js/ui/module": "./src/ui/module",
-  //'js/ui/syllabus': './src/ui/syllabus',
+  "js/ui/syllabus": "./src/ui/syllabus",
 
   "js/rubricOrganize": "./src/ui/rubricOrganize/rubricOrganize.ts",
 };

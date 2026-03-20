@@ -1,38 +1,39 @@
 import { RootState } from "../store";
-import {KalturaAppDispatch} from "@publish/publishInterface/videoUpdater/data/store";
-import {createAsyncThunk} from "@reduxjs/toolkit";
-import {migrationFailed, updateMigration} from "@publish/publishInterface/videoUpdater/data/kalturaMigrationsSlice";
-import {MigrationVideo} from "@publish/publishInterface/videoUpdater/data/types";
+import { KalturaAppDispatch } from "@publish/publishInterface/videoUpdater/data/store";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { migrationFailed, updateMigration } from "@publish/publishInterface/videoUpdater/data/kalturaMigrationsSlice";
+import { MigrationVideo } from "@publish/publishInterface/videoUpdater/data/types";
 
 // Mock function to apply the modified links to the relevant pages and assignments
-export async function applyModifiedLinksToPages(modifiedVideos: MigrationVideo[]): Promise<void> {
-    // Stub: Replace with actual logic to apply links to the pages/assignments
+export async function applyModifiedLinksToPages(_modifiedVideos: MigrationVideo[]): Promise<void> {
+  // Stub: Replace with actual logic to apply links to the pages/assignments
 }
 
-const finalizeMigration = createAsyncThunk<void, { id: string }, {
-    state: RootState,
+const finalizeMigration = createAsyncThunk<
+  void,
+  { id: string },
+  {
+    state: RootState;
     dispatch: KalturaAppDispatch;
-}>(
-    'kaltura/finalizeMigration',
-    async ({ id }, { dispatch, getState }) => {
-        const state = getState();
-        const migration = state.kaltura.migrations[id];
+  }
+>("kaltura/finalizeMigration", async ({ id }, { dispatch, getState }) => {
+  const state = getState();
+  const migration = state.kaltura.migrations[id];
 
-        if (!migration) {
-            dispatch(migrationFailed({ id, error: 'Migration not found' }));
-            return;
-        }
+  if (!migration) {
+    dispatch(migrationFailed({ id, error: "Migration not found" }));
+    return;
+  }
 
-        try {
-            // Apply the modified links from the migration details to the pages and assignments
-            await applyModifiedLinksToPages(migration.processedVideos);
+  try {
+    // Apply the modified links from the migration details to the pages and assignments
+    await applyModifiedLinksToPages(migration.processedVideos);
 
-            // Update migration status to 'successful' if the application is successful
-            dispatch(updateMigration({ ...migration, status: 'successful' }));
-        } catch (error) {
-            dispatch(migrationFailed({ id, error: (error as Error).message }));
-        }
-    }
-);
+    // Update migration status to 'successful' if the application is successful
+    dispatch(updateMigration({ ...migration, status: "successful" }));
+  } catch (error) {
+    dispatch(migrationFailed({ id, error: (error as Error).message }));
+  }
+});
 
 export default finalizeMigration;

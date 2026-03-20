@@ -106,8 +106,8 @@ function CourseNavigation() {
 function SalesforceNavigation() {
     const [ isDisabled, setIsDisabled ] = useState<boolean>(false);
     const [ option, setOption ] = useState<string>(" ");
-    const [ queryString, setQueryString ] = useState<string | null>(null);
-    const [ textEntryEnabled, setTextEntryEnabled ] = useState<boolean>(false);
+    const [ _queryString, _setQueryString ] = useState<string | null>(null);
+    const [ _textEntryEnabled, setTextEntryEnabled ] = useState<boolean>(false);
     const [ error, setError ] = useState<string | null>(null);
 
     /*This isn't currently working, but I'm leaving it because it's closer than not and would be a nice feature to have.
@@ -201,7 +201,7 @@ function SalesforceNavigation() {
 
 function SetOpenAiKey() {
     const [key, setKey] = useState<string>('');
-    const [saved, setSaved] = useState(false);
+    const [saved, _setSaved] = useState(false);
     async function saveKey(keyToSave:string) {
         await storage.local.set({ [OPEN_AI_API_KEY_KEY] : keyToSave});
     }

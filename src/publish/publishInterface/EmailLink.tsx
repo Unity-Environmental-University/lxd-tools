@@ -8,7 +8,6 @@ import { ITermData } from "@ueu/ueu-canvas/term/Term";
 import { PUBLISH_FORM_EMAIL_TEMPLATE_URL } from "@/publish/consts";
 import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
-import { env } from "node:process";
 
 // Simple cache to store email templates by course ID
 const emailTemplateCache = new Map<number, Promise<string>>();

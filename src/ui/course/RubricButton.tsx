@@ -1,9 +1,5 @@
 import { Course } from "@ueu/ueu-canvas/course/Course";
-import {
-  IAssignmentData,
-  IDiscussionData,
-  IRubricAssociationData,
-} from "@ueu/ueu-canvas";
+import { IAssignmentData, IDiscussionData, IRubricAssociationData } from "@ueu/ueu-canvas";
 import { IRubricData } from "@ueu/ueu-canvas";
 import { getContentDataFromUrl } from "@ueu/ueu-canvas/content/determineContent";
 import { getRubric } from "@ueu/ueu-canvas/rubrics";
@@ -251,7 +247,7 @@ export function RubricButton({ course }: RubricButtonProps) {
       <div className="relative inline-block">
         <button
           title="Pull the rubric from a corresponding assignment into this one."
-          onClick={(e) => insertRubric(course)}
+          onClick={(_e) => insertRubric(course)}
           disabled={isLoading}
           className="btn"
         >

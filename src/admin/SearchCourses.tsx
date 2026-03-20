@@ -14,8 +14,7 @@ interface ISearchCoursesProps {
 
 export function SearchCourses({
     setFoundCourses,
-    onlySearchBlueprints,
-    includeLegacyBps,
+    onlySearchBlueprints
 }: ISearchCoursesProps) {
 
     const [courseSearchString, setCourseSearchString] = useState('');
