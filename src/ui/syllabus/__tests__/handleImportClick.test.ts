@@ -1,5 +1,4 @@
 import { Course } from "@ueu/ueu-canvas";
-import { Page } from "@ueu/ueu-canvas/content/pages/Page";
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 import {
   extractContentFromHTML,
