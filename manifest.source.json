@@ -1,15 +1,16 @@
 {
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzQzhDuKyCO7xlRl7UCE9eL64eWTTT+6bHnClBDHcKWo/gVzS1nQKc4PYgtmJVgpT2rGOjcsmCp7WOidyxp4lkv9lADg3PVfah3q7wrIPfya6v3izkhxXh8x0A12yVd9NVDKaT/z7H0i9RwRYoWh9sZN20i2GVlt9uR6nka5tIk89Cn7hofh9VokKhePRiiTRUbTkqNJKSDhK2Q/Bcl5Qjj5WmRua0ayc94dUDxsWeA3k34a1SnFlnDmKqbXofndTOj3g+ZFO9uDoV09b+KhP/kHK3Ta58+XPQTUkbf7KbO5eJBDGCqMmSnssCWh+tk/wr6Yqqn6aakQGHvgcZlh4swIDAQAB",
   "name": "LXD Browser Extension",
   "description": "Extension for LXD team",
   "browser_specific_settings": {
     "gecko": {
       "id": "lxd-extension@unity.edu",
-      "data_collection_permissions":{
-        "required":["none"]
+      "data_collection_permissions": {
+        "required": ["none"]
       },
       "strict_min_version": "128.0",
-      "update_url": "https://raw.githubusercontent.com/Unity-Environmental-University/lxd-tools-build/refs/heads/stable/update.json"
+      "update_url": "$BASE_URL$/updates.json"
     }
   },
   "action": {
@@ -36,9 +37,7 @@
   },
   "web_accessible_resources": [
     {
-      "matches": [
-        "*://*.instructure.com/*"
-      ],
+      "matches": ["*://*.instructure.com/*"],
       "resources": [
         "js/reporting.js.map",
         "js/pageFixes.js.map",
@@ -54,58 +53,37 @@
   ],
   "content_scripts": [
     {
-      "matches": [
-        "*://*.instructure.com/courses/**"
-      ],
-      "js": [
-        "js/pageFixes.js"
-      ],
+      "matches": ["*://*.instructure.com/courses/**"],
+      "js": ["js/pageFixes.js"],
       "run_at": "document_end"
     },
     {
-      "matches": [
-        "*://*.instructure.com/courses/*/gradebook/speed_grader?*"
-      ],
-      "js": [
-        "js/speedGrader.js"
-      ],
+      "matches": ["*://*.instructure.com/courses/*/gradebook/speed_grader?*"],
+      "js": ["js/speedGrader.js"],
       "run_at": "document_end"
     },
     {
-      "matches": [
-        "*://*.instructure.com/**/settings",
-        "*://*.instructure.com/**/details"
-      ],
-      "js": [
-        "js/publish.js"
-      ]
+      "matches": ["*://*.instructure.com/**/settings", "*://*.instructure.com/**/details"],
+      "js": ["js/publish.js"]
     },
     {
-      "matches": [
-        "*://*.instructure.com/courses/*/modules"
-      ],
-      "js": [
-        "js/ui/module.js"
-      ],
+      "matches": ["*://*.instructure.com/courses/*/modules"],
+      "js": ["js/ui/module.js"],
       "run_at": "document_end"
     },
     {
-      "matches": [
-        "*://*.instructure.com/courses/**"
-      ],
-      "js": [
-        "js/ui/course.js"
-      ],
+      "matches": ["*://*.instructure.com/courses/**"],
+      "js": ["js/ui/course.js"],
       "run_at": "document_end"
     },
     {
-      "matches": [
-        "*://*.instructure.com/accounts/*"
-      ],
-      "js": [
-        "js/ui/account.js",
-        "js/reporting.js"
-      ],
+      "matches": ["*://*.instructure.com/courses/**"],
+      "js": ["js/ui/course.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://*.instructure.com/accounts/*"],
+      "js": ["js/ui/account.js", "js/reporting.js"],
       "run_at": "document_end"
     },
     {
@@ -127,17 +105,9 @@
       "run_at": "document_end"
     }
   ],
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage",
-    "downloads"
-  ],
-  "host_permissions": [
-    "*://*.inscloudgate.com/*",
-    "*://*.canvas-user-content.com/*",
-    "*://*.instructure.com/*"
-  ],
+  "permissions": ["activeTab", "scripting", "storage", "downloads"],
+  "host_permissions": ["*://*.inscloudgate.com/*", "*://*.canvas-user-content.com/*", "*://*.instructure.com/*"],
   "optional_host_permissions": [],
+  "update_url": "$BASE_URL$/update.xml",
   "version": "1.0.0"
 }
