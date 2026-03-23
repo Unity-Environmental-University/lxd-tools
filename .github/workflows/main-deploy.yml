@@ -66,7 +66,8 @@ jobs:
             --api-key $WEB_EXT_API_KEY \
             --api-secret $WEB_EXT_API_SECRET \
             --channel unlisted \
-            --artifacts-dir ../dist
+            --artifacts-dir ../dist \
+            --ignore-files "*.crx" "*.xpi"
           VERSION=$(node -p 'require("./package.json").version')
           SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
           mv "$SIGNED" "../dist/lxd-extension-${VERSION}.xpi"

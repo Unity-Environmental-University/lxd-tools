@@ -12,7 +12,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
-const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu/";
+const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu";
 
 const entry = {
   popup: "./src/popup",
