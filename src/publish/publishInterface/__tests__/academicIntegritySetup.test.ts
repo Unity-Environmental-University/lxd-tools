@@ -1,4 +1,4 @@
-import { academicIntegritySetup } from "@/publish/publishInterface/academicIntegritySetup";
+import { academicIntegritySetup, ACADEMIC_INTEGRITY_MODULE_NAME } from "@/publish/publishInterface/academicIntegritySetup";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { getCourseById } from "@ueu/ueu-canvas/course";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
@@ -87,7 +87,7 @@ const bpPostMigrationPages = [
 // Define the final modules in the BP after a successful migration
 const bpFinalModules: IModuleData[] = [
   ...bpInitialModules,
-  { ...mockModuleData, id: mockAIModuleId, name: "Academic Integrity", published: true, items: [] },
+  { ...mockModuleData, id: mockAIModuleId, name: ACADEMIC_INTEGRITY_MODULE_NAME, published: true, items: [] },
   {
     ...mockModuleData,
     id: mockInstructorModuleId,
@@ -251,7 +251,7 @@ describe("academicIntegritySetup", () => {
   it("should stop and alert if Academic Integrity module already exists in BP", async () => {
     mockCourse.getModules.mockResolvedValueOnce([
       ...bpInitialModules,
-      { id: 2, name: "Academic Integrity", published: true, items: [] },
+      { id: 2, name: ACADEMIC_INTEGRITY_MODULE_NAME, published: true, items: [] },
     ]);
 
     await academicIntegritySetup(props);
