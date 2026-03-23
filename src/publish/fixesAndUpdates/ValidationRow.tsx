@@ -133,8 +133,7 @@ export function truncateMessage(messageString: string, slim?: boolean) {
 }
 
 export function resultStatusMessage(result: ValidationResult | undefined, loading: boolean, slim?: boolean) {
-  if (loading) return "running...";
-  if (!result) return loading ? "still running" : "No Result, an error may have occurred.";
+  if (!result) return loading ? "running..." : "No Result, an error may have occurred.";
   if (result.success) return "Succeeded!";
 
   return result.messages?.map((message, i) => (

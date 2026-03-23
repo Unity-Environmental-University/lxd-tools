@@ -379,12 +379,11 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
           <div>
             <SectionDetails
               onUpdateFrontPageProfile={(_newProfile) =>
-                workingSection &&
                 dispatchFrontPageProfilesByCourseId({
                   set: [workingSection.id, frontPageProfilesByCourseId],
                 })
               }
-              facultyProfileMatches={workingSection && potentialProfilesByCourseId[workingSection.id]}
+              facultyProfileMatches={potentialProfilesByCourseId[workingSection.id]}
               onClose={() => setWorkingSection(null)}
               section={workingSection}
             ></SectionDetails>
