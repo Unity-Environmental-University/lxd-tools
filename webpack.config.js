@@ -12,7 +12,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
-const ZipPlugin = require("zip-webpack-plugin");
+const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu/";
 
 const entry = {
   popup: "./src/popup",
@@ -108,7 +108,7 @@ function getHtmlPlugins(chunks) {
 }
 
 const transformManifest = (content) => {
-  let manifest = JSON.parse(content.toString());
+  let manifest = JSON.parse(content.toString().replace(/\$BASE_URL\$/g, BASE_URL));
   manifest.version = packageJson.version;
 
   return JSON.stringify(manifest, null, 2);
@@ -132,9 +132,16 @@ const transformUpdates = (content) => {
   updates.addons["lxd-extension@unity.edu"].updates[0].version = packageJson.version;
   updates.addons[
     "lxd-extension@unity.edu"
-  ].updates[0].update_link = `ai2.unity.edu/lxd-tools/lxd-extension-${packageJson.version}.xpi`;
+  ].updates[0].update_link = `${BASE_URL}/lxd-extension-${packageJson.version}.xpi`;
 
   return JSON.stringify(updates, null, 2);
+};
+
+const transformUpdateXml = (content) => {
+  return content
+    .toString()
+    .replace(/\$VERSION\$/g, packageJson.version)
+    .replace(/\$BASE_URL\$/g, BASE_URL);
 };
 
 const createPlugins = () => [
@@ -159,6 +166,11 @@ const createPlugins = () => [
         to: "updates.json",
         transform: transformUpdates,
       },
+      {
+        from: path.resolve(__dirname, "update.source.xml"),
+        to: "update.xml",
+        transform: transformUpdateXml,
+      },
       { from: "./img/*", to: "img/[name][ext]" },
     ],
   }),
@@ -171,19 +183,6 @@ const createPlugins = () => [
     }
   }),
   ...getHtmlPlugins(["popup"]),
-  new ZipPlugin({
-    path: outputPath,
-    filename: `lxd-extension-${packageJson.version}`,
-    fileOptions: {
-      mtime: new Date(),
-      mode: 0o100644,
-    },
-    zipOptions: {
-      forceZip64: false,
-      zlib: { level: 9 },
-    },
-    extension: "xpi",
-  }),
 ];
 
 module.exports = {

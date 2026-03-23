@@ -11,6 +11,9 @@
 # production
 /build
 
+# Chrome extension signing key
+*.pem
+
 # misc
 .DS_Store
 .env
