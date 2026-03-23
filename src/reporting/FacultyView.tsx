@@ -14,7 +14,7 @@ export const FacultyView = () => {
     const [selectableTerms, setSelectableTerms] = useState<ITermData[] | undefined>();
     const [selectedTerms, setSelectedTerms] = useState<ITermData[]>([]);
 
-    const { status: termsStatus } = useSelector((state: RootReportingState) => state.terms);
+    const { status: _termsStatus } = useSelector((state: RootReportingState) => state.terms);
     const { status: coursesStatus } = useSelector((state: RootReportingState) => state.courses);
 
     const courses = useCourses(selectableTerms);

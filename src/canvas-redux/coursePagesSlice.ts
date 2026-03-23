@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from "@reduxjs/toolkit";
 import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
@@ -16,7 +16,7 @@ const initialState: CoursePagesState = {
   error: undefined,
 };
 
-type State = typeof initialState;
+type _State = typeof initialState;
 
 // Define the payload type for your thunk
 type FetchCoursePagesPayload = {
@@ -24,12 +24,8 @@ type FetchCoursePagesPayload = {
 };
 
 // Thunk for fetching course pages
-export const fetchCoursePages = createAsyncThunk<
-  void,
-  FetchCoursePagesPayload,
-  { rejectValue: string }
->(
-  'coursePages/fetchCoursePages',
+export const fetchCoursePages = createAsyncThunk<void, FetchCoursePagesPayload, { rejectValue: string }>(
+  "coursePages/fetchCoursePages",
   async ({ courseId }, { dispatch, rejectWithValue }) => {
     const pageDataGen = PageKind.dataGenerator(courseId);
     try {
@@ -37,7 +33,6 @@ export const fetchCoursePages = createAsyncThunk<
         dispatch(updateCoursePages({ pageData })); // Ensure updateCoursePages has the correct payload
       }
     } catch (error) {
-
       return rejectWithValue(`Failed to fetch course pages ${error}`);
     }
   }
@@ -45,7 +40,7 @@ export const fetchCoursePages = createAsyncThunk<
 
 // Slice definition
 const coursePagesSlice = createSlice({
-  name: 'coursePages',
+  name: "coursePages",
   initialState,
   reducers: {
     updateCoursePages: (state, action: PayloadAction<{ pageData: IPageData }>) => {
@@ -72,20 +67,11 @@ const coursePagesSlice = createSlice({
 // Memoized selectors
 const selectCoursePages = (state: { coursePages: CoursePagesState }) => state.coursePages;
 
-export const getSliceCoursePagesData = createSelector(
-  selectCoursePages,
-  (coursePages) => coursePages.data
-);
+export const getSliceCoursePagesData = createSelector(selectCoursePages, (coursePages) => coursePages.data);
 
-export const getSliceCoursePagesStatus = createSelector(
-  selectCoursePages,
-  (coursePages) => coursePages.loading
-);
+export const getSliceCoursePagesStatus = createSelector(selectCoursePages, (coursePages) => coursePages.loading);
 
-export const getSliceCoursePagesError = createSelector(
-  selectCoursePages,
-  (coursePages) => coursePages.error
-);
+export const getSliceCoursePagesError = createSelector(selectCoursePages, (coursePages) => coursePages.error);
 
 export const { updateCoursePages } = coursePagesSlice.actions;
 

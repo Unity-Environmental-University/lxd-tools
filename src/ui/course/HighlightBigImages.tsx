@@ -13,7 +13,7 @@ export function HighlightBigImages({ el, bannerImage, currentContentItem, resize
   const [showModal, setShowModal] = useState(false);
   const [running, setRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [showButton, setShowButton] = useState(true);
+  const [showButton, _setShowButton] = useState(true);
 
   async function resizeBanner() {
     setRunning(true);

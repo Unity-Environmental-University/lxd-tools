@@ -12,7 +12,7 @@ export async function resizeBannerOnItem(item: BaseContentItem, maxWidth = SAFE_
   if (!fileData) throw new Error("File not found");
   if (bannerImg.naturalWidth < maxWidth) return;
   const resizedImageBlob = await getResizedBlob(bannerImg.src, maxWidth);
-  const fileName = fileData.filename;
+  const fileName = fileData.filename.replace(/\.[^.]+$/, '.png');
   const fileUploadUrl = `/api/v1/courses/${item.courseId}/files`;
   assert(resizedImageBlob);
   const file = new File([resizedImageBlob], fileName);

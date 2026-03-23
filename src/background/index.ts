@@ -70,8 +70,8 @@ action.onClicked.addListener(async (tab) => {
 
 async function getActiveTab() {
   const windowTabs = await tabs.query({ lastFocusedWindow: true });
-  const activeTabs = await tabs.query({ active: true });
-  const activeLastWindow = await tabs.query({ active: true, lastFocusedWindow: true });
+  const _activeTabs = await tabs.query({ active: true });
+  const _activeLastWindow = await tabs.query({ active: true, lastFocusedWindow: true });
 
   const [tab] = windowTabs.filter((tab) => tab.active);
   return tab;

@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # Or "pip", "bundler", etc., depending on your build
+    directory: "/"
+    schedule:
+      interval: "monthly" # The "Quiet" setting
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      production-dependencies:
+        patterns:
+          - "*" # Group everything into one monthly "Maintenance" PR
