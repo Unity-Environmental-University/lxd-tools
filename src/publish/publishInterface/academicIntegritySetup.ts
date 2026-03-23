@@ -16,7 +16,7 @@ export interface AcademicIntegritySetupProps {
 }
 
 export async function academicIntegritySetup({ currentBp, setIsRunningIntegritySetup }: AcademicIntegritySetupProps) {
-  const moduleName = "Academic Integrity";
+  const moduleName = "Citation and Attribution Learning Module";
   const academicIntegrityCourseId = 7724480;
   const academicIntegrityModuleId = 12366435;
   const aiInstructorGuideModuleId = 12366470;

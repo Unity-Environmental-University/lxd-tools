@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - copy-webpack-plugin dependency updated
 - updateStartDate refactored to handle edge case where malformed syllabus error throws silently
 - push-test now includes linting and type checks
+- The course overview test was refactored to accomodate both UG and Grad langauge
+- The academic integrity process has changed to reflect the module name changing to "Citation and Attribution Learning Module"
 
 ### Internal
 
@@ -31,3 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Deployed dependabot for dependency alerts/updates
 - Intentionally unused variables now universally feature a leading underscore
 - URL checking patterns updated to avoid partial match injection
+- main-delpoy workflow changed to accomodate new bucket for auto-update files
+- build.yml created as manual testing for the file deploy system
+- Dependencies updated
+- Dependabot changed to only alert, not open PR requests, to avoid PR requests to main that trigger the build pipeline
