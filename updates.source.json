@@ -4,11 +4,10 @@
       "updates": [
         {
           "version": "2.9.1.3",
-          "update_link": "ai2.unity.edu/lxd-tools/lxd-extension-2.9.1.3.xpi",
+          "update_link": "https://pub-e093b9937e354d06a34b1b37978bda8e.r2.dev/lxd-extension-2.9.1.3.xpi",
           "applications": {
             "gecko": {
-              "strict_min_version": "109.0",
-              "strict_max_version": "115.*"
+              "strict_min_version": "128.0"
             }
           }
         }
