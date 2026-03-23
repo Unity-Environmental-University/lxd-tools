@@ -1,46 +1,35 @@
-name: Deploy Extension Updates
+name: Build testing
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [closed]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build"
+        required: true
+        default: "main"
 
 jobs:
-  deploy_if_merged:
-    if: github.event.pull_request.merged == true
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout lxd-tools
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.inputs.branch }}
           path: lxd-tools
-          fetch-tags: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Install dependencies
+      - name: Install lxd-tools dependencies
         working-directory: lxd-tools
         run: |
           npm config set registry https://registry.npmjs.org/
           npm cache clean --force
           npm install
           npm install @testing-library/react --save-dev
-
-      - name: Check version is not already deployed
-        working-directory: lxd-tools
-        run: |
-          VERSION=$(node -p 'require("./package.json").version')
-          if git tag | grep -qx "$VERSION"; then
-            echo "ERROR: Version $VERSION has already been deployed. Update package.json version before merging."
-            exit 1
-          fi
 
       - name: Write Chrome key
         run: echo "${{ secrets.CHROME_KEY_PEM_B64 }}" | base64 -d > lxd-tools/chrome-key.pem
@@ -68,7 +57,7 @@ jobs:
             --channel unlisted \
             --artifacts-dir ../dist
           VERSION=$(node -p 'require("./package.json").version')
-          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
+          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" -newer ../dist/manifest.json | head -1)
           mv "$SIGNED" "../dist/lxd-extension-${VERSION}.xpi"
 
       - name: Find necessary files
@@ -121,29 +110,3 @@ jobs:
                   aws s3 rm s3://$R2_BUCKET/$key --endpoint-url $R2_ENDPOINT
                 done
           done
-
-      - name: Push to lxd-tools-build
-        run: |
-          git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
-          cd lxd-tools-build
-          git fetch origin
-          git checkout main || git checkout -b main
-          git reset --hard origin/main 2>/dev/null || true
-          rm -rf ./*
-          cp -r ../dist/* .
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add --all
-          git commit -m "Deploy ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})" || echo "No changes to commit"
-          git push origin main
-
-      - name: Tag deployed version and create release branch
-        working-directory: lxd-tools
-        run: |
-          VERSION=$(node -p 'require("./package.json").version')
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "$VERSION"
-          git push origin "$VERSION"
-          git checkout -b "release/$VERSION"
-          git push origin "release/$VERSION"

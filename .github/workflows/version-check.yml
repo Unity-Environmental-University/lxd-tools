@@ -1,0 +1,24 @@
+name: Version Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Check version is bumped from main
+        run: |
+          PR_VERSION=$(node -p 'require("./package.json").version')
+          MAIN_VERSION=$(git fetch origin main && git show origin/main:package.json | node -p 'JSON.parse(require("fs").readFileSync("/dev/stdin","utf8")).version')
+          echo "PR version:   $PR_VERSION"
+          echo "Main version: $MAIN_VERSION"
+          if [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
+            echo "ERROR: package.json version ($PR_VERSION) must be bumped before merging to main."
+            exit 1
+          fi
