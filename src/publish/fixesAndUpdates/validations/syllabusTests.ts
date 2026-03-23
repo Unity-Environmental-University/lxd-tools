@@ -736,7 +736,7 @@ const makeSyllabusUrlCheck: (data: BadUrlData) => CourseFixValidation<ISyllabusH
 const badUrlDatas: BadUrlData[] = [
   {
     name: "Fix Send Message Url",
-    badUrl: "https://community.canvaslms.com/docs/DOC-10574-4212710325",
+    badUrl: "https://community\\.canvaslms\\.com/docs/DOC-10574-4212710325",
     goodUrl:
       "https://community.instructure.com/en/kb/articles/662866-how-do-i-send-a-message-to-a-user-in-a-course-in-the-inbox",
   },
