@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports,@/no-undef */
+/* eslint-disable @typescript-eslint/no-require-imports */
 //via https://medium.com/@tharshita13/creating-a-chrome-extension-with-react-a-step-by-step-guide-47fe9bab24a1
 
 const path = require("path");
@@ -7,12 +7,12 @@ const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const packageJson = require("./package.json");
 const { TsconfigPathsPlugin } = require("tsconfig-paths-webpack-plugin");
-const dotenv = require("dotenv").config({ path: __dirname + "/.env" });
+const _dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 const isDevelopment = process.env.NODE_ENV !== "production";
 //const outputPath = path.resolve(__dirname, "../dist");
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
-const ZipPlugin = require("zip-webpack-plugin");
+const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu/";
 
 const entry = {
   popup: "./src/popup",
@@ -26,7 +26,7 @@ const entry = {
   "js/ui/course": "./src/ui/course",
   "js/ui/account": "./src/ui/account",
   "js/ui/module": "./src/ui/module",
-  //'js/ui/syllabus': './src/ui/syllabus',
+  "js/ui/syllabus": "./src/ui/syllabus",
 
   "js/rubricOrganize": "./src/ui/rubricOrganize/rubricOrganize.ts",
 };
@@ -108,7 +108,7 @@ function getHtmlPlugins(chunks) {
 }
 
 const transformManifest = (content) => {
-  let manifest = JSON.parse(content.toString());
+  let manifest = JSON.parse(content.toString().replace(/\$BASE_URL\$/g, BASE_URL));
   manifest.version = packageJson.version;
 
   return JSON.stringify(manifest, null, 2);
@@ -132,9 +132,16 @@ const transformUpdates = (content) => {
   updates.addons["lxd-extension@unity.edu"].updates[0].version = packageJson.version;
   updates.addons[
     "lxd-extension@unity.edu"
-  ].updates[0].update_link = `ai2.unity.edu/lxd-tools/lxd-extension-${packageJson.version}.xpi`;
+  ].updates[0].update_link = `${BASE_URL}/lxd-extension-${packageJson.version}.xpi`;
 
   return JSON.stringify(updates, null, 2);
+};
+
+const transformUpdateXml = (content) => {
+  return content
+    .toString()
+    .replace(/\$VERSION\$/g, packageJson.version)
+    .replace(/\$BASE_URL\$/g, BASE_URL);
 };
 
 const createPlugins = () => [
@@ -150,7 +157,6 @@ const createPlugins = () => [
     patterns: [
       { from: "./README.dist.md", to: "README.md" },
       {
-        // eslint-disable-next-line @/no-undef
         from: path.resolve(__dirname, "manifest.source.json"),
         to: "manifest.json",
         transform: transformManifest,
@@ -159,6 +165,11 @@ const createPlugins = () => [
         from: path.resolve(__dirname, "updates.source.json"),
         to: "updates.json",
         transform: transformUpdates,
+      },
+      {
+        from: path.resolve(__dirname, "update.source.xml"),
+        to: "update.xml",
+        transform: transformUpdateXml,
       },
       { from: "./img/*", to: "img/[name][ext]" },
     ],
@@ -172,19 +183,6 @@ const createPlugins = () => [
     }
   }),
   ...getHtmlPlugins(["popup"]),
-  new ZipPlugin({
-    path: outputPath,
-    filename: `lxd-extension-${packageJson.version}`,
-    fileOptions: {
-      mtime: new Date(),
-      mode: 0o100644,
-    },
-    zipOptions: {
-      forceZip64: false,
-      zlib: { level: 9 },
-    },
-    extension: "xpi",
-  }),
 ];
 
 module.exports = {
