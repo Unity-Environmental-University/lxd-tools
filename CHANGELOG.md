@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Intentionally unused variables now universally feature a leading underscore
 - URL checking patterns updated to avoid partial match injection
 - main-delpoy workflow changed to accomodate new bucket for auto-update files
+- main-deploy automates releases and pulls release notes from the changelog
 - build.yml created as manual testing for the file deploy system
 - Dependencies updated
 - Dependabot changed to only alert, not open PR requests, to avoid PR requests to main that trigger the build pipeline
