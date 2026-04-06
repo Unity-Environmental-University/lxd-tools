@@ -15,6 +15,7 @@ import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 const ugValidBody = `
   <div>By participating in this course, you agree:
     unity de student handbook
+    <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3341&app=pt">full policy here</a>
     what happens if this occurs more than once
     in all terms:
     first term:
@@ -80,6 +81,20 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
         {
           title: "Course Overview",
           body: `<div>By participating in this course, you agree: some wrong text</div><div>confirm your agreement</div>`,
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+        },
+      ]);
+
+      const result = await courseOverviewLanguageTest.run(mockCourse);
+      expect(result.success).toBe(false);
+    });
+
+    it("should fail for UG when html key phrases (link URLs) are missing", async () => {
+      const bodyWithoutPolicyLink = ugValidBody.replace(`?docid=3341&app=pt`, `?docid=9999&app=pt`);
+      mockCourse.getPages = jest.fn().mockResolvedValue([
+        {
+          title: "Course Overview",
+          body: bodyWithoutPolicyLink,
           rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
         },
       ]);
