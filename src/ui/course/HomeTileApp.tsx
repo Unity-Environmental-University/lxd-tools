@@ -23,7 +23,6 @@ export function HomeTileApp({ course, el }: HomeTileAppProps) {
     setRunning(true);
     setShowModal(true);
     await regenerateHomeTiles(course);
-    // eslint-disable-next-line @/no-undef
     const homeTiles = document.querySelectorAll(".cbt-module-card-img img") as NodeListOf<HTMLImageElement>;
     try {
       await Promise.all(
