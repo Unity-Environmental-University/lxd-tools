@@ -16,14 +16,14 @@ import {
   TextReplaceValidation,
 } from "@publish/fixesAndUpdates/validations/types";
 import { paraify } from "@/testing/DomUtils";
-import { getCourseById, Course } from "@ueu/ueu-canvas";
+import { Course } from "@ueu/ueu-canvas";
 
 //Syllabus Tests
 export const finalNotInGradingPolicyParaTest: TextReplaceValidation<ISyllabusHaver> = {
   name: "Remove Final",
   beforeAndAfters: [["off the final grade", "off the grade"]],
   description: 'Remove "final" from the grading policy paragraphs of syllabus',
-  run: async (course, config) => {
+  run: async (course, _config) => {
     const syllabus = await course.getSyllabus();
     const match = /off the final grade/gi.test(syllabus);
     return testResult(!match, {
@@ -40,7 +40,7 @@ export const communication24HoursTest: CourseValidation<ISyllabusHaver> = {
     'Revise the top sentence of the "Communication" section of the syllabus to read: "The instructor will ' +
     "conduct all correspondence with students related to the class in Canvas, and you should " +
     'expect to receive a response to emails within 24 hours."',
-  run: async (course, config) => {
+  run: async (course, _config) => {
     const syllabus = await course.getSyllabus();
     const testString =
       "The instructor will conduct all correspondence with students related to the class in Canvas, and you should expect to receive a response to emails within 24 hours".toLowerCase();
@@ -57,7 +57,7 @@ export const courseCreditsInSyllabusTest: CourseValidation<ISyllabusHaver> = {
   name: "Syllabus Credits",
   description: "Credits displayed in summary box of syllabus",
 
-  run: async (course: ISyllabusHaver, config) => {
+  run: async (course: ISyllabusHaver, _config) => {
     const syllabus = await course.getSyllabus();
     const el = document.createElement("div");
     el.innerHTML = syllabus;
@@ -376,7 +376,9 @@ type HonorCodeUserData = {
 };
 
 const ugSearchString = "students be honest in all academic work";
-const gradSearchString = `this link to view the full Academic Honor Code`;
+const ugHonorCodeLinkPhrase = "?docid=3341";
+// TODO; New Honor Code Syllabus language for grad needed here
+const gradSearchString = `NEW HONOR CODE SYLLABUS LANGUAGE HERE`;
 
 export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver> = {
   name: "Syllabus Honor Code Check",
@@ -389,25 +391,26 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
     const tables = parsedSyllabus.querySelectorAll("table");
     const course = new Course(bp.rawData);
 
-    // UG check checks for old language to update to new language
+    // UG check: flag any table that has old language, or mentions honor code without the new link
     if (course.isUndergrad()) {
-      // Find the table, determine if it's old or new
       for (const table of tables) {
-        if (table.textContent?.includes(ugSearchString)) {
-          // Flag this as the table to return
+        const hasOldLanguage = table.textContent?.includes(ugSearchString);
+        const hasHonorCodeText = table.textContent?.toLowerCase().includes("honor code");
+        const hasNewLink = table.innerHTML.includes(ugHonorCodeLinkPhrase);
+
+        if (hasOldLanguage || (hasHonorCodeText && !hasNewLink)) {
           honorCodeTable = table;
         }
       }
 
-      // Return a success, message depending on success, table element and any other useful fix items for user data
       return testResult(!honorCodeTable, {
-        failureMessage: "Syllabus contains incorrect honor code language.",
+        failureMessage: "Syllabus honor code section is missing or has incorrect language/link.",
         notFailureMessage: "Honor code table is up to date.",
         userData: { parsedSyllabus, honorCodeTable, course } as HonorCodeUserData,
       });
     }
 
-    // Grad check checks for UG language to revert to old language(until new language exists)
+    // Grad check checks for the grad syllabus language to make sure it doesn't contain the old language or UG language
     if (course.isGrad()) {
       //Check for new language and flag if it is the new language
       for (const table of tables) {
@@ -416,7 +419,8 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
         }
       }
 
-      return testResult(!honorCodeTable, {
+      // The test passes if the honor code table is not undefined(it found that textContent includes the searchString)
+      return testResult(honorCodeTable !== undefined, {
         failureMessage: "Syllabus contains incorrect honor code language",
         notFailureMessage: "Honor code table is up to date.",
         userData: { parsedSyllabus, honorCodeTable, course } as HonorCodeUserData,
@@ -433,43 +437,32 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
         notFailureMessage: "Fix did not run because syllabus honor code section is correct.",
       });
 
-    // Pull apart results.userData to useable parts
-    const { parsedSyllabus, honorCodeTable, course }: HonorCodeUserData = results.userData;
+    const { course }: HonorCodeUserData = results.userData;
     let honorCodeTd: HTMLTableCellElement | undefined = undefined;
 
+    const syllabus = await bp.getSyllabus();
+    const parser = new DOMParser();
+    const parsedSyllabus = parser.parseFromString(syllabus, "text/html");
+    const tables = Array.from(parsedSyllabus.querySelectorAll("table"));
+
+    const honorCodeTable = tables.find((table) => {
+      const hasOldLanguage = table.textContent?.includes(ugSearchString);
+      const hasHonorCodeText = table.textContent?.toLowerCase().includes("honor code");
+      const hasNewLink = table.innerHTML.includes(ugHonorCodeLinkPhrase);
+      return hasOldLanguage || (hasHonorCodeText && !hasNewLink);
+    });
     if (!honorCodeTable) return testResult("not run", { notFailureMessage: "Couldn't find table in syllabus" });
 
-    const ugNewSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3><p>Click on <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3323&app=pt&source=browse&public=true">this link to view the full Academic Honor Code</a>. You are responsible for being familiar with the Academic Honor Code.</p>`;
-    const gradSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3>
-                        <p>The Unity Environmental University Honor Code requires that students be honest in all academic work. By joining the Unity Environmental University community, students express their willingness to accept the responsibilities and privileges of the academic community. Furthermore, students understand that their name on any assignment&mdash;written or otherwise&mdash;shall be regarded as assurance that the work is the result of their own thought and study, except where quotation marks, references, footnotes, or other means of attribution acknowledge the use of other sources. Acknowledgment of collaboration shall be made in the work submitted. In examinations, students shall respond entirely on the basis of their own capacity without any assistance, except that authorized by the instructor.</p>
-                        <h4><strong>Turnitin</strong></h4>
-                        <p>Unity uses Turnitin as a plagiarism checker to support the academic integrity of its students. Turnitin is enabled for certain assignments throughout your program. You can tell if Turnitin is enabled for an assignment by the language at the bottom of the assignment submission page, which will require you to agree to the following: "I agree to the tool's<span>&nbsp;</span><a class="external" href="https://canvas.int.turnitin.com/integrations/cpf/eula/unitycollege" target="_blank" rel="noreferrer noopener"><span>End-User License Agreement</span><span class="external_link_icon" style="margin-inline-start: 5px; display: inline-block; text-indent: initial;" role="presentation"> <span class="screenreader-only">Links to an external site.</span></span></a>. The work I submit is my original work, and the information has been correctly cited." You will not be able to submit until you agree.</p>
-                        <p>For guidance on how Turnitin's Originality Reports will work, including how to use and what to expect from them, please<span>&nbsp;</span><a class="instructure_file_link inline_disabled external" href="https://www.youtube.com/watch?v=SB5vOujIJy4" target="_blank" rel="noreferrer noopener"><span>watch this video of Turnitin from the student perspective</span><span class="external_link_icon" style="margin-inline-start: 5px; display: inline-block; text-indent: initial;" role="presentation"> <span class="screenreader-only">Links to an external site.</span></span></a>. Also, reference their resources for<span>&nbsp;</span><a class="external" href="https://help.turnitin.com/integrity/student/canvas.htm" target="_blank" rel="noreferrer noopener"><span>Using Turnitin with Canvas as a Student</span><span class="external_link_icon" style="margin-inline-start: 5px; display: inline-block; text-indent: initial;" role="presentation"> <span class="screenreader-only">Links to an external site.</span></span></a>.</p>
-                        <p><strong>Academic Dishonesty </strong><span style="font-size: 12pt;">includes, but is not limited to&mdash;</span></p>
-                        <p><strong>Plagiarism</strong></p>
-                        <ul>
-                            <li>quoting, summarizing, or paraphrasing any part or all of a source without acknowledging the source in the text of any written work;</li>
-                            <li>incorporating any information&mdash;data, statistics, examples, etc.&mdash; that is not common knowledge without attributing the source of that information;</li>
-                            <li>using another person&rsquo;s opinions, reasoning, or arguments; and</li>
-                            <li>putting your name on an assignment someone else completed.</li>
-                        </ul>
-                        <p><strong>Cheating</strong></p>
-                        <ul>
-                            <li>claiming credit for work not done independently (excluding university support services such as the LRC) without giving credit for aid received; and</li>
-                            <li>accepting any unauthorized aid or communication during examinations, and falsifying or deliberately misrepresenting data and/or submission of work.</li>
-                        </ul>
-                        <p><strong>Other Unacceptable Practice</strong></p>
-                        <ul>
-                            <li>submitting an assignment for one class in another class without approval of both instructors.</li>
-                        </ul>
-                        <p>Penalties may include, but are not limited to, grade penalty or a failing grade for the work in question or a failing grade for the course.</p>`;
+    const ugNewSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3><p>Click on <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3341&app=pt&source=browse&public=true">this link to view the full Academic Honor Code</a>. You are responsible for being familiar with the Academic Honor Code.</p>`;
 
-    // UG fix updates old honor code language to new language
+    // UG fix updates old honor code language to new language, or corrects the link if only that changed
     if (course.isUndergrad()) {
-      // Find the specific element that contains the honor code text
-      honorCodeTd = Array.from(honorCodeTable.querySelectorAll("td")).find((td) =>
-        td.textContent?.includes(ugSearchString)
-      );
+      honorCodeTd = Array.from(honorCodeTable.querySelectorAll("td")).find((td) => {
+        const hasOldLanguage = td.textContent?.includes(ugSearchString);
+        const hasHonorCodeText = td.textContent?.toLowerCase().includes("honor code");
+        const hasNewLink = td.innerHTML.includes(ugHonorCodeLinkPhrase);
+        return hasOldLanguage || (hasHonorCodeText && !hasNewLink);
+      });
 
       if (!honorCodeTd) return testResult("not run", { notFailureMessage: "Couldn't find honor code table cell." });
 
@@ -486,13 +479,14 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
 
     // Grad fix replaces the UG honor code langugae with the old language(until we have new language)
     if (course.isGrad()) {
+      // Searching for the title even though that would be in all three specifically because we shouldn't get to this point if the syllabus contains the grad honor code language
       honorCodeTd = Array.from(honorCodeTable.querySelectorAll("td")).find((td) =>
-        td.textContent?.includes(gradSearchString)
+        td.textContent?.includes("The Unity Environmental University Honor Code")
       );
 
       if (!honorCodeTd) return testResult("not run", { notFailureMessage: "Couldn't find honor code table cell." });
 
-      honorCodeTd.innerHTML = gradSyllabusHtml;
+      honorCodeTd.innerHTML = gradSearchString;
     }
 
     if (course.isCareerInstitute()) {
@@ -508,7 +502,7 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
     }
 
     try {
-      await bp.changeSyllabus(parsedSyllabus.documentElement.outerHTML);
+      await bp.changeSyllabus(parsedSyllabus.body.innerHTML);
       return testResult(true, {
         notFailureMessage: "Syllabus honor code section updated successfully!",
       });
@@ -622,17 +616,19 @@ const aiPolicyInfographicLink = "https://drive.google.com/file/d/1Gzbgp5piaQk9PQ
 
 const aiPolicyMediaRun = async (course: ISyllabusHaver) => {
   const syllabus = await course.getSyllabus();
+  const hasVideoLink = syllabus.includes(`"${aiPolicyVideoLink}"`);
+  const hasInfographicLink = syllabus.includes(`"${aiPolicyInfographicLink}"`);
 
-  if (syllabus.includes(aiPolicyVideoLink) && syllabus.includes(aiPolicyInfographicLink)) {
+  if (hasVideoLink && hasInfographicLink) {
     return testResult(true, {
       notFailureMessage: "Syllabus already has infographic and video links in AI Policy section.",
     });
-  } else if (syllabus.includes(aiPolicyVideoLink) && !syllabus.includes(aiPolicyInfographicLink)) {
+  } else if (hasVideoLink && !hasInfographicLink) {
     return testResult(false, {
       failureMessage: "Syllabus does not have infographic link in AI Policy section.",
       links: [`/courses/${course.id}/assignments/syllabus`],
     });
-  } else if (!syllabus.includes(aiPolicyVideoLink) && syllabus.includes(aiPolicyInfographicLink)) {
+  } else if (!hasVideoLink && hasInfographicLink) {
     return testResult(false, {
       failureMessage: "Syllabus does not have video link in AI Policy section.",
       links: [`/courses/${course.id}/assignments/syllabus`],
@@ -696,6 +692,29 @@ export const supportPhoneNumberFix: CourseFixValidation<ISyllabusHaver> = {
   fix: badSyllabusFixFunc(new RegExp(badSupportNumber, "ig"), goodSupportNumber),
 };
 
+export const gradingPolicyTest: TextReplaceValidation<ISyllabusHaver> = {
+  name: "Change 'Extenuating Circumstances' Sentence",
+  beforeAndAfters: [
+    [
+      "If you experience extenuating circumstances that prevent you from completing your work on time, reach out to your instructor as soon as possible.",
+      "If you experience extenuating circumstances that prevent you from completing your work on time, reach out to your instructor before the due date to request an extension.",
+    ],
+  ],
+  description: "Update the extenuating circumstances sentence in the grading section of the syllabus",
+  run: async (course, _config) => {
+    const syllabus = await course.getSyllabus();
+    const match = /reach out to your instructor as soon as possible/gi.test(syllabus);
+    return testResult(!match, {
+      failureMessage: ["Outdated sentence found in syllabus"],
+      links: [`/courses/${course.id}/assignments/syllabus`],
+    });
+  },
+  fix: badSyllabusFixFunc(
+    /reach out to your instructor as soon as possible/gi,
+    "reach out to your instructor before the due date to request an extension"
+  ),
+};
+
 type BadUrlData = {
   name: string;
   description?: string;
@@ -706,14 +725,15 @@ type BadUrlData = {
 const makeBeforeAndAfters = (badUrlData: BadUrlData) => {
   const { badUrl, goodUrl } = badUrlData;
   return [
-    [`<a href="${badUrl}">`, `<a href="${goodUrl || badUrl}">`],
-    [`<a href="${badUrl}" target="_blank">`, `<a href="${goodUrl || badUrl}" target="_blank">`],
+    [`<a href="${badUrl}">`, `<a href="${goodUrl}">`],
+    [`<a href="${badUrl}" target="_blank">`, `<a href="${goodUrl}" target="_blank">`],
   ];
 };
 const makeSyllabusUrlCheck: (data: BadUrlData) => CourseFixValidation<ISyllabusHaver> = (data: BadUrlData) => {
   const { badUrl, goodUrl, name } = data;
   let description = data.description;
-  const badUrlRegex = new RegExp(badUrl, "ig");
+  const escapedBadUrl = badUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const badUrlRegex = new RegExp(escapedBadUrl, "ig");
   const run = badSyllabusRunFunc(badUrlRegex);
   const fix = badSyllabusFixFunc(badUrlRegex, goodUrl);
   description ??= `Change ${badUrl} to ${goodUrl} in the syllabus.`;
@@ -730,7 +750,7 @@ const makeSyllabusUrlCheck: (data: BadUrlData) => CourseFixValidation<ISyllabusH
 const badUrlDatas: BadUrlData[] = [
   {
     name: "Fix Send Message Url",
-    badUrl: "https://community.canvaslms.com/docs/DOC-10574-4212710325",
+    badUrl: "https://community\\.canvaslms\\.com/docs/DOC-10574-4212710325",
     goodUrl:
       "https://community.instructure.com/en/kb/articles/662866-how-do-i-send-a-message-to-a-user-in-a-course-in-the-inbox",
   },
@@ -756,4 +776,5 @@ export default [
   gradingDeadlineLanguageTest,
   aiPolicyMediaTest,
   supportPhoneNumberFix,
+  gradingPolicyTest,
 ];

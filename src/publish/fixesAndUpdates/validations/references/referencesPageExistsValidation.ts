@@ -1,41 +1,40 @@
-import {testResult} from "@publish/fixesAndUpdates/validations/utils";
-import {Course} from "@ueu/ueu-canvas/course/Course";
-import {IPageData} from "@ueu/ueu-canvas/content/pages/types";
+import { testResult } from "@publish/fixesAndUpdates/validations/utils";
+import { Course } from "@ueu/ueu-canvas/course/Course";
+import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
 import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
-import {REFERENCES_PAGE_URL_NAME} from "@/publish/consts";
-import getReferencesTemplate, {ReferenceExportType} from "@ueu/ueu-canvas/course/references/getReferencesTemplate";
+import { REFERENCES_PAGE_URL_NAME } from "@/publish/consts";
+import getReferencesTemplate, { ReferenceExportType } from "@ueu/ueu-canvas/course/references/getReferencesTemplate";
 import assert from "assert";
-import {CourseFixValidation} from "@publish/fixesAndUpdates/validations/types";
+import { CourseFixValidation } from "@publish/fixesAndUpdates/validations/types";
 
-export type RefPageValidationUserData = IPageData | { message: string};
-const PAGE_NOT_FOUND = 'page not found';
+export type RefPageValidationUserData = IPageData | { message: string };
+const _PAGE_NOT_FOUND = "page not found";
 
 const referencePageExistsValidation: CourseFixValidation<Course, RefPageValidationUserData> = {
-    name: 'Learning Materials Reference Page Exists',
-    description: 'Does this course have a learning materials references page?',
-    async run(course, config) {
-        const lmPageData = await PageKind.getByString(course.id, REFERENCES_PAGE_URL_NAME);
-        console.log(lmPageData);
+  name: "Learning Materials Reference Page Exists",
+  description: "Does this course have a learning materials references page?",
+  async run(course, _config) {
+    const lmPageData = await PageKind.getByString(course.id, REFERENCES_PAGE_URL_NAME);
+    console.log(lmPageData);
 
-        return testResult(!('message' in lmPageData), {
-            failureMessage: 'Learning Materials Page not found',
-            userData: lmPageData,
-        })
-
-    },
-    async fix(course, result?) {
-        if(result && result.success) return testResult('not run', {userData: result.userData})
-        const template = await getReferencesTemplate(ReferenceExportType.pageData);
-        const postResult = await PageKind.post(course.id, {
-            wiki_page: {
-                title: template?.title,
-                body: template?.body,
-                published: true,
-            }
-        })
-        assert(postResult);
-        return await this.run(course)
-    }
-}
+    return testResult(!("message" in lmPageData), {
+      failureMessage: "Learning Materials Page not found",
+      userData: lmPageData,
+    });
+  },
+  async fix(course, result?) {
+    if (result && result.success) return testResult("not run", { userData: result.userData });
+    const template = await getReferencesTemplate(ReferenceExportType.pageData);
+    const postResult = await PageKind.post(course.id, {
+      wiki_page: {
+        title: template?.title,
+        body: template?.body,
+        published: true,
+      },
+    });
+    assert(postResult);
+    return await this.run(course);
+  },
+};
 
 export default referencePageExistsValidation;
