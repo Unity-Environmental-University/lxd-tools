@@ -128,15 +128,17 @@ jobs:
           git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
           cd lxd-tools-build
           git fetch origin
-          git checkout main || git checkout -b main
-          git reset --hard origin/main 2>/dev/null || true
+          git checkout stable || git checkout -b stable
+          git reset --hard origin/stable 2>/dev/null || true
           rm -rf ./*
           cp -r ../dist/* .
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add --all
-          git commit -m "Deploy ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})" || echo "No changes to commit"
-          git push origin main
+          # Commit message changed to just the version number
+          git commit -m "${{ steps.get_version.outputs.version }}" || echo "No changes to commit"
+          # Push to stable
+          git push origin stable
 
       - name: Tag deployed version and create release branch
         working-directory: lxd-tools
