@@ -33,10 +33,12 @@ jobs:
           npm install
           npm install @testing-library/react --save-dev
 
-      - name: Check version is not already deployed
+      - name: Get version and check for duplicates
+        id: get_version
         working-directory: lxd-tools
         run: |
           VERSION=$(node -p 'require("./package.json").version')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           if git tag | grep -qx "$VERSION"; then
             echo "ERROR: Version $VERSION has already been deployed. Update package.json version before merging."
             exit 1
@@ -52,8 +54,7 @@ jobs:
       - name: Pack Chrome extension
         working-directory: lxd-tools
         run: |
-          VERSION=$(node -p 'require("./package.json").version')
-          npx crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${VERSION}.crx"
+          npx crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
 
       - name: Sign Firefox extension
         working-directory: lxd-tools
@@ -68,9 +69,8 @@ jobs:
             --channel unlisted \
             --artifacts-dir ../dist \
             --ignore-files "*.crx" "*.xpi"
-          VERSION=$(node -p 'require("./package.json").version')
           SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
-          mv "$SIGNED" "../dist/lxd-extension-${VERSION}.xpi"
+          mv "$SIGNED" "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.xpi"
 
       - name: Find necessary files
         id: find_files
@@ -141,18 +141,10 @@ jobs:
       - name: Tag deployed version and create release branch
         working-directory: lxd-tools
         run: |
-          VERSION=$(node -p 'require("./package.json").version')
+          VERSION=${{ steps.get_version.outputs.version }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "$VERSION"
           git push origin "$VERSION"
           git checkout -b "release/$VERSION"
           git push origin "release/$VERSION"
-
-      - name: Create GitHub Release
-        run: |
-          VERSION=$(node -p 'require("./package.json").version')
-          CHANGELOG_SECTION=$(sed -n "/^## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | head -n -1)
-          gh release create "$VERSION" \
-            --title "Release $VERSION" \
-            --notes "$CHANGELOG_SECTION"
