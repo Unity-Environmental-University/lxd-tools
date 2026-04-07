@@ -24,7 +24,6 @@ describe('Button Functions', () => {
     let header: HTMLElement;
     let course: Course;
     let bp: Course;
-    let currentContentItem = new Assignment(mockAssignmentData, 10);
 
     beforeEach(() => {
         header = document.createElement('div');
@@ -32,7 +31,6 @@ describe('Button Functions', () => {
 
         course = new Course(mockCourseData);
         bp = new Course({...mockCourseData, blueprint: true});
-        currentContentItem = new Assignment(mockAssignmentData, course.id);
 
         course.getParentCourse = jest.fn().mockResolvedValue(bp);
         course.getAssociatedCourses = jest.fn().mockResolvedValue([bp]);
