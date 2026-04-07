@@ -376,6 +376,7 @@ type HonorCodeUserData = {
 };
 
 const ugSearchString = "students be honest in all academic work";
+const ugHonorCodeLinkPhrase = "?docid=3341";
 // TODO; New Honor Code Syllabus language for grad needed here
 const gradSearchString = `NEW HONOR CODE SYLLABUS LANGUAGE HERE`;
 
@@ -390,19 +391,20 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
     const tables = parsedSyllabus.querySelectorAll("table");
     const course = new Course(bp.rawData);
 
-    // UG check checks for old language to update to new language
+    // UG check: flag any table that has old language, or mentions honor code without the new link
     if (course.isUndergrad()) {
-      // Find the table, determine if it's old or new
       for (const table of tables) {
-        if (table.textContent?.includes(ugSearchString)) {
-          // Flag this as the table to return
+        const hasOldLanguage = table.textContent?.includes(ugSearchString);
+        const hasHonorCodeText = table.textContent?.toLowerCase().includes("honor code");
+        const hasNewLink = table.innerHTML.includes(ugHonorCodeLinkPhrase);
+
+        if (hasOldLanguage || (hasHonorCodeText && !hasNewLink)) {
           honorCodeTable = table;
         }
       }
 
-      // Return a success, message depending on success, table element and any other useful fix items for user data
       return testResult(!honorCodeTable, {
-        failureMessage: "Syllabus contains incorrect honor code language.",
+        failureMessage: "Syllabus honor code section is missing or has incorrect language/link.",
         notFailureMessage: "Honor code table is up to date.",
         userData: { parsedSyllabus, honorCodeTable, course } as HonorCodeUserData,
       });
@@ -435,20 +437,32 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
         notFailureMessage: "Fix did not run because syllabus honor code section is correct.",
       });
 
-    // Pull apart results.userData to useable parts
-    const { parsedSyllabus, honorCodeTable, course }: HonorCodeUserData = results.userData;
+    const { course }: HonorCodeUserData = results.userData;
     let honorCodeTd: HTMLTableCellElement | undefined = undefined;
 
+    const syllabus = await bp.getSyllabus();
+    const parser = new DOMParser();
+    const parsedSyllabus = parser.parseFromString(syllabus, "text/html");
+    const tables = Array.from(parsedSyllabus.querySelectorAll("table"));
+
+    const honorCodeTable = tables.find((table) => {
+      const hasOldLanguage = table.textContent?.includes(ugSearchString);
+      const hasHonorCodeText = table.textContent?.toLowerCase().includes("honor code");
+      const hasNewLink = table.innerHTML.includes(ugHonorCodeLinkPhrase);
+      return hasOldLanguage || (hasHonorCodeText && !hasNewLink);
+    });
     if (!honorCodeTable) return testResult("not run", { notFailureMessage: "Couldn't find table in syllabus" });
 
-    const ugNewSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3><p>Click on <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3323&app=pt&source=browse&public=true">this link to view the full Academic Honor Code</a>. You are responsible for being familiar with the Academic Honor Code.</p>`;
+    const ugNewSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3><p>Click on <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3341&app=pt&source=browse&public=true">this link to view the full Academic Honor Code</a>. You are responsible for being familiar with the Academic Honor Code.</p>`;
 
-    // UG fix updates old honor code language to new language
+    // UG fix updates old honor code language to new language, or corrects the link if only that changed
     if (course.isUndergrad()) {
-      // Find the specific element that contains the honor code text
-      honorCodeTd = Array.from(honorCodeTable.querySelectorAll("td")).find((td) =>
-        td.textContent?.includes(ugSearchString)
-      );
+      honorCodeTd = Array.from(honorCodeTable.querySelectorAll("td")).find((td) => {
+        const hasOldLanguage = td.textContent?.includes(ugSearchString);
+        const hasHonorCodeText = td.textContent?.toLowerCase().includes("honor code");
+        const hasNewLink = td.innerHTML.includes(ugHonorCodeLinkPhrase);
+        return hasOldLanguage || (hasHonorCodeText && !hasNewLink);
+      });
 
       if (!honorCodeTd) return testResult("not run", { notFailureMessage: "Couldn't find honor code table cell." });
 
@@ -488,7 +502,7 @@ export const honorCodeCheck: CourseValidation<ISyllabusHaver & ICourseDataHaver>
     }
 
     try {
-      await bp.changeSyllabus(parsedSyllabus.documentElement.outerHTML);
+      await bp.changeSyllabus(parsedSyllabus.body.innerHTML);
       return testResult(true, {
         notFailureMessage: "Syllabus honor code section updated successfully!",
       });

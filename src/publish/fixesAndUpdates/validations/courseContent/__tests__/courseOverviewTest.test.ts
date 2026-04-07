@@ -90,7 +90,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
     });
 
     it("should fail for UG when html key phrases (link URLs) are missing", async () => {
-      const bodyWithoutPolicyLink = ugValidBody.replace(`?docid=3341&app=pt`, `?docid=9999&app=pt`);
+      const bodyWithoutPolicyLink = ugValidBody.replace(`?docid=3341`, `?docid=9999`);
       mockCourse.getPages = jest.fn().mockResolvedValue([
         {
           title: "Course Overview",
@@ -162,6 +162,18 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
   describe("fix() logic", () => {
     const mockCourseOverviewPage: IPageData = {...mockPageData, title: "Course Overview", url: "course-overview", body: `<div>Wrong text.</div>
       <div>By participating in this course, you agree:</div>`};
+
+    const fixablePageBody = `<div>By participating in this course, you agree: OLD HONOR CODE CONTENT</div><div>Please confirm your agreement OLD CONFIRM CONTENT</div>`;
+
+    beforeEach(() => {
+      mockCourse.getPages = jest.fn().mockResolvedValue([
+        {
+          title: "Course Overview",
+          body: fixablePageBody,
+          rawData: { ...mockPageData, url: "course-overview", page_id: mockCourseOverviewPage.page_id },
+        },
+      ]);
+    });
 
     const ugMockUserData = {
       overviewPage: mockCourseOverviewPage,
