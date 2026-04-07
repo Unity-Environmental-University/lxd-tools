@@ -24,18 +24,18 @@ import {SectionData} from "@ueu/ueu-canvas/courseTypes";
 
 const generateModulesSpy = jest.spyOn(moduleApi, 'moduleGenerator')
 const getAccountByIdSpy = jest.spyOn(Account, 'getDataById');
-const mockAssignmentDataGen = jest.spyOn(assignmentsApi, 'assignmentDataGen');
+const _mockAssignmentDataGen = jest.spyOn(assignmentsApi, 'assignmentDataGen');
 fetchMock.enableMocks();
 
 
 
 describe('csvRowsForCourse', () => {
     const mockCourse = {...mockCourseData, id: 1, account_id: 1, enrollment_term_id: 1};
-    const mockSection = {...mockCourseData, term_name: 'XXXXXXX', id: 1, account_id: 1, enrollment_term_id: 1};
+    const _mockSection = {...mockCourseData, term_name: 'XXXXXXX', id: 1, account_id: 1, enrollment_term_id: 1};
     const mockAssignment = {...mockAssignmentData, id: 1};
     const mockAccount = {root_account_id: 1};
     const mockUserSubmissions = [{id: 1}];
-    const mockAssignments = [ new Assignment({...mockAssignmentData, id: 1, due_at: '2021-01-01'}, mockCourse.id)];
+    const _mockAssignments = [ new Assignment({...mockAssignmentData, id: 1, due_at: '2021-01-01'}, mockCourse.id)];
     const mockInstructors = [{...mockUserData, id: 1}];
     const mockModules = [{...mockModuleData, id: 1}];
     const mockEnrollments = [{id: 1}];

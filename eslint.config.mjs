@@ -13,10 +13,12 @@ export default tseslint.config(
             }
         },
         rules: {
-            '@typescript-eslint/no-unused-vars': 'warn',
-            '@typescript-eslint/no-explicit-any': 'off', // Allow any types in test files
-            //"@/no-undef": "error", // TypeScript specific: disallow use of undeclared variables
-            //"@/no-unused-vars": "warn", // Warn for unused variables, ignore those starting with '_'
+            '@typescript-eslint/no-unused-vars': ['warn', {
+                argsIgnorePattern: '^_',
+                varsIgnorePattern: '^_',
+                caughtErrorsIgnorePattern: '^_',
+            }],
+            '@typescript-eslint/no-explicit-any': 'off',
         }
     },
     {

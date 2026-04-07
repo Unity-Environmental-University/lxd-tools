@@ -213,7 +213,6 @@ export const queryFindFirst = <T extends Element>(
     querySelector: string,
     filter: (element: T) => boolean
 ): T | undefined => {
-    // eslint-disable-next-line @/no-undef
     const queriedEls = el.querySelectorAll(querySelector) as NodeListOf<T>;
     for (const queriedEl of queriedEls) {
         if (filter(queriedEl)) return queriedEl;

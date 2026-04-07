@@ -1,4 +1,4 @@
-import { academicIntegritySetup } from "@/publish/publishInterface/academicIntegritySetup";
+import { academicIntegritySetup, ACADEMIC_INTEGRITY_MODULE_NAME } from "@/publish/publishInterface/academicIntegritySetup";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { getCourseById } from "@ueu/ueu-canvas/course";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
@@ -35,15 +35,14 @@ const mockCourse = {
 // Mock the specific Course object (ID 7724480) for the Academic Integrity source
 const mockAICourse = {
   id: 7724480,
-  getModules: jest.fn(),
-  updateModules: jest.fn(),
   getPages: jest.fn(),
 };
 
 // --- Setup Data ---
 const mockBpId = 123;
 const mockAssignmentGroupId = 456;
-const mockAIModuleId = 789;
+const mockAIModuleId = 12366435;
+const mockAIInstructorGuideModuleId = 12366470;
 const mockInstructorModuleId = 999;
 const mockInstructorGuidePageUrl = "ai-instructor-guide";
 const mockInstructorGuidePageId = 500;
@@ -51,28 +50,19 @@ const mockInstructorGuidePageId = 500;
 // Base structure for modules in the BP before migration
 const bpInitialModules: IModuleData[] = [{ ...mockModuleData, id: 1, name: "Module 1", published: true, items: [] }];
 
-// Modules in the source Academic Integrity course (7724480)
-const aiSourceModules: IModuleData[] = [
-  { ...mockModuleData, id: mockAIModuleId, name: "Academic Integrity", published: true, items: [] },
+// Module items returned by fetchJson for the AI Instructor Guide module
+const mockAIInstructorGuideItems = [
   {
-    ...mockModuleData,
-    id: 2,
-    name: "Instructor Guide Resources",
-    published: true,
-    items: [
-      {
-        id: 10,
-        module_id: 333,
-        position: 1,
-        indent: 0,
-        content_id: 10,
-        title: "AI Guide Page",
-        html_url: "ai-instructor-guide",
-        new_tab: true,
-        type: "Page",
-        page_url: mockInstructorGuidePageUrl,
-      },
-    ],
+    id: 10,
+    module_id: mockAIInstructorGuideModuleId,
+    position: 1,
+    indent: 0,
+    content_id: 10,
+    title: "AI Guide Page",
+    html_url: "ai-instructor-guide",
+    new_tab: true,
+    type: "Page",
+    page_url: mockInstructorGuidePageUrl,
   },
 ];
 
@@ -97,7 +87,7 @@ const bpPostMigrationPages = [
 // Define the final modules in the BP after a successful migration
 const bpFinalModules: IModuleData[] = [
   ...bpInitialModules,
-  { ...mockModuleData, id: mockAIModuleId, name: "Academic Integrity", published: true, items: [] },
+  { ...mockModuleData, id: mockAIModuleId, name: ACADEMIC_INTEGRITY_MODULE_NAME, published: true, items: [] },
   {
     ...mockModuleData,
     id: mockInstructorModuleId,
@@ -119,7 +109,6 @@ beforeEach(() => {
   mockCourse.getPages.mockResolvedValue(bpPostMigrationPages);
 
   // Set up AI Source course mocks
-  mockAICourse.getModules.mockResolvedValue(aiSourceModules);
   mockAICourse.getPages.mockResolvedValue(aiSourcePages);
 
   // Mock getCourseById to return the correct course based on ID
@@ -137,6 +126,11 @@ beforeEach(() => {
 
   // Mock fetchJson to handle the migration status and various PUT/DELETE/POST calls
   (fetchJson as jest.Mock).mockImplementation(async (url: string) => {
+    // AI Instructor Guide module items fetch
+    if (url.includes(`/modules/${mockAIInstructorGuideModuleId}/items`)) {
+      return mockAIInstructorGuideItems;
+    }
+
     // Migration status checks from waitForMigrationCompletion
     if (url.includes(`/content_migrations/`)) {
       // Immediately return 'completed' on the second check (to simulate success)
@@ -257,7 +251,7 @@ describe("academicIntegritySetup", () => {
   it("should stop and alert if Academic Integrity module already exists in BP", async () => {
     mockCourse.getModules.mockResolvedValueOnce([
       ...bpInitialModules,
-      { id: 2, name: "Academic Integrity", published: true, items: [] },
+      { id: 2, name: ACADEMIC_INTEGRITY_MODULE_NAME, published: true, items: [] },
     ]);
 
     await academicIntegritySetup(props);
@@ -268,8 +262,11 @@ describe("academicIntegritySetup", () => {
   });
 
   it("should handle migration failure and alert the user", async () => {
-    // Mock migration check to return 'failed'
-    (fetchJson as jest.Mock).mockImplementationOnce(async (url: string) => {
+    // Override fetchJson to return 'failed' for migration status checks
+    (fetchJson as jest.Mock).mockImplementation(async (url: string) => {
+      if (url.includes(`/modules/${mockAIInstructorGuideModuleId}/items`)) {
+        return mockAIInstructorGuideItems;
+      }
       if (url.includes(`/content_migrations/`)) {
         return { id: 1000, workflow_state: "failed" };
       }
@@ -338,5 +335,18 @@ describe("academicIntegritySetup", () => {
         },
       })
     );
+  });
+
+  it("should stop and alert if the Academic Integrity source course is not found", async () => {
+    (getCourseById as jest.Mock).mockImplementation((id: number) => {
+      if (id === 7724480) return null;
+      return mockCourse;
+    });
+
+    await academicIntegritySetup(props);
+
+    expect(window.alert).toHaveBeenCalledWith("Academic integrity course not found.");
+    expect(startMigration).not.toHaveBeenCalled();
+    expect(mockSetIsRunning).toHaveBeenCalledWith(false);
   });
 });

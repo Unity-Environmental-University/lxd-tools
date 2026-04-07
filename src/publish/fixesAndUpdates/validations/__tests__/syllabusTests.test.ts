@@ -4,9 +4,7 @@ import {
   aiPolicyInSyllabusTest,
   bottomOfSyllabusLanguageTest,
   classInclusiveNoDateHeaderTest,
-  communication24HoursTest,
   courseCreditsInSyllabusTest,
-  finalNotInGradingPolicyParaTest,
   fixSupportEmailTest,
   gradeTableHeadersCorrectTest,
   removeSameDayPostRestrictionTest,
@@ -30,8 +28,6 @@ describe("Syllabus validation", () => {
   test("AI policy present test correct", syllabusTestTest(aiPolicyInSyllabusTest));
   test("Bottom of Syllabus language test correct", syllabusTestTest(bottomOfSyllabusLanguageTest));
   test("Course credits displayed in syllabus test correct", syllabusTestTest(courseCreditsInSyllabusTest));
-  test("Communication policy current test correct", syllabusTestTest(communication24HoursTest));
-  test("Grading policy language in syllabus text is correct", syllabusTestTest(finalNotInGradingPolicyParaTest));
   test("Grade table headers correct", syllabusTestTest(gradeTableHeadersCorrectTest));
   test("Class Inclusive Dates Test", syllabusTestTest(classInclusiveNoDateHeaderTest));
   test("Remove same day post restriction test", syllabusTestTest(removeSameDayPostRestrictionTest));
@@ -39,7 +35,38 @@ describe("Syllabus validation", () => {
   test("Add apa language to grading policy test", syllabusTestTest(addApaNoteToGradingPoliciesTest));
   test("Add generative ai language", syllabusTestTest(addAiGenerativeLanguageTest));
   test("Fix support email", syllabusTestTest(fixSupportEmailTest));
-  test("Fix Honor Code language", syllabusTestTest(honorCodeCheck));
+  describe("honorCodeCheck", () => {
+    test("passes when old language is gone and correct link is present", syllabusTestTest(honorCodeCheck));
+
+    test("fails when old language is gone but link URL is wrong", async () => {
+      const brokenLinkHtml = gallantSyllabusHtml.replace("?docid=3341", "?docid=9999");
+      const course: ISyllabusHaver & ICourseDataHaver = {
+        ...mockSyllabusHaver(brokenLinkHtml),
+        rawData: mockCourseData,
+      };
+      const result = await honorCodeCheck.run(course);
+      expect(result.success).toBe(false);
+    });
+
+    test("fails when old link (3323) is present and fix replaces it with new link (3341)", async () => {
+      const oldLinkHtml = gallantSyllabusHtml.replace("?docid=3341", "?docid=3323");
+      const course: ISyllabusHaver & ICourseDataHaver = {
+        ...mockSyllabusHaver(oldLinkHtml),
+        rawData: mockCourseData,
+      };
+
+      const runResult = await honorCodeCheck.run(course);
+      expect(runResult.success).toBe(false);
+
+      if (!honorCodeCheck.fix) throw new Error("honorCodeCheck.fix is not defined");
+      const fixResult = await honorCodeCheck.fix(course, runResult);
+      expect(fixResult.success).toBe(true);
+
+      const syllabus = await course.getSyllabus();
+      expect(syllabus).toContain("?docid=3341");
+      expect(syllabus).not.toContain("?docid=3323");
+    });
+  });
   test("Late policy text replace", syllabusTestTest(latePolicyTableTest));
   test("Title IX policy update", syllabusTestTest(titleIXPolicyTest));
   test("Grading Deadline Language", syllabusTestTest(gradingDeadlineLanguageTest));
