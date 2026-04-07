@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Internal
+
+- Removed GitHub Release step from main-deploy
+- Changed main-deploy to push to stable branch in lxd-tools-build
+
 ## 3.1.0
 
 ### Added
