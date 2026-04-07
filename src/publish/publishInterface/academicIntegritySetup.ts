@@ -1,21 +1,29 @@
 import { getCourseById } from "@ueu/ueu-canvas/course";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
-import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
-import { moduleGenerator } from "@ueu/ueu-canvas/course/modules";
+import { IModuleData, IModuleItemData } from "@ueu/ueu-canvas/canvasDataDefs";
+import "@ueu/ueu-canvas/course/modules";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
-import { lockBlueprint } from "@ueu/ueu-canvas/course/blueprint";
-import { getItemTypeAndId, IModuleItemData } from "@ueu/ueu-canvas";
-import { getItemInModule } from "@/ui/speedGrader/modules";
+import "@ueu/ueu-canvas/course/blueprint";
+import "@ueu/ueu-canvas";
+import "@/ui/speedGrader/modules";
 
 export interface AcademicIntegritySetupProps {
   currentBp: Course | null;
   setIsRunningIntegritySetup: (running: boolean) => void;
 }
 
+export const ACADEMIC_INTEGRITY_MODULE_NAME = "Citation and Attribution Learning Module";
+
 export async function academicIntegritySetup({ currentBp, setIsRunningIntegritySetup }: AcademicIntegritySetupProps) {
+  const moduleName = ACADEMIC_INTEGRITY_MODULE_NAME;
+  const academicIntegrityCourseId = 7724480;
+  const academicIntegrityModuleId = 12366435;
+  const aiInstructorGuideModuleId = 12366470;
+  const academicIntegrityCourse = await getCourseById(academicIntegrityCourseId);
+
   setIsRunningIntegritySetup(true);
   // Get BP
   const bp = currentBp;
@@ -33,7 +41,8 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
 
   // Check if the academic integrity module exists, find the instructor guide module
   for (const module of modules) {
-    if (module.name === "Academic Integrity") {
+    // TODO; Change this to new name
+    if (module.name === moduleName) {
       // If the academic integrity module already exists, alert the use and stop
       alert("Academic integrity module already exists in BP.");
       setIsRunningIntegritySetup(false);
@@ -59,66 +68,44 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
     assignmentGroupId = assignmentGroups[0]?.id || 0;
   }
 
-  const academicIntegrityCourse = await getCourseById(7724480);
-  const academicIntegrityModules = await academicIntegrityCourse.getModules();
-  const academicIntegrityPages = await academicIntegrityCourse.getPages();
-  const academicIntegrityModuleIds: number[] = [];
-  let aiInstructorGuideModule: IModuleData | null = null;
-  const aiInstructorGuideItemIds: number[] = [];
-  const aiInstructorGuideItemUrls: Array<string | undefined> = [];
-
   if (!academicIntegrityCourse) {
     alert("Academic integrity course not found.");
     setIsRunningIntegritySetup(false);
     return;
   }
 
-  for (const module of academicIntegrityModules) {
-    let academicIntegrityModuleFound = false;
-    let aiInstructorGuideModuleFound = false;
+  // This gets the module data for the instructor guide module in the template course, so we can pull the items that are in it
+  const aiInstructorGuideModuleItems: IModuleItemData[] = await fetchJson(
+    `/api/v1/courses/${academicIntegrityCourseId}/modules/${aiInstructorGuideModuleId}/items`
+  );
 
-    if (module.name === "Academic Integrity") {
-      academicIntegrityModuleIds.push(module.id);
-      academicIntegrityModuleFound = true;
-    } else if (module.name.toLocaleLowerCase().includes("instructor guide resources")) {
-      aiInstructorGuideModule = module;
-      aiInstructorGuideModuleFound = true;
-    }
-
-    if (academicIntegrityModuleFound && aiInstructorGuideModuleFound) {
-      break; // Exit loop early if both modules are found
-    }
-  }
-
-  if (aiInstructorGuideModule && aiInstructorGuideModule.items) {
-    for (const item of aiInstructorGuideModule.items) {
-      aiInstructorGuideItemUrls.push(item.page_url);
-      const page = academicIntegrityPages.find((p) => p.rawData.url === item.page_url);
-      if (page) aiInstructorGuideItemIds.push(page.rawData.page_id);
-      console.log("Found AI Instructor Guide Page ID: ", page?.rawData.page_id);
+  const academicIntegrityCoursePages = await academicIntegrityCourse.getPages();
+  const aiInstructorGuidePageIds: number[] = [];
+  // Will be 3-20 items max.
+  for (const page of academicIntegrityCoursePages) {
+    // Will only loop for 2-4 items.
+    for (const item of aiInstructorGuideModuleItems) {
+      if (page.rawData.url === item.page_url) {
+        aiInstructorGuidePageIds.push(page.rawData.page_id);
+      }
     }
   }
+  console.log(aiInstructorGuidePageIds);
 
-  console.log("AI Instructor Guide Item IDs: ", aiInstructorGuideItemIds);
+  const aiInstructorGuidePageUrls = aiInstructorGuideModuleItems.map((item) => item.page_url);
 
-  if (!academicIntegrityModules) {
-    alert("No modules found in academic integrity course.");
-    setIsRunningIntegritySetup(false);
-    return;
-  }
-
-  // Get module/pages from academic integrity course
-  const academicIntegrityMigration = await startMigration(academicIntegrityCourse.id, bp.id, {
+  // Feed module and pages to new course
+  const academicIntegrityMigration = await startMigration(academicIntegrityCourseId, bp.id, {
     fetchInit: {
       body: formDataify({
         migration_type: "course_copy_importer",
         settings: {
-          source_course_id: academicIntegrityCourse.id,
+          source_course_id: academicIntegrityCourseId,
           move_to_assignment_group_id: assignmentGroupId,
         },
         select: {
-          modules: academicIntegrityModuleIds,
-          pages: aiInstructorGuideItemIds,
+          modules: [academicIntegrityModuleId],
+          pages: aiInstructorGuidePageIds,
         },
       }),
     },
@@ -138,7 +125,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   let instructorResourcesModule: IModuleData | undefined = undefined;
 
   for (const module of updatedModules) {
-    if (module.name === "Academic Integrity") {
+    if (module.name === moduleName) {
       bpAcademicIntegrityModule = module;
     } else if (module.name.toLocaleLowerCase().includes("leave unpublished")) {
       instructorResourcesModule = module;
@@ -194,8 +181,8 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
 
   const pages = await bp.getPages();
   console.log("All BP Pages: ", pages);
-  console.log("AI Instructor Guide Item URLs: ", aiInstructorGuideItemUrls);
-  const aiInstructorGuideItems = pages?.filter((page) => aiInstructorGuideItemUrls.includes(page.rawData.url));
+  console.log("AI Instructor Guide Item URLs: ", aiInstructorGuidePageUrls);
+  const aiInstructorGuideItems = pages?.filter((page) => aiInstructorGuidePageUrls.includes(page.rawData.url));
 
   console.log("aiInstructorGuideItems after filter: ", aiInstructorGuideItems);
 
