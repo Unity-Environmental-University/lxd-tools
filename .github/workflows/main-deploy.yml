@@ -148,3 +148,11 @@ jobs:
           git push origin "$VERSION"
           git checkout -b "release/$VERSION"
           git push origin "release/$VERSION"
+
+      - name: Create GitHub Release
+        run: |
+          VERSION=$(node -p 'require("./package.json").version')
+          CHANGELOG_SECTION=$(sed -n "/^## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | head -n -1)
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
+            --notes "$CHANGELOG_SECTION"
