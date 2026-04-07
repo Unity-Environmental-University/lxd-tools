@@ -84,7 +84,6 @@ export class AssignmentsCollection {
         if (contentItem.hasOwnProperty('quiz_id')) {
             return 'Quiz'
         }
-        const id = contentItem?.id;
         return "Assignment";
     }
 
