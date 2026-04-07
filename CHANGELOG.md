@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## 3.1.0
+
 ### Added
 
 - Grading policy test added to syllabus tests to check for "extenuating circumstance" line
@@ -23,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - push-test now includes linting and type checks
 - The course overview test was refactored to accomodate both UG and Grad langauge
 - The academic integrity process has changed to reflect the module name changing to "Citation and Attribution Learning Module"
+- Syllabus and course overview tests now checking for the old policy tech link
 
 ### Internal
 
