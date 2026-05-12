@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+### Changed
+
+### Internal
+
+## 3.1.1
+
+### Added
+
 - Syllabus validations added to check for updates to language for grad syllabi
 
 ### Changed
