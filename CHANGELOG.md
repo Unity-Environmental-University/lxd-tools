@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Internal
+
+## 3.1.1
+
+### Added
+
+- Syllabus validations added to check for updates to language for grad syllabi
+
+### Changed
+
+- BP functionality(Archive, Finish Migration) will work now with 4-credit course codes
+
+### Internal
+
+- Removed GitHub Release step from main-deploy
+- Changed main-deploy to push to stable branch in lxd-tools-build
+- Dependencies updated to address security vulnerabilities
+
 ## 3.1.0
 
 ### Added

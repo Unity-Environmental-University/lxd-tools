@@ -39,3 +39,5 @@ dist/
 /src/.vscode
 .claude/
 *.pem
+.prettierignore
+.prettierrc

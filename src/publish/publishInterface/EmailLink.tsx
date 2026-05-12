@@ -31,10 +31,12 @@ async function fetchEmailTemplate(course: Course): Promise<string> {
 
     let devCourseId: 7773747 | 7775658 | null = null;
 
-    if (courseCodeNumber >= 500) {
+    if (course.isUndergrad() || course.isCareerInstitute()) {
       devCourseId = 7773747;
-    } else if (courseCodeNumber < 500) {
+    } else if (course.isGrad()) {
       devCourseId = 7775658;
+    } else {
+      throw new Error("Unsure which email to grab.");
     }
 
     if (devCourseId) {
