@@ -87,7 +87,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
   const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);
   const [isCloningBp, setCloningBp] = useState(false);
-  const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Setup Academic Integrity`;
+  const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Setup Citations Module`;
   useEffect(...callOnChangeFunc(currentBp, onBpSet));
   useEffect(...callOnChangeFunc(termName, onTermNameSet));
   useEffect(...callOnChangeFunc(sections, onSectionsSet));
@@ -334,8 +334,8 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
                   id={"academicIntegrityButton"}
                   onClick={() => academicIntegritySetup({ currentBp, setIsRunningIntegritySetup })}
                   disabled={isRunningIntegritySetup || !currentBp || isCloningBp}
-                  aria-label={"Setup Academic Integrity in New BP"}
-                  title="Set up the Academic Integrity content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
+                  aria-label={"Setup Citations Module in New BP"}
+                  title="Set up the Citations module content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
                 >
                   {academicIntegrityText}
                 </Button>

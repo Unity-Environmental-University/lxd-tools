@@ -29,6 +29,7 @@ export async function academicIntegritySetup({ currentBp, setIsRunningIntegrityS
   const bp = currentBp;
   if (!bp) {
     alert("No BP found.");
+    setIsRunningIntegritySetup(false);
     return;
   }
 
