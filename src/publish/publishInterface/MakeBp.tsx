@@ -1,5 +1,5 @@
 import { createNewCourse, getCourseById, getCourseName } from "@ueu/ueu-canvas/course";
-import { Alert, Button, Col, FormControl, Row, Stack } from "react-bootstrap";
+import { Alert, Button, Col, FormControl, Row } from "react-bootstrap";
 import { FormEvent, useEffect, useReducer, useState } from "react";
 import { useEffectAsync } from "@/ui/utils";
 import {
