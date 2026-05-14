@@ -1,5 +1,5 @@
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
-import { Course, fetchJson, formDataify, IAssignmentGroup, IModuleData } from "@ueu/ueu-canvas";
+import { Course, fetchJson, formDataify, IAssignmentGroup, IModuleData, updateAssignmentData } from "@ueu/ueu-canvas";
 import { getAssignmentData } from "@ueu/ueu-canvas/content/assignments/legacy";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
 
@@ -19,6 +19,16 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
     alert("No BP found.");
     setIsRunningAiLiteracySetup(false);
     return;
+  }
+
+  const bpAssignments = await bp.getAssignments();
+
+  for (const assignment of bpAssignments) {
+    if (assignment.name.toLowerCase().includes("ai literacy")) {
+      alert("AI Literacy Assignment already exists in course.");
+      setIsRunningAiLiteracySetup(false);
+      return;
+    }
   }
 
   const assignmentGroups = await bp.getAssignmentGroups();
@@ -50,9 +60,7 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
     return;
   }
 
-  const dueDateString = (await getAssignmentData(bp.id, destModule.items[destModule.items.length - 1].content_id))
-    .due_at;
-  const dueDate = dueDateString ? new Date(dueDateString) : null;
+  const dueDate = (await getAssignmentData(bp.id, destModule.items[destModule.items.length - 1].content_id)).due_at;
 
   if (!dueDate) {
     alert("Couldn't find due date for Week 1 assignments.");
@@ -73,7 +81,6 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
         },
         date_shift_options: {
           shift_dates: true,
-          new_end_date: dueDate,
         },
         select: {
           assignments: [aiLiteracyAssignmentId],
@@ -93,6 +100,19 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
   const updatedModules = await bp.updateModules();
   const updatedGroups = await bp.getAssignmentGroups();
   const aiLiteracyModuleItem = updatedModules[1].items[1];
+  const aiLiteracyAssignment = await getAssignmentData(bp.id, aiLiteracyModuleItem.content_id);
+
+  const updateAssignmentDate = await updateAssignmentData(bp.id, aiLiteracyAssignment.id, {
+    assignment: {
+      due_at: dueDate,
+    },
+  });
+
+  if (updateAssignmentDate.errors) {
+    alert(
+      "There was a problem updating the due date of the AI Literacy Assignment. You may need to update that manually."
+    );
+  }
 
   const updateModuleItem = await fetchJson(
     `/api/v1/courses/${bp.id}/modules/${updatedModules[1].id}/items/${aiLiteracyModuleItem.id}`,
