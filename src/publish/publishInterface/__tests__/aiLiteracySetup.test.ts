@@ -3,6 +3,7 @@ import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { getAssignmentData } from "@ueu/ueu-canvas/content/assignments/legacy";
 import { startMigration } from "@ueu/ueu-canvas/course/migration";
+import { updateAssignmentData } from "@ueu/ueu-canvas";
 import { IAssignmentGroup } from "@ueu/ueu-canvas/content/types";
 import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
 
@@ -13,6 +14,10 @@ jest.mock("@ueu/ueu-canvas/canvasUtils", () => ({
 jest.mock("@ueu/ueu-canvas/content/assignments/legacy", () => ({
   getAssignmentData: jest.fn(),
 }));
+jest.mock("@ueu/ueu-canvas", () => ({
+  ...jest.requireActual("@ueu/ueu-canvas"),
+  updateAssignmentData: jest.fn(),
+}));
 jest.mock("@ueu/ueu-canvas/course/migration");
 jest.mock("@/publish/publishInterface/MakeBp", () => ({
   waitForMigrationCompletion: jest.fn(),
@@ -22,6 +27,7 @@ const mockGetAssignmentData = getAssignmentData as jest.Mock;
 const mockStartMigration = startMigration as jest.Mock;
 const mockWaitForMigrationCompletion = waitForMigrationCompletion as jest.Mock;
 const mockFetchJson = fetchJson as jest.Mock;
+const mockUpdateAssignmentData = updateAssignmentData as jest.Mock;
 
 const mockBpId = 123;
 const aiLiteracyCourseId = 8019281;
@@ -57,6 +63,7 @@ const destinationModule: IModuleData = {
 
 const mockBp = {
   id: mockBpId,
+  getAssignments: jest.fn(),
   getAssignmentGroups: jest.fn(),
   getModules: jest.fn(),
   updateModules: jest.fn(),
@@ -64,11 +71,23 @@ const mockBp = {
 
 function mockSuccessfulMigration() {
   mockBp.getAssignmentGroups.mockResolvedValue([baseAssignmentGroup]);
+  mockBp.getAssignments.mockResolvedValue([]);
   mockBp.getModules.mockResolvedValue([module1, destinationModule]);
   mockBp.updateModules.mockResolvedValue([module1, destinationModule]);
-  mockGetAssignmentData.mockResolvedValue({ due_at: sourceDueDate.toISOString() });
+  mockGetAssignmentData.mockImplementation(async (_courseId: number, contentId: number) => {
+    if (contentId === 999) {
+      return { due_at: sourceDueDate.toISOString() };
+    }
+
+    if (contentId === moduleItemId) {
+      return { id: moduleItemId, due_at: sourceDueDate.toISOString() };
+    }
+
+    return { due_at: null };
+  });
   mockStartMigration.mockResolvedValue({ id: 9999 });
   mockWaitForMigrationCompletion.mockResolvedValue({ workflow_state: "completed" });
+  mockUpdateAssignmentData.mockResolvedValue({});
   mockFetchJson.mockImplementation(async (url: string) => {
     if (url.includes(`/modules/${destinationModuleId}/items/${moduleItemId}`) && url.includes("/api/v1/courses/")) {
       return {};
@@ -120,7 +139,6 @@ describe("aiLiteracySetup", () => {
             },
             date_shift_options: {
               shift_dates: true,
-              new_end_date: sourceDueDate,
             },
             select: {
               assignments: [aiLiteracyAssignmentId],
@@ -130,6 +148,15 @@ describe("aiLiteracySetup", () => {
       })
     );
     expect(mockWaitForMigrationCompletion).toHaveBeenCalledWith(mockBpId, 9999);
+    expect(mockUpdateAssignmentData).toHaveBeenCalledWith(
+      mockBpId,
+      moduleItemId,
+      expect.objectContaining({
+        assignment: {
+          due_at: sourceDueDate.toISOString(),
+        },
+      })
+    );
     expect(mockFetchJson).toHaveBeenCalledWith(
       `/api/v1/courses/${mockBpId}/modules/${destinationModuleId}/items/${moduleItemId}`,
       expect.objectContaining({
@@ -162,6 +189,7 @@ describe("aiLiteracySetup", () => {
   });
 
   it("alerts and stops if Module 1 is missing", async () => {
+    mockBp.getAssignments.mockResolvedValue([]);
     mockBp.getModules.mockResolvedValue([]);
 
     await aiLiteracySetup({
@@ -175,6 +203,7 @@ describe("aiLiteracySetup", () => {
   });
 
   it("alerts and stops if the due date cannot be found", async () => {
+    mockBp.getAssignments.mockResolvedValue([]);
     mockGetAssignmentData.mockResolvedValue({ due_at: null });
 
     await aiLiteracySetup({
@@ -188,6 +217,7 @@ describe("aiLiteracySetup", () => {
   });
 
   it("alerts and stops if the migration fails", async () => {
+    mockBp.getAssignments.mockResolvedValue([]);
     mockWaitForMigrationCompletion.mockResolvedValue({ workflow_state: "failed" });
 
     await aiLiteracySetup({
@@ -206,6 +236,7 @@ describe("aiLiteracySetup", () => {
   });
 
   it("deletes imported assignment groups after a successful migration", async () => {
+    mockBp.getAssignments.mockResolvedValue([]);
     mockBp.getAssignmentGroups
       .mockResolvedValueOnce([baseAssignmentGroup])
       .mockResolvedValueOnce([baseAssignmentGroup, importedAssignmentGroup]);
