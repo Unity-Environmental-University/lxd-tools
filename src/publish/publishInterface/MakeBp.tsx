@@ -1,5 +1,5 @@
 import { createNewCourse, getCourseById, getCourseName } from "@ueu/ueu-canvas/course";
-import { Alert, Button, Col, FormControl, Row } from "react-bootstrap";
+import { Alert, Button, Col, FormControl, Row, Stack } from "react-bootstrap";
 import { FormEvent, useEffect, useReducer, useState } from "react";
 import { useEffectAsync } from "@/ui/utils";
 import {
@@ -24,6 +24,7 @@ import dateFromTermName from "@ueu/ueu-canvas/term/dateFromTermName";
 import { Temporal } from "temporal-polyfill";
 import { retireBlueprint } from "@ueu/ueu-canvas/course/retireBlueprint";
 import { academicIntegritySetup } from "./academicIntegritySetup";
+import { aiLiteracySetup } from "@/publish/publishInterface/aiLiteracySetup";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
 
@@ -86,8 +87,11 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   const [isArchiveDisabled, setIsArchiveDisabled] = useState(true);
   const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
   const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);
+  const [isRunningAiLiteracySetup, setIsRunningAiLiteracySetup] = useState(false);
   const [isCloningBp, setCloningBp] = useState(false);
   const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Setup Citations Module`;
+  const aiLiteracyText = isRunningAiLiteracySetup ? "Setting up..." : "Setup AI Literacy Assignment";
+  const showAcademicIntegrityButton = currentBp ? true : false;
   useEffect(...callOnChangeFunc(currentBp, onBpSet));
   useEffect(...callOnChangeFunc(termName, onTermNameSet));
   useEffect(...callOnChangeFunc(sections, onSectionsSet));
@@ -329,11 +333,23 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
               </Button>
             </Col>
             <Col sm={3}>
+              {showAcademicIntegrityButton && currentBp && (
+                <Button
+                  id={"aiLiteracyButton"}
+                  onClick={() => aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup })}
+                  disabled={isRunningAiLiteracySetup || !currentBp || isCloningBp || isRunningIntegritySetup}
+                  aria-label={"Setup AI Literacy Assignment in New BP"}
+                  title="Set up the AI Literacy assignment content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
+                >
+                  {aiLiteracyText}
+                </Button>
+              )}
               {currentBp?.isUndergrad && (
                 <Button
+                  className={showAcademicIntegrityButton ? "mt-2" : undefined}
                   id={"academicIntegrityButton"}
                   onClick={() => academicIntegritySetup({ currentBp, setIsRunningIntegritySetup })}
-                  disabled={isRunningIntegritySetup || !currentBp || isCloningBp}
+                  disabled={isRunningIntegritySetup || !currentBp || isCloningBp || isRunningAiLiteracySetup}
                   aria-label={"Setup Citations Module in New BP"}
                   title="Set up the Citations module content in the BP. This may take a while to complete. You can change tabs but closing or refreshing this tab may cause issues."
                 >
