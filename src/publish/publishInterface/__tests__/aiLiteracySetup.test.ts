@@ -52,7 +52,7 @@ const importedAssignmentGroup: IAssignmentGroup = {
 const module1: IModuleData = {
   id: module1Id,
   name: "Module 1",
-  items: [{ content_id: 999 }],
+  items: [{ content_id: 999, content_details: { due_at: sourceDueDate.toISOString() } }],
 } as IModuleData;
 
 const destinationModule: IModuleData = {
@@ -204,6 +204,13 @@ describe("aiLiteracySetup", () => {
 
   it("alerts and stops if the due date cannot be found", async () => {
     mockBp.getAssignments.mockResolvedValue([]);
+    mockBp.getModules.mockResolvedValue([
+      {
+        ...module1,
+        items: [{ content_id: 999 }],
+      },
+      destinationModule,
+    ]);
     mockGetAssignmentData.mockResolvedValue({ due_at: null });
 
     await aiLiteracySetup({

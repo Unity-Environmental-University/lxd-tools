@@ -60,7 +60,13 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
     return;
   }
 
-  const dueDate = (await getAssignmentData(bp.id, destModule.items[destModule.items.length - 1].content_id)).due_at;
+  /*
+  const lastItem = destModule.items[destModule.items.length - 1];
+
+  const dueDate = (await getAssignmentData(bp.id, lastItem.content_id))?.due_at ?? lastItem.content_details?.due_at;
+  */
+
+  const dueDate = getModuleDueDate(destModule);
 
   if (!dueDate) {
     alert("Couldn't find due date for Week 1 assignments.");
@@ -78,9 +84,6 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
           insert_into_module_id: destModule.id,
           insert_into_module_type: "assignment",
           insert_into_module_position: 2,
-        },
-        date_shift_options: {
-          shift_dates: true,
         },
         select: {
           assignments: [aiLiteracyAssignmentId],
@@ -154,4 +157,32 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
 
   setIsRunningAiLiteracySetup(false);
   alert("AI Literacy Assignment Setup done!");
+
+  function getModuleDueDate(module: IModuleData): string | undefined {
+    const dueDates = module.items
+      .map((item) => item.content_details?.due_at)
+      .filter((dueDate): dueDate is string => !!dueDate);
+
+    if (dueDates.length === 0) {
+      return undefined;
+    }
+
+    const dueDateCounts = new Map<string, number>();
+    for (const dueDate of dueDates) {
+      dueDateCounts.set(dueDate, (dueDateCounts.get(dueDate) ?? 0) + 1);
+    }
+
+    let mostCommonDueDate: string | undefined;
+    let mostCommonCount = 0;
+
+    for (const dueDate of dueDates) {
+      const count = dueDateCounts.get(dueDate) ?? 0;
+      if (count > mostCommonCount) {
+        mostCommonDueDate = dueDate;
+        mostCommonCount = count;
+      }
+    }
+
+    return mostCommonDueDate;
+  }
 }
