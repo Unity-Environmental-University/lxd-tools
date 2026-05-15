@@ -1,4 +1,4 @@
-import { aiLiteracySetup } from "@/publish/publishInterface/aiLiteracySetup";
+import { aiLiteracySetup, getModuleDueDate } from "@/publish/publishInterface/aiLiteracySetup";
 import { waitForMigrationCompletion } from "@/publish/publishInterface/MakeBp";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { getAssignmentData } from "@ueu/ueu-canvas/content/assignments/legacy";
@@ -122,7 +122,7 @@ describe("aiLiteracySetup", () => {
 
     expect(setIsRunningAiLiteracySetup).toHaveBeenCalledWith(true);
     expect(setIsRunningAiLiteracySetup).toHaveBeenCalledWith(false);
-    expect(mockGetAssignmentData).toHaveBeenCalledWith(mockBpId, 999);
+    expect(mockGetAssignmentData).toHaveBeenCalledWith(mockBpId, 777);
     expect(mockStartMigration).toHaveBeenCalledWith(
       aiLiteracyCourseId,
       mockBpId,
@@ -136,9 +136,6 @@ describe("aiLiteracySetup", () => {
               insert_into_module_id: module1Id,
               insert_into_module_type: "assignment",
               insert_into_module_position: 2,
-            },
-            date_shift_options: {
-              shift_dates: true,
             },
             select: {
               assignments: [aiLiteracyAssignmentId],
@@ -262,5 +259,27 @@ describe("aiLiteracySetup", () => {
         },
       })
     );
+  });
+
+  describe("getModuleDueDate", () => {
+    it("returns the most common due date from module items", () => {
+      const module = {
+        items: [
+          { content_details: { due_at: "2026-05-14T12:00:00.000Z" } },
+          { content_details: { due_at: "2026-05-14T12:00:00.000Z" } },
+          { content_details: { due_at: "2026-05-21T12:00:00.000Z" } },
+        ],
+      } as IModuleData;
+
+      expect(getModuleDueDate(module)).toBe("2026-05-14T12:00:00.000Z");
+    });
+
+    it("returns undefined when there are no due dates", () => {
+      const module = {
+        items: [{}, { content_details: {} }],
+      } as IModuleData;
+
+      expect(getModuleDueDate(module)).toBeUndefined();
+    });
   });
 });

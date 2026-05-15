@@ -8,6 +8,34 @@ export interface aiLiteracySetupProps {
   setIsRunningAiLiteracySetup: (running: boolean) => void;
 }
 
+export function getModuleDueDate(module: IModuleData): string | undefined {
+  const dueDates = module.items
+    .map((item) => item.content_details?.due_at)
+    .filter((dueDate): dueDate is string => !!dueDate);
+
+  if (dueDates.length === 0) {
+    return undefined;
+  }
+
+  const dueDateCounts = new Map<string, number>();
+  for (const dueDate of dueDates) {
+    dueDateCounts.set(dueDate, (dueDateCounts.get(dueDate) ?? 0) + 1);
+  }
+
+  let mostCommonDueDate: string | undefined;
+  let mostCommonCount = 0;
+
+  for (const dueDate of dueDates) {
+    const count = dueDateCounts.get(dueDate) ?? 0;
+    if (count > mostCommonCount) {
+      mostCommonDueDate = dueDate;
+      mostCommonCount = count;
+    }
+  }
+
+  return mostCommonDueDate;
+}
+
 export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }: aiLiteracySetupProps) {
   const bp = currentBp;
   const aiLiteracyCourseId = 8019281;
@@ -157,32 +185,4 @@ export async function aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup }
 
   setIsRunningAiLiteracySetup(false);
   alert("AI Literacy Assignment Setup done!");
-
-  function getModuleDueDate(module: IModuleData): string | undefined {
-    const dueDates = module.items
-      .map((item) => item.content_details?.due_at)
-      .filter((dueDate): dueDate is string => !!dueDate);
-
-    if (dueDates.length === 0) {
-      return undefined;
-    }
-
-    const dueDateCounts = new Map<string, number>();
-    for (const dueDate of dueDates) {
-      dueDateCounts.set(dueDate, (dueDateCounts.get(dueDate) ?? 0) + 1);
-    }
-
-    let mostCommonDueDate: string | undefined;
-    let mostCommonCount = 0;
-
-    for (const dueDate of dueDates) {
-      const count = dueDateCounts.get(dueDate) ?? 0;
-      if (count > mostCommonCount) {
-        mostCommonDueDate = dueDate;
-        mostCommonCount = count;
-      }
-    }
-
-    return mostCommonDueDate;
-  }
 }
