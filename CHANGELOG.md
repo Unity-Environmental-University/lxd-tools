@@ -12,6 +12,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Internal
 
+## 3.1.3
+
+### Added
+
+### Changed
+
+- Remove inline height style from grad honor code section of syllabus
+
+### Internal
+
 ## 3.1.2
 
 ### Added

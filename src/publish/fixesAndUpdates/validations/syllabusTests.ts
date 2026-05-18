@@ -680,6 +680,15 @@ export const honorCodeCheck: CourseValidation<
         });
 
       honorCodeTd.innerHTML = gradHonorCodeHtml;
+
+      // Remove fixed heights so the table resizes naturally after the shorter grad content is inserted.
+      for (const el of [
+        gradHonorCodeTable,
+        ...Array.from(gradHonorCodeTable.querySelectorAll("tr, td")),
+      ]) {
+        (el as HTMLElement).style.removeProperty("height");
+        el.removeAttribute("height");
+      }
     } else if (course.isCareerInstitute()) {
       return testResult("not run", {
         notFailureMessage:
