@@ -10,6 +10,7 @@ import aiLinkValidation from "@publish/fixesAndUpdates/validations/aiLinkValidat
 import { bannerHeadingValidation } from "./bannerHeadingValidation";
 import { discussionTests } from "@publish/fixesAndUpdates/validations/discussionTests";
 import { doubleProfileLanguageIntro } from "@publish/fixesAndUpdates/validations/doubleProfileLanguageIntro";
+import { kalturaSizeTests } from "./kalturaSizeFix";
 //import {dontUseThisValidation} from "@publish/fixesAndUpdates/dontUseThis";
 
 export default [
@@ -20,6 +21,7 @@ export default [
   ...rubricSettings,
   ...syllabusTests,
   ...assignments,
+  kalturaSizeTests,
   discussionTests,
   doubleProfileLanguageIntro,
   proxyServerLinkValidation,
