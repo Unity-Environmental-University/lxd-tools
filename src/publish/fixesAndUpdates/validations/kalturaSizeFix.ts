@@ -4,7 +4,12 @@ import { ValidationResult } from "@publish/fixesAndUpdates/validations/utils";
 
 type KalturaLtiData = Record<string, string>[];
 
-const base = "https://unity.instructure.com/api/v1"
+const BASE = "https://unity.instructure.com/api/v1"
+const NEW_W = 960
+const NEW_H = 540
+const OLD_W = 608
+const OLD_H = 342
+const NEW_SIZE = `${NEW_W}x${NEW_H}`
 
 // we don't use bearer token because the user is logged in & extension
 // operates without need for it - but to get PUT to work we need csrf token
@@ -17,7 +22,7 @@ function getCsrfToken() {
 }
 
 const run: CourseValidation<{ id: number }, KalturaLtiData>["run"] = async ({ id }) => {
-    const lti_links_url = `${base}/courses/${id}/lti_resource_links`
+    const lti_links_url = `${BASE}/courses/${id}/lti_resource_links`
     try {
         const response = await fetch(lti_links_url)
 
@@ -30,7 +35,7 @@ const run: CourseValidation<{ id: number }, KalturaLtiData>["run"] = async ({ id
 
         const bad_lti_data = lti_data.filter(                                                                                                                                                      
             (data): data is Record<string, string> =>
-                data.url?.includes("608x342") ?? false
+                data.url?.includes(`${OLD_W}x${OLD_H}`) ?? false
         );
 
         if(bad_lti_data.length === 0){
@@ -56,10 +61,6 @@ const run: CourseValidation<{ id: number }, KalturaLtiData>["run"] = async ({ id
             notFailureMessage: "LTI endpoint not found. "
         });
     }
-
-
-
-    // we want to return the bad links in userData for the fix to use
 };
 
 const fix: CourseFixValidation<{ id: number }, KalturaLtiData>["fix"] = async (
@@ -70,20 +71,14 @@ const fix: CourseFixValidation<{ id: number }, KalturaLtiData>["fix"] = async (
     result ??= await run(course);
     const { userData: bad_lti_data } = result;
 
-    const new_w = 960
-    const new_h = 540
-
-    const new_size = `${new_w}x${new_h}`
-
     // no bad lti resources, no need to fix them
     if (!bad_lti_data) return testResult(true, { notFailureMessage: "No Kaltura size issues." });
 
     let update_count = 0
     for(const data of bad_lti_data){
-        console.error("huh")
-        const parts = data.url?.split("/608x342/")
-        const newURL = `${parts[0]}/${new_size}/${parts[1]}` //TODO hardcoded splits messy
-        const update_endpt = `${base}/courses/${course.id}/lti_resource_links/${data.id}`
+        const parts = data.url.split(`/${OLD_W}x${OLD_H}/`)
+        const newURL = `${parts[0]}/${NEW_SIZE}/${parts[1]}` //TODO hardcoded splits messy
+        const update_endpt = `${BASE}/courses/${course.id}/lti_resource_links/${data.id}`
         try{
             const response = await fetch(update_endpt, {
                 method: "PUT",
