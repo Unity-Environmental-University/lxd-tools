@@ -15,6 +15,7 @@ import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 const ugValidBody = `
   <div>By participating in this course, you agree:
     unity de student handbook
+    <a href="https://unity.edu/distance-education/student-resources/#catalog-and-handbook">Unity DE Student Handbook</a>
     <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3341&app=pt">full policy here</a>
     what happens if this occurs more than once
     in all terms:
@@ -65,7 +66,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
         {
           title: "Course Overview",
           body: ugValidBody,
-          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview" },
         },
       ]);
 
@@ -81,7 +82,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
         {
           title: "Course Overview",
           body: `<div>By participating in this course, you agree: some wrong text</div><div>confirm your agreement</div>`,
-          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview" },
         },
       ]);
 
@@ -89,13 +90,30 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should fail for UG when html key phrases (link URLs) are missing", async () => {
+  it("should fail for UG when html key phrases (link URLs) are missing", async () => {
       const bodyWithoutPolicyLink = ugValidBody.replace(`?docid=3341`, `?docid=9999`);
       mockCourse.getPages = jest.fn().mockResolvedValue([
         {
           title: "Course Overview",
           body: bodyWithoutPolicyLink,
-          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview" },
+        },
+      ]);
+
+      const result = await courseOverviewLanguageTest.run(mockCourse);
+      expect(result.success).toBe(false);
+    });
+
+    it("should fail for UG when the handbook link is missing", async () => {
+      const bodyWithoutHandbookLink = ugValidBody.replace(
+        `https://unity.edu/distance-education/student-resources/#catalog-and-handbook`,
+        `https://unity.edu/distance-education/student-resources/#missing-handbook`
+      );
+      mockCourse.getPages = jest.fn().mockResolvedValue([
+        {
+          title: "Course Overview",
+          body: bodyWithoutHandbookLink,
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview" },
         },
       ]);
 
@@ -113,7 +131,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
         {
           title: "Course Overview",
           body: gradValidBody,
-          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview" },
         },
       ]);
 
@@ -131,7 +149,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
         {
           title: "Course Overview",
           body: `<div>By participating in this course, you agree: some wrong text</div><div>confirm your agreement</div>`,
-          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview"},
+          rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview" },
         },
       ]);
 
@@ -160,8 +178,13 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
   });
 
   describe("fix() logic", () => {
-    const mockCourseOverviewPage: IPageData = {...mockPageData, title: "Course Overview", url: "course-overview", body: `<div>Wrong text.</div>
-      <div>By participating in this course, you agree:</div>`};
+    const mockCourseOverviewPage: IPageData = {
+      ...mockPageData,
+      title: "Course Overview",
+      url: "course-overview",
+      body: `<div>Wrong text.</div>
+      <div>By participating in this course, you agree:</div>`,
+    };
 
     const fixablePageBody = `<div>By participating in this course, you agree: OLD HONOR CODE CONTENT</div><div>Please confirm your agreement OLD CONFIRM CONTENT</div>`;
 
@@ -197,15 +220,10 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
         userData: mockUserData,
       });
 
-      const result = await courseOverviewLanguageTest.fix(
-        mockCourse,
-        successfulResult
-      );
+      const result = await courseOverviewLanguageTest.fix(mockCourse, successfulResult);
 
       expect(result.success).toBe("not run");
-      expect(result.messages).toEqual(
-        [{"bodyLines": ["Fix not run because test was a success"]}]
-      );
+      expect(result.messages).toEqual([{ bodyLines: ["Fix not run because test was a success"] }]);
       expect(PageKind.put).not.toHaveBeenCalled();
     });
 
@@ -213,16 +231,16 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
       const failedResult = testResult(false, { userData: mockUserData });
 
       const putMock = PageKind.put as jest.Mock;
-  putMock.mockResolvedValue({
-      ...mockPageData,
-      page_id: "course-overview",
-      body: "Some body text"
-  });
+      putMock.mockResolvedValue({
+        ...mockPageData,
+        page_id: "course-overview",
+        body: "Some body text",
+      });
 
-  const result = await courseOverviewLanguageTest.fix(mockCourse, failedResult);
+      const result = await courseOverviewLanguageTest.fix(mockCourse, failedResult);
 
       expect(result.success).toBe(true);
-      expect(result.messages).toEqual([{"bodyLines": ["Course overview updated successfully."]}]);
+      expect(result.messages).toEqual([{ bodyLines: ["Course overview updated successfully."] }]);
     });
 
     it("should return failure if PageKind.put fails to return a page_id", async () => {
@@ -232,9 +250,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
       const result = await courseOverviewLanguageTest.fix(mockCourse, failedResult);
 
       expect(result.success).toBe(false);
-      expect(result.messages).toEqual([
-        { bodyLines: ["Failed to update course overview page."] },
-      ]);
+      expect(result.messages).toEqual([{ bodyLines: ["Failed to update course overview page."] }]);
     });
 
     it("should attempt to update the page for a grad course", async () => {
@@ -250,15 +266,15 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
       const result = await courseOverviewLanguageTest.fix(mockCourse, failedResult);
 
       expect(result.success).toBe(true);
-      expect(result.messages).toEqual([{"bodyLines": ["Course overview updated successfully."]}]);
+      expect(result.messages).toEqual([{ bodyLines: ["Course overview updated successfully."] }]);
     });
 
     it("should return 'not run' if result or userData is missing", async () => {
       const result = await courseOverviewLanguageTest.fix(mockCourse, undefined);
       expect(result.success).toBe("not run");
-      expect(result.messages).toEqual(
-        [{"bodyLines": ["Fix didn't run because of an error passing test results to fix."]}]
-      );
+      expect(result.messages).toEqual([
+        { bodyLines: ["Fix didn't run because of an error passing test results to fix."] },
+      ]);
     });
   });
 });
