@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Learning Materials link added to Salesforce Navigation drop down in the extension popup, will filter the report based on course if user tab is a Canvas course
+
 ### Changed
+
+- Course Overview Page validation link to student handbook changed for grad and undergrad
 
 ### Internal
 
