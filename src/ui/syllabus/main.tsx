@@ -8,7 +8,15 @@ function addImportButton(location: Element) {
         const rootDiv = document.createElement('div');
         correctParent.insertBefore(rootDiv, correctParent.firstElementChild);
         const importButtonRoot = ReactDOM.createRoot(rootDiv);
-        importButtonRoot.render(<ImportButton/>);
+        importButtonRoot.render(
+            <div>
+                <ImportButton/>
+                <ImportButton
+                    name={"Custom Import"}
+                    useSlug={true}
+                />
+            </div>
+        );
     }
     else{
         console.error("could not find correct parent to add import button to syllabus")
@@ -17,6 +25,12 @@ function addImportButton(location: Element) {
 
 export function main() {
     // grab the location to add the button to
+    // TODO this location is hardcoded has Week 1 Learning Materials
+    // at least make it a constant because this is used in ImportHelpers as
+    // well - at best it needs to be state because some CE pages won't 
+    // use that wording in the syllabus - in that case the custom import button
+    // should appear at top of page and accept a string indicating what text to
+    // look for in syllabus.
     const location = Array.from(document.querySelectorAll(".content"))
         .find(h3 => h3.textContent?.includes("Week 1 Learning Materials")); // TODO I re-use this little snippet a lot - make a func?
     if (location){
@@ -25,6 +39,7 @@ export function main() {
     }
     else{
         console.error("could not find location to add import button to syllabus");
+        alert("could not find location to add import button to syllabus - does this syllabus include header 'Week 1 Learning Materials' for that section? Make sure it does if you wish to use this feature")
     }
     
 }
