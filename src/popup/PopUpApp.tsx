@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { runtime, storage } from "webextension-polyfill";
+import { runtime, storage, tabs } from "webextension-polyfill";
 import "../css/source.scss";
 import "./PopUpApp.scss";
 import "bootstrap";
@@ -115,6 +115,23 @@ function SalesforceNavigation() {
   const [_queryString, _setQueryString] = useState<string | null>(null);
   const [_textEntryEnabled, setTextEntryEnabled] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [canvasCourseCode, setCanvasCourseCode] = useState<string | null>(null);
+
+  const learningMaterialsReportUrl = buildSalesforceReportUrl("00OUH000005LkRZ2A0");
+  const filteredLearningMaterialsReportUrl = canvasCourseCode
+    ? buildSalesforceReportUrl("00OUH000005LkRZ2A0", 4, canvasCourseCode)
+    : learningMaterialsReportUrl;
+
+  useEffectAsync(async () => {
+    try {
+      const [activeTab] = await tabs.query({ active: true, currentWindow: true });
+      const extractedCourseCode = await extractCanvasCourseCodeFromUrl(activeTab?.url ?? null);
+      setCanvasCourseCode(extractedCourseCode);
+    } catch (e) {
+      console.warn("Unable to inspect active tab for Canvas course code:", e);
+      setCanvasCourseCode(null);
+    }
+  }, []);
 
   /*This isn't currently working, but I'm leaving it because it's closer than not and would be a nice feature to have.
     async function getCourseCodeFromCanvas() {
@@ -155,10 +172,7 @@ function SalesforceNavigation() {
                 "_blank"
               );
             } else if (e.target.value === "course-materials") {
-              window.open(
-                "https://unityenvironmentaluniversity.lightning.force.com/lightning/r/Report/00OUH000005LkRZ2A0/view",
-                "_blank"
-              );
+              window.open(filteredLearningMaterialsReportUrl, "_blank");
             } else if (["learning-course", "course-material"].includes(e.target.value)) {
               /*getCourseCodeFromCanvas().then(r => {
                             if(r) {
@@ -220,6 +234,54 @@ function SalesforceNavigation() {
         }.*/}
     </div>
   );
+}
+
+function buildSalesforceReportUrl(reportId: string, filterIndex?: number, filterValue?: string) {
+  const baseUrl = `https://unityenvironmentaluniversity.lightning.force.com/lightning/r/Report/${reportId}/view`;
+  if (typeof filterIndex !== "number" || typeof filterValue !== "string" || filterValue.length === 0) {
+    return `${baseUrl}?queryScope=userFolders`;
+  }
+  const filterParam = `fv${filterIndex}=${encodeURIComponent(filterValue)}`;
+  return `${baseUrl}?queryScope=userFolders&${filterParam}`;
+}
+
+async function extractCanvasCourseCodeFromUrl(url: string | null) {
+  if (!url) return null;
+  const canvasUrl = new URL(url);
+  if (!canvasUrl.hostname.endsWith(".instructure.com") || !/\/courses\/\d+/.test(canvasUrl.pathname)) return null;
+
+  const idRegex = /courses\/(\d+)/m;
+
+  const match = idRegex.exec(canvasUrl.pathname);
+  if (!match) return null;
+
+  const courseId = +match[1];
+
+  const course = await getCanvasCourseById(canvasUrl.origin, courseId);
+
+  const courseName = course.name;
+  if (!courseName) return null;
+
+  const courseNameRegex = /([A-Za-z]{4})[\s_-]?(\d{3,4})/m;
+  const courseCode = courseNameRegex.exec(courseName);
+
+  if (!courseCode || !courseCode[1] || !courseCode[2]) return null;
+
+  const formattedCourseCode = `${courseCode[1].toUpperCase()} ${courseCode[2]}`;
+
+  return formattedCourseCode;
+}
+
+async function getCanvasCourseById(canvasOrigin: string, courseId: number) {
+  const response = await fetch(`${canvasOrigin}/api/v1/courses/${courseId}`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Unable to load Canvas course ${courseId}: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json() as Promise<{ name?: string }>;
 }
 
 function SetOpenAiKey() {
