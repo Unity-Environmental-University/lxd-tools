@@ -29,15 +29,9 @@ export async function handleImportClick(pageSlug:string = "week-1-learning-mater
         const extractedContent = extractContentFromHTML(wk1_mats_page.body, ".cbt-video-container");
         const extractedMats = extractContentFromHTML(wk1_mats_page.body, "div.cbt-accordion-list.utc-accordion-list"); // assuming learning mats are in a <ul>
 
-        if (!extractedContent) {
-            alert("No video content found on Week 1 Learning Materials page")
-            console.error("No video content found on Week 1 Learning Materials page");
-            return;
-        }
-
-        if (!extractedMats) {
-            alert("No learning materials content found on Week 1 Learning Materials page")
-            console.error("No learning materials content found on Week 1 Learning Materials page");
+        if (!extractedContent.length && !extractedMats.length) {
+            alert("No video content or dropdowns found on Week 1 Learning Materials page")
+            console.error("No video content or dropdowns found on Week 1 Learning Materials page");
             return;
         }
 
