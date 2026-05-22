@@ -124,13 +124,13 @@ export async function addRubricButton(header: HTMLElement) {
   }
 }
 
+// TODO; This isn't rendering
 export async function addSyllabusButton(header: HTMLElement, course: Course) {
   const page = window.document.URL;
   if (page.includes("syllabus")) {
     const rootDiv = document.createElement("div");
     header.append(rootDiv);
     const syllabusButtonRoot = ReactDOM.createRoot(rootDiv);
-    //TODO; Figure out what I'm doing wrong
     syllabusButtonRoot.render(<SyllabusSync course={course} />);
   }
 }
