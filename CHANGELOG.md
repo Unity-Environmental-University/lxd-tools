@@ -12,23 +12,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Internal
 
-## 3.1.3
+## 3.1.4
 
 ### Added
+
+- Learning Materials link added to Salesforce Navigation drop down in the extension popup, will filter the report based on course if user tab is a Canvas course
+
+### Changed
+
+- Course Overview Page validation link to student handbook changed for grad and undergrad
+- Import Week 1 Learning Materials button improved
+
+## 3.1.3
 
 ### Changed
 
 - Remove inline height style from grad honor code section of syllabus
-
-### Internal
 
 ## 3.1.2
 
 ### Added
 
 - AI Literacy Assignment Automation that lives on the Manage DEV -> BP interface
-
-### Changed
 
 ### Internal
 

@@ -54,26 +54,14 @@ describe("handleImportClick", () => {
       expect(mockCourse.getSyllabus).not.toHaveBeenCalled();
     });
 
-    it("exits if no video content found on page", async () => {
+    it("exits if no video or dropdown content found on page", async () => {
       (Course.getFromUrl as jest.Mock).mockResolvedValue(mockCourse);
       (PageKind.getByString as jest.Mock).mockResolvedValue(mockPageData);
-      (extractContentFromHTML as jest.Mock).mockReturnValueOnce(null); // no video content
+      (extractContentFromHTML as jest.Mock).mockReturnValueOnce([]); // no video content
+      (extractContentFromHTML as jest.Mock).mockReturnValueOnce([]); // no dropdowns
 
       await handleImportClick();
-      expect(console.error).toHaveBeenCalledWith("No video content found on Week 1 Learning Materials page");
-      expect(mockCourse.getSyllabus).not.toHaveBeenCalled();
-    });
-
-    it("exits if no learning materials content found on page", async () => {
-      (Course.getFromUrl as jest.Mock).mockResolvedValue(mockCourse);
-      (PageKind.getByString as jest.Mock).mockResolvedValue(mockPageData);
-      (extractContentFromHTML as jest.Mock).mockReturnValueOnce("<div>Video Content</div>"); // video content exists
-      (extractContentFromHTML as jest.Mock).mockReturnValueOnce(null); // no mats content
-
-      await handleImportClick();
-      expect(console.error).toHaveBeenCalledWith(
-        "No learning materials content found on Week 1 Learning Materials page"
-      );
+      expect(console.error).toHaveBeenCalledWith("No video content or dropdowns found on Week 1 Learning Materials page");
       expect(mockCourse.getSyllabus).not.toHaveBeenCalled();
     });
   });
@@ -111,6 +99,20 @@ describe("handleImportClick", () => {
       (PageKind.getByString as jest.Mock).mockResolvedValue(mockPageData);
       (extractContentFromHTML as jest.Mock).mockReturnValueOnce("<div>Video Content</div>");
       (extractContentFromHTML as jest.Mock).mockReturnValueOnce("<div>Mats Content</div>");
+      (mockCourse.getSyllabus as jest.Mock).mockResolvedValue(gradSyllabus);
+      (clearMatsSection as jest.Mock).mockReturnValue(galSyllabus);
+      (importContentIntoSyllabus as jest.Mock).mockReturnValue(galSyllabus);
+
+      await handleImportClick();
+
+      expect(mockCourse.changeSyllabus).toHaveBeenCalledWith(galSyllabus);
+    });
+
+    it("continues if some learning materials content found on page", async () => {
+      (Course.getFromUrl as jest.Mock).mockResolvedValue(mockCourse);
+      (PageKind.getByString as jest.Mock).mockResolvedValue(mockPageData);
+      (extractContentFromHTML as jest.Mock).mockReturnValueOnce("<div>Video Content</div>");
+      (extractContentFromHTML as jest.Mock).mockReturnValueOnce([]);
       (mockCourse.getSyllabus as jest.Mock).mockResolvedValue(gradSyllabus);
       (clearMatsSection as jest.Mock).mockReturnValue(galSyllabus);
       (importContentIntoSyllabus as jest.Mock).mockReturnValue(galSyllabus);
