@@ -1,6 +1,6 @@
 import { CourseFixValidation, CourseValidation } from "@/publish/fixesAndUpdates/validations/types";
 import { testResult, ValidationResult } from "@publish/fixesAndUpdates/validations/utils";
-import { getPagedDataGenerator } from "@ueu/ueu-canvas";
+import { getPagedDataGenerator } from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
 
@@ -18,6 +18,8 @@ const OLD_W = 608;
 const OLD_H = 342;
 const OLD_SIZE = `${OLD_W}x${OLD_H}`;
 const NEW_SIZE = `${NEW_W}x${NEW_H}`;
+const OLD_PLAYER_SIZE_SEGMENT = `playerSize/${OLD_SIZE}/`;
+const NEW_PLAYER_SIZE_SEGMENT = `playerSize/${NEW_SIZE}/`;
 
 const run: CourseValidation<{ id: number }, KalturaLtiData>["run"] = async ({ id }) => {
     const lti_links_url = `/api/v1/courses/${id}/lti_resource_links`;
@@ -27,7 +29,10 @@ const run: CourseValidation<{ id: number }, KalturaLtiData>["run"] = async ({ id
             lti_data.push(item);
         }
 
-        const bad_lti_data = lti_data.filter(data => data.url?.includes(`/${OLD_SIZE}/`));
+        const bad_lti_data = lti_data.filter(data =>
+            data.url?.toLowerCase().includes('kaltura') &&
+            data.url.includes(OLD_PLAYER_SIZE_SEGMENT)
+        );
 
         if (bad_lti_data.length === 0) {
             return testResult(true, {
@@ -58,12 +63,12 @@ const fix: CourseFixValidation<{ id: number }, KalturaLtiData>["fix"] = async (
 
     let update_count = 0;
     for (const data of bad_lti_data) {
-        const parts = data.url.split(`/${OLD_SIZE}/`);
+        const parts = data.url.split(OLD_PLAYER_SIZE_SEGMENT);
         if (parts.length < 2) {
             console.error(`Unexpected URL format, skipping: ${data.url}`);
             continue;
         }
-        const newURL = `${parts[0]}/${NEW_SIZE}/${parts[1]}`;
+        const newURL = `${parts[0]}${NEW_PLAYER_SIZE_SEGMENT}${parts[1]}`;
         const update_endpt = `/api/v1/courses/${course.id}/lti_resource_links/${data.id}`;
         try {
             const response = await fetchJson(update_endpt, {
