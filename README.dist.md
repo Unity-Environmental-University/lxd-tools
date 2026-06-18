@@ -10,6 +10,8 @@ Source repository: https://github.com/Unity-Environmental-University/lxd-tools
 
 ## Installation
 
+For most people who use this extension at Unity, it should now automatically install on your laptop. If it doesn't, you can follow the steps below:
+
 1. Clone this repository
    - If you have GitHub Desktop installed, select **Code** → **Open with GitHub Desktop**
    - Otherwise, select **Code** → **Download ZIP**, then extract the zip and place the folder somewhere easy to find

@@ -1,6 +1,9 @@
 # This file tells the portal how to handle this repo
-edit_uri: edit/release/3.0.0/docs/
+edit_uri: edit/release/3.1.4/docs/
+site_name: LXD Extension Documentation
 
 nav:
-  - Knowledge Base: KNOWLEDGE_BASE.md
+  - User Guide: ../USER_GUIDE.md
+  - Developer Guide: ../README.md
   - Build Process: BUILD_PROCESS.md
+  - Knowledge Base: KNOWLEDGE_BASE.md
