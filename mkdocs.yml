@@ -1,9 +1,9 @@
 # This file tells the portal how to handle this repo
-edit_uri: edit/main/docs/
 site_name: LXD Extension Documentation
+docs_dir: .
 
 nav:
-  - User Guide: ../USER_GUIDE.md
-  - Developer Guide: ../README.md
-  - Build Process: BUILD_PROCESS.md
-  - Knowledge Base: KNOWLEDGE_BASE.md
+  - User Guide: README.dist.md
+  - Developer Guide: README.md
+  - Build Process: docs/BUILD_PROCESS.md
+  - Knowledge Base: docs/KNOWLEDGE_BASE.md
