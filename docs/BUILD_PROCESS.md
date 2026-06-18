@@ -11,6 +11,7 @@ The deployment pipeline manages version control, package signing, storage on Clo
 ### When the workflow runs
 
 - A pull request is merged to the main branch
+  - If the pull request has only .md and/or .yml files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
 - The event type must be 'closed' (not open, reopened, or synchronize)
 
 ### What triggers it NOT to run
