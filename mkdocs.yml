@@ -1,5 +1,5 @@
 # This file tells the portal how to handle this repo
-edit_uri: edit/release/3.1.4/docs/
+edit_uri: edit/main/docs/
 site_name: LXD Extension Documentation
 
 nav:
