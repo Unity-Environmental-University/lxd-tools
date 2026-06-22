@@ -8,7 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Validation added for Kaltura videos rendering at the wrong size
+
 ### Changed
+
+- Course Overview Test updated to reflect correct language
+- Updated documentation
 
 ### Internal
 

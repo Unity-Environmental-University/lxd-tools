@@ -15,7 +15,7 @@ jest.mock('@/ui/speedGrader/getData/getRowsForSections', () => ({
   getRowsForSections: jest.fn(() => Promise.resolve([])),
 }));
 jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator');
-jest.mock('@ueu/ueu-canvas/course/index', () => ({
+jest.mock('@ueu/ueu-canvas/course', () => ({
   getCourseDataGenerator: jest.fn(),
 }));
 

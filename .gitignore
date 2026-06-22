@@ -42,3 +42,4 @@ dist/
 .prettierignore
 .prettierrc
 .vscode/settings.json
+bun.lock

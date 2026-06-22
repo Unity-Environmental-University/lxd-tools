@@ -14,20 +14,25 @@ import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 const ugValidBody = `
   <div>By participating in this course, you agree:
-    unity de student handbook
     <a href="https://unity.edu/distance-education/student-resources/#catalog-and-handbook">Unity DE Student Handbook</a>
-    <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3341&app=pt">full policy here</a>
-    what happens if this occurs more than once
-    in all terms:
-    first term:
-    second term:
-    third term:
-    why we do this
-    resubmission (if permitted) is limited to 50%
-    learning module
-    academic honor code supersedes the grading rubric
+    <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3360&app=pt">full policy here</a>
+    unity de academic honor code
+    overview: academic honor code
+    accurate, verifiable information and fair work
+    completing original work
+    using ai tools responsibly
+    students are responsible for everything they submit
+    submitting unverifiable citations
+    the academic honor code supersedes the grading rubric
+    if your instructor flags a concern
+    what are the implications if this occurs repeatedly
+    within a course:
+    across terms:
+    the purpose behind this process
+    ensure fairness and academic rigor
+    support your development as a scholar and professional
   </div>
-  <div>Please confirm your agreement to the three numbered items above</div>
+  <div>Please confirm your agreement to the three numbered items above (code of conduct, honor code, and tech requirements)</div>
 `;
 
 const gradValidBody = `
@@ -91,7 +96,7 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
     });
 
   it("should fail for UG when html key phrases (link URLs) are missing", async () => {
-      const bodyWithoutPolicyLink = ugValidBody.replace(`?docid=3341`, `?docid=9999`);
+      const bodyWithoutPolicyLink = ugValidBody.replace(`?docid=3360`, `?docid=9999`);
       mockCourse.getPages = jest.fn().mockResolvedValue([
         {
           title: "Course Overview",
