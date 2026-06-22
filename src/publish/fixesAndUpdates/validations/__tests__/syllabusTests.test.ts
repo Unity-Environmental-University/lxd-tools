@@ -50,7 +50,7 @@ describe("Syllabus validation", () => {
     test("passes when old language is gone and correct link is present", syllabusTestTest(honorCodeCheck));
 
     test("fails when old language is gone but link URL is wrong", async () => {
-      const brokenLinkHtml = gallantSyllabusHtml.replace("?docid=3341", "?docid=9999");
+      const brokenLinkHtml = gallantSyllabusHtml.replace("?docid=3360", "?docid=9999");
       const course: ISyllabusHaver & ICourseDataHaver = {
         ...mockSyllabusHaver(brokenLinkHtml),
         rawData: mockCourseData,
@@ -59,8 +59,8 @@ describe("Syllabus validation", () => {
       expect(result.success).toBe(false);
     });
 
-    test("fails when old link (3323) is present and fix replaces it with new link (3341)", async () => {
-      const oldLinkHtml = gallantSyllabusHtml.replace("?docid=3341", "?docid=3323");
+    test("fails when old link (3341) is present and fix replaces it with new link (3360)", async () => {
+      const oldLinkHtml = gallantSyllabusHtml.replace("?docid=3360", "?docid=3341");
       const course: ISyllabusHaver & ICourseDataHaver = {
         ...mockSyllabusHaver(oldLinkHtml),
         rawData: mockCourseData,
@@ -74,8 +74,8 @@ describe("Syllabus validation", () => {
       expect(fixResult.success).toBe(true);
 
       const syllabus = await course.getSyllabus();
-      expect(syllabus).toContain("?docid=3341");
-      expect(syllabus).not.toContain("?docid=3323");
+      expect(syllabus).toContain("?docid=3360");
+      expect(syllabus).not.toContain("?docid=3341");
     });
   });
   test("Late policy text replace", syllabusTestTest(latePolicyTableTest));

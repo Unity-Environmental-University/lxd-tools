@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## 3.1.6
+
+### Added
+
+### Changed
+- Policy tech link for honor code in syllabus
+
+### Internal
+
+## 3.1.5
+
 ### Added
 
 - Validation added for Kaltura videos rendering at the wrong size
