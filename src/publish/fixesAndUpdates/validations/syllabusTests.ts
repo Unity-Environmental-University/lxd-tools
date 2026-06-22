@@ -515,7 +515,7 @@ type HonorCodeUserData = {
 };
 
 const ugSearchString = "students be honest in all academic work";
-const ugHonorCodeLinkPhrase = "?docid=3341";
+const ugHonorCodeLinkPhrase = "?docid=3360";
 const gradHonorCodeSearchString =
   "Academic Integrity and the Graduate Honor Code";
 const gradHonorCodeLinkPhrase = "?docid=3327";
@@ -609,7 +609,7 @@ export const honorCodeCheck: CourseValidation<
     const parsedSyllabus = parser.parseFromString(syllabus, "text/html");
     const tables = Array.from(parsedSyllabus.querySelectorAll("table"));
 
-    const ugNewSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3><p>Click on <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3341&app=pt&source=browse&public=true">this link to view the full Academic Honor Code</a>. You are responsible for being familiar with the Academic Honor Code.</p>`;
+    const ugNewSyllabusHtml = `<h3><strong>The Unity Environmental University Honor Code</strong></h3><p>Click on <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3360&app=pt&source=browse&public=true">this link to view the full Academic Honor Code</a>. You are responsible for being familiar with the Academic Honor Code.</p>`;
 
     if (course.isUndergrad()) {
       const honorCodeTable = tables.find((table) => {
