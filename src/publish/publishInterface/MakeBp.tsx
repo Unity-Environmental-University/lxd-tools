@@ -18,6 +18,7 @@ import {
   cacheCourseMigrations,
 } from "@ueu/ueu-canvas/course/migration/migrationCache";
 import { DevToBpMigrationBar } from "./DevToBpMigrationBar";
+import { backupBpToGit } from "./backupToGit";
 import assert from "assert";
 import { SectionData } from "@ueu/ueu-canvas/courseTypes";
 import dateFromTermName from "@ueu/ueu-canvas/term/dateFromTermName";
@@ -211,8 +212,9 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
     }
 
     setIsLoading(true);
-    await retireBlueprint(currentBp, termName);
-    await updateBpInfo(devCourse, devCourse.parsedCourseCode);
+    //await retireBlueprint(currentBp, termName);
+    //await updateBpInfo(devCourse, devCourse.parsedCourseCode);
+    await backupBpToGit({ course: currentBp });
     setIsLoading(false);
   }
 

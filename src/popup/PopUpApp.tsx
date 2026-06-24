@@ -5,7 +5,7 @@ import "./PopUpApp.scss";
 import "bootstrap";
 import { useEffectAsync } from "../ui/utils";
 import { Form } from "react-bootstrap";
-import { OPEN_AI_API_KEY_KEY, SUB_ACCOUNT } from "../consts";
+import { GITHUB_TOKEN_KEY, OPEN_AI_API_KEY_KEY, SUB_ACCOUNT } from "../consts";
 
 function PopUpApp() {
   const [advanced, setAdvanced] = useState(false);
@@ -24,6 +24,7 @@ function PopUpApp() {
       {advanced && (
         <>
           <SetOpenAiKey></SetOpenAiKey>
+          <SetGithubToken></SetGithubToken>
         </>
       )}
     </div>
@@ -319,6 +320,48 @@ function SetOpenAiKey() {
         <div className={"col"}>
           <button className="btn" onClick={() => saveKey(key)}>
             Save API Key
+          </button>
+          {saved && <h4>Saved</h4>}
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function SetGithubToken() {
+  const [token, setToken] = useState<string>("");
+  const [saved, _setSaved] = useState(false);
+  async function saveToken(tokenToSave: string) {
+    await storage.local.set({ [GITHUB_TOKEN_KEY]: tokenToSave });
+  }
+
+  useEffectAsync(async () => {
+    const savedTokenRecord = await storage.local.get(GITHUB_TOKEN_KEY);
+    const savedToken = savedTokenRecord[GITHUB_TOKEN_KEY] as string;
+    setToken(savedToken);
+  }, []);
+
+  return (
+    <div className="col card-body search-box">
+      <h1>GitHub Token</h1>
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          saveToken(token);
+        }}
+      >
+        <div className="row">
+          <input
+            id="github-token"
+            type="password"
+            value={token}
+            placeholder="Enter GitHub personal access token"
+            onChange={(e) => setToken(e.target.value)}
+          ></input>
+        </div>
+        <div className={"col"}>
+          <button className="btn" onClick={() => saveToken(token)}>
+            Save Token
           </button>
           {saved && <h4>Saved</h4>}
         </div>

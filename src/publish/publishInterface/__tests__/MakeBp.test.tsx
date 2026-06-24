@@ -134,6 +134,8 @@ import { getSections } from "@ueu/ueu-canvas/course/getSections";
 jest.mock("@ueu/ueu-canvas/course/retireBlueprint", () => ({ retireBlueprint: jest.fn() }));
 import { retireBlueprint } from "@ueu/ueu-canvas/course/retireBlueprint";
 
+jest.mock("../backupToGit", () => ({ backupBpToGit: jest.fn() }));
+
 const mockSyllabus = `<div class="cbt-callout-box">
         <div class="content">
             <p><strong>Course Number and Title:</strong> TEST101: Testing</p>

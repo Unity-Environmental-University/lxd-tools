@@ -6,3 +6,4 @@ export const DIST_REPO_MANIFEST = 'https://raw.githubusercontent.com/Unity-Envir
 export const SAFE_MAX_BANNER_WIDTH = 1400;
 export const DEV_TEMPLATE_COURSE_ID = 3850558;
 export const REFERENCES_PAGE_URL_NAME = 'learning-materials-reference-page';
+export const GITHUB_BACKUP_ORG = 'Unity-Environmental-University';
