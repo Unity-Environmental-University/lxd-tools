@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Policy tech link for honor code in syllabus
+- Set showAcademicIntegrityButton to permanently false so the button doesn't show now that the assignment is handled in individual course devs
 
 ### Internal
 
