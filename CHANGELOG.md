@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+- Hid Academic Integrity Assignment button(MakeBp.tsx)
+
+### Internal
+- Changed build.yml to manual-deploy.yml
+
 ## 3.1.6
 
 ### Added
