@@ -103,12 +103,14 @@ function getHtmlPlugins(chunks) {
         title: "React extension",
         filename: `${chunk}.html`,
         chunks: [chunk],
-      })
+      }),
   );
 }
 
 const transformManifest = (content) => {
-  let manifest = JSON.parse(content.toString().replace(/\$BASE_URL\$/g, BASE_URL));
+  let manifest = JSON.parse(
+    content.toString().replace(/\$BASE_URL\$/g, BASE_URL),
+  );
   manifest.version = packageJson.version;
 
   return JSON.stringify(manifest, null, 2);
@@ -129,10 +131,10 @@ const transformUpdates = (content) => {
     updates.addons["lxd-extension@unity.edu"].updates.push({});
   }
 
-  updates.addons["lxd-extension@unity.edu"].updates[0].version = packageJson.version;
-  updates.addons[
-    "lxd-extension@unity.edu"
-  ].updates[0].update_link = `${BASE_URL}/lxd-extension-${packageJson.version}.xpi`;
+  updates.addons["lxd-extension@unity.edu"].updates[0].version =
+    packageJson.version;
+  updates.addons["lxd-extension@unity.edu"].updates[0].update_link =
+    `${BASE_URL}/lxd-extension-${packageJson.version}.xpi`;
 
   return JSON.stringify(updates, null, 2);
 };
@@ -147,11 +149,6 @@ const transformUpdateXml = (content) => {
 const createPlugins = () => [
   new webpack.ProvidePlugin({
     process: require.resolve("process/browser"),
-  }),
-  new webpack.SourceMapDevToolPlugin({
-    exclude: /node_modules/,
-    test: /\.(ts|js|s?[ca]ss|mjs|tsx)/,
-    filename: "[name][ext].map",
   }),
   new CopyPlugin({
     patterns: [
@@ -205,7 +202,10 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js", ".mjs"],
     alias: {
       config: path.resolve(__dirname, process.env.NODE_ENV || "development"),
-      "@ueu/ueu-canvas": path.resolve(__dirname, "node_modules/@ueu/ueu-canvas/dist"),
+      "@ueu/ueu-canvas": path.resolve(
+        __dirname,
+        "node_modules/@ueu/ueu-canvas/dist",
+      ),
     },
     plugins: [new TsconfigPathsPlugin({})],
   },
