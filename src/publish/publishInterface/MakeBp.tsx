@@ -91,7 +91,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   const [isCloningBp, setCloningBp] = useState(false);
   const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Setup Citations Module`;
   const aiLiteracyText = isRunningAiLiteracySetup ? "Setting up..." : "Setup AI Literacy Assignment";
-  const showAcademicIntegrityButton = currentBp ? true : false;
+  const showAcademicIntegrityButton = false;
   useEffect(...callOnChangeFunc(currentBp, onBpSet));
   useEffect(...callOnChangeFunc(termName, onTermNameSet));
   useEffect(...callOnChangeFunc(sections, onSectionsSet));
