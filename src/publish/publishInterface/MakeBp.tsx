@@ -29,6 +29,7 @@ import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
 
 export const TERM_NAME_PLACEHOLDER = "Fill in term name here to archive.";
+const gradAiLiteracyCourses = ["rsch510", "sbus503", "prof510"];
 
 function callOnChangeFunc<T, R>(value: T, onChange: ((value: T) => R) | undefined) {
   const returnValue: [() => any, [T]] = [
@@ -88,11 +89,19 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   const [isNewBpDisabled, setIsNewBpDisabled] = useState(true);
   const [isRunningIntegritySetup, setIsRunningIntegritySetup] = useState(false);
   const [isRunningAiLiteracySetup, setIsRunningAiLiteracySetup] = useState(false);
-  const [isCloningBp, setCloningBp] = useState(false);
-  const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Setup Citations Module`;
-  const aiLiteracyText = isRunningAiLiteracySetup ? "Setting up..." : "Setup AI Literacy Assignment";
-  const showAcademicIntegrityButton = false;
-  useEffect(...callOnChangeFunc(currentBp, onBpSet));
+	const [isCloningBp, setCloningBp] = useState(false);
+
+	const academicIntegrityText = isRunningIntegritySetup ? "Setting up..." : `Setup Citations Module`;
+	const aiLiteracyText = isRunningAiLiteracySetup ? "Setting up..." : "Setup AI Literacy Assignment";
+
+	const isGradAiLiteracyCourse = Boolean(
+    devCourse?.baseCode &&
+    gradAiLiteracyCourses.includes(devCourse.baseCode.toLowerCase())
+	);
+
+	const showAcademicIntegrityButton = Boolean(currentBp && isGradAiLiteracyCourse);
+
+	useEffect(...callOnChangeFunc(currentBp, onBpSet));
   useEffect(...callOnChangeFunc(termName, onTermNameSet));
   useEffect(...callOnChangeFunc(sections, onSectionsSet));
 
@@ -115,7 +124,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
     if (devCourse.parsedCourseCode) {
       await updateBpInfo(devCourse, devCourse.parsedCourseCode);
     }
-  }, [devCourse]);
+	}, [devCourse]);
 
   useEffectAsync(async () => {
     await updateMigrations();
