@@ -99,7 +99,8 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
     gradAiLiteracyCourses.includes(devCourse.baseCode.toLowerCase())
 	);
 
-	const showAcademicIntegrityButton = Boolean(currentBp && isGradAiLiteracyCourse);
+	const showAiLiteracyButton = Boolean(currentBp && isGradAiLiteracyCourse);
+	const showAcademicIntegrityButton = false;
 
 	useEffect(...callOnChangeFunc(currentBp, onBpSet));
   useEffect(...callOnChangeFunc(termName, onTermNameSet));
@@ -342,7 +343,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
               </Button>
             </Col>
             <Col sm={3}>
-              {showAcademicIntegrityButton && currentBp && (
+              {showAiLiteracyButton && currentBp && (
                 <Button
                   id={"aiLiteracyButton"}
                   onClick={() => aiLiteracySetup({ currentBp, setIsRunningAiLiteracySetup })}
@@ -353,9 +354,9 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
                   {aiLiteracyText}
                 </Button>
               )}
-              {currentBp?.isUndergrad && (
+              {currentBp?.isUndergrad && showAcademicIntegrityButton && (
                 <Button
-                  className={showAcademicIntegrityButton ? "mt-2" : undefined}
+                  className={showAiLiteracyButton ? "mt-2" : undefined}
                   id={"academicIntegrityButton"}
                   onClick={() => academicIntegritySetup({ currentBp, setIsRunningIntegritySetup })}
                   disabled={isRunningIntegritySetup || !currentBp || isCloningBp || isRunningAiLiteracySetup}
