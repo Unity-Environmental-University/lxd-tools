@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Hid Academic Integrity Assignment button(MakeBp.tsx)
+- Narrowed the courses that AI Literacy Assignment button shows up on in grad(PROF510, SBUS503, PROF510)
 
 ### Internal
 - Changed build.yml to manual-deploy.yml
