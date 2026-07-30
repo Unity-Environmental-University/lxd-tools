@@ -33,19 +33,19 @@ async function fetchEmailTemplate(course: Course): Promise<string> {
 		const ugTemplateId = 7775658;
 		const gradTemplateId = 7773747;
 
-		let devCourseId: number | null = null;
+		let templateCourseId: number | null = null;
 
     if (course.isUndergrad() || course.isCareerInstitute()) {
-      devCourseId = ugTemplateId;
+      templateCourseId = ugTemplateId;
     } else if (course.isGrad()) {
-      devCourseId = gradTemplateId;
+      templateCourseId = gradTemplateId;
     } else {
       throw new Error("Unsure which email to grab.");
     }
 
-    if (devCourseId) {
+    if (templateCourseId) {
       // Get the publish email from the page in the DEV course
-      const templateEmailPage = (await PageKind.getByString(devCourseId, "publish-form-email")) as IPageData;
+      const templateEmailPage = (await PageKind.getByString(templateCourseId, "publish-form-email")) as IPageData;
       return templateEmailPage.body;
     } else {
       const emailResponse = await fetch(PUBLISH_FORM_EMAIL_TEMPLATE_URL);
