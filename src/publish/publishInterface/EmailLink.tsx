@@ -29,12 +29,16 @@ async function fetchEmailTemplate(course: Course): Promise<string> {
     }
     const courseCodeNumber = parseInt(parsedCourseCode[0]);
 
-    let devCourseId: 7773747 | 7775658 | null = null;
+    // Added these are variables for clarity
+		const ugTemplateId = 7775658;
+		const gradTemplateId = 7773747;
+
+		let devCourseId: number | null = null;
 
     if (course.isUndergrad() || course.isCareerInstitute()) {
-      devCourseId = 7775658;
+      devCourseId = ugTemplateId;
     } else if (course.isGrad()) {
-      devCourseId = 7773747;
+      devCourseId = gradTemplateId;
     } else {
       throw new Error("Unsure which email to grab.");
     }
