@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+- Hid Academic Integrity Assignment button(MakeBp.tsx)
+- Narrowed the courses that AI Literacy Assignment button shows up on in grad(PROF510, SBUS503, PROF510)
+- Updates to courseOverviewTest validation language
+
+### Internal
+- Changed build.yml to manual-deploy.yml
+- Fixed and updated dependencies
+- Removed SourceMapDevToolPlugin because it was causing duplication of source maps
+
 ## 3.1.6
 
 ### Added

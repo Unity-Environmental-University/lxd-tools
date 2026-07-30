@@ -14,9 +14,11 @@ import PageKind from "@ueu/ueu-canvas/content/pages/PageKind";
 
 const ugValidBody = `
   <div>By participating in this course, you agree:
+    to confirm your intent to remain enrolled in this course
+    to adhere to the code of conduct
+    to adhere to the unity de academic honor code
     <a href="https://unity.edu/distance-education/student-resources/#catalog-and-handbook">Unity DE Student Handbook</a>
-    <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3360&app=pt">full policy here</a>
-    unity de academic honor code
+    <a href="https://unitycollege.policytech.com/dotNet/documents/?docid=3360&app=pt&source=unspecified&public=true">policy here.</a>
     overview: academic honor code
     accurate, verifiable information and fair work
     completing original work
@@ -35,8 +37,13 @@ const ugValidBody = `
   <div>Please confirm your agreement to the three numbered items above (code of conduct, honor code, and tech requirements)</div>
 `;
 
+
+
 const gradValidBody = `
   <div>By participating in this course, you agree:
+    to confirm your intent to remain enrolled in this course
+    to adhere to the unity de honor code and code of conduct
+    to adhere to the unity de graduate academic honor code
     graduate academic honor code
     expects graduate students
     how violations are addressed
@@ -73,9 +80,13 @@ describe("courseOverviewLanguageTest - Full Suite", () => {
           body: ugValidBody,
           rawData: { ...mockPageData, url: "course-overview", page_id: "course-overview" },
         },
-      ]);
+			]);
+
+			console.log("getPages: ", mockCourse.getPages());
 
       const result = await courseOverviewLanguageTest.run(mockCourse);
+
+			console.log("result: ", result);
 
       expect(result.success).toBe(true);
       expect(result.userData).toBeDefined();

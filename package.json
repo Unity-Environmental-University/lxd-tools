@@ -1,6 +1,6 @@
 {
   "name": "lxd-tools-react",
-  "version": "3.1.6",
+  "version": "3.1.7",
   "private": true,
   "main": "src/publish/index.tsx",
   "dependencies": {
@@ -23,7 +23,7 @@
     "react-select": "^5.10.0",
     "redux-persist": "^6.0.0",
     "temporal-polyfill": "^0.2.4",
-    "uuid": "^10.0.0",
+    "uuid": "^11.0.0",
     "webextension-polyfill": "^0.10.0",
     "zustand": "^5.0.9"
   },
@@ -82,7 +82,7 @@
   "overrides": {
     "postcss": "^8.4.41",
     "minimatch": "^10.2.1",
-    "glob": "^10.5.0"
+    "glob": "^13.0.6"
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",

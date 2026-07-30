@@ -108,15 +108,20 @@ export function ValidationRow({
           <ResultStatus result={fixResult ?? validationResult} />
         </div>
         <div className={"col-sm-1"}>
-          {test.fix && validationResult && validationResult.success !== true && (
+          {test.fix && validationResult && validationResult.success === false && (
             <button onClick={fix}>{fixText}</button>
           )}
         </div>
 
         <div className={"col-sm-1"}>
           {!validationResult && <span className={"badge badge-info"}>Running</span>}
-          {validationResult?.success && <span className={"badge badge-success"}>OK!</span>}
-          {validationResult && validationResult.success !== true && (
+          {validationResult?.success === true && (
+            <span className={"badge badge-success"}>OK!</span>
+          )}
+          {validationResult?.success === "not run" && (
+            <span className={"badge badge-secondary"}>Not Run</span>
+          )}
+          {validationResult?.success === false && (
             <span className={"badge badge-warning"}>Failed</span>
           )}
           {fixResult && <span className={"badge badge-warning"}>{fixResultText()}</span>}
@@ -134,7 +139,17 @@ export function truncateMessage(messageString: string, slim?: boolean) {
 
 export function resultStatusMessage(result: ValidationResult | undefined, loading: boolean, slim?: boolean) {
   if (!result) return loading ? "running..." : "No Result, an error may have occurred.";
-  if (result.success) return "Succeeded!";
+	if (result.success === true) return "Succeeded!";
+
+	if (result.success === "not run") {
+    return result.messages?.map((message, i) => (
+      <div key={`m${i}`} className="message not-run">
+        {message.bodyLines.map((line, j) => (
+          <Row key={`bl${j}`}>{truncateMessage(line, slim)}</Row>
+        ))}
+      </div>
+    )) ?? "Not Run";
+  }
 
   return result.messages?.map((message, i) => (
     <div key={`m${i}`} className="message">
