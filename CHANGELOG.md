@@ -11,6 +11,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 ### Internal
+
+## 3.1.9
+
+### Added
+
+### Changed
+- Flipped the switch to turn Citations Module button back on in MakeBp Screen
+
+### Internal
 - Changed devCourseId to templateCourseId in EmailLink(more accurate)
 - Change EmailLink from hardcoding template course IDs to having the IDs as variables, increasing clarity of which ID is for which level
 
