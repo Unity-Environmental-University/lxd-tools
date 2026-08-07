@@ -100,7 +100,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
 	);
 
 	const showAiLiteracyButton = Boolean(currentBp && isGradAiLiteracyCourse);
-	const showAcademicIntegrityButton = false;
+	const showAcademicIntegrityButton = true;
 
 	useEffect(...callOnChangeFunc(currentBp, onBpSet));
   useEffect(...callOnChangeFunc(termName, onTermNameSet));
