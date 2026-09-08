@@ -7,28 +7,27 @@
       "esnext"
     ],
     "types": ["jest", "@testing-library/jest-dom"],
-    "baseUrl": "src",
     "paths": {
       "@/*": [
-        "*"
+        "./src/*"
       ],
       "@ueu/ueu-canvas": [
-        "../node_modules/@ueu/ueu-canvas/dist"
+        "./node_modules/@ueu/ueu-canvas/dist"
       ],
       "@ueu/ueu-canvas/courseTypes": [
-        "../node_modules/@ueu/ueu-canvas/dist/types"
+        "./node_modules/@ueu/ueu-canvas/dist/types"
       ],
       "@ueu/ueu-canvas/type": [
-        "../node_modules/@ueu/ueu-canvas/dist/types"
+        "./node_modules/@ueu/ueu-canvas/dist/types"
       ],
       "@ueu/ueu-canvas/*": [
-        "../node_modules/@ueu/ueu-canvas/dist/*"
+        "./node_modules/@ueu/ueu-canvas/dist/*"
       ],
       "@citations/*": [
-        "citations/*"
+        "./src/citations/*"
       ],
       "@publish/*": [
-        "publish/*"
+        "./src/publish/*"
       ]
     },
     "plugins": [
@@ -48,7 +47,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
