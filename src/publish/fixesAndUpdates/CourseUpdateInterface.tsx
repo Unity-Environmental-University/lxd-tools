@@ -9,6 +9,7 @@ import { CourseValidator } from "./CourseValidator";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { Page } from "@ueu/ueu-canvas/content/pages/Page";
 import { CourseValidation } from "@publish/fixesAndUpdates/validations/types";
+import { syncSyllabus } from "./validations/syncSyllabus";
 
 export type CourseUpdateInterfaceProps = {
   course?: Course;
@@ -42,7 +43,7 @@ export function CourseUpdateInterface({
   const [_startDateSetMode, setStartDateSetMode] = useState(false);
   const [batchingValidations, setBatchingValidations] = useState(false);
   const [showUpdateStartDate, setShowUpdateStartDate] = useState(false);
-  const [isChangingStartDate, setIsChangingStartDate] = useState(false);
+	const [isChangingStartDate, setIsChangingStartDate] = useState(false);
 
   const runValidationsDisabled = !course || isRemovingAnnotations() || batchingValidations;
 
@@ -183,9 +184,13 @@ export function CourseUpdateInterface({
 
         <Button onClick={() => toggleStartDateUI()} disabled={isChangingStartDate}>
           Update Start Date
-        </Button>
+				</Button>
 
-        <hr />
+				<Button onClick={() => syncSyllabus(course)} disabled={!course}>
+					Sync Syllabus
+				</Button>
+
+				<hr />
 
         {showUpdateStartDate && (
           <UpdateStartDate

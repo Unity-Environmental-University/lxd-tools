@@ -12,7 +12,6 @@ import { getContentKindFromUrl } from "@ueu/ueu-canvas/content/determineContent"
 import { RubricButton } from "@/ui/course/RubricButton";
 import DiscussionKind from "@ueu/ueu-canvas/content/discussions/DiscussionKind";
 import AssignmentKind from "@ueu/ueu-canvas/content/assignments/AssignmentKind";
-import { SyllabusSync } from "@/publish/fixesAndUpdates/validations/SyllabusSync";
 
 export function addHomeTileButton(el: HTMLElement, course: Course) {
   const root = document.createElement("div");
@@ -121,16 +120,5 @@ export async function addRubricButton(header: HTMLElement) {
     header.append(rootDiv);
     const rubricButtonRoot = ReactDOM.createRoot(rootDiv);
     rubricButtonRoot.render(<RubricButton course={course} />);
-  }
-}
-
-// TODO; This isn't rendering
-export async function addSyllabusButton(header: HTMLElement, course: Course) {
-  const page = window.document.URL;
-  if (page.includes("syllabus")) {
-    const rootDiv = document.createElement("div");
-    header.append(rootDiv);
-    const syllabusButtonRoot = ReactDOM.createRoot(rootDiv);
-    syllabusButtonRoot.render(<SyllabusSync course={course} />);
   }
 }
