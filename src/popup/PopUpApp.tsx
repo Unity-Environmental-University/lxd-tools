@@ -24,6 +24,7 @@ function PopUpApp() {
       {advanced && (
         <>
           <SetOpenAiKey></SetOpenAiKey>
+          <SyllabusSearch/>
         </>
       )}
     </div>
@@ -325,6 +326,159 @@ function SetOpenAiKey() {
       </form>
     </div>
   );
+}
+
+type baseQuery = {
+  page: number;
+  page_size: number;
+}
+
+type SyllabusParams = baseQuery & {
+  course_name: string;
+  term_id: number;
+  phrase: string;
+}
+
+type paramType = Record<string, string | number | boolean | null | undefined>
+
+type syllabus = {
+  course_id: number;
+  name: string;
+  resource_link: string;
+}
+
+type pagination = {
+  page: number;
+  page_size: number;
+  total_count: number;
+  total_pages: number;
+}
+
+type Syllabi = {
+  pagination: pagination;
+  results: syllabus[];
+}
+
+type ApiEndpoints = {
+  'search-syllabi': {
+    params: SyllabusParams;
+    response: Syllabi;
+  };
+}
+
+async function get<K extends keyof ApiEndpoints>(
+  slug: K,
+  params: ApiEndpoints[K]['params']
+): Promise<ApiEndpoints[K]['response']> {
+  const base = 'https://lisa/beta/api';
+  const url = new URL(`${base}/${slug}`);
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      url.searchParams.set(key, String(value));
+    }
+  }
+
+  const res = await fetch(url, {
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch jjkbajbvjbjbajkb ${slug}: ${res.status}`);
+  }
+
+  return await res.json();
+}
+
+function useSyllabi() {
+  const [params, setParams] = useState<SyllabusParams>({
+    page: 1,
+    page_size: 20,
+    course_name: '',
+    term_id: 0,
+    phrase: '',
+  });
+
+  const [data, setData] = useState<Syllabi | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  async function search() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await get('search-syllabi', params);
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return {
+    params,
+    setParams,
+    data,
+    loading,
+    error,
+    search,
+  };
+}
+
+function SyllabusSearch() {
+  const {
+    params,
+    setParams,
+    data,
+    loading,
+    error,
+    search,
+  } = useSyllabi();
+
+  return (
+    <div>
+      <input
+        value={params.course_name}
+        placeholder="input course name"
+        onChange={(e) =>
+          setParams({
+            ...params,
+            course_name: e.target.value,
+          })
+        }
+      />
+
+      <input
+        value={params.phrase}
+        placeholder="input search phrase"
+        onChange={(e) =>
+          setParams({
+            ...params,
+            phrase: e.target.value,
+          })
+        }
+      />
+
+      <button onClick={search} disabled={loading}>
+        {loading ? 'Searching...' : 'Search'}
+      </button>
+
+      {error && <p>{error.message}</p>}
+
+      {data?.results.map((syllabus) => (
+        <div key={syllabus.course_id}>
+          <a href={`${syllabus.resource_link}`}>{syllabus.name}</a>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LisaSearch() {
+  // need an endpoint: query params mapping
+  
 }
 
 export default PopUpApp;

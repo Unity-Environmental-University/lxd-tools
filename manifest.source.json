@@ -106,7 +106,7 @@
     }
   ],
   "permissions": ["activeTab", "scripting", "storage", "downloads"],
-  "host_permissions": ["*://*.inscloudgate.com/*", "*://*.canvas-user-content.com/*", "*://*.instructure.com/*"],
+  "host_permissions": ["*://*.inscloudgate.com/*", "*://*.canvas-user-content.com/*", "*://*.instructure.com/*", "https://lisa/*"],
   "optional_host_permissions": [],
   "update_url": "$BASE_URL$/update.xml",
   "version": "1.0.0"
