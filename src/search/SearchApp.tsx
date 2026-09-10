@@ -319,7 +319,7 @@ const endpoints = {
   'terms': 'Terms',
 } as const;
 
-function ResultsApp() {
+export function SearchApp() {
   const [endpoint, setEndpoint] = useState<keyof ApiEndpoints | "">("");
   return (
     <div className="ResultsApp container">
@@ -335,5 +335,3 @@ function ResultsApp() {
     </div>
   );
 }
-
-export default ResultsApp

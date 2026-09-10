@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import SearchApp from './SearchApp';
+import {SearchApp} from './SearchApp';
 
 const root = document.createElement("div")
 root.className = "container"
