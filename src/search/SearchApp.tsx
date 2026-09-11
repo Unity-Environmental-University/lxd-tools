@@ -2,11 +2,11 @@ import { useState } from "react";
 import type { 
     UserFacingEndpoint
 } from "./types"
-import { SyllabusSearch } from "./components";
+import { SyllabusSearch, AssignmentsSearch } from "./components";
 
 const ENDPOINT_CONFIG = {
   'search-syllabi': { label: 'Search Syllabi', Component: SyllabusSearch },
-//   'search-assignments': { label: 'Assignments', Component: AssignmentSearch },
+  'search-assignments': { label: 'Assignments', Component: AssignmentsSearch },
 //   'search-pages': { label: 'Pages', Component: PageSearch },
 //   'search-topics': { label: 'Discussion Topics', Component: TopicSearch },
 //   'search-topic-replies': { label: 'Discussion Entries', Component: TopicReplySearch },
