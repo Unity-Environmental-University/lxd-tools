@@ -5,11 +5,18 @@ type BaseParams = {
   page_size: number;
 }
 
+type SortBaseParams = BaseParams & {
+    sort_column: string;
+    sort_direction: string;
+}
+
 type SyllabusParams = BaseParams & {
   course_name: string;
-  term_id: number;
+  term_id: number | null;
   phrase: string;
 }
+
+// TODO create a base object that has id and resource link
 
 type Syllabus = {
   course_id: number;
@@ -29,6 +36,25 @@ type Syllabi = {
   results: Syllabus[];
 }
 
+type Assignment = {
+  assignment_id: number;
+  course_id: number;
+  course_name: string;
+  resource_link: string;
+  title: string;
+};
+
+type Assignments = {
+    pagination: Pagination;
+    results: Assignment[]
+}
+
+type AssignmentParams = SortBaseParams & {
+    course_name: string;
+    term_id: number | null;
+    phrase: string;
+}
+
 type Terms = Record<string, string>
 
 export type TermResponse = {
@@ -44,12 +70,17 @@ export type ApiEndpoints = {
     params: undefined;
     response: TermResponse;
   }
+  'search-assignments': {
+    params: AssignmentParams;
+    response: Assignments;
+  }
 }
 
 export type UserFacingEndpoint = Exclude<keyof ApiEndpoints, 'terms'>;
 
 export type DataTableProps<T extends Record<string, string | number>> = {
   data: T[];
+  loading: boolean;
   currentPage: number;
   totalPages: number;
   totalCount: number;
@@ -58,6 +89,6 @@ export type DataTableProps<T extends Record<string, string | number>> = {
 
 export type TermSelectProps = {
     terms: Record<string, string>;
-    currentSelection: number;
-    onChange: (termID:number) => void;
+    currentSelection: number | null;
+    onChange: (termID:number|null) => void;
 };
