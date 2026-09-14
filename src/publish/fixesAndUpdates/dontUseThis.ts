@@ -3,6 +3,7 @@ import { ICourseData } from "@ueu/ueu-canvas/courseTypes";
 import { getCourseDataGenerator } from "@ueu/ueu-canvas/course";
 import { MessageResult, testResult, ValidationResult } from "@publish/fixesAndUpdates/validations/utils";
 import { Course } from "@ueu/ueu-canvas/course/Course";
+import { getInstance } from "@ueu/ueu-canvas/instance";
 
 import { batchify, renderAsyncGen } from "@ueu/ueu-canvas/canvasUtils";
 import { courseHasUnlimitedAttemptQuizzes } from "@publish/fixesAndUpdates/validations/courseContent/courseHasUnlimitedAttemptQuizzes";
@@ -216,7 +217,7 @@ export const dontUseThisValidation: CourseValidation = {
     const failureMessage: MessageResult[] = [
       ...failCourses.map((a) => ({
         bodyLines: [a.course_code ?? "???"],
-        link: `https://unity.instructure.edu/courses/${a.id}`,
+        link: `${getInstance().baseUrl}/courses/${a.id}`,
       })),
       ...failResults.flatMap((result) => result.messages),
     ];

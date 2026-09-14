@@ -1,5 +1,5 @@
-import {renderProfileIntoCurioFrontPage} from '@ueu/ueu-canvas/profile';
 import React, {useState} from "react";
+import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
 import {IModuleData, IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
@@ -89,7 +89,7 @@ export function SectionDetails({
         const frontPage = await section.getFrontPage();
         if (!frontPage) return;
         message('Applying new profile')
-        const newText = renderProfileIntoCurioFrontPage(frontPage.body, profile);
+        const newText = renderProfile(frontPage.body, profile);
         await frontPage.updateContent(newText);
         const newProfile = await section.getFrontPageProfile();
         setFrontPageProfile(newProfile)

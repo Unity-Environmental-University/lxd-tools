@@ -1,5 +1,4 @@
 import React, { useEffect, useReducer, useState } from "react";
-import { renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
 import { useEffectAsync } from "@/ui/utils";
 import { Button } from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal/index";
@@ -19,6 +18,8 @@ import { getCourseData } from "@ueu/ueu-canvas/course";
 import { sleep } from "@/utils/toolbox";
 import { IProfile, IProfileWithUser } from "@ueu/ueu-canvas/type";
 import isEqual from "lodash/isEqual";
+import { findProfilePageSlug, getProfilePage } from "@publish/fixesAndUpdates/courseDataStore";
+import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
 
 export interface IPublishInterfaceProps {
   course?: Course;
@@ -170,6 +171,10 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     inform("Updating section profiles...");
     const _currentProfiles = { ...frontPageProfilesByCourseId };
     setErrorsByCourseId({});
+
+    // Find the profile page slug once from the blueprint
+    const profileSlug = course ? await findProfilePageSlug(course.id) : null;
+
     for (const section of Object.values(sections)) {
       const profiles = potentialProfilesByCourseId[section.id];
       const errors = [];
@@ -183,13 +188,20 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         continue;
       }
       const profile = profiles[0];
-      const frontPage = await section.getFrontPage();
-      if (!frontPage) {
-        sectionError(section, "No front page");
+
+      // Use the blueprint-derived slug to find the target page in this section,
+      // falling back to the front page for courses without data-profile attributes
+      const targetPage = profileSlug
+        ? await getProfilePage(section.id, profileSlug)
+        : await section.getFrontPage();
+
+      if (!targetPage) {
+        sectionError(section, profileSlug ? `Profile page "${profileSlug}" not found` : "No front page");
         continue;
       }
-      const html = renderProfileIntoCurioFrontPage(frontPage.body, profile);
-      await frontPage.updateContent(html);
+
+      const html = renderProfile(targetPage.body, profile);
+      await targetPage.updateContent(html);
       dispatchFrontPageProfilesByCourseId({
         set: { [section.id]: profile },
       });
