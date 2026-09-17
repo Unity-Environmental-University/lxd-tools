@@ -5,7 +5,7 @@ import courseContent from "./courseContent";
 
 export default [
 	kalturaSizeTests,
-	courseContent,
+	...courseContent,
   //...references,
   //   dontUseThisValidation
 ];
