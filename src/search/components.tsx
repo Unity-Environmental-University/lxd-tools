@@ -3,10 +3,11 @@ import type {
     TermSelectProps,
 } from "./types"
 import { useGet, useTerms } from "./utils";
+import "./search.css"
+
+const ALLOWED_DIRECTIONS = ["asc", "desc"] // TODO this should be a global
 
 // TODO should I turn hooks/components into a folder instead of a file?
-// TODO what about testinggg
-// TODO resource_links should be hrefs
 function DataTable<T extends Record<string, string | number>>({
   data,
   loading,
@@ -21,7 +22,7 @@ function DataTable<T extends Record<string, string | number>>({
 
   return (
     <>
-      <table>
+      <table className="data-table">
         <thead>
           <tr>
             {columns.map((col) => (
@@ -35,7 +36,7 @@ function DataTable<T extends Record<string, string | number>>({
             <tr key={row.id}>
               {columns.map((col) => (
                 <td key={String(col)}>
-                  {String(row[col])}
+                  {col === "resource_link" ? <a href={String(row[col])} target="_blank" rel="noopener noreferrer">{String(row[col])}</a> : String(row[col])}
                 </td>
               ))}
             </tr>
@@ -68,8 +69,6 @@ function DataTable<T extends Record<string, string | number>>({
 
 // TODO this function is kind of copy-pasted from LISA itself
 // which raises the question of a re-usable library
-// TODO also this is broken and selector doesnt populate until user
-// changes selected endpoint at least once - global is broken?
 function TermSelect({ terms, currentSelection, onChange }: TermSelectProps) {
   return (
     <select
@@ -78,7 +77,7 @@ function TermSelect({ terms, currentSelection, onChange }: TermSelectProps) {
         onChange(e.target.value === "" ? null : Number(e.target.value))
       }
     >
-      <option value="">None</option>
+      <option value="">All Terms</option>
       {Object.entries(terms).map(([id, name]) => (
         <option key={id} value={id}>
           {name}
@@ -88,8 +87,8 @@ function TermSelect({ terms, currentSelection, onChange }: TermSelectProps) {
   );
 }
 
-// TODO you are essentially forced to pick a term but you shouldn't need to
-export function SyllabusSearch() {
+// currently this works for everything because the endpoints are simple
+export function GenericSearch({endpoint, allowed_sort_columns}: {endpoint: string, allowed_sort_columns: string[]}) {
   const {
     params,
     setParams,
@@ -97,94 +96,8 @@ export function SyllabusSearch() {
     loading,
     error,
     search,
-  } = useGet('search-syllabi', {course_name: '', phrase: '', term_id: 0, page: 1, page_size: 20});
-
-  const terms = useTerms()
-
-  return (
-    <div>
-      <input
-        value={params.course_name}
-        placeholder="input course name"
-        onChange={(e) =>
-          setParams({
-            ...params,
-            course_name: e.target.value,
-            page: 1
-          })
-        }
-      />
-
-      <input
-        value={params.phrase}
-        placeholder="input search phrase"
-        onChange={(e) =>
-          setParams({
-            ...params,
-            phrase: e.target.value,
-            page: 1
-          })
-        }
-      />
-
-      <TermSelect
-        terms={terms}
-        currentSelection={params.term_id}
-        onChange={(e) =>
-            setParams({
-                ...params,
-                term_id: e,
-                page: 1
-            })
-        }
-      />
-
-      <button onClick={() => search()} disabled={loading}>
-        {loading ? 'Searching...' : 'Search'}
-      </button>
-
-      {error && <p>{error.message}</p>}
-
-      {data ?
-        <DataTable
-          data={data.results}
-          loading={loading}
-          currentPage={data.pagination.page}
-          totalPages={data.pagination.total_pages}
-          totalCount={data.pagination.total_count}
-          onPageChange={(page) => {
-            const newParams = {
-                ...params,
-                page,
-            };
-            setParams(newParams);
-            search(newParams);
-          }}
-        />
-        : <p>No data</p>
-      }
-    </div>
-  );
-}
-
-// TODO currently, every endpoint looks just like this and accepts
-// only these params. Fine for now
-export function AssignmentsSearch() {
-  // TODO having to maintain this list outside the backend it originates from
-  // will become a mess. Openapi/swagger spec
-  const allowed_sort_columns = ["course_id", "course_name", "id", "title"]
-
-  const allowed_directions = ["asc", "desc"]
-
-  const {
-    params,
-    setParams,
-    data,
-    loading,
-    error,
-    search,
-  } = useGet(
-    'search-assignments', 
+  } = useGet<'generic'>(
+    endpoint, 
     {
       course_name: '', 
       phrase: '', 
@@ -196,13 +109,13 @@ export function AssignmentsSearch() {
     }
   );
 
-  const terms = useTerms()
+  const {terms, error:err} = useTerms()
 
   return (
     <div>
       <input
         value={params.course_name}
-        placeholder="input course name"
+        placeholder="input course name (optional)"
         onChange={(e) =>
           setParams({
             ...params,
@@ -247,9 +160,9 @@ export function AssignmentsSearch() {
         }
       >
         <option value="">
-          Sort Direction
+          Default Sort Direction
         </option>
-        {allowed_directions.map(a => (
+        {ALLOWED_DIRECTIONS.map(a => (
           <option
             key = {a}
             value = {a}
@@ -271,7 +184,7 @@ export function AssignmentsSearch() {
         }
       >
         <option value="">
-          Sort Column
+          Default Sort Column
         </option>
         {allowed_sort_columns.map(a => (
           <option

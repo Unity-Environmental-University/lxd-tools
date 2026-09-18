@@ -1,4 +1,5 @@
 // TODO have backend send an API spec that we can derive these from
+// currently some of these are unused because lisa endpoints are generic enough
 
 type BaseParams = {
   page: number;
@@ -61,6 +62,13 @@ export type TermResponse = {
     terms: Terms
 }
 
+type GenericParams = AssignmentParams
+type GenericDBObject = Record<string, string|number>
+type GenericDBResponse = {
+  pagination: Pagination;
+  results: GenericDBObject[];
+}
+
 export type ApiEndpoints = {
   'search-syllabi': {
     params: SyllabusParams;
@@ -73,6 +81,10 @@ export type ApiEndpoints = {
   'search-assignments': {
     params: AssignmentParams;
     response: Assignments;
+  }
+  'generic': {
+    params: GenericParams;
+    response: GenericDBResponse;
   }
 }
 

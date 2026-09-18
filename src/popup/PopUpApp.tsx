@@ -24,8 +24,12 @@ function PopUpApp() {
       {advanced && (
         <>
           <SetOpenAiKey></SetOpenAiKey>
-          <button className="btn" onClick={() => tabs.create({ url: runtime.getURL("search.html") })}>
-            Search Endpoints
+          <button 
+            className="btn btn-outline-success" 
+            title="Unity Wifi/VPN connection required to Search"
+            onClick={() => tabs.create({ url: runtime.getURL("search.html") })}
+          >
+            Click Here for Instance-Wide Search
           </button>
         </>
       )}
