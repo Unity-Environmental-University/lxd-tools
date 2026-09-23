@@ -52,7 +52,9 @@ describe("CourseRow Component", () => {
   it("renders without crashing", () => {
     renderComponent();
     expect(screen.getByText("Test Course")).toBeInTheDocument();
-    expect(screen.getByText("Front Page Profile")).toBeInTheDocument();
+    // Source -> target: the source name comes from the single faculty match,
+    // not frontPageProfile directly (see CourseRow.tsx's `source` derivation).
+    expect(screen.getByText(/Front Page Profile/)).toBeInTheDocument();
     expect(screen.getByText("Instructor 1, Instructor 2")).toBeInTheDocument();
   });
 

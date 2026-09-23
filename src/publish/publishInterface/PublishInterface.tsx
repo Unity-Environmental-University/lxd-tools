@@ -205,6 +205,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         sectionError(section, profileSlugError ?? "No profile page found on blueprint");
       }
       setLoading(false);
+      inform("No profiles updated — see errors below", "alert-danger");
       return;
     }
 
@@ -400,7 +401,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                     Publish selected
                   </Button>
                 )}
-                <ProfileTemplateHelp />
+                <ProfileTemplateHelp blueprintCourse={course} />
               </div>
               <div className={"col-xs-12"} style={{ marginTop: "5px" }}>
                 {user && course && (

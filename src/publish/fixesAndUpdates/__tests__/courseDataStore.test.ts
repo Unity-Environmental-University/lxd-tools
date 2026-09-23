@@ -10,9 +10,9 @@ jest.mock("@ueu/ueu-canvas/course", () => ({
 
 const mockGetCourseData = getCourseData as jest.MockedFunction<typeof getCourseData>;
 
-function makePage(opts: { url: string; title: string; body?: string; front_page?: boolean }): IPageData {
+function makePage(opts: { url: string; title: string; body?: string; front_page?: boolean; page_id?: number }): IPageData {
   return {
-    page_id: Math.floor(Math.random() * 100000),
+    page_id: opts.page_id ?? Math.floor(Math.random() * 100000),
     url: opts.url,
     title: opts.title,
     body: opts.body ?? "",
@@ -120,30 +120,42 @@ describe("findProfilePageSlug", () => {
       makePage({
         url: "meet-your-instructor",
         title: "Meet Your Instructor",
+        page_id: 555,
         body: '<div data-profile-name>Name</div><div data-profile-bio>Bio</div>',
       }),
     ];
     mockCourseWithPages(2001, pages);
 
-    const slug = await findProfilePageSlug(2001);
-    expect(slug).toBe("meet-your-instructor");
+    const result = await findProfilePageSlug(2001);
+    expect(result).toEqual({ status: "found", slug: "meet-your-instructor", blueprintPageId: 555 });
   });
 
-  it("falls back to front page when no data attributes found", async () => {
+  it("reports \"none\" when no page has data-profile attributes, without falling back to the front page", async () => {
     const pages = [
       makePage({ url: "front", title: "Front Page", front_page: true, body: "<h2>Welcome</h2>" }),
       makePage({ url: "other", title: "Other Page", body: "<p>Nothing here</p>" }),
     ];
     mockCourseWithPages(2002, pages);
 
-    const slug = await findProfilePageSlug(2002);
-    expect(slug).toBe("front");
+    const result = await findProfilePageSlug(2002);
+    expect(result).toEqual({ status: "none" });
   });
 
-  it("returns null when no pages and no front page", async () => {
+  it("reports \"ambiguous\" when more than one page has data-profile attributes", async () => {
+    const pages = [
+      makePage({ url: "meet-your-instructor", title: "A", body: "<div data-profile-name>Name</div>" }),
+      makePage({ url: "team", title: "B", body: "<div data-profile-bio>Bio</div>" }),
+    ];
+    mockCourseWithPages(2004, pages);
+
+    const result = await findProfilePageSlug(2004);
+    expect(result).toEqual({ status: "ambiguous", candidates: ["meet-your-instructor", "team"] });
+  });
+
+  it("reports \"none\" when there are no pages at all", async () => {
     mockCourseWithPages(2003, []);
-    const slug = await findProfilePageSlug(2003);
-    expect(slug).toBeNull();
+    const result = await findProfilePageSlug(2003);
+    expect(result).toEqual({ status: "none" });
   });
 });
 

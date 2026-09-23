@@ -52,6 +52,16 @@ const renderComponent = (props: Partial<IPublishInterfaceProps> = {}) => {
 };
 
 describe("PublishInterface Component", () => {
+  beforeEach(() => {
+    // PublishInterface resolves the blueprint's profile page slug as soon as
+    // `course` is set (findProfilePageSlug -> getPages), independent of any
+    // test's own fetchMock.mockResponse calls. Default to an empty pages
+    // list so that resolution completes as "no profile page found" instead
+    // of throwing on an unmocked/empty fetch body — individual tests can
+    // still override this with their own mockResponse afterward.
+    fetchMock.mockResponse(JSON.stringify([]));
+  });
+
   it("renders without crashing", async () => {
     await renderComponent();
     expect(screen.getByText("Manage Sections")).toBeInTheDocument();
@@ -81,12 +91,18 @@ describe("PublishInterface Component", () => {
   });
 
   it('calls applySectionProfiles when "Set Bios" button is clicked', async () => {
+    // This fixture has no pages (beforeEach mocks an empty pages list) and no
+    // sections (sectionDataGenerator is mocked to an empty generator), so
+    // findProfilePageSlug correctly resolves to "none" and there is nothing
+    // to update — the real, current behavior is a reported failure, not an
+    // unconditional "Profiles Updated" (that unconditional message was itself
+    // a bug: it used to fire regardless of whether anything succeeded).
     await renderComponent();
     await act(async () => fireEvent.click(screen.getByText("Manage Sections")));
     await act(async () => fireEvent.click(screen.getByText("Set Bios")));
     // Simulate delay for applying section profiles
     await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(screen.getByText("Profiles Updated")).toBeInTheDocument();
+    expect(screen.getByText("No profiles updated — see errors below")).toBeInTheDocument();
   });
 });
 
