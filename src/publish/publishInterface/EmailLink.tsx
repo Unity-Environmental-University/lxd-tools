@@ -134,8 +134,20 @@ export const EmailLink = React.memo(function EmailLink({
   useEffectAsync(async () => {
     if (additionsTemplate || !course.id) return;
 
-    const _additionsTemplate = await getAdditionsTemplate(course);
-    setAdditionsTemplate(_additionsTemplate);
+    try {
+      const _additionsTemplate = await getAdditionsTemplate(course);
+      setAdditionsTemplate(_additionsTemplate);
+    } catch (e: unknown) {
+      // A missing "publish-form-email-addition" page is the normal case for
+      // most courses (this is a per-course-family supplement to the base
+      // email, not every course has one) and Canvas's 404 for it doesn't
+      // always come back as parseable JSON, so fetchJson can throw here
+      // rather than resolve to a clean "not found." Log for debugging but
+      // don't surface it as a user-facing error — the base email template
+      // still works without an addition, and copyToClipboard already has
+      // its own fallback attempt for this.
+      console.error("Failed to load email addition template:", e);
+    }
   }, [course.id]);
 
   const copyToClipboard = useCallback(async () => {
