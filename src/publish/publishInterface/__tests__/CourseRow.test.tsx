@@ -69,4 +69,12 @@ describe("CourseRow Component", () => {
     renderComponent({ onSelectSection: undefined });
     expect(screen.queryByText("Details")).toBeNull();
   });
+
+  it("does not crash when facultyProfileMatches has not loaded yet (undefined)", () => {
+    // potentialProfilesByCourseId[course.id] can be undefined for a course
+    // that has appeared in `sections` but whose profile matches haven't
+    // resolved yet — a real, reachable timing window, not a hypothetical.
+    renderComponent({ facultyProfileMatches: undefined });
+    expect(screen.getByText("Test Course")).toBeInTheDocument();
+  });
 });

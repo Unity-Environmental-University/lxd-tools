@@ -7,7 +7,10 @@ export interface ICourseRowProps {
   course: Course;
   errors?: string[];
   instructors?: IUserData[];
-  facultyProfileMatches: IProfile[];
+  // Not always populated yet when a row first renders: potentialProfilesByCourseId
+  // fills in asynchronously per-course, slightly after the course itself appears
+  // in `sections`, so a render can land in between.
+  facultyProfileMatches?: IProfile[];
   frontPageProfile: IProfile | null;
   profileSlug?: string | null;
   onSelectSection?: (course: Course) => void;
@@ -26,9 +29,10 @@ export function CourseRow({
   selectionToggle,
   selected,
 }: ICourseRowProps) {
+  const matches = facultyProfileMatches ?? [];
   const rowClass = ["row", "course-row", "align-items-center"];
-  const displayFacultyProfileWarning = facultyProfileMatches.length > 1 && !frontPageProfile;
-  const source = facultyProfileMatches.length === 1 ? facultyProfileMatches[0].displayName : null;
+  const displayFacultyProfileWarning = matches.length > 1 && !frontPageProfile;
+  const source = matches.length === 1 ? matches[0].displayName : null;
 
   if (displayFacultyProfileWarning || errors?.length) rowClass.push("alert-danger");
   return (
