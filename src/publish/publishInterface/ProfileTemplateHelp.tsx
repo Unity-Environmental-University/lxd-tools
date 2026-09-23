@@ -10,7 +10,7 @@ import {
   PROFILE_TEMPLATE_NOTES,
   upsertProfileTemplateHelpHtml,
 } from "@publish/fixesAndUpdates/profileTemplateReference";
-import { findProfilePageSlug, getProfilePage } from "@publish/fixesAndUpdates/courseDataStore";
+import { findProfilePageSlug, getProfilePage, useCourseDataStore } from "@publish/fixesAndUpdates/courseDataStore";
 
 export interface ProfileTemplateHelpProps {
   blueprintCourse?: Course | null;
@@ -46,7 +46,26 @@ export function ProfileTemplateHelp({ blueprintCourse }: ProfileTemplateHelpProp
     const hadExisting = targetPage.body.includes("data-profile-help");
     const newBody = upsertProfileTemplateHelpHtml(targetPage.body);
     await targetPage.updateContent(newBody);
-    setStatus(hadExisting ? `Updated the help box on "${result.slug}".` : `Added a help box to "${result.slug}".`);
+
+    // Verify by refetching rather than trusting updateContent's resolved
+    // promise: @ueu/ueu-canvas's fetchJson doesn't check response.ok, so a
+    // rejected write (e.g. the page turns out to be locked) can resolve
+    // "successfully" with Canvas's error body instead of throwing — this is
+    // the same bug that made "Set Bios" silently no-op earlier today
+    // (filed as Unity-Environmental-University/ueu_canvas#11). The cached
+    // page must be invalidated first, or getProfilePage would just hand
+    // back the same (potentially stale) object already in memory.
+    useCourseDataStore.getState().invalidate(blueprintCourse.id);
+    const refetched = await getProfilePage(blueprintCourse.id, result.slug);
+    const verified = !!refetched?.body.includes("data-profile-help");
+
+    setStatus(
+      !verified
+        ? `Write did not take effect on "${result.slug}" — the page may be locked. Check Canvas directly.`
+        : hadExisting
+          ? `Updated the help box on "${result.slug}".`
+          : `Added a help box to "${result.slug}".`
+    );
   }
 
   return (

@@ -19,7 +19,12 @@ import { getCourseData } from "@ueu/ueu-canvas/course";
 import { sleep } from "@/utils/toolbox";
 import { IProfile, IProfileWithUser } from "@ueu/ueu-canvas/type";
 import isEqual from "lodash/isEqual";
-import { findProfilePageSlug, getProfilePage, restrictBlueprintPage } from "@publish/fixesAndUpdates/courseDataStore";
+import {
+  findProfilePageSlug,
+  getProfilePage,
+  ProfilePageResult,
+  restrictBlueprintPage,
+} from "@publish/fixesAndUpdates/courseDataStore";
 import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
 
 export interface IPublishInterfaceProps {
@@ -66,9 +71,11 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   );
 
   const [emails, setEmails] = useState<string[]>([]);
-  const [profileSlug, setProfileSlug] = useState<string | null>(null);
-  const [profileSlugError, setProfileSlugError] = useState<string | null>(null);
-  const [blueprintPageId, setBlueprintPageId] = useState<number | null>(null);
+  // A single ProfilePageResult, not separate slug/error/pageId fields: those
+  // three only ever have meaning together (a "found" result has slug and
+  // blueprintPageId; anything else has neither), so keeping them as one
+  // useState means they can't independently go stale relative to each other.
+  const [profileResolution, setProfileResolution] = useState<ProfilePageResult | null>(null);
 
   const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
@@ -89,23 +96,10 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
 
   useEffectAsync(async () => {
     if (!course) {
-      setProfileSlug(null);
-      setProfileSlugError(null);
-      setBlueprintPageId(null);
+      setProfileResolution(null);
       return;
     }
-    const result = await findProfilePageSlug(course.id);
-    if (result.status === "found") {
-      setProfileSlug(result.slug);
-      setProfileSlugError(null);
-      setBlueprintPageId(result.blueprintPageId);
-    } else {
-      setProfileSlug(null);
-      setBlueprintPageId(null);
-      setProfileSlugError(
-        result.status === "none" ? "No profile page found on blueprint" : `Multiple profile pages: ${result.candidates.join(", ")}`
-      );
-    }
+    setProfileResolution(await findProfilePageSlug(course.id));
   }, [course]);
 
   useEffect(() => {
@@ -200,28 +194,33 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     // No fallback: a course must resolve to exactly one data-attribute profile
     // page (see the resolution effect above), or every section errors visibly
     // instead of silently targeting the wrong page.
-    if (!profileSlug) {
+    if (profileResolution?.status !== "found") {
+      const message =
+        profileResolution?.status === "ambiguous"
+          ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+          : "No profile page found on blueprint";
       for (const section of Object.values(sections)) {
-        sectionError(section, profileSlugError ?? "No profile page found on blueprint");
+        sectionError(section, message);
       }
       setLoading(false);
       inform("No profiles updated — see errors below", "alert-danger");
       return;
     }
+    const { slug: profileSlug, blueprintPageId } = profileResolution;
 
     // Section copies of a blueprint page are locked against direct edits by
     // default. Unlock the blueprint's page for the duration of this pass so the
     // writes below aren't rejected, then always re-lock it afterward — Canvas
     // has no API to read whether it was already unlocked, so "restore" here
     // means "back to locked," not "back to whatever it was."
-    if (blueprintPageId && course) {
+    if (course) {
       await restrictBlueprintPage(course.id, blueprintPageId, false);
     }
 
     let updatedCount = 0;
     try {
       for (const section of Object.values(sections)) {
-        const profiles = potentialProfilesByCourseId[section.id];
+        const profiles = potentialProfilesByCourseId[section.id] ?? [];
         if (profiles.length < 1) {
           sectionError(section, "No Profiles");
           continue;
@@ -247,7 +246,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         updatedCount++;
       }
     } finally {
-      if (blueprintPageId && course) {
+      if (course) {
         await restrictBlueprintPage(course.id, blueprintPageId, true);
       }
     }
@@ -422,8 +421,14 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                   frontPageProfilesByCourseId={frontPageProfilesByCourseId}
                   potentialProfilesByCourseId={potentialProfilesByCourseId}
                   errorsByCourseId={errorsByCourseId}
-                  profileSlug={profileSlug}
-                  profileSlugError={profileSlugError}
+                  profileSlug={profileResolution?.status === "found" ? profileResolution.slug : null}
+                  profileSlugError={
+                    profileResolution?.status === "ambiguous"
+                      ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+                      : profileResolution?.status === "none"
+                        ? "No profile page found on blueprint"
+                        : null
+                  }
                   setWorkingSection={setWorkingSection}
                   // ← HERE: pass your local variable into the prop
                   sectionPublishRecord={sectionsToPublish}

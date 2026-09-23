@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import { readProfileFromPage, renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
-import { findProfilePageSlug, getProfilePage, restrictBlueprintPage } from "@publish/fixesAndUpdates/courseDataStore";
+import { findProfilePageSlug, getProfilePage, ProfilePageResult, restrictBlueprintPage } from "@publish/fixesAndUpdates/courseDataStore";
 import {IModuleData, IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
@@ -33,9 +33,11 @@ export function SectionDetails({
     const [frontPageProfile, setFrontPageProfile] = useState<IProfile | null>(null)
     const [info, setInfo] = useState<string | null>(null)
     const [infoClass, setInfoClass] = useState<string>('alert-primary')
-    const [profileSlug, setProfileSlug] = useState<string | null>(null)
-    const [profileSlugError, setProfileSlugError] = useState<string | null>(null)
-    const [blueprintPageId, setBlueprintPageId] = useState<number | null>(null)
+    // A single ProfilePageResult rather than separate slug/error/pageId
+    // fields: those only ever have meaning together (see the same reasoning
+    // in PublishInterface.tsx), so this keeps them from independently going
+    // stale relative to each other.
+    const [profileResolution, setProfileResolution] = useState<ProfilePageResult | null>(null)
 
     useEffectAsync(async () => {
         await onSectionChange();
@@ -44,27 +46,19 @@ export function SectionDetails({
 
     async function refreshProfileSlug() {
         if (!section || !blueprintCourse) {
-            setProfileSlug(null);
-            setProfileSlugError(null);
-            setBlueprintPageId(null);
+            setProfileResolution(null);
             return;
         }
         // Resolved from the blueprint, not the section: the section's own copy
         // shares the slug but has a different page_id, and blueprint locking
         // (restrictBlueprintPage) only accepts the blueprint's own page_id.
         const result = await findProfilePageSlug(blueprintCourse.id);
+        setProfileResolution(result);
         if (result.status === "found") {
-            setProfileSlug(result.slug);
-            setProfileSlugError(null);
-            setBlueprintPageId(result.blueprintPageId);
             const targetPage = await getProfilePage(section.id, result.slug);
             if (targetPage) {
                 setFrontPageProfile(readProfileFromPage(targetPage.body));
             }
-        } else {
-            setProfileSlug(null);
-            setBlueprintPageId(null);
-            setProfileSlugError(result.status === "none" ? "No profile page found" : `Multiple profile pages: ${result.candidates.join(", ")}`);
         }
     }
 
@@ -117,7 +111,14 @@ export function SectionDetails({
 
     async function applyProfile(profile: IProfile & {user: IUserData}) {
         if (!section) return;
-        if (!profileSlug) return error(profileSlugError ?? "No profile page found");
+        if (profileResolution?.status !== "found") {
+            return error(
+                profileResolution?.status === "ambiguous"
+                    ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+                    : "No profile page found"
+            );
+        }
+        const { slug: profileSlug, blueprintPageId } = profileResolution;
         const targetPage = await getProfilePage(section.id, profileSlug);
         if (!targetPage) return error(`Profile page "${profileSlug}" not found`);
 
@@ -125,13 +126,13 @@ export function SectionDetails({
         const newText = renderProfile(targetPage.body, profile, section.id);
         // Section copies are locked by default; unlock the blueprint's page for
         // this one write and always re-lock afterward (see restrictBlueprintPage).
-        if (blueprintPageId && blueprintCourse) {
+        if (blueprintCourse) {
             await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
         }
         try {
             await targetPage.updateContent(newText);
         } finally {
-            if (blueprintPageId && blueprintCourse) {
+            if (blueprintCourse) {
                 await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, true);
             }
         }
@@ -148,9 +149,13 @@ export function SectionDetails({
         </h3>
         <p><a href={section.courseUrl} target={'_blank'} className={'course-link'}>{section.name}</a></p>
         <p>
-            {profileSlug
-                ? <em>Profile target page: {profileSlug}</em>
-                : <em className={'text-danger'}>{profileSlugError}</em>}
+            {profileResolution?.status === "found"
+                ? <em>Profile target page: {profileResolution.slug}</em>
+                : <em className={'text-danger'}>
+                    {profileResolution?.status === "ambiguous"
+                        ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+                        : "No profile page found"}
+                  </em>}
         </p>
         {info && <div className={`alert ${infoClass}`}>{info}</div>}
         <Row>
