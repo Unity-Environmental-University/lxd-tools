@@ -120,26 +120,32 @@ const PROFILE_DATA_ATTRS = [
   "data-profile-image",
 ];
 
+export type ProfilePageResult =
+  | { status: "found"; slug: string }
+  | { status: "none" }
+  | { status: "ambiguous"; candidates: string[] };
+
 /**
  * Scan a blueprint's pages to find which page slug carries profile data attributes.
- * Falls back to the front page if no page uses data attributes (backward compat
- * with the current Curio "Meet your instructor" convention).
+ *
+ * No front-page fallback: a course without a data-attribute page returns "none"
+ * rather than guessing, and a course with more than one returns "ambiguous"
+ * rather than silently picking the first match. Both are surfaced to the caller
+ * so a resolution failure is visible instead of quietly rendering into the
+ * wrong page (or nothing at all).
  *
  * Call once per blueprint, then use the slug across all its sections.
  */
-export async function findProfilePageSlug(blueprintCourseId: number, instance?: string): Promise<string | null> {
+export async function findProfilePageSlug(blueprintCourseId: number, instance?: string): Promise<ProfilePageResult> {
   const pages = await useCourseDataStore.getState().getPages(blueprintCourseId, instance);
 
-  for (const page of pages) {
-    const body = page.body ?? "";
-    if (PROFILE_DATA_ATTRS.some((attr) => body.includes(attr))) {
-      return (page.rawData as IPageData).url;
-    }
-  }
+  const candidates = pages
+    .filter((page) => PROFILE_DATA_ATTRS.some((attr) => (page.body ?? "").includes(attr)))
+    .map((page) => (page.rawData as IPageData).url);
 
-  // Fallback: the front page, which is the current convention
-  const frontPage = pages.find((p) => (p.rawData as IPageData).front_page);
-  return frontPage ? (frontPage.rawData as IPageData).url : null;
+  if (candidates.length === 0) return { status: "none" };
+  if (candidates.length > 1) return { status: "ambiguous", candidates };
+  return { status: "found", slug: candidates[0] };
 }
 
 /**

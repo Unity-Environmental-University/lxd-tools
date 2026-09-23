@@ -44,3 +44,5 @@ dist/
 .vscode/settings.json
 bun.lock.env
 .env.local
+.env
+.edge/

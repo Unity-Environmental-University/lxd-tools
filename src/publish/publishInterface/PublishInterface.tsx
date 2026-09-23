@@ -65,6 +65,8 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   );
 
   const [emails, setEmails] = useState<string[]>([]);
+  const [profileSlug, setProfileSlug] = useState<string | null>(null);
+  const [profileSlugError, setProfileSlugError] = useState<string | null>(null);
 
   const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
@@ -81,6 +83,24 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
       await getFullCourses(course);
     }
     //ONLY refresh courses if it's a new course being set.
+  }, [course]);
+
+  useEffectAsync(async () => {
+    if (!course) {
+      setProfileSlug(null);
+      setProfileSlugError(null);
+      return;
+    }
+    const result = await findProfilePageSlug(course.id);
+    if (result.status === "found") {
+      setProfileSlug(result.slug);
+      setProfileSlugError(null);
+    } else {
+      setProfileSlug(null);
+      setProfileSlugError(
+        result.status === "none" ? "No profile page found on blueprint" : `Multiple profile pages: ${result.candidates.join(", ")}`
+      );
+    }
   }, [course]);
 
   useEffect(() => {
@@ -172,8 +192,16 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     const _currentProfiles = { ...frontPageProfilesByCourseId };
     setErrorsByCourseId({});
 
-    // Find the profile page slug once from the blueprint
-    const profileSlug = course ? await findProfilePageSlug(course.id) : null;
+    // No fallback: a course must resolve to exactly one data-attribute profile
+    // page (see the resolution effect above), or every section errors visibly
+    // instead of silently targeting the wrong page.
+    if (!profileSlug) {
+      for (const section of Object.values(sections)) {
+        sectionError(section, profileSlugError ?? "No profile page found on blueprint");
+      }
+      setLoading(false);
+      return;
+    }
 
     for (const section of Object.values(sections)) {
       const profiles = potentialProfilesByCourseId[section.id];
@@ -189,14 +217,9 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
       }
       const profile = profiles[0];
 
-      // Use the blueprint-derived slug to find the target page in this section,
-      // falling back to the front page for courses without data-profile attributes
-      const targetPage = profileSlug
-        ? await getProfilePage(section.id, profileSlug)
-        : await section.getFrontPage();
-
+      const targetPage = await getProfilePage(section.id, profileSlug);
       if (!targetPage) {
-        sectionError(section, profileSlug ? `Profile page "${profileSlug}" not found` : "No front page");
+        sectionError(section, `Profile page "${profileSlug}" not found`);
         continue;
       }
 
@@ -373,6 +396,8 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                   frontPageProfilesByCourseId={frontPageProfilesByCourseId}
                   potentialProfilesByCourseId={potentialProfilesByCourseId}
                   errorsByCourseId={errorsByCourseId}
+                  profileSlug={profileSlug}
+                  profileSlugError={profileSlugError}
                   setWorkingSection={setWorkingSection}
                   // ← HERE: pass your local variable into the prop
                   sectionPublishRecord={sectionsToPublish}

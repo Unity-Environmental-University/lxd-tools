@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { findProfilePageSlug, getProfilePage } from "@publish/fixesAndUpdates/courseDataStore";
 import {IModuleData, IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
@@ -30,10 +31,29 @@ export function SectionDetails({
     const [frontPageProfile, setFrontPageProfile] = useState<IProfile | null>(null)
     const [info, setInfo] = useState<string | null>(null)
     const [infoClass, setInfoClass] = useState<string>('alert-primary')
+    const [profileSlug, setProfileSlug] = useState<string | null>(null)
+    const [profileSlugError, setProfileSlugError] = useState<string | null>(null)
 
     useEffectAsync(async () => {
         await onSectionChange();
+        await refreshProfileSlug();
     }, [section]);
+
+    async function refreshProfileSlug() {
+        if (!section) {
+            setProfileSlug(null);
+            setProfileSlugError(null);
+            return;
+        }
+        const result = await findProfilePageSlug(section.id);
+        if (result.status === "found") {
+            setProfileSlug(result.slug);
+            setProfileSlugError(null);
+        } else {
+            setProfileSlug(null);
+            setProfileSlugError(result.status === "none" ? "No profile page found" : `Multiple profile pages: ${result.candidates.join(", ")}`);
+        }
+    }
 
 
     async function onSectionChange() {
@@ -64,7 +84,6 @@ export function SectionDetails({
         return fetchInstructors;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function error(message: string) {
         broadcast(message, 'alert-error')
     }
@@ -86,11 +105,13 @@ export function SectionDetails({
 
     async function applyProfile(profile: IProfile & {user: IUserData}) {
         if (!section) return;
-        const frontPage = await section.getFrontPage();
-        if (!frontPage) return;
+        if (!profileSlug) return error(profileSlugError ?? "No profile page found");
+        const targetPage = await getProfilePage(section.id, profileSlug);
+        if (!targetPage) return error(`Profile page "${profileSlug}" not found`);
+
         message('Applying new profile')
-        const newText = renderProfile(frontPage.body, profile);
-        await frontPage.updateContent(newText);
+        const newText = renderProfile(targetPage.body, profile);
+        await targetPage.updateContent(newText);
         const newProfile = await section.getFrontPageProfile();
         setFrontPageProfile(newProfile)
         if (onUpdateFrontPageProfile) onUpdateFrontPageProfile(newProfile);
@@ -103,6 +124,11 @@ export function SectionDetails({
             <button onClick={onClose}>X</button>
         </h3>
         <p><a href={section.courseUrl} target={'_blank'} className={'course-link'}>{section.name}</a></p>
+        <p>
+            {profileSlug
+                ? <em>Profile target page: {profileSlug}</em>
+                : <em className={'text-danger'}>{profileSlugError}</em>}
+        </p>
         {info && <div className={`alert ${infoClass}`}>{info}</div>}
         <Row>
             <div className={'col-sm-8'}>

@@ -9,6 +9,7 @@ export interface ICourseRowProps {
   instructors?: IUserData[];
   facultyProfileMatches: IProfile[];
   frontPageProfile: IProfile | null;
+  profileSlug?: string | null;
   onSelectSection?: (course: Course) => void;
   selectionToggle?: (course: Course, publish: boolean) => void;
   selected?: boolean;
@@ -17,6 +18,7 @@ export interface ICourseRowProps {
 export function CourseRow({
   course,
   frontPageProfile,
+  profileSlug,
   instructors,
   onSelectSection,
   facultyProfileMatches,
@@ -25,6 +27,7 @@ export function CourseRow({
 }: ICourseRowProps) {
   const rowClass = ["row", "course-row", "align-items-center"];
   const displayFacultyProfileWarning = facultyProfileMatches.length > 1 && !frontPageProfile;
+  const source = facultyProfileMatches.length === 1 ? facultyProfileMatches[0].displayName : null;
 
   if (displayFacultyProfileWarning) rowClass.push("alert-danger");
   return (
@@ -42,7 +45,9 @@ export function CourseRow({
         </a>
       </div>
       <div className={"col-xs-1"}>{course.data.total_students}</div>
-      <div className={"col-xs-2"}>{frontPageProfile && frontPageProfile.displayName}</div>
+      <div className={"col-xs-3"} title={`Source profile: ${source ?? "none"} — Target page: ${profileSlug ?? "unresolved"}`}>
+        {source ?? "—"} → {profileSlug ?? "—"}
+      </div>
       <div className={"col-xs-1"}>
         {onSelectSection && course && <button onClick={() => onSelectSection(course)}>Details</button>}
       </div>
