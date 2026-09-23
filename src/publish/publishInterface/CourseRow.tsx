@@ -5,7 +5,7 @@ import { IProfile } from "@ueu/ueu-canvas/type";
 
 export interface ICourseRowProps {
   course: Course;
-  errors: string[];
+  errors?: string[];
   instructors?: IUserData[];
   facultyProfileMatches: IProfile[];
   frontPageProfile: IProfile | null;
@@ -17,6 +17,7 @@ export interface ICourseRowProps {
 
 export function CourseRow({
   course,
+  errors,
   frontPageProfile,
   profileSlug,
   instructors,
@@ -29,7 +30,7 @@ export function CourseRow({
   const displayFacultyProfileWarning = facultyProfileMatches.length > 1 && !frontPageProfile;
   const source = facultyProfileMatches.length === 1 ? facultyProfileMatches[0].displayName : null;
 
-  if (displayFacultyProfileWarning) rowClass.push("alert-danger");
+  if (displayFacultyProfileWarning || errors?.length) rowClass.push("alert-danger");
   return (
     <div className={rowClass.join(" ")}>
       <div className={"col-xs-1"}>
@@ -55,6 +56,13 @@ export function CourseRow({
         <div>More than One Match and no exact match, please fix in the details view</div>
       ) : (
         <div className={"col-xs-2"}>{instructors?.map((instructor) => instructor.name).join(", ")}</div>
+      )}
+      {errors && errors.length > 0 && (
+        <div className={"col-xs-12"}>
+          {errors.map((err, i) => (
+            <div key={i} className={"text-danger"}>{err}</div>
+          ))}
+        </div>
       )}
     </div>
   );

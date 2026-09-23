@@ -1,6 +1,6 @@
 import React, {useState} from "react";
-import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
-import { findProfilePageSlug, getProfilePage } from "@publish/fixesAndUpdates/courseDataStore";
+import { readProfileFromPage, renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { findProfilePageSlug, getProfilePage, restrictBlueprintPage } from "@publish/fixesAndUpdates/courseDataStore";
 import {IModuleData, IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
@@ -14,6 +14,7 @@ import {IProfile} from "@ueu/ueu-canvas/type";
 
 type SectionDetailsProps = {
     section?: Course | null,
+    blueprintCourse?: Course | null,
     onUpdateFrontPageProfile?(profile: IProfile): void,
     facultyProfileMatches?: (IProfile & {user:IUserData})[] | null,
     onClose?: () => void,
@@ -21,6 +22,7 @@ type SectionDetailsProps = {
 
 export function SectionDetails({
                                    section,
+                                   blueprintCourse,
                                    onClose,
                                    onUpdateFrontPageProfile,
                                    facultyProfileMatches
@@ -33,24 +35,35 @@ export function SectionDetails({
     const [infoClass, setInfoClass] = useState<string>('alert-primary')
     const [profileSlug, setProfileSlug] = useState<string | null>(null)
     const [profileSlugError, setProfileSlugError] = useState<string | null>(null)
+    const [blueprintPageId, setBlueprintPageId] = useState<number | null>(null)
 
     useEffectAsync(async () => {
         await onSectionChange();
         await refreshProfileSlug();
-    }, [section]);
+    }, [section, blueprintCourse]);
 
     async function refreshProfileSlug() {
-        if (!section) {
+        if (!section || !blueprintCourse) {
             setProfileSlug(null);
             setProfileSlugError(null);
+            setBlueprintPageId(null);
             return;
         }
-        const result = await findProfilePageSlug(section.id);
+        // Resolved from the blueprint, not the section: the section's own copy
+        // shares the slug but has a different page_id, and blueprint locking
+        // (restrictBlueprintPage) only accepts the blueprint's own page_id.
+        const result = await findProfilePageSlug(blueprintCourse.id);
         if (result.status === "found") {
             setProfileSlug(result.slug);
             setProfileSlugError(null);
+            setBlueprintPageId(result.blueprintPageId);
+            const targetPage = await getProfilePage(section.id, result.slug);
+            if (targetPage) {
+                setFrontPageProfile(readProfileFromPage(targetPage.body));
+            }
         } else {
             setProfileSlug(null);
+            setBlueprintPageId(null);
             setProfileSlugError(result.status === "none" ? "No profile page found" : `Multiple profile pages: ${result.candidates.join(", ")}`);
         }
     }
@@ -66,7 +79,6 @@ export function SectionDetails({
         if (!section) return;
 
         await Promise.all([
-            async () => setFrontPageProfile(await section.getFrontPageProfile()),
             async () => setModules(await section.getModules()),
             async () => setInstructors(await getInstructors(section) ?? []),
             async () => setAssignmentGroups(await section.getAssignmentGroups({
@@ -111,10 +123,21 @@ export function SectionDetails({
 
         message('Applying new profile')
         const newText = renderProfile(targetPage.body, profile);
-        await targetPage.updateContent(newText);
-        const newProfile = await section.getFrontPageProfile();
+        // Section copies are locked by default; unlock the blueprint's page for
+        // this one write and always re-lock afterward (see restrictBlueprintPage).
+        if (blueprintPageId && blueprintCourse) {
+            await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
+        }
+        try {
+            await targetPage.updateContent(newText);
+        } finally {
+            if (blueprintPageId && blueprintCourse) {
+                await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, true);
+            }
+        }
+        const newProfile = readProfileFromPage(newText);
         setFrontPageProfile(newProfile)
-        if (onUpdateFrontPageProfile) onUpdateFrontPageProfile(newProfile);
+        if (onUpdateFrontPageProfile && newProfile) onUpdateFrontPageProfile(newProfile);
         success("Profile updated")
     }
 

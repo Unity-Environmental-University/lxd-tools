@@ -18,7 +18,7 @@ import { getCourseData } from "@ueu/ueu-canvas/course";
 import { sleep } from "@/utils/toolbox";
 import { IProfile, IProfileWithUser } from "@ueu/ueu-canvas/type";
 import isEqual from "lodash/isEqual";
-import { findProfilePageSlug, getProfilePage } from "@publish/fixesAndUpdates/courseDataStore";
+import { findProfilePageSlug, getProfilePage, restrictBlueprintPage } from "@publish/fixesAndUpdates/courseDataStore";
 import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
 
 export interface IPublishInterfaceProps {
@@ -67,6 +67,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   const [emails, setEmails] = useState<string[]>([]);
   const [profileSlug, setProfileSlug] = useState<string | null>(null);
   const [profileSlugError, setProfileSlugError] = useState<string | null>(null);
+  const [blueprintPageId, setBlueprintPageId] = useState<number | null>(null);
 
   const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
@@ -89,14 +90,17 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     if (!course) {
       setProfileSlug(null);
       setProfileSlugError(null);
+      setBlueprintPageId(null);
       return;
     }
     const result = await findProfilePageSlug(course.id);
     if (result.status === "found") {
       setProfileSlug(result.slug);
       setProfileSlugError(null);
+      setBlueprintPageId(result.blueprintPageId);
     } else {
       setProfileSlug(null);
+      setBlueprintPageId(null);
       setProfileSlugError(
         result.status === "none" ? "No profile page found on blueprint" : `Multiple profile pages: ${result.candidates.join(", ")}`
       );
@@ -203,35 +207,54 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
       return;
     }
 
-    for (const section of Object.values(sections)) {
-      const profiles = potentialProfilesByCourseId[section.id];
-      const errors = [];
-      if (profiles.length < 1) {
-        sectionError(section, "No Profiles");
-        continue;
-      }
-      if (profiles.length > 1) {
-        errors.push("Multiple Matches Found");
-        // WARN; Set an alert to tell the user they have sections to deal with?
-        continue;
-      }
-      const profile = profiles[0];
+    // Section copies of a blueprint page are locked against direct edits by
+    // default. Unlock the blueprint's page for the duration of this pass so the
+    // writes below aren't rejected, then always re-lock it afterward — Canvas
+    // has no API to read whether it was already unlocked, so "restore" here
+    // means "back to locked," not "back to whatever it was."
+    if (blueprintPageId && course) {
+      await restrictBlueprintPage(course.id, blueprintPageId, false);
+    }
 
-      const targetPage = await getProfilePage(section.id, profileSlug);
-      if (!targetPage) {
-        sectionError(section, `Profile page "${profileSlug}" not found`);
-        continue;
-      }
+    let updatedCount = 0;
+    try {
+      for (const section of Object.values(sections)) {
+        const profiles = potentialProfilesByCourseId[section.id];
+        if (profiles.length < 1) {
+          sectionError(section, "No Profiles");
+          continue;
+        }
+        if (profiles.length > 1) {
+          sectionError(section, "Multiple Matches Found");
+          continue;
+        }
+        const profile = profiles[0];
 
-      const html = renderProfile(targetPage.body, profile);
-      await targetPage.updateContent(html);
-      dispatchFrontPageProfilesByCourseId({
-        set: { [section.id]: profile },
-      });
-      setInfo(`Updated ${profile.displayName}...`);
+        const targetPage = await getProfilePage(section.id, profileSlug);
+        if (!targetPage) {
+          sectionError(section, `Profile page "${profileSlug}" not found`);
+          continue;
+        }
+
+        const html = renderProfile(targetPage.body, profile);
+        await targetPage.updateContent(html);
+        dispatchFrontPageProfilesByCourseId({
+          set: { [section.id]: profile },
+        });
+        setInfo(`Updated ${profile.displayName}...`);
+        updatedCount++;
+      }
+    } finally {
+      if (blueprintPageId && course) {
+        await restrictBlueprintPage(course.id, blueprintPageId, true);
+      }
     }
     setLoading(false);
-    success("Profiles Updated");
+    if (updatedCount > 0) {
+      success(`${updatedCount} profile(s) updated`);
+    } else {
+      inform("No profiles updated — see errors below", "alert-danger");
+    }
   }
 
   function inform(message: string, alertClass: string = "alert-secondary") {
@@ -423,6 +446,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
               facultyProfileMatches={potentialProfilesByCourseId[workingSection.id]}
               onClose={() => setWorkingSection(null)}
               section={workingSection}
+              blueprintCourse={course}
             ></SectionDetails>
           </div>
         )}

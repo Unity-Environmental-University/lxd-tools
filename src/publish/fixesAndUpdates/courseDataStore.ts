@@ -3,6 +3,8 @@ import { Course } from "@ueu/ueu-canvas/course/Course";
 import { Page } from "@ueu/ueu-canvas/content/pages/Page";
 import { getCourseData } from "@ueu/ueu-canvas/course";
 import { IPageData } from "@ueu/ueu-canvas/content/pages/types";
+import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import apiWriteConfig from "@ueu/ueu-canvas/fetch/apiWriteConfig";
 
 /**
  * Per-course cached data. Fetched once per course, reused by profile application,
@@ -121,7 +123,7 @@ const PROFILE_DATA_ATTRS = [
 ];
 
 export type ProfilePageResult =
-  | { status: "found"; slug: string }
+  | { status: "found"; slug: string; blueprintPageId: number }
   | { status: "none" }
   | { status: "ambiguous"; candidates: string[] };
 
@@ -139,13 +141,14 @@ export type ProfilePageResult =
 export async function findProfilePageSlug(blueprintCourseId: number, instance?: string): Promise<ProfilePageResult> {
   const pages = await useCourseDataStore.getState().getPages(blueprintCourseId, instance);
 
-  const candidates = pages
-    .filter((page) => PROFILE_DATA_ATTRS.some((attr) => (page.body ?? "").includes(attr)))
-    .map((page) => (page.rawData as IPageData).url);
+  const matches = pages.filter((page) => PROFILE_DATA_ATTRS.some((attr) => (page.body ?? "").includes(attr)));
 
-  if (candidates.length === 0) return { status: "none" };
-  if (candidates.length > 1) return { status: "ambiguous", candidates };
-  return { status: "found", slug: candidates[0] };
+  if (matches.length === 0) return { status: "none" };
+  if (matches.length > 1) {
+    return { status: "ambiguous", candidates: matches.map((page) => (page.rawData as IPageData).url) };
+  }
+  const rawData = matches[0].rawData as IPageData;
+  return { status: "found", slug: rawData.url, blueprintPageId: rawData.page_id };
 }
 
 /**
@@ -154,4 +157,29 @@ export async function findProfilePageSlug(blueprintCourseId: number, instance?: 
  */
 export async function getProfilePage(courseId: number, slug: string, instance?: string): Promise<Page | null> {
   return useCourseDataStore.getState().getPageBySlug(courseId, slug, instance);
+}
+
+/**
+ * Set whether a single wiki page on a blueprint is restricted (locked) from being
+ * changed in associated courses. blueprintPageId is the page's id on the blueprint
+ * course itself (see ProfilePageResult.blueprintPageId), not on an associated section.
+ *
+ * Canvas has no documented API to read an item's current restriction state, so
+ * callers that unlock an item for a write pass should always re-lock it afterward
+ * (in a finally) rather than try to restore a "previous" state.
+ */
+export async function restrictBlueprintPage(
+  blueprintCourseId: number,
+  blueprintPageId: number,
+  restricted: boolean
+): Promise<void> {
+  const url = `/api/v1/courses/${blueprintCourseId}/blueprint_templates/default/restrict_item`;
+  await fetchJson(
+    url,
+    apiWriteConfig("PUT", {
+      content_type: "wiki_page",
+      content_id: blueprintPageId,
+      restricted,
+    })
+  );
 }
