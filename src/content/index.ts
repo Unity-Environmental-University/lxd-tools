@@ -3,6 +3,7 @@ import { runtime } from "webextension-polyfill";
 
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { stringIsCourseCode } from "@ueu/ueu-canvas/course/code";
+import { getInstance, canvasUrl } from "@ueu/ueu-canvas/instance";
 
 import { ICourseData } from "@ueu/ueu-canvas/courseTypes";
 
@@ -28,7 +29,7 @@ async function openTargetCourse(queryString: string, subAccount: number) {
 
   let queryUrl = `/api/v1/accounts/${subAccount}/courses?search_term=${searchCode}`;
   if (!new URL(document.documentURI).hostname.endsWith(".instructure.com")) {
-    queryUrl = `https://unity.instructure.com/accounts/${subAccount}?search_term=${searchCode}`;
+    queryUrl = canvasUrl(`/accounts/${subAccount}?search_term=${searchCode}`);
     window.open(queryUrl, "_blank");
     return;
   }
@@ -95,7 +96,7 @@ async function openTargetCourse(queryString: string, subAccount: number) {
 
   if (!didOpen) {
     window.open(
-      `https://unity.instructure.com/accounts/${subAccount}?search_term=${encodeURIComponent(queryString)}`,
+      canvasUrl(`/accounts/${subAccount}?search_term=${encodeURIComponent(queryString)}`),
       "_blank"
     );
   }

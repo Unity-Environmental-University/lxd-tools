@@ -52,7 +52,9 @@ describe("CourseRow Component", () => {
   it("renders without crashing", () => {
     renderComponent();
     expect(screen.getByText("Test Course")).toBeInTheDocument();
-    expect(screen.getByText("Front Page Profile")).toBeInTheDocument();
+    // Source -> target: the source name comes from the single faculty match,
+    // not frontPageProfile directly (see CourseRow.tsx's `source` derivation).
+    expect(screen.getByText(/Front Page Profile/)).toBeInTheDocument();
     expect(screen.getByText("Instructor 1, Instructor 2")).toBeInTheDocument();
   });
 
@@ -66,5 +68,13 @@ describe("CourseRow Component", () => {
   it('does not render "Details" button if onSelectSection is not provided', () => {
     renderComponent({ onSelectSection: undefined });
     expect(screen.queryByText("Details")).toBeNull();
+  });
+
+  it("does not crash when facultyProfileMatches has not loaded yet (undefined)", () => {
+    // potentialProfilesByCourseId[course.id] can be undefined for a course
+    // that has appeared in `sections` but whose profile matches haven't
+    // resolved yet — a real, reachable timing window, not a hypothetical.
+    renderComponent({ facultyProfileMatches: undefined });
+    expect(screen.getByText("Test Course")).toBeInTheDocument();
   });
 });

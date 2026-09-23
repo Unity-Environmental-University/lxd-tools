@@ -1,5 +1,6 @@
-import {renderProfileIntoCurioFrontPage} from '@ueu/ueu-canvas/profile';
 import React, {useState} from "react";
+import { readProfileFromPage, renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { findProfilePageSlug, getProfilePage, ProfilePageResult, restrictBlueprintPage } from "@publish/fixesAndUpdates/courseDataStore";
 import {IModuleData, IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
 import {useEffectAsync} from "../../../ui/utils";
 import {FacultyProfile} from "./FacultyProfile";
@@ -13,6 +14,7 @@ import {IProfile} from "@ueu/ueu-canvas/type";
 
 type SectionDetailsProps = {
     section?: Course | null,
+    blueprintCourse?: Course | null,
     onUpdateFrontPageProfile?(profile: IProfile): void,
     facultyProfileMatches?: (IProfile & {user:IUserData})[] | null,
     onClose?: () => void,
@@ -20,6 +22,7 @@ type SectionDetailsProps = {
 
 export function SectionDetails({
                                    section,
+                                   blueprintCourse,
                                    onClose,
                                    onUpdateFrontPageProfile,
                                    facultyProfileMatches
@@ -30,10 +33,34 @@ export function SectionDetails({
     const [frontPageProfile, setFrontPageProfile] = useState<IProfile | null>(null)
     const [info, setInfo] = useState<string | null>(null)
     const [infoClass, setInfoClass] = useState<string>('alert-primary')
+    // A single ProfilePageResult rather than separate slug/error/pageId
+    // fields: those only ever have meaning together (see the same reasoning
+    // in PublishInterface.tsx), so this keeps them from independently going
+    // stale relative to each other.
+    const [profileResolution, setProfileResolution] = useState<ProfilePageResult | null>(null)
 
     useEffectAsync(async () => {
         await onSectionChange();
-    }, [section]);
+        await refreshProfileSlug();
+    }, [section, blueprintCourse]);
+
+    async function refreshProfileSlug() {
+        if (!section || !blueprintCourse) {
+            setProfileResolution(null);
+            return;
+        }
+        // Resolved from the blueprint, not the section: the section's own copy
+        // shares the slug but has a different page_id, and blueprint locking
+        // (restrictBlueprintPage) only accepts the blueprint's own page_id.
+        const result = await findProfilePageSlug(blueprintCourse.id);
+        setProfileResolution(result);
+        if (result.status === "found") {
+            const targetPage = await getProfilePage(section.id, result.slug);
+            if (targetPage) {
+                setFrontPageProfile(readProfileFromPage(targetPage.body));
+            }
+        }
+    }
 
 
     async function onSectionChange() {
@@ -46,7 +73,6 @@ export function SectionDetails({
         if (!section) return;
 
         await Promise.all([
-            async () => setFrontPageProfile(await section.getFrontPageProfile()),
             async () => setModules(await section.getModules()),
             async () => setInstructors(await getInstructors(section) ?? []),
             async () => setAssignmentGroups(await section.getAssignmentGroups({
@@ -64,7 +90,6 @@ export function SectionDetails({
         return fetchInstructors;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function error(message: string) {
         broadcast(message, 'alert-error')
     }
@@ -86,14 +111,42 @@ export function SectionDetails({
 
     async function applyProfile(profile: IProfile & {user: IUserData}) {
         if (!section) return;
-        const frontPage = await section.getFrontPage();
-        if (!frontPage) return;
+        if (profileResolution?.status !== "found") {
+            return error(
+                profileResolution?.status === "ambiguous"
+                    ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+                    : "No profile page found"
+            );
+        }
+        const { slug: profileSlug, blueprintPageId } = profileResolution;
+        const targetPage = await getProfilePage(section.id, profileSlug);
+        if (!targetPage) return error(`Profile page "${profileSlug}" not found`);
+
         message('Applying new profile')
-        const newText = renderProfileIntoCurioFrontPage(frontPage.body, profile);
-        await frontPage.updateContent(newText);
-        const newProfile = await section.getFrontPageProfile();
+        const newText = renderProfile(targetPage.body, profile, section.id);
+        // Section copies are locked by default; unlock the blueprint's page for
+        // this one write and always re-lock afterward (see restrictBlueprintPage).
+        // The unlock call is inside the try (not before it) so a thrown error
+        // there still reaches the catch/finally below instead of leaving the
+        // user with no feedback and the lock state untouched but unexplained.
+        let unlocked = false;
+        try {
+            if (blueprintCourse) {
+                await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
+                unlocked = true;
+            }
+            await targetPage.updateContent(newText);
+        } catch (e) {
+            error(e instanceof Error ? e.message : "Failed to apply profile");
+            return;
+        } finally {
+            if (blueprintCourse && unlocked) {
+                await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, true);
+            }
+        }
+        const newProfile = readProfileFromPage(newText);
         setFrontPageProfile(newProfile)
-        if (onUpdateFrontPageProfile) onUpdateFrontPageProfile(newProfile);
+        if (onUpdateFrontPageProfile && newProfile) onUpdateFrontPageProfile(newProfile);
         success("Profile updated")
     }
 
@@ -103,6 +156,15 @@ export function SectionDetails({
             <button onClick={onClose}>X</button>
         </h3>
         <p><a href={section.courseUrl} target={'_blank'} className={'course-link'}>{section.name}</a></p>
+        <p>
+            {profileResolution?.status === "found"
+                ? <em>Profile target page: {profileResolution.slug}</em>
+                : <em className={'text-danger'}>
+                    {profileResolution?.status === "ambiguous"
+                        ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+                        : "No profile page found"}
+                  </em>}
+        </p>
         {info && <div className={`alert ${infoClass}`}>{info}</div>}
         <Row>
             <div className={'col-sm-8'}>

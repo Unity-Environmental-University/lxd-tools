@@ -5,10 +5,14 @@ import { IProfile } from "@ueu/ueu-canvas/type";
 
 export interface ICourseRowProps {
   course: Course;
-  errors: string[];
+  errors?: string[];
   instructors?: IUserData[];
-  facultyProfileMatches: IProfile[];
+  // Not always populated yet when a row first renders: potentialProfilesByCourseId
+  // fills in asynchronously per-course, slightly after the course itself appears
+  // in `sections`, so a render can land in between.
+  facultyProfileMatches?: IProfile[];
   frontPageProfile: IProfile | null;
+  profileSlug?: string | null;
   onSelectSection?: (course: Course) => void;
   selectionToggle?: (course: Course, publish: boolean) => void;
   selected?: boolean;
@@ -16,17 +20,21 @@ export interface ICourseRowProps {
 
 export function CourseRow({
   course,
+  errors,
   frontPageProfile,
+  profileSlug,
   instructors,
   onSelectSection,
   facultyProfileMatches,
   selectionToggle,
   selected,
 }: ICourseRowProps) {
+  const matches = facultyProfileMatches ?? [];
   const rowClass = ["row", "course-row", "align-items-center"];
-  const displayFacultyProfileWarning = facultyProfileMatches.length > 1 && !frontPageProfile;
+  const displayFacultyProfileWarning = matches.length > 1 && !frontPageProfile;
+  const source = matches.length === 1 ? matches[0].displayName : null;
 
-  if (displayFacultyProfileWarning) rowClass.push("alert-danger");
+  if (displayFacultyProfileWarning || errors?.length) rowClass.push("alert-danger");
   return (
     <div className={rowClass.join(" ")}>
       <div className={"col-xs-1"}>
@@ -42,7 +50,9 @@ export function CourseRow({
         </a>
       </div>
       <div className={"col-xs-1"}>{course.data.total_students}</div>
-      <div className={"col-xs-2"}>{frontPageProfile && frontPageProfile.displayName}</div>
+      <div className={"col-xs-3"} title={`Source profile: ${source ?? "none"} — Target page: ${profileSlug ?? "unresolved"}`}>
+        {source ?? "—"} → {profileSlug ?? "—"}
+      </div>
       <div className={"col-xs-1"}>
         {onSelectSection && course && <button onClick={() => onSelectSection(course)}>Details</button>}
       </div>
@@ -50,6 +60,13 @@ export function CourseRow({
         <div>More than One Match and no exact match, please fix in the details view</div>
       ) : (
         <div className={"col-xs-2"}>{instructors?.map((instructor) => instructor.name).join(", ")}</div>
+      )}
+      {errors && errors.length > 0 && (
+        <div className={"col-xs-12"}>
+          {errors.map((err, i) => (
+            <div key={i} className={"text-danger"}>{err}</div>
+          ))}
+        </div>
       )}
     </div>
   );

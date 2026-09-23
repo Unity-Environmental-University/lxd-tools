@@ -1,5 +1,4 @@
 import React, { useEffect, useReducer, useState } from "react";
-import { renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
 import { useEffectAsync } from "@/ui/utils";
 import { Button } from "react-bootstrap";
 import Modal from "@/ui/widgets/Modal/index";
@@ -8,6 +7,7 @@ import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
 import { Temporal } from "temporal-polyfill";
 import { EmailLink } from "./EmailLink";
 import { SectionRows } from "./SectionRows";
+import { ProfileTemplateHelp } from "./ProfileTemplateHelp";
 import { MakeBp } from "./MakeBp";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { Term } from "@ueu/ueu-canvas/term/Term";
@@ -19,6 +19,13 @@ import { getCourseData } from "@ueu/ueu-canvas/course";
 import { sleep } from "@/utils/toolbox";
 import { IProfile, IProfileWithUser } from "@ueu/ueu-canvas/type";
 import isEqual from "lodash/isEqual";
+import {
+  findProfilePageSlug,
+  getProfilePage,
+  ProfilePageResult,
+  restrictBlueprintPage,
+} from "@publish/fixesAndUpdates/courseDataStore";
+import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
 
 export interface IPublishInterfaceProps {
   course?: Course;
@@ -64,6 +71,11 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   );
 
   const [emails, setEmails] = useState<string[]>([]);
+  // A single ProfilePageResult, not separate slug/error/pageId fields: those
+  // three only ever have meaning together (a "found" result has slug and
+  // blueprintPageId; anything else has neither), so keeping them as one
+  // useState means they can't independently go stale relative to each other.
+  const [profileResolution, setProfileResolution] = useState<ProfilePageResult | null>(null);
 
   const [errorsByCourseId, setErrorsByCourseId] = useState<Record<number, string[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
@@ -80,6 +92,14 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
       await getFullCourses(course);
     }
     //ONLY refresh courses if it's a new course being set.
+  }, [course]);
+
+  useEffectAsync(async () => {
+    if (!course) {
+      setProfileResolution(null);
+      return;
+    }
+    setProfileResolution(await findProfilePageSlug(course.id));
   }, [course]);
 
   useEffect(() => {
@@ -170,33 +190,77 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     inform("Updating section profiles...");
     const _currentProfiles = { ...frontPageProfilesByCourseId };
     setErrorsByCourseId({});
-    for (const section of Object.values(sections)) {
-      const profiles = potentialProfilesByCourseId[section.id];
-      const errors = [];
-      if (profiles.length < 1) {
-        sectionError(section, "No Profiles");
-        continue;
+
+    // No fallback: a course must resolve to exactly one data-attribute profile
+    // page (see the resolution effect above), or every section errors visibly
+    // instead of silently targeting the wrong page.
+    if (profileResolution?.status !== "found") {
+      const message =
+        profileResolution?.status === "ambiguous"
+          ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+          : "No profile page found on blueprint";
+      for (const section of Object.values(sections)) {
+        sectionError(section, message);
       }
-      if (profiles.length > 1) {
-        errors.push("Multiple Matches Found");
-        // WARN; Set an alert to tell the user they have sections to deal with?
-        continue;
-      }
-      const profile = profiles[0];
-      const frontPage = await section.getFrontPage();
-      if (!frontPage) {
-        sectionError(section, "No front page");
-        continue;
-      }
-      const html = renderProfileIntoCurioFrontPage(frontPage.body, profile);
-      await frontPage.updateContent(html);
-      dispatchFrontPageProfilesByCourseId({
-        set: { [section.id]: profile },
-      });
-      setInfo(`Updated ${profile.displayName}...`);
+      setLoading(false);
+      inform("No profiles updated — see errors below", "alert-danger");
+      return;
     }
-    setLoading(false);
-    success("Profiles Updated");
+    const { slug: profileSlug, blueprintPageId } = profileResolution;
+
+    let updatedCount = 0;
+    let unlocked = false;
+    try {
+      // Section copies of a blueprint page are locked against direct edits
+      // by default. Unlock the blueprint's page for the duration of this
+      // pass so the writes below aren't rejected, then always re-lock it
+      // afterward — Canvas has no API to read whether it was already
+      // unlocked, so "restore" here means "back to locked," not "back to
+      // whatever it was." This unlock is inside the try (not before it) so
+      // that a thrown error here still reaches the finally below and resets
+      // loading state instead of leaving the UI stuck on "Updating...".
+      if (course) {
+        await restrictBlueprintPage(course.id, blueprintPageId, false);
+        unlocked = true;
+      }
+
+      for (const section of Object.values(sections)) {
+        const profiles = potentialProfilesByCourseId[section.id] ?? [];
+        if (profiles.length < 1) {
+          sectionError(section, "No Profiles");
+          continue;
+        }
+        if (profiles.length > 1) {
+          sectionError(section, "Multiple Matches Found");
+          continue;
+        }
+        const profile = profiles[0];
+
+        const targetPage = await getProfilePage(section.id, profileSlug);
+        if (!targetPage) {
+          sectionError(section, `Profile page "${profileSlug}" not found`);
+          continue;
+        }
+
+        const html = renderProfile(targetPage.body, profile, section.id);
+        await targetPage.updateContent(html);
+        dispatchFrontPageProfilesByCourseId({
+          set: { [section.id]: profile },
+        });
+        setInfo(`Updated ${profile.displayName}...`);
+        updatedCount++;
+      }
+    } finally {
+      if (course && unlocked) {
+        await restrictBlueprintPage(course.id, blueprintPageId, true);
+      }
+      setLoading(false);
+    }
+    if (updatedCount > 0) {
+      success(`${updatedCount} profile(s) updated`);
+    } else {
+      inform("No profiles updated — see errors below", "alert-danger");
+    }
   }
 
   function inform(message: string, alertClass: string = "alert-secondary") {
@@ -341,6 +405,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                     Publish selected
                   </Button>
                 )}
+                <ProfileTemplateHelp blueprintCourse={course} />
               </div>
               <div className={"col-xs-12"} style={{ marginTop: "5px" }}>
                 {user && course && (
@@ -361,6 +426,14 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                   frontPageProfilesByCourseId={frontPageProfilesByCourseId}
                   potentialProfilesByCourseId={potentialProfilesByCourseId}
                   errorsByCourseId={errorsByCourseId}
+                  profileSlug={profileResolution?.status === "found" ? profileResolution.slug : null}
+                  profileSlugError={
+                    profileResolution?.status === "ambiguous"
+                      ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
+                      : profileResolution?.status === "none"
+                        ? "No profile page found on blueprint"
+                        : null
+                  }
                   setWorkingSection={setWorkingSection}
                   // ← HERE: pass your local variable into the prop
                   sectionPublishRecord={sectionsToPublish}
@@ -386,6 +459,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
               facultyProfileMatches={potentialProfilesByCourseId[workingSection.id]}
               onClose={() => setWorkingSection(null)}
               section={workingSection}
+              blueprintCourse={course}
             ></SectionDetails>
           </div>
         )}
