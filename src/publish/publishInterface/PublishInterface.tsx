@@ -7,6 +7,7 @@ import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
 import { Temporal } from "temporal-polyfill";
 import { EmailLink } from "./EmailLink";
 import { SectionRows } from "./SectionRows";
+import { ProfileTemplateHelp } from "./ProfileTemplateHelp";
 import { MakeBp } from "./MakeBp";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { Term } from "@ueu/ueu-canvas/term/Term";
@@ -236,7 +237,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
           continue;
         }
 
-        const html = renderProfile(targetPage.body, profile);
+        const html = renderProfile(targetPage.body, profile, section.id);
         await targetPage.updateContent(html);
         dispatchFrontPageProfilesByCourseId({
           set: { [section.id]: profile },
@@ -399,6 +400,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                     Publish selected
                   </Button>
                 )}
+                <ProfileTemplateHelp />
               </div>
               <div className={"col-xs-12"} style={{ marginTop: "5px" }}>
                 {user && course && (

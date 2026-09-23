@@ -122,7 +122,7 @@ export function SectionDetails({
         if (!targetPage) return error(`Profile page "${profileSlug}" not found`);
 
         message('Applying new profile')
-        const newText = renderProfile(targetPage.body, profile);
+        const newText = renderProfile(targetPage.body, profile, section.id);
         // Section copies are locked by default; unlock the blueprint's page for
         // this one write and always re-lock afterward (see restrictBlueprintPage).
         if (blueprintPageId && blueprintCourse) {

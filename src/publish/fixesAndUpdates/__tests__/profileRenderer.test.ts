@@ -16,18 +16,22 @@ const makeProfile = (overrides: Partial<IProfile> = {}): IProfile & { user: IUse
   ...overrides,
 });
 
+const mockCourseId = 8292463;
+
 describe("renderProfile", () => {
   describe("data-attribute pages", () => {
     const templateHtml = `
       <div>
         <h2 data-profile-name>Placeholder Name</h2>
         <div data-profile-bio>Placeholder bio</div>
-        <img data-profile-image src="placeholder.png" alt="placeholder" />
+        <div data-profile-image><img src="placeholder.png" alt="placeholder" /></div>
+        <a data-profile-message href="#">Message Instructor</a>
+        <div data-profile-help>Setup instructions for template authors.</div>
       </div>
     `;
 
     it("fills in name, bio, and image from profile", () => {
-      const result = renderProfile(templateHtml, makeProfile());
+      const result = renderProfile(templateHtml, makeProfile(), mockCourseId);
       expect(result).toContain("Dr. Jane Doe");
       expect(result).toContain("Expert in marine biology.");
       expect(result).toContain("jane.jpg");
@@ -35,10 +39,23 @@ describe("renderProfile", () => {
       expect(result).not.toContain("Placeholder bio");
     });
 
+    it("strips data-profile-help elements from the written page", () => {
+      const result = renderProfile(templateHtml, makeProfile(), mockCourseId);
+      expect(result).not.toContain("Setup instructions for template authors.");
+      expect(result).not.toContain("data-profile-help");
+    });
+
     it("appends contact info to bio when user has email", () => {
-      const result = renderProfile(templateHtml, makeProfile());
+      const result = renderProfile(templateHtml, makeProfile(), mockCourseId);
       expect(result).toContain("jdoe@unity.edu");
       expect(result).toContain("Canvas Inbox");
+    });
+
+    it("wires the message link to Canvas's Inbox compose for the user in the course", () => {
+      const result = renderProfile(templateHtml, makeProfile(), mockCourseId);
+      expect(result).toContain(`context_id=course_${mockCourseId}`);
+      expect(result).toContain("user_id=1");
+      expect(result).toContain("Jane+Doe");
     });
 
     it("leaves elements alone when profile fields are missing", () => {
@@ -47,14 +64,14 @@ describe("renderProfile", () => {
         bio: null,
         imageLink: null,
         image: null,
-      }));
+      }), mockCourseId);
       // Name element keeps placeholder since displayName is null
       expect(result).toContain("Placeholder Name");
     });
 
     it("handles a page with only some data attributes", () => {
       const partial = `<div><span data-profile-name>Name</span><p>No bio or image attrs</p></div>`;
-      const result = renderProfile(partial, makeProfile());
+      const result = renderProfile(partial, makeProfile(), mockCourseId);
       expect(result).toContain("Dr. Jane Doe");
     });
   });
@@ -71,7 +88,7 @@ describe("renderProfile", () => {
     `;
 
     it("falls back to Curio renderer when no data attributes present", () => {
-      const result = renderProfile(curioHtml, makeProfile());
+      const result = renderProfile(curioHtml, makeProfile(), mockCourseId);
       expect(result).toContain("Meet your instructor, Dr. Jane Doe!");
       expect(result).toContain("Expert in marine biology.");
     });
