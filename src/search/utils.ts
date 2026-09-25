@@ -6,6 +6,7 @@ import type {
 } from "./types"
 
 let termsPromise: Promise<TermResponse> | null = null;
+export const BASE = "https://lisa.campus.unity.edu/beta"
 
 // only fetch terms if promise is null (hasn't been fetched yet)
 function getTerms() {
@@ -59,8 +60,8 @@ async function get<K extends keyof ApiEndpoints>(
 ): Promise<ApiEndpoints[K]['response']> {
   
 
-  const BASE = 'https://lisa/beta/api';
-  const url = new URL(`${BASE}/${slug}`);
+  const apiBASE = `${BASE}/api`;
+  const url = new URL(`${apiBASE}/${slug}`);
 
   if(params){
     for (const [key, value] of Object.entries(params)) {
