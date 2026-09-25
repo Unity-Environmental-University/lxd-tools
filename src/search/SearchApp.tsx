@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { GenericSearch } from "./components";
+import { BASE } from "./utils"
+
+const loginBase = `${BASE}/login/canvas`;
+const authBase = `${loginBase}/status`
 
 // TODO make an openapi spec for lisa so I don't have to maintain this
 // TODO also LISA currently uses separate get endpoints
@@ -129,6 +133,25 @@ type EndpointKey = keyof typeof ENDPOINT_CONFIG;
 export function SearchApp() {
   const [endpoint, setEndpoint] = useState<EndpointKey | "">("");
   const allowed_sort_columns = endpoint ? ENDPOINT_CONFIG[endpoint].allowed_sort_columns : []
+
+  // open window for canvas auth if not already authed according to LISA
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch(authBase, { credentials: 'include' })
+      .then(res => res.json())
+      .then(({ authed }) => {
+        if (!cancelled && !authed) {
+          window.open(loginBase);
+        }
+      })
+      .catch(() => {
+        // network/server error — treat as unauthed
+        if (!cancelled) window.open(loginBase);
+      });
+
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="ResultsApp container">
