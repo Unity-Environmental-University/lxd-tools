@@ -5,7 +5,7 @@ import type {
 import { useGet, useTerms } from "./utils";
 import "./search.css"
 
-const ALLOWED_DIRECTIONS = ["asc", "desc"] // TODO this should be a global
+const ALLOWED_DIRECTIONS = ["asc", "desc"]
 
 // TODO should I turn hooks/components into a folder instead of a file?
 function DataTable<T extends Record<string, string | number>>({

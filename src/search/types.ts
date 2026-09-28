@@ -17,8 +17,6 @@ type SyllabusParams = BaseParams & {
   phrase: string;
 }
 
-// TODO create a base object that has id and resource link
-
 type Syllabus = {
   course_id: number;
   name: string;
