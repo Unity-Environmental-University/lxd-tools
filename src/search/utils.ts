@@ -6,7 +6,7 @@ import type {
 } from "./types"
 
 let termsPromise: Promise<TermResponse> | null = null;
-export const BASE = "https://lisa.campus.unity.edu/beta"
+export const BASE = "https://lisa.campus.unity.edu"
 
 // only fetch terms if promise is null (hasn't been fetched yet)
 function getTerms() {
