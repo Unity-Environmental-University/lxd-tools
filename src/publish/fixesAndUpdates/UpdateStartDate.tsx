@@ -22,6 +22,7 @@ import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
 import { renderAsyncGen } from "@ueu/ueu-canvas/canvasUtils";
 
 import { IAssignmentData, IDiscussionData } from "@ueu/ueu-canvas/content/types";
+import { addDays, startOfToday } from "date-fns";
 
 type UpdateStartDateProps = {
   setAffectedItems?: (elements: React.ReactElement[]) => any;
@@ -36,6 +37,7 @@ type UpdateStartDateProps = {
   onStartDateChangeStart?: () => void;
   onStartDateChangeEnd?: () => void;
 };
+
 export function UpdateStartDate({
   course,
   isDisabled,
@@ -246,6 +248,8 @@ export function UpdateStartDate({
 						<DatePicker
 							selected={jsDate(workingStartDate)}
 							onChange={updateStartDateValue}
+							minDate={addDays(startOfToday(), -365)}
+							maxDate={addDays(startOfToday(), 365)}
 						/>
 						<label>
 							Target:{" "}
