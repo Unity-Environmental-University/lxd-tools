@@ -79,7 +79,7 @@ function CourseNavigation() {
       return;
     }
     const response = await runtime.sendMessage({
-      searchForCourse: { queryString, subAccount },
+      searchForCourse: { queryString, subAccount, canvasOrigin: activeInstance?.origin },
     });
     console.log(response);
     setIsDisabled(false);
