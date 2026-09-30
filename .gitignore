@@ -42,4 +42,7 @@ dist/
 .prettierignore
 .prettierrc
 .vscode/settings.json
-bun.lock
+bun.lock.env
+.env.local
+.env
+.edge/
