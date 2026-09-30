@@ -3,7 +3,7 @@ import { runtime } from "webextension-polyfill";
 
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { stringIsCourseCode } from "@ueu/ueu-canvas/course/code";
-import { getInstance, canvasUrl } from "@ueu/ueu-canvas/instance";
+import { canvasUrl } from "@ueu/ueu-canvas/instance";
 
 import { ICourseData } from "@ueu/ueu-canvas/courseTypes";
 

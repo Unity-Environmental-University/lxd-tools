@@ -1,4 +1,4 @@
-import type { 
+import type {
     DataTableProps,
     TermSelectProps,
 } from "./types"
@@ -97,19 +97,19 @@ export function GenericSearch({endpoint, allowed_sort_columns}: {endpoint: strin
     error,
     search,
   } = useGet<'generic'>(
-    endpoint, 
+    endpoint,
     {
-      course_name: '', 
-      phrase: '', 
-      term_id: null, 
-      page: 1, 
+      course_name: '',
+      phrase: '',
+      term_id: null,
+      page: 1,
       page_size: 20,
       sort_direction: '',
       sort_column: ''
     }
   );
 
-  const {terms, error:err} = useTerms()
+  const {terms, error:_err} = useTerms()
 
   return (
     <div>

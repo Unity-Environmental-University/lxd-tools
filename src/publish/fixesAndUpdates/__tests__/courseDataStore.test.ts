@@ -68,7 +68,7 @@ describe("useCourseDataStore", () => {
     const mock = mockCourseWithPages(1002, []);
 
     const first = await useCourseDataStore.getState().getSyllabus(1002);
-    const second = await useCourseDataStore.getState().getSyllabus(1002);
+    const _second = await useCourseDataStore.getState().getSyllabus(1002);
 
     expect(first).toBe("<p>Test syllabus</p>");
     expect(mock.getSyllabus).toHaveBeenCalledTimes(1);

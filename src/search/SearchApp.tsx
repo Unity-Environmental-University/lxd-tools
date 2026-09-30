@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { GenericSearch } from "./components";
 import { BASE } from "./utils"
 
@@ -163,7 +163,7 @@ export function SearchApp() {
             </option>
         ))}
       </select>
-      {endpoint != "" && 
+      {endpoint != "" &&
         (<GenericSearch
           endpoint={endpoint}
           allowed_sort_columns={allowed_sort_columns}

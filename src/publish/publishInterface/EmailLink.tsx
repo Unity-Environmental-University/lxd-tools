@@ -27,7 +27,6 @@ async function fetchEmailTemplate(course: Course): Promise<string> {
     if (!parsedCourseCode) {
       throw new Error(`Course code ${course.courseCode} does not contain a number`);
     }
-    const courseCodeNumber = parseInt(parsedCourseCode[0]);
 
     // Added these are variables for clarity
 		const ugTemplateId = 7775658;
