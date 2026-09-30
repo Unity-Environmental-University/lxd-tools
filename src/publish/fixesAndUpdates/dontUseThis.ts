@@ -6,7 +6,7 @@ import { Course } from "@ueu/ueu-canvas/course/Course";
 import { getInstance } from "@ueu/ueu-canvas/instance";
 
 import { batchify, renderAsyncGen } from "@ueu/ueu-canvas/canvasUtils";
-import { courseHasUnlimitedAttemptQuizzes } from "@publish/fixesAndUpdates/validations/courseContent/courseHasUnlimitedAttemptQuizzes";
+import { kalturaSizeTests } from "./validations/kalturaSizeFix";
 
 const ugCodes = new Set([
   "AGRO101",
@@ -157,7 +157,7 @@ const gradCodes = new Set([
 
 const codesToUse = [...ugCodes, ...gradCodes];
 
-const testToRun = courseHasUnlimitedAttemptQuizzes;
+const testToRun = kalturaSizeTests;
 
 export const dontUseThisValidation: CourseValidation = {
   name: "Dont use this",
