@@ -16,6 +16,7 @@ const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu";
 
 const entry = {
   popup: "./src/popup",
+  search: "./src/search",
   "js/background": "./src/background",
   "js/content": "./src/content",
   "js/publish": "./src/publish",
@@ -179,7 +180,7 @@ const createPlugins = () => [
         break;
     }
   }),
-  ...getHtmlPlugins(["popup"]),
+  ...getHtmlPlugins(["popup", "search"]),
 ];
 
 module.exports = {
