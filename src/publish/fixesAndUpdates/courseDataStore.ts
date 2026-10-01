@@ -152,10 +152,16 @@ export async function findProfilePageSlug(blueprintCourseId: number, instance?: 
   }
 
   // Fallback: no tagged pages found. Try home page for legacy courses.
-  const homePage = pages.find((page) => (page.rawData as IPageData).url === "home");
-  if (homePage) {
-    const rawData = homePage.rawData as IPageData;
-    return { status: "found", slug: rawData.url, blueprintPageId: rawData.page_id };
+  // Canvas front_page_url is the slug (e.g. "home"), not a full URL.
+  if (pages.length > 0) {
+    const homePage = pages.find((page) => {
+      const rawData = page.rawData as IPageData;
+      return rawData.url === "home" || rawData.front_page === true;
+    });
+    if (homePage) {
+      const rawData = homePage.rawData as IPageData;
+      return { status: "found", slug: rawData.url, blueprintPageId: rawData.page_id };
+    }
   }
 
   return { status: "none" };
