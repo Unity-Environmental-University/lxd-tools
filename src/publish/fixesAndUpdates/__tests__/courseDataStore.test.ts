@@ -130,15 +130,15 @@ describe("findProfilePageSlug", () => {
     expect(result).toEqual({ status: "found", slug: "meet-your-instructor", blueprintPageId: 555 });
   });
 
-  it("reports \"none\" when no page has data-profile attributes, without falling back to the front page", async () => {
+  it("falls back to front page when no page has data-profile attributes", async () => {
     const pages = [
-      makePage({ url: "front", title: "Front Page", front_page: true, body: "<h2>Welcome</h2>" }),
+      makePage({ url: "front", title: "Front Page", front_page: true, page_id: 25101, body: "<h2>Welcome</h2>" }),
       makePage({ url: "other", title: "Other Page", body: "<p>Nothing here</p>" }),
     ];
     mockCourseWithPages(2002, pages);
 
     const result = await findProfilePageSlug(2002);
-    expect(result).toEqual({ status: "none" });
+    expect(result).toEqual({ status: "found", slug: "front", blueprintPageId: 25101 });
   });
 
   it("reports \"ambiguous\" when more than one page has data-profile attributes", async () => {

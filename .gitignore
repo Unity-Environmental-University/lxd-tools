@@ -46,3 +46,5 @@ bun.lock.env
 .env.local
 .env
 .edge/
+lxd-extension-install/
+lxd-extension-install.zip

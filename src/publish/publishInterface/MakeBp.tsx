@@ -3,6 +3,7 @@ import { Alert, Button, Col, FormControl, Row } from "react-bootstrap";
 import { FormEvent, useEffect, useReducer, useState } from "react";
 import { useEffectAsync } from "@/ui/utils";
 import {
+  beginBpSync,
   getBlueprintsFromCode,
   lockBlueprint,
   sectionDataGenerator,
@@ -288,17 +289,96 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
     setCloningBp(false);
   }
 
-  async function finishMigration(migration: SavedMigration) {
+  async function lockBlueprintChunked(
+    courseId: number,
+    modules: any[],
+    onProgress?: (status: string, completion: number) => void,
+    chunkSize: number = 10,
+    delayMs: number = 500
+  ) {
+    let items: any[] = [];
+    items = items.concat(...modules.map((a) => [].concat(...a.items)));
+
+    for (let i = 0; i < items.length; i += chunkSize) {
+      const chunk = items.slice(i, i + chunkSize);
+      const completion = Math.round((i / items.length) * 100);
+      onProgress?.(`Locking (${i}/${items.length})`, completion);
+
+      const promises = chunk.map(async (item) => {
+        const url = `/api/v1/courses/${courseId}/blueprint_templates/default/restrict_item`;
+        const type = item.type;
+        const id = item.id;
+        if (typeof id === "undefined") return;
+        const body = {
+          content_type: type,
+          content_id: id,
+          restricted: true,
+          _method: "PUT",
+        };
+        await fetchJson(url, {
+          fetchInit: {
+            method: "PUT",
+            body: formDataify(body),
+          },
+        });
+      });
+      await Promise.all(promises);
+      if (i + chunkSize < items.length) {
+        await new Promise((res) => setTimeout(res, delayMs));
+      }
+    }
+    onProgress?.("Locking complete", 100);
+  }
+
+  async function finishMigration(
+    migration: SavedMigration,
+    progressCallbacks?: { setFinishStatus: (s: string) => void; setFinishCompletion: (n: number) => void }
+  ) {
     assert(currentBp);
     setIsLocking(true);
-    await setAsBlueprint(currentBp.id);
-    await lockBlueprint(currentBp.id, await currentBp.getModules());
-    migration.cleanedUp = true;
-    cacheCourseMigrations(currentBp.id, [migration]);
-    const [newBp] = (await getBlueprintsFromCode(devCourse.parsedCourseCode ?? "", [devCourse.accountId])) ?? [];
-    setIsLocking(false);
-    window.open(newBp.htmlContentUrl);
-    location.reload();
+    try {
+      if (!(migration as any).locked) {
+        progressCallbacks?.setFinishStatus("Locking content...");
+        await lockBlueprintChunked(
+          currentBp.id,
+          await currentBp.getModules(),
+          (status, completion) => {
+            progressCallbacks?.setFinishStatus(status);
+            progressCallbacks?.setFinishCompletion(completion);
+          }
+        );
+        (migration as any).locked = true;
+        cacheCourseMigrations(currentBp.id, [migration]);
+      }
+
+      if (!(migration as any).blueprintSet) {
+        progressCallbacks?.setFinishStatus("Setting as blueprint...");
+        await setAsBlueprint(currentBp.id);
+        (migration as any).blueprintSet = true;
+        cacheCourseMigrations(currentBp.id, [migration]);
+      }
+
+      if (!(migration as any).synced) {
+        progressCallbacks?.setFinishStatus("Syncing settings...");
+        await beginBpSync(currentBp.id, { message: "Initial sync after blueprint setup" });
+        (migration as any).synced = true;
+        cacheCourseMigrations(currentBp.id, [migration]);
+      }
+
+      progressCallbacks?.setFinishStatus("Finalizing...");
+      migration.cleanedUp = true;
+      cacheCourseMigrations(currentBp.id, [migration]);
+      const [newBp] = (await getBlueprintsFromCode(devCourse.parsedCourseCode ?? "", [devCourse.accountId])) ?? [];
+      window.open(newBp.htmlContentUrl);
+      location.reload();
+    } catch (e: unknown) {
+      console.error("Error during blueprint setup:", e);
+      cacheCourseMigrations(currentBp.id, [migration]);
+      alert("Error during blueprint setup. Reloading to retry...");
+      location.reload();
+    } finally {
+      setIsLocking(false);
+    }
   }
 
   return (
