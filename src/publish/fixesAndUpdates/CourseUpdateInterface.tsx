@@ -41,6 +41,9 @@ export function CourseUpdateInterface({
   const [mode, setMode] = useState<InterfaceMode>("fix");
   const [_startDateSetMode, setStartDateSetMode] = useState(false);
   const [batchingValidations, setBatchingValidations] = useState(false);
+  const [validationRunStarted, setValidationRunStarted] = useState(false);
+  const [validationRunId, setValidationRunId] = useState(0);
+  const [showValidationsComplete, setShowValidationsComplete] = useState(false);
   const [showUpdateStartDate, setShowUpdateStartDate] = useState(false);
   const [isChangingStartDate, setIsChangingStartDate] = useState(false);
 
@@ -66,7 +69,7 @@ export function CourseUpdateInterface({
     batchSize: number = 10,
     delay = 2
   ) => {
-    let localValidations = [...validations];
+    let localValidations: CourseValidation<Course, any, any>[] = [];
     inValidations = inValidations.filter(courseSpecificTestFilter);
 
     for (let i = 0; i < inValidations.length; i += batchSize) {
@@ -80,10 +83,29 @@ export function CourseUpdateInterface({
 
   const runValidations = () => async () => {
     if (batchingValidations) return;
+    setShowValidationsComplete(false);
+    setValidationRunStarted(true);
+    setValidationRunId((currentRunId) => currentRunId + 1);
+    setValidations([]);
     setBatchingValidations(true);
     await batchValidationsOverTime(allValidations, 10, 2);
     setBatchingValidations(false);
+    if (allValidations.filter(courseSpecificTestFilter).length === 0) {
+      setShowValidationsComplete(true);
+      setValidationRunStarted(false);
+    }
   };
+
+  const handleValidationsComplete = () => {
+    setShowValidationsComplete(true);
+    setValidationRunStarted(false);
+  };
+
+  useEffect(() => {
+    if (!showValidationsComplete) return;
+    const timer = window.setTimeout(() => setShowValidationsComplete(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [showValidationsComplete]);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -212,6 +234,16 @@ export function CourseUpdateInterface({
         {urlRows(affectedItems, "lxd-cu-success")}
         {failedItems.length > 0 && <h3>Fix is Broken, Content Unchanged</h3>}
         {urlRows(failedItems, "lxd-cu-fail")}
+
+        {showValidationsComplete && (
+          <div
+            className="position-fixed top-0 end-0 m-3 alert alert-success shadow"
+            role="status"
+            style={{ zIndex: 1000, pointerEvents: "none" }}
+          >
+            <strong>Validations complete</strong>
+          </div>
+        )}
       </>
     );
   }
@@ -245,10 +277,14 @@ export function CourseUpdateInterface({
           {mode === "fix" && <FixesMode course={course}></FixesMode>}
           {["fix", "unitTest"].includes(mode) && (
             <CourseValidator
+              key={validationRunId}
               showOnlyFailures={mode !== "unitTest"}
               course={course}
               refreshCourse={refreshCourse}
               tests={validations}
+              validationLoading={batchingValidations}
+              validationRunStarted={validationRunStarted}
+              onValidationsComplete={handleValidationsComplete}
             />
           )}
         </Modal>

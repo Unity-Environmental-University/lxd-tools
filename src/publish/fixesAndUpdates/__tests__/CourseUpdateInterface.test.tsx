@@ -1,4 +1,4 @@
-import {render, waitFor} from "@testing-library/react";
+import {fireEvent, render, waitFor} from "@testing-library/react";
 import "@testing-library/jest-dom"
 import React from "react";
 import {CourseUpdateInterface, CourseUpdateInterfaceProps} from "../CourseUpdateInterface";
@@ -66,4 +66,27 @@ it('displays validator', async () => {
     expect(onChangeMode).toHaveBeenCalledWith('unitTest')
     await waitFor(() => expect(screen.queryByText(/validator/)))
     expect(screen.getAllByText(/validator/)).toHaveLength(1);
+})
+
+it('shows a completion message when validations finish', async () => {
+    renderComponent({course: mockDev, allValidations: []});
+
+    await waitFor(() => screen.getByText('DEV Content Changes/Fixes'));
+    fireEvent.click(screen.getByText('DEV Content Changes/Fixes'));
+    await waitFor(() => expect(screen.getByRole('button', {name: 'Run Validations'})).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', {name: 'Run Validations'}));
+
+    await waitFor(() => expect(screen.getByText('Validations complete')).toBeInTheDocument());
+})
+
+it('shows the completion message again for a second run', async () => {
+    renderComponent({course: mockDev, allValidations: []});
+
+    fireEvent.click(screen.getByText('DEV Content Changes/Fixes'));
+    const runButton = await waitFor(() => screen.getByRole('button', {name: 'Run Validations'}));
+    fireEvent.click(runButton);
+    await waitFor(() => expect(screen.getByText('Validations complete')).toBeInTheDocument());
+
+    fireEvent.click(runButton);
+    await waitFor(() => expect(screen.getByText('Validations complete')).toBeInTheDocument());
 })
