@@ -130,11 +130,10 @@ export type ProfilePageResult =
 /**
  * Scan a blueprint's pages to find which page slug carries profile data attributes.
  *
- * No front-page fallback: a course without a data-attribute page returns "none"
- * rather than guessing, and a course with more than one returns "ambiguous"
- * rather than silently picking the first match. Both are surfaced to the caller
- * so a resolution failure is visible instead of quietly rendering into the
- * wrong page (or nothing at all).
+ * Falls back to the home page for legacy courses that don't have explicit
+ * data-attribute tags. If no tagged page is found, returns "none" rather than
+ * guessing. If more than one tagged page exists, returns "ambiguous" to avoid
+ * silently rendering into the wrong page.
  *
  * Call once per blueprint, then use the slug across all its sections.
  */
@@ -143,12 +142,23 @@ export async function findProfilePageSlug(blueprintCourseId: number, instance?: 
 
   const matches = pages.filter((page) => PROFILE_DATA_ATTRS.some((attr) => (page.body ?? "").includes(attr)));
 
-  if (matches.length === 0) return { status: "none" };
+  if (matches.length === 1) {
+    const rawData = matches[0].rawData as IPageData;
+    return { status: "found", slug: rawData.url, blueprintPageId: rawData.page_id };
+  }
+
   if (matches.length > 1) {
     return { status: "ambiguous", candidates: matches.map((page) => (page.rawData as IPageData).url) };
   }
-  const rawData = matches[0].rawData as IPageData;
-  return { status: "found", slug: rawData.url, blueprintPageId: rawData.page_id };
+
+  // Fallback: no tagged pages found. Try home page for legacy courses.
+  const homePage = pages.find((page) => (page.rawData as IPageData).url === "home");
+  if (homePage) {
+    const rawData = homePage.rawData as IPageData;
+    return { status: "found", slug: rawData.url, blueprintPageId: rawData.page_id };
+  }
+
+  return { status: "none" };
 }
 
 /**
