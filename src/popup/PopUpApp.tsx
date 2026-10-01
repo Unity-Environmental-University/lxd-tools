@@ -6,6 +6,7 @@ import "bootstrap";
 import { useEffectAsync } from "../ui/utils";
 import { Form } from "react-bootstrap";
 import { OPEN_AI_API_KEY_KEY, SUB_ACCOUNT } from "../consts";
+import { isCanvasUrl } from "@ueu/ueu-canvas/instance";
 
 function PopUpApp() {
   const [advanced, setAdvanced] = useState(false);
@@ -24,6 +25,13 @@ function PopUpApp() {
       {advanced && (
         <>
           <SetOpenAiKey></SetOpenAiKey>
+          <button 
+            className="btn btn-outline-success" 
+            title="Unity Wifi/VPN connection required to Search"
+            onClick={() => tabs.create({ url: runtime.getURL("search.html") })}
+          >
+            Click Here for Instance-Wide Search
+          </button>
         </>
       )}
     </div>
@@ -248,7 +256,7 @@ function buildSalesforceReportUrl(reportId: string, filterIndex?: number, filter
 async function extractCanvasCourseCodeFromUrl(url: string | null) {
   if (!url) return null;
   const canvasUrl = new URL(url);
-  if (!canvasUrl.hostname.endsWith(".instructure.com") || !/\/courses\/\d+/.test(canvasUrl.pathname)) return null;
+  if (!isCanvasUrl(url) || !/\/courses\/\d+/.test(canvasUrl.pathname)) return null;
 
   const idRegex = /courses\/(\d+)/m;
 
