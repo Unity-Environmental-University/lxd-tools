@@ -12,6 +12,9 @@ export type CourseValidatorProps<T = Course> = {
 	refreshCourse: () => Promise<any>;
 	tests: CourseValidation<T>[];
 	runInProgress?: boolean;
+	validationLoading?: boolean;
+	validationRunStarted?: boolean;
+	onValidationsComplete?: () => void;
 };
 
 export function CourseValidator({
@@ -20,6 +23,9 @@ export function CourseValidator({
 	refreshCourse,
 	showOnlyFailures = false,
 	runInProgress: runInProgressProp = false,
+	validationLoading = false,
+	validationRunStarted = false,
+	onValidationsComplete,
 }: CourseValidatorProps) {
 	type ResultSet = {
 		courseId: number;
@@ -28,12 +34,36 @@ export function CourseValidator({
 	};
 	const [results, setResults] = React.useState<ResultSet[]>([]);
 
+	React.useEffect(() => {
+		if (!validationRunStarted) return;
+		if (!validationLoading && tests.length === 0) {
+			onValidationsComplete?.();
+		} else if (
+			!validationLoading &&
+			tests.length > 0 &&
+			new Set(results.map(({ test }) => test.name)).size === tests.length
+		) {
+			onValidationsComplete?.();
+		}
+	}, [
+		results,
+		tests,
+		validationLoading,
+		validationRunStarted,
+		onValidationsComplete,
+	]);
+
 	const validated = (
 		courseId: number,
 		result: ValidationResult,
 		test: CourseValidation,
 	) => {
-		setResults((prev) => [...prev, { courseId, result, test }]);
+		setResults((currentResults) => [
+			...currentResults.filter(
+				({ test: currentTest }) => currentTest.name !== test.name,
+			),
+			{ courseId, result, test },
+		]);
 	};
 
 	// While any test has yet to report a result the list is still settling;
