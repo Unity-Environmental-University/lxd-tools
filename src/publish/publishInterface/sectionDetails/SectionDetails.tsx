@@ -112,7 +112,8 @@ export function SectionDetails({
             // FetchJsonError carries Canvas's parsed error body, e.g. a Blueprint-locked page gives
             // `{ errors: { base: [{ message: "cannot change column(s): body - locked by Master Course" }] } }`.
             const canvasErrors = (e as { body?: { errors?: unknown } })?.body?.errors;
-            const reason = canvasErrors ? describeCanvasErrors(canvasErrors) : e instanceof Error ? e.message : String(e);
+            const rawReason = canvasErrors ? describeCanvasErrors(canvasErrors) : e instanceof Error ? e.message : String(e);
+            const reason = /locked by master course/i.test(rawReason) ? "locked in BP" : rawReason;
             broadcast(`Could not update front page: ${reason}`, 'alert-danger');
             return;
         }
