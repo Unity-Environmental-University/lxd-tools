@@ -10,6 +10,8 @@ export interface ISectionRows {
     frontPageProfilesByCourseId: Record<number, IProfile>,
     potentialProfilesByCourseId: Record<number, IProfile[]>,
     errorsByCourseId: Record<number, ICourseRowProps["errors"]>,
+    profileSlug?: string | null,
+    profileSlugError?: string | null,
     setWorkingSection: (section: Course) => void,
     sectionPublishRecord?: Record<number, Course>,
     sectionPublishToggle?: (course: Course, publish: boolean) => void,
@@ -22,6 +24,8 @@ export function SectionRows({
     frontPageProfilesByCourseId,
     potentialProfilesByCourseId,
     errorsByCourseId,
+    profileSlug,
+    profileSlugError,
     setWorkingSection,
     sectionPublishRecord,
     sectionPublishToggle,
@@ -76,14 +80,18 @@ export function SectionRows({
                 <a href={'#'} onClick={openAll}>Open All</a>
             </div>
             <div className={'col-sm-1'}><strong>Student Count</strong></div>
-            <div className={'col-sm-3'}><strong>Name on Front Page</strong></div>
+            <div className={'col-sm-3'}><strong>Profile Source → Target</strong></div>
             <div className={'col-sm-2'}><strong>Instructor(s)</strong></div>
         </div>
+        {profileSlug
+            ? <div className={'row'}><em>Publishing into page: {profileSlug}</em></div>
+            : <div className={'row alert-danger'}><em>{profileSlugError}</em></div>}
         {sections && sections.toSorted((a, b) => a.name.localeCompare(b.name)).map((course) => (
             <CourseRow
                 instructors={instructorsByCourseId[course.id]}
                 frontPageProfile={frontPageProfilesByCourseId[course.id]}
                 facultyProfileMatches={potentialProfilesByCourseId[course.id]}
+                profileSlug={profileSlug}
                 key={course.id}
                 errors={errorsByCourseId[course.id]}
                 onSelectSection={(section) => setWorkingSection(section)}

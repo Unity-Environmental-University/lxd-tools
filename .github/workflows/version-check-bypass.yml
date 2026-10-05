@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   check_version:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Bypass Check
         run: echo "Docs-only PR detected. Bypassing version bump requirement."
