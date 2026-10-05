@@ -18,6 +18,21 @@ type SectionDetailsProps = {
     onClose?: () => void,
 }
 
+/** Flattens Canvas's `errors` payload (array, or object of arrays keyed by field) into one message. */
+function describeCanvasErrors(errors: unknown): string {
+    const messages: string[] = [];
+    const walk = (value: unknown) => {
+        if (Array.isArray(value)) value.forEach(walk);
+        else if (value && typeof value === "object") {
+            const message = (value as { message?: unknown }).message;
+            if (typeof message === "string") messages.push(message);
+            else Object.values(value).forEach(walk);
+        } else if (typeof value === "string") messages.push(value);
+    };
+    walk(errors);
+    return messages.join("; ") || JSON.stringify(errors);
+}
+
 export function SectionDetails({
                                    section,
                                    onClose,
@@ -90,7 +105,17 @@ export function SectionDetails({
         if (!frontPage) return;
         message('Applying new profile')
         const newText = renderProfileIntoCurioFrontPage(frontPage.body, profile);
-        await frontPage.updateContent(newText);
+        try {
+            await frontPage.updateContent(newText);
+        } catch (e) {
+            console.error(e);
+            // FetchJsonError carries Canvas's parsed error body, e.g. a Blueprint-locked page gives
+            // `{ errors: { base: [{ message: "cannot change column(s): body - locked by Master Course" }] } }`.
+            const canvasErrors = (e as { body?: { errors?: unknown } })?.body?.errors;
+            const reason = canvasErrors ? describeCanvasErrors(canvasErrors) : e instanceof Error ? e.message : String(e);
+            broadcast(`Could not update front page: ${reason}`, 'alert-danger');
+            return;
+        }
         const newProfile = await section.getFrontPageProfile();
         setFrontPageProfile(newProfile)
         if (onUpdateFrontPageProfile) onUpdateFrontPageProfile(newProfile);
