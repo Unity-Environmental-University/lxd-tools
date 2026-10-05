@@ -9,9 +9,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 ### Changed
+- Bug fixed where date keystroke entry was wonky on Update State Date. Also limited date selection to within 365 days of current day to prevent runaway dates happening by mistake.
+
+### Internal
+- In all GitHub Action workflows, updated node version to 24 and pinned Ubunutu to 22.04 at the recommendation of GitHub. Previously using node v20, which is deprecating in October. Ubuntu was previously using latest, pinning it to a specific version just to avoid unexpected problems from future updates.
+
+## 3.2.1
+
+### Added
+- Added support for instructor profile page
+- Module elemented required validation reintroduced
+- LISA search added to the pop up
+
+### Changed
 - Removed old validations to lighten the extension and start fresh
 
 ### Internal
+- Canvas URL dynamically generated instead of always pointing at unity.instructure.com
+
+## 3.2.0
+
+### Added
+
+### Changed
+- Majorty of validations removed from the extension
 
 ## 3.1.9
 
