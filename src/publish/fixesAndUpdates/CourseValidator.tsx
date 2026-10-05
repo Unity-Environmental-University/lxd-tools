@@ -11,9 +11,20 @@ export type CourseValidatorProps<T = Course> = {
   showOnlyFailures: boolean;
   refreshCourse: () => Promise<any>;
   tests: CourseValidation<T>[];
+  validationLoading?: boolean;
+  validationRunStarted?: boolean;
+  onValidationsComplete?: () => void;
 };
 
-export function CourseValidator({ course, tests, refreshCourse, showOnlyFailures = false }: CourseValidatorProps) {
+export function CourseValidator({
+  course,
+  tests,
+  refreshCourse,
+  showOnlyFailures = false,
+  validationLoading = false,
+  validationRunStarted = false,
+  onValidationsComplete,
+}: CourseValidatorProps) {
   type ResultSet = {
     courseId: number;
     result: ValidationResult;
@@ -21,14 +32,23 @@ export function CourseValidator({ course, tests, refreshCourse, showOnlyFailures
   };
   const [results, setResults] = React.useState<ResultSet[]>([]);
 
+  React.useEffect(() => {
+    if (!validationRunStarted) return;
+    if (!validationLoading && tests.length === 0) {
+      onValidationsComplete?.();
+    } else if (
+      !validationLoading &&
+      tests.length > 0 &&
+      new Set(results.map(({ test }) => test.name)).size === tests.length
+    ) {
+      onValidationsComplete?.();
+    }
+  }, [results, tests, validationLoading, validationRunStarted, onValidationsComplete]);
+
   const validated = (courseId: number, result: ValidationResult, test: CourseValidation) => {
-    setResults([
-      ...results,
-      {
-        courseId,
-        result,
-        test,
-      },
+    setResults((currentResults) => [
+      ...currentResults.filter(({ test: currentTest }) => currentTest.name !== test.name),
+      {courseId, result, test},
     ]);
   };
 
