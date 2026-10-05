@@ -100,12 +100,18 @@ export function findDateRange(textToSearch: string, locale = "en-US") {
   };
 }
 
+const MAX_YEARS_FROM_NOW = 5;
+
 export function oldDateToPlainDate(date: Date) {
   const data = {
     day: date.getDate(),
     month: date.getMonth() + 1,
     year: date.getFullYear(),
   };
+  const currentYear = Temporal.Now.plainDateISO().year;
+  if (Math.abs(data.year - currentYear) > MAX_YEARS_FROM_NOW) {
+    throw new ImplausibleYearError(data.year);
+  }
   return Temporal.PlainDate.from(data);
 }
 
@@ -115,4 +121,11 @@ export class StringNotAMonthDateError extends Error {
 
 export class MalformedDateError extends Error {
   name = "MalformedDateError";
+}
+
+export class ImplausibleYearError extends Error {
+  name = "ImplausibleYearError";
+  constructor(year: number) {
+    super(`Year ${year} is too far from the current year to be a valid term date. Check for a typo.`);
+  }
 }

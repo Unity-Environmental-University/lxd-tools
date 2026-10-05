@@ -197,7 +197,13 @@ export function UpdateStartDate({
   }
 
   function updateStartDateValue(inDate: Date | null) {
-    if (inDate) setWorkingStartDate(oldDateToPlainDate(inDate));
+    if (!inDate) return;
+    try {
+      setWorkingStartDate(oldDateToPlainDate(inDate));
+    } catch (error) {
+      console.error(error);
+      setMismatchError(error instanceof Error ? error.message : String(error));
+    }
   }
 
   const _isDisabledLocally =

@@ -1,4 +1,4 @@
-import {findDateRange, MalformedDateError} from "@/date";
+import {findDateRange, MalformedDateError, ImplausibleYearError, oldDateToPlainDate} from "@/date";
 import {Temporal} from "temporal-polyfill";
 import assert from "assert";
 const testStart = {
@@ -62,4 +62,25 @@ test.skip('findDateRange works with different locales', () => {
 //TODO: This test is skipped because the locale 'es-ES' is not supported in the current environment.
 test.skip('findDateRange handles invalid locale gracefully', () => {
     expect(() => findDateRange('April 1 - May 30', 'invalid-locale')).toThrow(Error);
+});
+
+test('oldDateToPlainDate accepts a date near the current year', () => {
+    const currentYear = Temporal.Now.plainDateISO().year;
+    const date = new Date(currentYear, 6, 13); // July 13 (month is 0-indexed)
+    const plainDate = oldDateToPlainDate(date);
+    expect(plainDate.year).toBe(currentYear);
+    expect(plainDate.month).toBe(7);
+    expect(plainDate.day).toBe(13);
+});
+
+test('oldDateToPlainDate rejects an implausibly distant year', () => {
+    // Reproduces the malformed-input bug: a stray digit typed into the date field
+    // (e.g. "7/1/202613" parsed by the browser) yields a Date with a garbage year.
+    const date = new Date(202613, 6, 1);
+    expect(() => oldDateToPlainDate(date)).toThrow(ImplausibleYearError);
+});
+
+test('oldDateToPlainDate rejects a year far in the past', () => {
+    const date = new Date(1500, 0, 1);
+    expect(() => oldDateToPlainDate(date)).toThrow(ImplausibleYearError);
 });

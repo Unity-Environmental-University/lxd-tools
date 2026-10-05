@@ -11,7 +11,7 @@ import { SectionRows } from "./SectionRows";
 import { MakeBp } from "./MakeBp";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { Term } from "@ueu/ueu-canvas/term/Term";
-import { getStartDateAssignments } from "@ueu/ueu-canvas/course/changeStartDate";
+import { getStartDateAssignments, NoOverviewModuleFoundError } from "@ueu/ueu-canvas/course/changeStartDate";
 import { IListAction, lutDispatcher, LutSetAction } from "@/ui/reducerDispatchers";
 import { sectionDataGenerator } from "@ueu/ueu-canvas/course/blueprint";
 import { batchGen } from "@ueu/ueu-canvas/canvasUtils";
@@ -226,7 +226,15 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
 
         const { section, instructors, frontPageProfile } = result;
         if (!sectionStartSet) {
-          actualStart = await section.getStartDateFromModules();
+          // A freshly-associated Blueprint section has no modules yet (content syncs down
+          // later), so getStartDateFromModules throws NoOverviewModuleFoundError here.
+          // Treat that the same as "no module lock date found" and fall back to assignments.
+          try {
+            actualStart = await section.getStartDateFromModules();
+          } catch (error) {
+            if (!(error instanceof NoOverviewModuleFoundError)) throw error;
+            actualStart = null;
+          }
           if (!actualStart) {
             actualStart = await getStartDateAssignments(section.id);
           }
