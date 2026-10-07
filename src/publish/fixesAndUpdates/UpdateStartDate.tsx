@@ -70,6 +70,7 @@ export function UpdateStartDate({
   const [_assignments, _setAssignments] = useState<IAssignmentData[] | undefined>();
   const [mismatchError, setMismatchError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+	const [dateInputInvalid, setDateInputInvalid] = useState(false);
 
   const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
   const [_moduleStartDate, _setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
@@ -221,6 +222,7 @@ export function UpdateStartDate({
 	function selectDateFromCalendar(inDate: Date | null) {
 		if (inDate) {
 			isEditingDateInput.current = false;
+			setDateInputInvalid(false);
 			setWorkingStartDate(oldDateToPlainDate(inDate));
 		}
 	}
@@ -239,6 +241,7 @@ export function UpdateStartDate({
 		const parsedDate = parseStartDateInput(rawDateInput.current);
 
 		isEditingDateInput.current = false;
+		setDateInputInvalid(!parsedDate);
 		if (parsedDate) setWorkingStartDate(oldDateToPlainDate(parsedDate));
 		else if (dateBeforeInput.current) setWorkingStartDate(dateBeforeInput.current);
 	}
@@ -290,6 +293,7 @@ export function UpdateStartDate({
 							strictParsing
 							dateFormat={["MM/dd/yyyy", "M/d/yyyy", "M/d"]}
 							selected={jsDate(workingStartDate)}
+							className={dateInputInvalid ? "start-date-invalid" : undefined}
 							onChange={updateStartDateValue}
 							onSelect={selectDateFromCalendar}
 							onFocus={beginDateInput}
