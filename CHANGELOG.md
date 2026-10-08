@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Internal
 - In all GitHub Action workflows, updated node version to 24 and pinned Ubunutu to 22.04 at the recommendation of GitHub. Previously using node v20, which is deprecating in October. Ubuntu was previously using latest, pinning it to a specific version just to avoid unexpected problems from future updates.
+- Wrapped `let currentContentItem = await CurrentContentClass?.getFromUrl();` in ui/course/main.tsx in a try/catch block to prevent an issue where BP and Section buttons weren't rendering on the syllabus.
 
 ## 3.2.1
 
