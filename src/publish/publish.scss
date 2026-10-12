@@ -1,6 +1,11 @@
 @import "react-datepicker/dist/react-datepicker.css";
 @import"https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
 @import"https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp";
+.react-datepicker__input-container input.start-date-invalid {
+    border: 2px solid #dc3545;
+    outline: 2px solid rgba(220, 53, 69, 0.2);
+}
+
   .course-row:nth-child(odd) {
       background-color: #f0f0f0;
   }

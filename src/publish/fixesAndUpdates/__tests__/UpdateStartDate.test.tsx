@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Temporal } from "temporal-polyfill";
-import { UpdateStartDate } from "../UpdateStartDate";
+import { parseStartDateInput, UpdateStartDate } from "../UpdateStartDate";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 
 // Mock dependencies
@@ -14,11 +14,6 @@ jest.mock("react-datepicker", () => (props: any) => (
     onChange={(e) => props.onChange(new Date(e.target.value))}
   />
 ));
-
-jest.mock("@publish/fixesAndUpdates/UpdateStartDate", () => ({
-  getStartDateAssignments: jest.fn(),
-  updatedDateSyllabusHtml: jest.fn(),
-}));
 
 jest.mock("@ueu/ueu-canvas/course/modules", () => ({
   changeModuleLockDate: jest.fn(),
@@ -53,6 +48,28 @@ jest.mock("@ueu/ueu-canvas/content/discussions/Discussion", () => ({
 }));
 
 //Disabld due to brittleness to UI changes
+
+describe("parseStartDateInput", () => {
+  test("accepts shorthand month/day input using the current year", () => {
+    const parsed = parseStartDateInput("10/4");
+
+    expect(parsed).not.toBeNull();
+    expect(parsed?.getMonth()).toBe(9);
+    expect(parsed?.getDate()).toBe(4);
+    expect(parsed?.getFullYear()).toBe(new Date().getFullYear());
+  });
+
+  test.each(["10/45", "10/45/2026", "02/29/2025", "10/4/20", "10/"])(
+    "rejects invalid or incomplete input: %s",
+    (value) => {
+      expect(parseStartDateInput(value)).toBeNull();
+    }
+  );
+
+  test("accepts a complete valid date", () => {
+    expect(parseStartDateInput("10/04/2026")).toEqual(new Date(2026, 9, 4));
+  });
+});
 
 describe.skip("UpdateStartDate", () => {
   let course: Course;

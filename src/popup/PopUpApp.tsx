@@ -7,6 +7,7 @@ import { useEffectAsync } from "../ui/utils";
 import { Form } from "react-bootstrap";
 import { OPEN_AI_API_KEY_KEY, SUB_ACCOUNT } from "../consts";
 import { isCanvasUrl } from "@ueu/ueu-canvas/instance";
+import { getInstances, saveInstances, getInstanceFromUrl, CanvasInstance } from "../canvasInstances";
 
 function PopUpApp() {
   const [advanced, setAdvanced] = useState(false);
@@ -41,11 +42,35 @@ function PopUpApp() {
 function CourseNavigation() {
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
   const [queryString, setQueryString] = useState<string | null>(null);
+  const [instances, setInstances] = useState<Record<string, CanvasInstance>>({});
+  const [detectedInstance, setDetectedInstance] = useState<CanvasInstance | null>(null);
+  const [selectedInstanceKey, setSelectedInstanceKey] = useState<string>(() => {
+    return localStorage.getItem("CANVAS_INSTANCE_KEY") || "";
+  });
   const [subAccount, setSubAccount] = useState<number>(() => {
     const saved = localStorage.getItem(SUB_ACCOUNT);
-    return saved ? parseInt(saved, 10) : 169877;
+    return saved ? parseInt(saved, 10) : 0;
   });
   const [error, setError] = useState<string | null>(null);
+
+  const selectedInstance = selectedInstanceKey ? instances[selectedInstanceKey] : null;
+  const activeInstance = selectedInstance || detectedInstance;
+  const availableAccounts = activeInstance?.accounts || [];
+
+  useEffectAsync(async () => {
+    const loadedInstances = await getInstances();
+    setInstances(loadedInstances);
+
+    try {
+      const [activeTab] = await tabs.query({ active: true, currentWindow: true });
+      if (activeTab?.url) {
+        const instance = getInstanceFromUrl(activeTab.url, loadedInstances);
+        setDetectedInstance(instance);
+      }
+    } catch (e) {
+      console.warn("Unable to detect Canvas instance from active tab:", e);
+    }
+  }, []);
 
   async function submitQuery(queryString: string | null, subAccount: number | null) {
     setIsDisabled(true);
@@ -54,7 +79,7 @@ function CourseNavigation() {
       return;
     }
     const response = await runtime.sendMessage({
-      searchForCourse: { queryString, subAccount },
+      searchForCourse: { queryString, subAccount, canvasOrigin: activeInstance?.origin },
     });
     console.log(response);
     setIsDisabled(false);
@@ -71,6 +96,7 @@ function CourseNavigation() {
       <form
         onSubmit={async (e) => {
           e.preventDefault();
+          localStorage.setItem("CANVAS_INSTANCE_KEY", selectedInstanceKey);
           localStorage.setItem(SUB_ACCOUNT, subAccount.toString());
           setError(null);
           if (!queryString) {
@@ -85,6 +111,31 @@ function CourseNavigation() {
         }}
       >
         <div className="row">
+          <select
+            disabled={isDisabled}
+            value={selectedInstanceKey}
+            onChange={(e) => {
+              const key = e.target.value;
+              setSelectedInstanceKey(key);
+              setSubAccount(0);
+            }}
+          >
+            <option value="">Pick Canvas instance</option>
+            {detectedInstance && (
+              <optgroup label="Detected">
+                <option value={Object.keys(instances).find((k) => instances[k] === detectedInstance) || ""}>
+                  ✓ {detectedInstance.name}
+                </option>
+              </optgroup>
+            )}
+            {Object.entries(instances).map(([key, instance]) => (
+              <option key={key} value={key}>
+                {instance.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="row">
           <input
             disabled={isDisabled}
             autoFocus
@@ -94,7 +145,7 @@ function CourseNavigation() {
             onChange={(e) => setQueryString(e.target.value)}
           ></input>
           <select
-            disabled={isDisabled}
+            disabled={isDisabled || availableAccounts.length === 0}
             value={subAccount ?? ""}
             onChange={(e) => {
               const val = e.target.value;
@@ -102,13 +153,15 @@ function CourseNavigation() {
             }}
           >
             <option value="">Pick account/subaccount</option>
-            <option value="169877">Distance Education</option>
-            <option value="170329">Distance Education Development</option>
-            <option value="98244">Unity College</option>
+            {availableAccounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className={"col"}>
-          <button disabled={isDisabled} className="btn">
+          <button disabled={isDisabled || !activeInstance} className="btn">
             Search
           </button>
         </div>
