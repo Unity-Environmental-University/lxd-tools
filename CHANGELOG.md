@@ -7,8 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Career Edge Canvas instance support: the popup now detects Unity vs. Career Edge from the active tab, lists the matching subaccounts, and course search runs against the selected instance even if it isn't the active tab.
+- Legacy profile support: if a blueprint has no pages tagged with `data-profile-*` attributes, profile resolution falls back to the home page (matched by `home` slug or `front_page` flag).
 
 ### Changed
+- Blueprint migration finish workflow is more reliable: locking is chunked to avoid rate limiting, shows progress, tracks completion state, syncs only after locking, and can resume after a reload.
 - Bug fixed where date keystroke entry was wonky on Update State Date. Also limited date selection to within 365 days of current day to prevent runaway dates happening by mistake.
 - Confirmation modal now pops up confirming when validations are complete.
 - Validation rows should remain stationairy when validations run, fixing an issue where you could miss a fix button when the positioning shifts.
