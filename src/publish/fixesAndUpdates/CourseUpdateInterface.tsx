@@ -2,12 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useEffectAsync } from "../../ui/utils";
 import { Button } from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
-import { fixLmAnnotations } from "@ueu/ueu-canvas/fixes/annotations";
-import assert from "assert";
 import { UpdateStartDate } from "./UpdateStartDate";
 import { CourseValidator } from "./CourseValidator";
 import { Course } from "@ueu/ueu-canvas/course/Course";
-import { Page } from "@ueu/ueu-canvas/content/pages/Page";
 import { CourseValidation } from "@publish/fixesAndUpdates/validations/types";
 
 export type CourseUpdateInterfaceProps = {
@@ -169,25 +166,6 @@ export function CourseUpdateInterface({
 		return deannotatingCount > 0;
 	}
 
-	async function removeLmAnnotations() {
-		assert(course);
-		startLoading();
-
-		function pageToLink(page: Page) {
-			return (
-				<a className="course-link" target="_blank" href={page.htmlContentUrl}>
-					{page.name}
-				</a>
-			);
-		}
-
-		const results = await fixLmAnnotations(course);
-		setAffectedItems(results.fixedPages.map(pageToLink));
-		setUnaffectedItems(results.unchangedPages.map(pageToLink));
-		setFailedItems(results.failedPages.map(pageToLink));
-		endLoading();
-	}
-
 	function urlRows(links: React.ReactElement[], className = "lxd-cu") {
 		return links.map((link, i) => (
 			<div key={i} className={["row", className].join(" ")}>
@@ -213,7 +191,6 @@ export function CourseUpdateInterface({
 		return (
 			<>
 				<h2>Content Fixes for {course.name}</h2>
-				{course.isBlueprint() && <RemoveAnnotationsSection />}
 
 				<Button
 					onClick={() => toggleStartDateUI()}
@@ -260,26 +237,6 @@ export function CourseUpdateInterface({
 					</div>
 				)}
 			</>
-		);
-	}
-
-	function RemoveAnnotationsSection() {
-		return (
-			course?.isBlueprint() && (
-				<div className={"row"}>
-					<div className={"col-sm-4"}>
-						<Button
-							onClick={removeLmAnnotations}
-							disabled={deannotatingCount > 0}
-						>
-							Remove Annotation Placeholder
-						</Button>
-					</div>
-					<div className={"col-sm-8"}>
-						Removes annotation placeholders on Learning Material pages
-					</div>
-				</div>
-			)
 		);
 	}
 
