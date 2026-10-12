@@ -234,10 +234,16 @@ export function UpdateStartDate({
 	}
 
 	function captureRawDateInput(event?: React.SyntheticEvent<HTMLElement>) {
-		if (event?.target instanceof HTMLInputElement) rawDateInput.current = event.target.value;
+		const value = (event?.target as HTMLInputElement | null)?.value;
+		if (typeof value === "string") rawDateInput.current = value;
 	}
 
 	function finishDateInput() {
+		if (!rawDateInput.current.trim()) {
+			isEditingDateInput.current = false;
+			return;
+		}
+
 		const parsedDate = parseStartDateInput(rawDateInput.current);
 
 		isEditingDateInput.current = false;
