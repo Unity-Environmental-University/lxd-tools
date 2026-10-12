@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Internal
+
+
+## 3.2.3
+
+### Added
+
+### Changed
+- Made changes to fix the date input interpreting calendar select as a blank entry and flagging it as an invalid date entry.
+
+### Internal
+
+## 3.2.2
+
+### Added
 - Career Edge Canvas instance support: the popup now detects Unity vs. Career Edge from the active tab, lists the matching subaccounts, and course search runs against the selected instance even if it isn't the active tab.
 - Legacy profile support: if a blueprint has no pages tagged with `data-profile-*` attributes, profile resolution falls back to the home page (matched by `home` slug or `front_page` flag).
 
