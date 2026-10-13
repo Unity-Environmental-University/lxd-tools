@@ -28,6 +28,7 @@ import { academicIntegritySetup } from "./academicIntegritySetup";
 import { aiLiteracySetup } from "@/publish/publishInterface/aiLiteracySetup";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
+import { lockBlueprintChunked } from "./lockBlueprintChunked";
 
 export const TERM_NAME_PLACEHOLDER = "Fill in term name here to archive.";
 const gradAiLiteracyCourses = ["rsch510", "sbus503", "prof510"];
@@ -287,47 +288,6 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
       }
     }
     setCloningBp(false);
-  }
-
-  async function lockBlueprintChunked(
-    courseId: number,
-    modules: any[],
-    onProgress?: (status: string, completion: number) => void,
-    chunkSize: number = 10,
-    delayMs: number = 500
-  ) {
-    let items: any[] = [];
-    items = items.concat(...modules.map((a) => [].concat(...a.items)));
-
-    for (let i = 0; i < items.length; i += chunkSize) {
-      const chunk = items.slice(i, i + chunkSize);
-      const completion = Math.round((i / items.length) * 100);
-      onProgress?.(`Locking (${i}/${items.length})`, completion);
-
-      const promises = chunk.map(async (item) => {
-        const url = `/api/v1/courses/${courseId}/blueprint_templates/default/restrict_item`;
-        const type = item.type;
-        const id = item.id;
-        if (typeof id === "undefined") return;
-        const body = {
-          content_type: type,
-          content_id: id,
-          restricted: true,
-          _method: "PUT",
-        };
-        await fetchJson(url, {
-          fetchInit: {
-            method: "PUT",
-            body: formDataify(body),
-          },
-        });
-      });
-      await Promise.all(promises);
-      if (i + chunkSize < items.length) {
-        await new Promise((res) => setTimeout(res, delayMs));
-      }
-    }
-    onProgress?.("Locking complete", 100);
   }
 
   async function finishMigration(

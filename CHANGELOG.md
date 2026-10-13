@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Fixed Finish Migration not completing: the course is now set as a blueprint before its content is locked. Locking first always failed because Canvas has no blueprint template until the course is a blueprint, which left the migration unfinished. Errors during this step now show the actual Canvas message.
+- Fixed locking during Finish Migration sending the wrong content type and id to Canvas (module item `Assignment` / module item id instead of `assignment` / content id), which made Canvas reject every item with a 400.
 - Removed the annotations button from the course update interface.
 
 ### Internal
