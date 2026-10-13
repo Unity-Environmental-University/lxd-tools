@@ -13,6 +13,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Internal
 
 
+## 3.2.4
+
+### Added
+
+### Changed
+- Fixed Finish Migration not completing: the course is now set as a blueprint before its content is locked. Locking first always failed because Canvas has no blueprint template until the course is a blueprint, which left the migration unfinished. Errors during this step now show the actual Canvas message.
+- Fixed locking during Finish Migration sending the wrong content type and id to Canvas (module item `Assignment` / module item id instead of `assignment` / content id), which made Canvas reject every item with a 400.
+- Removed the "initial sync" step from Finish Migration. Canvas rejects a sync with "No associated courses to migrate to", and a newly created blueprint can't have associated courses yet. The pre-3.2.2 flow never synced.
+- Removed the annotations button from the course update interface.
+- Fix an issue where no addendum page would result in a 404 that would cause the Copy Form Email button to fail. 404s now simply result in the addendum section of the form email being an empty string.
+
+### Internal
+
 ## 3.2.3
 
 ### Added
