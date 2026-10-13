@@ -9,6 +9,7 @@ import { CourseValidator } from "./CourseValidator";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { Page } from "@ueu/ueu-canvas/content/pages/Page";
 import { CourseValidation } from "@publish/fixesAndUpdates/validations/types";
+import { syncSyllabus } from "@publish/fixesAndUpdates/validations/syncSyllabus";
 
 export type CourseUpdateInterfaceProps = {
 	course?: Course;
@@ -220,6 +221,10 @@ export function CourseUpdateInterface({
 					disabled={isChangingStartDate}
 				>
 					Update Start Date
+				</Button>
+
+				<Button onClick={() => syncSyllabus(course)} disabled={!course}>
+					Sync Syllabus
 				</Button>
 
 				<hr />
