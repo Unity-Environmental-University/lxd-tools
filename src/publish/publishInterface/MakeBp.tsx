@@ -3,9 +3,7 @@ import { Alert, Button, Col, FormControl, Row } from "react-bootstrap";
 import { FormEvent, useEffect, useReducer, useState } from "react";
 import { useEffectAsync } from "@/ui/utils";
 import {
-  beginBpSync,
   getBlueprintsFromCode,
-  lockBlueprint,
   sectionDataGenerator,
   setAsBlueprint,
 } from "@ueu/ueu-canvas/course/blueprint";
@@ -315,13 +313,6 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
           }
         );
         (migration as any).locked = true;
-        cacheCourseMigrations(currentBp.id, [migration]);
-      }
-
-      if (!(migration as any).synced) {
-        progressCallbacks?.setFinishStatus("Syncing settings...");
-        await beginBpSync(currentBp.id, { message: "Initial sync after blueprint setup" });
-        (migration as any).synced = true;
         cacheCourseMigrations(currentBp.id, [migration]);
       }
 
