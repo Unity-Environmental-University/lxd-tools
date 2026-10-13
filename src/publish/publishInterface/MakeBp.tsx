@@ -337,6 +337,13 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
     assert(currentBp);
     setIsLocking(true);
     try {
+      if (!(migration as any).blueprintSet) {
+        progressCallbacks?.setFinishStatus("Setting as blueprint...");
+        await setAsBlueprint(currentBp.id);
+        (migration as any).blueprintSet = true;
+        cacheCourseMigrations(currentBp.id, [migration]);
+      }
+
       if (!(migration as any).locked) {
         progressCallbacks?.setFinishStatus("Locking content...");
         await lockBlueprintChunked(
@@ -348,13 +355,6 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
           }
         );
         (migration as any).locked = true;
-        cacheCourseMigrations(currentBp.id, [migration]);
-      }
-
-      if (!(migration as any).blueprintSet) {
-        progressCallbacks?.setFinishStatus("Setting as blueprint...");
-        await setAsBlueprint(currentBp.id);
-        (migration as any).blueprintSet = true;
         cacheCourseMigrations(currentBp.id, [migration]);
       }
 
@@ -374,7 +374,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
     } catch (e: unknown) {
       console.error("Error during blueprint setup:", e);
       cacheCourseMigrations(currentBp.id, [migration]);
-      alert("Error during blueprint setup. Reloading to retry...");
+      alert(`Error during blueprint setup: ${e instanceof Error ? e.message : String(e)}\nReloading to retry...`);
       location.reload();
     } finally {
       setIsLocking(false);
