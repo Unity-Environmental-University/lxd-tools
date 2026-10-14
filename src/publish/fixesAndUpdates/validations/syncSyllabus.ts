@@ -16,8 +16,18 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 		const templateCourse = await getCourseById(8217232);
 		const templateSyllabus = await templateCourse.getSyllabus();
 
+		if (!templateSyllabus) {
+			uiAlert("Couldn't find template syllabus.");
+			return false;
+		}
+
 		// Get course syllabus
 		const courseSyllabus = await course.getSyllabus();
+
+		if (!courseSyllabus) {
+			uiAlert("Couldn't find course syllabus.");
+			return false;
+		}
 
 		// Parse syllabi
 		const parser = new DOMParser();
@@ -97,6 +107,7 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 		const courseBannerBox =
 			parsedCourseSyllabus.querySelector(".cbt-banner-image");
 		const courseBannerHtml = courseBannerBox?.outerHTML ?? "";
+
 		courseBannerBox?.remove();
 
 		const templateBannerBox =
