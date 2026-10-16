@@ -1,7 +1,7 @@
 import assert from "assert";
 
 
-import {lockBlueprint} from '@ueu/ueu-canvas/course/blueprint';
+import {getNeverLockedPageIds, lockBlueprintChunked, unlockNeverLockedPages} from '@publish/publishInterface/lockBlueprintChunked';
 import {Course} from '@ueu/ueu-canvas/course/Course';
 import {assignmentDataGen, updateAssignmentDueDates} from "@ueu/ueu-canvas/content/assignments";
 import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
@@ -19,9 +19,20 @@ import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
             btn.innerHTML = "Lock All";
             moduleHeader.insertBefore(btn, moduleHeader.firstChild);
             btn.classList.add('btn');
+            const unlockBtn = document.createElement('btn');
+            unlockBtn.innerHTML = "Unlock Profile & Home";
+            moduleHeader.insertBefore(unlockBtn, moduleHeader.firstChild);
+            unlockBtn.classList.add('btn');
+            unlockBtn.addEventListener('click', async () => {
+                unlockBtn.innerHTML = "Unlocking...";
+                await unlockNeverLockedPages(course);
+                unlockBtn.innerHTML = "Unlocked!";
+            });
             btn.addEventListener('click', async () => {
                 btn.innerHTML = "Locking...";
-                await lockBlueprint(course.id, await course.getModules());
+                await lockBlueprintChunked(course.id, await course.getModules(), undefined, undefined, undefined, await getNeverLockedPageIds(course));
+                // Lock first, unlock last so profile/home end up unlocked.
+                await unlockNeverLockedPages(course);
                 btn.innerHTML = "Locked!";
                 location.reload();
 
@@ -43,4 +54,4 @@ import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
         })
     }
 
-})();
+})();
