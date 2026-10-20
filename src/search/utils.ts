@@ -23,7 +23,7 @@ function getTerms() {
 // fetch terms again if we dont have it
 // re-usable in components that need the list of terms
 export function useTerms() {
-  const [terms, setTerms] = useState<Record<string, string>>({});
+  const [terms, setTerms] = useState<TermResponse>([]);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export function useTerms() {
     function attemptLoad() {
       getTerms()
         .then(response => {
-          if (!cancelled) setTerms(response.terms);
+          if (!cancelled) setTerms(response);
         })
         .catch(err => {
           attempt += 1;
