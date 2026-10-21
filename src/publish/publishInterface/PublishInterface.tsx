@@ -26,6 +26,7 @@ import {
   restrictBlueprintPage,
 } from "@publish/fixesAndUpdates/courseDataStore";
 import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { FacultyBiosCourseNotFoundError } from "@ueu/ueu-canvas/profile";
 
 export interface IPublishInterfaceProps {
   course?: Course;
@@ -164,8 +165,17 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     const out = { section, instructors, frontPageProfile };
 
     if (!potentialProfilesByCourseId[section.id]) {
-      const profiles = await section.getPotentialInstructorProfiles();
-      dispatchPotentialProfilesByCourseId({ set: [section.id, profiles] });
+      try {
+        const profiles = await section.getPotentialInstructorProfiles();
+        dispatchPotentialProfilesByCourseId({ set: [section.id, profiles] });
+      } catch (e: unknown) {
+        // Only cache on success so the next load retries the lookup.
+        const message =
+          e instanceof FacultyBiosCourseNotFoundError
+            ? e.message
+            : `Could not load instructor profiles: ${e}`;
+        sectionError(section, message);
+      }
     }
     dispatchSectionInfoCache({ set: [courseId, out] });
     return out;
@@ -209,19 +219,13 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     const { slug: profileSlug, blueprintPageId } = profileResolution;
 
     let updatedCount = 0;
-    let unlocked = false;
     try {
-      // Section copies of a blueprint page are locked against direct edits
-      // by default. Unlock the blueprint's page for the duration of this
-      // pass so the writes below aren't rejected, then always re-lock it
-      // afterward — Canvas has no API to read whether it was already
-      // unlocked, so "restore" here means "back to locked," not "back to
-      // whatever it was." This unlock is inside the try (not before it) so
-      // that a thrown error here still reaches the finally below and resets
-      // loading state instead of leaving the UI stuck on "Updating...".
+      // Unlock the blueprint's profile page (which may be the home page) so
+      // the writes below aren't rejected. It is deliberately left unlocked
+      // afterward — we never re-lock it. The unlock is inside the try so a
+      // thrown error still reaches the finally below and resets loading state.
       if (course) {
         await restrictBlueprintPage(course.id, blueprintPageId, false);
-        unlocked = true;
       }
 
       for (const section of Object.values(sections)) {
@@ -251,9 +255,6 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         updatedCount++;
       }
     } finally {
-      if (course && unlocked) {
-        await restrictBlueprintPage(course.id, blueprintPageId, true);
-      }
       setLoading(false);
     }
     if (updatedCount > 0) {
@@ -286,7 +287,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     for await (const sectionInfos of batchGen(sectionGen, 6)) {
       const promises = sectionInfos.map((sectionInfo) => async () => {
         const result = await loadSection(sectionInfo.id);
-        console.log(result);
+				console.log(result);
 
         const { section, instructors, frontPageProfile } = result;
         if (!sectionStartSet) {

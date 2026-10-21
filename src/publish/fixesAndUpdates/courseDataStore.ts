@@ -180,9 +180,8 @@ export async function getProfilePage(courseId: number, slug: string, instance?: 
  * changed in associated courses. blueprintPageId is the page's id on the blueprint
  * course itself (see ProfilePageResult.blueprintPageId), not on an associated section.
  *
- * Canvas has no documented API to read an item's current restriction state, so
- * callers that unlock an item for a write pass should always re-lock it afterward
- * (in a finally) rather than try to restore a "previous" state.
+ * The profile page (which may be the home page) is unlocked for writes and left
+ * unlocked; callers should not re-lock it.
  */
 export async function restrictBlueprintPage(
   blueprintCourseId: number,

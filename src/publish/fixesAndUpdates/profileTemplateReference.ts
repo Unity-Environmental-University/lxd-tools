@@ -69,7 +69,7 @@ export const PROFILE_TEMPLATE_NOTES = [
   'Only one page per blueprint may carry these attributes. If two pages have them, "Set Bios" reports an ambiguous match and writes nothing until it\'s fixed.',
   'If a course has no page with these attributes, "Set Bios" reports that too, rather than guessing at the front page.',
   "The image wrapper just needs to contain an <img> — nesting, styling classes, and surrounding markup are entirely up to you.",
-  'A page\'s target section copy is unlocked automatically for the duration of a "Set Bios" run, and re-locked afterward — you don\'t need to touch blueprint lock settings yourself.',
+  'A page\'s target section copy is unlocked automatically during a "Set Bios" run and stays unlocked — you don\'t need to touch blueprint lock settings yourself.',
 ];
 
 /**
