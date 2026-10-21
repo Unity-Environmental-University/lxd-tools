@@ -26,6 +26,7 @@ import {
   restrictBlueprintPage,
 } from "@publish/fixesAndUpdates/courseDataStore";
 import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { FacultyBiosCourseNotFoundError } from "@ueu/ueu-canvas/profile";
 
 export interface IPublishInterfaceProps {
   course?: Course;
@@ -164,8 +165,17 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     const out = { section, instructors, frontPageProfile };
 
     if (!potentialProfilesByCourseId[section.id]) {
-      const profiles = await section.getPotentialInstructorProfiles();
-      dispatchPotentialProfilesByCourseId({ set: [section.id, profiles] });
+      try {
+        const profiles = await section.getPotentialInstructorProfiles();
+        dispatchPotentialProfilesByCourseId({ set: [section.id, profiles] });
+      } catch (e: unknown) {
+        // Only cache on success so the next load retries the lookup.
+        const message =
+          e instanceof FacultyBiosCourseNotFoundError
+            ? e.message
+            : `Could not load instructor profiles: ${e}`;
+        sectionError(section, message);
+      }
     }
     dispatchSectionInfoCache({ set: [courseId, out] });
     return out;
@@ -277,7 +287,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     for await (const sectionInfos of batchGen(sectionGen, 6)) {
       const promises = sectionInfos.map((sectionInfo) => async () => {
         const result = await loadSection(sectionInfo.id);
-        console.log(result);
+				console.log(result);
 
         const { section, instructors, frontPageProfile } = result;
         if (!sectionStartSet) {
