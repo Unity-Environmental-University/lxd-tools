@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Temporal } from "temporal-polyfill";
 import { Button, Row } from "react-bootstrap";
 import DatePicker from "react-datepicker";
@@ -22,6 +22,7 @@ import { IModuleData } from "@ueu/ueu-canvas/canvasDataDefs";
 import { renderAsyncGen } from "@ueu/ueu-canvas/canvasUtils";
 
 import { IAssignmentData, IDiscussionData } from "@ueu/ueu-canvas/content/types";
+import { addDays, startOfToday } from "date-fns";
 
 type UpdateStartDateProps = {
   setAffectedItems?: (elements: React.ReactElement[]) => any;
@@ -36,6 +37,20 @@ type UpdateStartDateProps = {
   onStartDateChangeStart?: () => void;
   onStartDateChangeEnd?: () => void;
 };
+
+export function parseStartDateInput(value: string): Date | null {
+	const match = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?$/.exec(value.trim());
+	if (!match) return null;
+
+	const month = Number(match[1]);
+	const day = Number(match[2]);
+	const year = match[3] ? Number(match[3]) : new Date().getFullYear();
+	const candidate = new Date(year, month - 1, day);
+	return candidate.getFullYear() === year && candidate.getMonth() === month - 1 && candidate.getDate() === day
+		? candidate
+		: null;
+}
+
 export function UpdateStartDate({
   course,
   isDisabled,
@@ -55,10 +70,14 @@ export function UpdateStartDate({
   const [_assignments, _setAssignments] = useState<IAssignmentData[] | undefined>();
   const [mismatchError, setMismatchError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+	const [dateInputInvalid, setDateInputInvalid] = useState(false);
 
   const [syllabusStartDate, setSyllabusStartDate] = useState<Temporal.PlainDate | null>(null);
   const [_moduleStartDate, _setModuleStartDate] = useState<Temporal.PlainDate | null>(null);
   const [assignmentsStartDate, setAssignmentsStartDate] = useState<Temporal.PlainDate | null>(null);
+	const isEditingDateInput = useRef(false);
+	const dateBeforeInput = useRef<Temporal.PlainDate | null>(null);
+	const rawDateInput = useRef("");
 
   const recalculateStartDate = async () => {
     setIsLoading(true);
@@ -196,9 +215,42 @@ export function UpdateStartDate({
     }
   }
 
-  function updateStartDateValue(inDate: Date | null) {
-    if (inDate) setWorkingStartDate(oldDateToPlainDate(inDate));
-  }
+	function updateStartDateValue(inDate: Date | null) {
+		if (inDate && !isEditingDateInput.current) setWorkingStartDate(oldDateToPlainDate(inDate));
+	}
+
+	function selectDateFromCalendar(inDate: Date | null) {
+		if (inDate) {
+			isEditingDateInput.current = false;
+			setDateInputInvalid(false);
+			setWorkingStartDate(oldDateToPlainDate(inDate));
+		}
+	}
+
+	function beginDateInput() {
+		isEditingDateInput.current = true;
+		dateBeforeInput.current = workingStartDate ?? null;
+		rawDateInput.current = "";
+	}
+
+	function captureRawDateInput(event?: React.SyntheticEvent<HTMLElement>) {
+		const value = (event?.target as HTMLInputElement | null)?.value;
+		if (typeof value === "string") rawDateInput.current = value;
+	}
+
+	function finishDateInput() {
+		if (!rawDateInput.current.trim()) {
+			isEditingDateInput.current = false;
+			return;
+		}
+
+		const parsedDate = parseStartDateInput(rawDateInput.current);
+
+		isEditingDateInput.current = false;
+		setDateInputInvalid(!parsedDate);
+		if (parsedDate) setWorkingStartDate(oldDateToPlainDate(parsedDate));
+		else if (dateBeforeInput.current) setWorkingStartDate(dateBeforeInput.current);
+	}
 
   const _isDisabledLocally =
     isDisabled ||
@@ -210,58 +262,76 @@ export function UpdateStartDate({
     mismatchError !== null ||
     isLoading;
 
-  return (
-    <>
-      {isLoading && <div className="alert alert-info">Loading...</div>}
-      {!isLoading && (
-        <div className={"row"}>
-          {mismatchError && (
-            <div className={"ui-alert"}>
-              <h2>{mismatchError}</h2>
-            </div>
-          )}
-        </div>
-      )}
-      {workingStartDate && (
-        <div className={"row"}>
-          <div className={"col-sm-4"}>
-            <Button onClick={changeStartDate} disabled={_isDisabledLocally}>
-              Change Start Date
-            </Button>
-            <label>
-              Current:{" "}
-              {startDate?.toLocaleString("default", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </label>
-          </div>
-          <div className={"col-sm-4"}>
-            <DatePicker value={workingStartDate?.toLocaleString()} onChange={updateStartDateValue} />
-            <label>
-              Target:{" "}
-              {workingStartDate?.toLocaleString("default", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </label>
-            {startDate && workingStartDate && (
-              <label>
-                {"\u0394"} days: {startDate.until(workingStartDate).days}
-              </label>
-            )}
-          </div>
-        </div>
-      )}
-      <Row>
-        <div className={"col-sm-4"}>Update dates of assignments, announcements, and on syllabus</div>
-      </Row>
-    </>
-  );
+	const jsDate = (date: Temporal.PlainDate) => {
+		return new Date(date.year, date.month - 1, date.day);
+	};
+
+	return (
+		<>
+			{isLoading && <div className="alert alert-info">Loading...</div>}
+			{!isLoading && (
+				<div className={"row"}>
+					{mismatchError && (
+						<div className={"ui-alert"}>
+							<h2>{mismatchError}</h2>
+						</div>
+					)}
+				</div>
+			)}
+			{workingStartDate && (
+				<div className={"row"}>
+					<div className={"col-sm-4"}>
+						<Button onClick={changeStartDate} disabled={_isDisabledLocally}>
+							Change Start Date
+						</Button>
+						<label>
+							Current:{" "}
+							{startDate?.toLocaleString("default", {
+								weekday: "short",
+								month: "short",
+								day: "numeric",
+								year: "numeric",
+							})}
+						</label>
+					</div>
+					<div className={"col-sm-4"}>
+						<DatePicker
+							strictParsing
+							dateFormat={["MM/dd/yyyy", "M/d/yyyy", "M/d"]}
+							selected={jsDate(workingStartDate)}
+							className={dateInputInvalid ? "start-date-invalid" : undefined}
+							onChange={updateStartDateValue}
+							onSelect={selectDateFromCalendar}
+							onFocus={beginDateInput}
+							onChangeRaw={captureRawDateInput}
+							onBlur={finishDateInput}
+							minDate={addDays(startOfToday(), -365)}
+							maxDate={addDays(startOfToday(), 365)}
+						/>
+						<label>
+							Target:{" "}
+							{workingStartDate?.toLocaleString("default", {
+								weekday: "short",
+								month: "short",
+								day: "numeric",
+								year: "numeric",
+							})}
+						</label>
+						{startDate && workingStartDate && (
+							<label>
+								{"\u0394"} days: {startDate.until(workingStartDate).days}
+							</label>
+						)}
+					</div>
+				</div>
+			)}
+			<Row>
+				<div className={"col-sm-4"}>
+					Update dates of assignments, announcements, and on syllabus
+				</div>
+			</Row>
+		</>
+	);
 }
 
 class StartDateNotSetError extends Error {

@@ -11,19 +11,29 @@ import {
 import {getSingleCourse} from "@ueu/ueu-canvas/course";
 
 export async function main() {
-    const currentCourse = await Course.getFromUrl(document.documentURI);
-    const CurrentContentClass = getContentClassFromUrl(document.documentURI);
-    let currentContentItem = await CurrentContentClass?.getFromUrl();
-    if (!CurrentContentClass && /courses\/\d+/.test(document.URL))
-        currentContentItem = await currentCourse?.getFrontPage();
+	const currentCourse = await Course.getFromUrl(document.documentURI);
+	const CurrentContentClass = getContentClassFromUrl(document.documentURI);
+	let currentContentItem;
+	try {
+		currentContentItem = await CurrentContentClass?.getFromUrl();
+	} catch (e) {
+		console.log("error with getFromUrl(): ", e);
+	}
+	if (!CurrentContentClass && /courses\/\d+/.test(document.URL)) {
+		currentContentItem = await currentCourse?.getFrontPage();
+	}
 
-
-    if (!currentCourse) return;
-    const header: HTMLElement | null = document.querySelector('.right-of-crumbs');
+	if (!currentCourse) return;
+	const header: HTMLElement | null = document.querySelector(".right-of-crumbs");
     if (!header) return;
 
     await addDevButton(header, currentCourse);
-    const bp = currentCourse.isBlueprint()? currentCourse : await getSingleCourse('BP_' + currentCourse.baseCode, currentCourse.getAccountIds());
+	const bp = currentCourse.isBlueprint()
+		? currentCourse
+		: await getSingleCourse(
+				"BP_" + currentCourse.baseCode,
+				currentCourse.getAccountIds(),
+			);
     await addBpButton(header, currentCourse, bp);
     if (bp) {
         await addSectionsButton(header, bp, currentCourse);

@@ -4,12 +4,16 @@ import { mockCourseData } from "@ueu/ueu-canvas/course/__mocks__/mockCourseData"
 
 // PublishInterface.test.tsx
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-global.TextEncoder = require("util").TextEncoder;
+(global as any).TextEncoder = require("util").TextEncoder;
 
 import React, { act } from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { PublishInterface, IPublishInterfaceProps, OpenButton } from "../PublishInterface";
+import {
+	PublishInterface,
+	IPublishInterfaceProps,
+	OpenButton,
+} from "../PublishInterface";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 
@@ -21,118 +25,166 @@ import { mockAsyncGen } from "@/__mocks__/utils";
 
 fetchMock.enableMocks();
 const mockCourse: Course = new Course({
-  ...mockCourseData,
-  id: 1,
-  name: "BP_TEST000: Test Course",
-  course_code: "BP_TEST",
-  blueprint: true,
+	...mockCourseData,
+	id: 1,
+	name: "BP_TEST000: Test Course",
+	course_code: "BP_TEST",
+	blueprint: true,
 }) as Course;
 
 jest.mock("@ueu/ueu-canvas/course/blueprint", () => ({
-  ...jest.requireActual("@ueu/ueu-canvas/course/blueprint"),
-  sectionDataGenerator: jest.fn(() => mockAsyncGen([] as SectionData[])),
+	...jest.requireActual("@ueu/ueu-canvas/course/blueprint"),
+	sectionDataGenerator: jest.fn(() => mockAsyncGen([] as SectionData[])),
 }));
 
-jest.mock("@/publish/publishInterface/EmailLink", () => ({ EmailLink: () => null }));
+jest.mock("@/publish/publishInterface/EmailLink", () => ({
+	EmailLink: () => null,
+}));
 
 const mockUser: IUserData = {
-  id: 1,
-  name: "Test User",
-  email: "test@example.com",
+	id: 1,
+	name: "Test User",
+	email: "test@example.com",
 } as IUserData;
 
 const renderComponent = (props: Partial<IPublishInterfaceProps> = {}) => {
-  const defaultProps: IPublishInterfaceProps = {
-    course: mockCourse,
-    user: mockUser,
-    ...props,
-  };
+	const defaultProps: IPublishInterfaceProps = {
+		course: mockCourse,
+		user: mockUser,
+		...props,
+	};
 
-  return act(() => render(<PublishInterface {...defaultProps} />));
+	return act(() => render(<PublishInterface {...defaultProps} />));
 };
 
 describe("PublishInterface Component", () => {
-  it("renders without crashing", async () => {
-    await renderComponent();
-    expect(screen.getByText("Manage Sections")).toBeInTheDocument();
-  });
+	beforeEach(() => {
+		// PublishInterface resolves the blueprint's profile page slug as soon as
+		// `course` is set (findProfilePageSlug -> getPages), independent of any
+		// test's own fetchMock.mockResponse calls. Default to an empty pages
+		// list so that resolution completes as "no profile page found" instead
+		// of throwing on an unmocked/empty fetch body — individual tests can
+		// still override this with their own mockResponse afterward.
+		fetchMock.mockResponse(JSON.stringify([]));
+	});
 
-  it('opens modal when "Manage Sections" button is clicked', async () => {
-    await renderComponent();
-    await act(async () => fireEvent.click(screen.getByText("Manage Sections")));
-    expect(screen.getByText("Sections")).toBeInTheDocument();
-  });
+	it("renders without crashing", async () => {
+		await renderComponent();
+		expect(screen.getByText("Manage Sections")).toBeInTheDocument();
+	});
 
-  it("displays loading state when publishing courses", async () => {
-    fetchMock.mockResponse(publishEmailMock);
-    await renderComponent();
-    await act(async () => {
-      fireEvent.click(screen.getByText("Manage Sections"));
-    });
-    fetchMock.mockResponse(JSON.stringify(mockCourseData));
-    await act(async () => {
-      fireEvent.click(screen.getByText("Publish all"));
-    });
-    await waitFor(() => screen.getByRole("alert"));
-    expect(screen.getByText("Publishing")).toBeInTheDocument();
-    // Simulate delay for publishing
-    await waitFor(() => screen.getByText(/Published/i));
-    expect(screen.getByText(/Published \d+ sections/)).toBeInTheDocument();
-  });
+	it('opens modal when "Manage Sections" button is clicked', async () => {
+		await renderComponent();
+		await act(async () => fireEvent.click(screen.getByText("Manage Sections")));
+		expect(screen.getByText("Sections")).toBeInTheDocument();
+	});
 
-  it('calls applySectionProfiles when "Set Bios" button is clicked', async () => {
-    await renderComponent();
-    await act(async () => fireEvent.click(screen.getByText("Manage Sections")));
-    await act(async () => fireEvent.click(screen.getByText("Set Bios")));
-    // Simulate delay for applying section profiles
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(screen.getByText("Profiles Updated")).toBeInTheDocument();
-  });
+	it("displays loading state when publishing courses", async () => {
+		fetchMock.mockResponse(publishEmailMock);
+		await renderComponent();
+		await act(async () => {
+			fireEvent.click(screen.getByText("Manage Sections"));
+		});
+		fetchMock.mockResponse(JSON.stringify(mockCourseData));
+		await act(async () => {
+			fireEvent.click(screen.getByText("Publish all"));
+		});
+		await waitFor(() => screen.getByRole("alert"));
+		expect(screen.getByText("Publishing")).toBeInTheDocument();
+		// Simulate delay for publishing
+		await waitFor(() => screen.getByText(/Published/i));
+		expect(screen.getByText(/Published \d+ sections/)).toBeInTheDocument();
+	});
+
+	it('calls applySectionProfiles when "Set Bios" button is clicked', async () => {
+		// This fixture has no pages (beforeEach mocks an empty pages list) and no
+		// sections (sectionDataGenerator is mocked to an empty generator), so
+		// findProfilePageSlug correctly resolves to "none" and there is nothing
+		// to update — the real, current behavior is a reported failure, not an
+		// unconditional "Profiles Updated" (that unconditional message was itself
+		// a bug: it used to fire regardless of whether anything succeeded).
+		await renderComponent();
+		await act(async () => fireEvent.click(screen.getByText("Manage Sections")));
+		await act(async () => fireEvent.click(screen.getByText("Set Bios")));
+		// Simulate delay for applying section profiles
+		await new Promise((resolve) => setTimeout(resolve, 100));
+		expect(
+			screen.getByText("No profiles updated — see errors below"),
+		).toBeInTheDocument();
+	});
 });
 
 describe("OpenButton Component", () => {
-  test('should render with "Not BP or DEV" label when isBlueprint and isDev are false', async () => {
-    await act(async () => {
-      render(<OpenButton isDev={false} isBlueprint={false} setShow={jest.fn()} />);
-    });
-    expect(screen.getByText("Not BP or DEV")).toBeInTheDocument();
-  });
+	test('should render with "Not BP or DEV" label when isBlueprint and isDev are false', async () => {
+		await act(async () => {
+			render(
+				<OpenButton isDev={false} isBlueprint={false} setShow={jest.fn()} />,
+			);
+		});
+		expect(screen.getByText("Not BP or DEV")).toBeInTheDocument();
+	});
 
-  test('should render with "Manage Sections" label when isBlueprint is true', async () => {
-    await act(async () => render(<OpenButton isDev={false} isBlueprint={true} setShow={jest.fn()} />));
-    expect(screen.getByText("Manage Sections")).toBeInTheDocument();
-  });
+	test('should render with "Manage Sections" label when isBlueprint is true', async () => {
+		await act(async () =>
+			render(
+				<OpenButton isDev={false} isBlueprint={true} setShow={jest.fn()} />,
+			),
+		);
+		expect(screen.getByText("Manage Sections")).toBeInTheDocument();
+	});
 
-  test('should render with "Manage DEV->BP" label when isDev is true', async () => {
-    await act(async () => render(<OpenButton isDev={true} isBlueprint={false} setShow={jest.fn()} />));
-    expect(screen.getByText("Manage DEV->BP")).toBeInTheDocument();
-  });
+	test('should render with "Manage DEV->BP" label when isDev is true', async () => {
+		await act(async () =>
+			render(
+				<OpenButton isDev={true} isBlueprint={false} setShow={jest.fn()} />,
+			),
+		);
+		expect(screen.getByText("Manage DEV->BP")).toBeInTheDocument();
+	});
 
-  test("should enable button when isBlueprint or isDev is true", async () => {
-    let rerender: ReturnType<typeof render>["rerender"];
-    await act(async () => {
-      rerender = render(<OpenButton isDev={false} isBlueprint={false} setShow={jest.fn()} />).rerender;
-    });
-    expect(screen.getByRole("button")).toBeDisabled();
+	test("should enable button when isBlueprint or isDev is true", async () => {
+		let rerender: ReturnType<typeof render>["rerender"];
+		await act(async () => {
+			rerender = render(
+				<OpenButton isDev={false} isBlueprint={false} setShow={jest.fn()} />,
+			).rerender;
+		});
+		expect(screen.getByRole("button")).toBeDisabled();
 
-    await act(async () => rerender!(<OpenButton isDev={true} isBlueprint={false} setShow={jest.fn()} />));
-    expect(screen.getByRole("button")).not.toBeDisabled();
+		await act(async () =>
+			rerender!(
+				<OpenButton isDev={true} isBlueprint={false} setShow={jest.fn()} />,
+			),
+		);
+		expect(screen.getByRole("button")).not.toBeDisabled();
 
-    await act(async () => rerender!(<OpenButton isDev={false} isBlueprint={true} setShow={jest.fn()} />));
-    expect(screen.getByRole("button")).not.toBeDisabled();
-  });
+		await act(async () =>
+			rerender!(
+				<OpenButton isDev={false} isBlueprint={true} setShow={jest.fn()} />,
+			),
+		);
+		expect(screen.getByRole("button")).not.toBeDisabled();
+	});
 
-  test("should call setShow with true when button is clicked and not disabled", async () => {
-    const setShowMock = jest.fn();
-    await act(async () => render(<OpenButton isDev={true} isBlueprint={false} setShow={setShowMock} />));
-    await act(async () => fireEvent.click(screen.getByRole("button")));
-    expect(setShowMock).toHaveBeenCalledWith(true);
-  });
+	test("should call setShow with true when button is clicked and not disabled", async () => {
+		const setShowMock = jest.fn();
+		await act(async () =>
+			render(
+				<OpenButton isDev={true} isBlueprint={false} setShow={setShowMock} />,
+			),
+		);
+		await act(async () => fireEvent.click(screen.getByRole("button")));
+		expect(setShowMock).toHaveBeenCalledWith(true);
+	});
 
-  test("should not call setShow when button is disabled and clicked", async () => {
-    const setShowMock = jest.fn();
-    await act(async () => render(<OpenButton isDev={false} isBlueprint={false} setShow={setShowMock} />));
-    await act(async () => fireEvent.click(screen.getByRole("button")));
-    expect(setShowMock).not.toHaveBeenCalled();
-  });
+	test("should not call setShow when button is disabled and clicked", async () => {
+		const setShowMock = jest.fn();
+		await act(async () =>
+			render(
+				<OpenButton isDev={false} isBlueprint={false} setShow={setShowMock} />,
+			),
+		);
+		await act(async () => fireEvent.click(screen.getByRole("button")));
+		expect(setShowMock).not.toHaveBeenCalled();
+	});
 });

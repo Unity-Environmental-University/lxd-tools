@@ -1,17 +1,17 @@
 .testRunning {
   background-color: #d5c76f;
-  color: #FFF;
-  content: 'Running';
+  color: #fff;
+  content: "Running";
 }
 .testFailed {
   background-color: red;
-  color: #FFF;
-  content: 'Failed';
+  color: #fff;
+  content: "Failed";
 }
 .testSuccess {
   background-color: darkgreen;
-  color: #FFF;
-  content: 'OK!';
+  color: #fff;
+  content: "OK!";
 }
 
 .test-row {
@@ -21,9 +21,21 @@
 .test-row-slim {
   padding-top: 2px;
   font-size: 0.5em;
-
 }
 
 .test-row:nth-child(even) {
   background-color: #f0f0f0;
+}
+
+// A row with no result yet is still settling; make it non-interactive so clicks
+// meant for a resolved Fix? button can't be swallowed by a running row's body.
+.test-row-running {
+  pointer-events: none;
+}
+
+// Bound how tall a resolved failure can render so late results don't push
+// Fix? buttons far down the list; very long messages scroll within the row.
+.message-col {
+  max-height: 12em;
+  overflow-y: auto;
 }

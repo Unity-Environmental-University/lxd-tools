@@ -1,0 +1,22 @@
+.data-table {
+  border-collapse: collapse;
+}
+.data-table th,
+.data-table td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+}
+
+.btn-green-outline {
+  background: transparent;
+  color: #16a34a;
+  border: 2px solid #16a34a;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.btn-green-outline:hover {
+  background: #16a34a;
+  color: white;
+}

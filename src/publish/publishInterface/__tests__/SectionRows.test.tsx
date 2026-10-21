@@ -67,7 +67,7 @@ describe("SectionRows Component", () => {
   it("renders without crashing", () => {
     renderComponent();
     expect(screen.getByText(/Code/)).toBeInTheDocument();
-    expect(screen.getByText(/Name on Front Page/)).toBeInTheDocument();
+    expect(screen.getByText(/Profile Source → Target/)).toBeInTheDocument();
     expect(screen.getByText(/Instructor\(s\)/)).toBeInTheDocument();
   });
 

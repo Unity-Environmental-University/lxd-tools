@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useReducer, useState } from "react";
 import { useEffectAsync } from "@/ui/utils";
 import {
   getBlueprintsFromCode,
-  lockBlueprint,
   sectionDataGenerator,
   setAsBlueprint,
 } from "@ueu/ueu-canvas/course/blueprint";
@@ -27,6 +26,7 @@ import { academicIntegritySetup } from "./academicIntegritySetup";
 import { aiLiteracySetup } from "@/publish/publishInterface/aiLiteracySetup";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
+import { lockBlueprintChunked } from "./lockBlueprintChunked";
 
 export const TERM_NAME_PLACEHOLDER = "Fill in term name here to archive.";
 const gradAiLiteracyCourses = ["rsch510", "sbus503", "prof510"];
@@ -288,17 +288,48 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
     setCloningBp(false);
   }
 
-  async function finishMigration(migration: SavedMigration) {
+  async function finishMigration(
+    migration: SavedMigration,
+    progressCallbacks?: { setFinishStatus: (s: string) => void; setFinishCompletion: (n: number) => void }
+  ) {
     assert(currentBp);
     setIsLocking(true);
-    await setAsBlueprint(currentBp.id);
-    await lockBlueprint(currentBp.id, await currentBp.getModules());
-    migration.cleanedUp = true;
-    cacheCourseMigrations(currentBp.id, [migration]);
-    const [newBp] = (await getBlueprintsFromCode(devCourse.parsedCourseCode ?? "", [devCourse.accountId])) ?? [];
-    setIsLocking(false);
-    window.open(newBp.htmlContentUrl);
-    location.reload();
+    try {
+      if (!(migration as any).blueprintSet) {
+        progressCallbacks?.setFinishStatus("Setting as blueprint...");
+        await setAsBlueprint(currentBp.id);
+        (migration as any).blueprintSet = true;
+        cacheCourseMigrations(currentBp.id, [migration]);
+      }
+
+      if (!(migration as any).locked) {
+        progressCallbacks?.setFinishStatus("Locking content...");
+        await lockBlueprintChunked(
+          currentBp.id,
+          await currentBp.getModules(),
+          (status, completion) => {
+            progressCallbacks?.setFinishStatus(status);
+            progressCallbacks?.setFinishCompletion(completion);
+          }
+        );
+        (migration as any).locked = true;
+        cacheCourseMigrations(currentBp.id, [migration]);
+      }
+
+      progressCallbacks?.setFinishStatus("Finalizing...");
+      migration.cleanedUp = true;
+      cacheCourseMigrations(currentBp.id, [migration]);
+      const [newBp] = (await getBlueprintsFromCode(devCourse.parsedCourseCode ?? "", [devCourse.accountId])) ?? [];
+      window.open(newBp.htmlContentUrl);
+      location.reload();
+    } catch (e: unknown) {
+      console.error("Error during blueprint setup:", e);
+      cacheCourseMigrations(currentBp.id, [migration]);
+      alert(`Error during blueprint setup: ${e instanceof Error ? e.message : String(e)}\nReloading to retry...`);
+      location.reload();
+    } finally {
+      setIsLocking(false);
+    }
   }
 
   return (

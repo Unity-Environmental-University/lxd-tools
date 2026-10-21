@@ -11,6 +11,66 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 ### Internal
+- Update dependencies to patch vulnerabilities
+
+## 3.2.4
+
+### Added
+
+### Changed
+- Fixed Finish Migration not completing: the course is now set as a blueprint before its content is locked. Locking first always failed because Canvas has no blueprint template until the course is a blueprint, which left the migration unfinished. Errors during this step now show the actual Canvas message.
+- Fixed locking during Finish Migration sending the wrong content type and id to Canvas (module item `Assignment` / module item id instead of `assignment` / content id), which made Canvas reject every item with a 400.
+- Removed the "initial sync" step from Finish Migration. Canvas rejects a sync with "No associated courses to migrate to", and a newly created blueprint can't have associated courses yet. The pre-3.2.2 flow never synced.
+- Removed the annotations button from the course update interface.
+- Fix an issue where no addendum page would result in a 404 that would cause the Copy Form Email button to fail. 404s now simply result in the addendum section of the form email being an empty string.
+
+### Internal
+
+## 3.2.3
+
+### Added
+
+### Changed
+- Made changes to fix the date input interpreting calendar select as a blank entry and flagging it as an invalid date entry.
+
+### Internal
+
+## 3.2.2
+
+### Added
+- Career Edge Canvas instance support: the popup now detects Unity vs. Career Edge from the active tab, lists the matching subaccounts, and course search runs against the selected instance even if it isn't the active tab.
+- Legacy profile support: if a blueprint has no pages tagged with `data-profile-*` attributes, profile resolution falls back to the home page (matched by `home` slug or `front_page` flag).
+
+### Changed
+- Blueprint migration finish workflow is more reliable: locking is chunked to avoid rate limiting, shows progress, tracks completion state, syncs only after locking, and can resume after a reload.
+- Bug fixed where date keystroke entry was wonky on Update State Date. Also limited date selection to within 365 days of current day to prevent runaway dates happening by mistake.
+- Confirmation modal now pops up confirming when validations are complete.
+- Validation rows should remain stationairy when validations run, fixing an issue where you could miss a fix button when the positioning shifts.
+- Fixes start date text input from inferring valid dates from an invalidly entered date. Red error highlight to make sure you know your date entry wasn't accepted.
+
+### Internal
+- In all GitHub Action workflows, updated node version to 24 and pinned Ubunutu to 22.04 at the recommendation of GitHub. Previously using node v20, which is deprecating in October. Ubuntu was previously using latest, pinning it to a specific version just to avoid unexpected problems from future updates.
+- Wrapped `let currentContentItem = await CurrentContentClass?.getFromUrl();` in ui/course/main.tsx in a try/catch block to prevent an issue where BP and Section buttons weren't rendering on the syllabus.
+
+## 3.2.1
+
+### Added
+- Added support for instructor profile page
+- Module elemented required validation reintroduced
+- LISA search added to the pop up
+
+### Changed
+- Removed old validations to lighten the extension and start fresh
+
+### Internal
+- Canvas URL dynamically generated instead of always pointing at unity.instructure.com
+
+## 3.2.0
+
+### Added
+
+### Changed
+- Majorty of validations removed from the extension
 
 ## 3.1.9
 

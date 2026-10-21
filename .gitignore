@@ -42,4 +42,9 @@ dist/
 .prettierignore
 .prettierrc
 .vscode/settings.json
-bun.lock
+bun.lock.env
+.env.local
+.env
+.edge/
+lxd-extension-install/
+lxd-extension-install.zip

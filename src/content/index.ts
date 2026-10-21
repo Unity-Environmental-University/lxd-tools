@@ -3,13 +3,14 @@ import { runtime } from "webextension-polyfill";
 
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { stringIsCourseCode } from "@ueu/ueu-canvas/course/code";
+import { canvasUrl } from "@ueu/ueu-canvas/instance";
 
 import { ICourseData } from "@ueu/ueu-canvas/courseTypes";
 
 runtime.onMessage.addListener(async (message: Record<string, any>, sender, sendResponse: (output: any) => void) => {
   if (message.hasOwnProperty("queryString")) {
     try {
-      await openTargetCourse(message.queryString, message.subAccount);
+      await openTargetCourse(message.queryString, message.subAccount, message.canvasOrigin);
       sendResponse({ success: true });
     } catch (e: any) {
       sendResponse({ success: false, error: e.message || "Unknown error" });
@@ -18,7 +19,7 @@ runtime.onMessage.addListener(async (message: Record<string, any>, sender, sendR
   return true;
 });
 
-async function openTargetCourse(queryString: string, subAccount: number) {
+async function openTargetCourse(queryString: string, subAccount: number, canvasOrigin?: string) {
   console.log(queryString, subAccount);
   const params = queryString.split("|");
   const searchCode = params.length > 0 ? params[0] : null;
@@ -26,9 +27,10 @@ async function openTargetCourse(queryString: string, subAccount: number) {
 
   if (!searchCode) throw new Error("No search code provided");
 
-  let queryUrl = `/api/v1/accounts/${subAccount}/courses?search_term=${searchCode}`;
+  const origin = canvasOrigin || new URL(document.documentURI).origin;
+  let queryUrl = `${origin}/api/v1/accounts/${subAccount}/courses?search_term=${searchCode}`;
   if (!new URL(document.documentURI).hostname.endsWith(".instructure.com")) {
-    queryUrl = `https://unity.instructure.com/accounts/${subAccount}?search_term=${searchCode}`;
+    queryUrl = canvasOrigin ? `${canvasOrigin}/accounts/${subAccount}?search_term=${searchCode}` : canvasUrl(`/accounts/${subAccount}?search_term=${searchCode}`);
     window.open(queryUrl, "_blank");
     return;
   }
@@ -94,10 +96,10 @@ async function openTargetCourse(queryString: string, subAccount: number) {
   }
 
   if (!didOpen) {
-    window.open(
-      `https://unity.instructure.com/accounts/${subAccount}?search_term=${encodeURIComponent(queryString)}`,
-      "_blank"
-    );
+    const fallbackUrl = canvasOrigin
+      ? `${canvasOrigin}/accounts/${subAccount}?search_term=${encodeURIComponent(queryString)}`
+      : canvasUrl(`/accounts/${subAccount}?search_term=${encodeURIComponent(queryString)}`);
+    window.open(fallbackUrl, "_blank");
   }
 }
 
