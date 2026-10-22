@@ -124,25 +124,14 @@ export function SectionDetails({
 
         message('Applying new profile')
         const newText = renderProfile(targetPage.body, profile, section.id);
-        // Section copies are locked by default; unlock the blueprint's page for
-        // this one write and always re-lock afterward (see restrictBlueprintPage).
-        // The unlock call is inside the try (not before it) so a thrown error
-        // there still reaches the catch/finally below instead of leaving the
-        // user with no feedback and the lock state untouched but unexplained.
-        let unlocked = false;
+        // The profile page (which may be the home page) stays unlocked so
+        // section profile writes continue to work.
         try {
-            if (blueprintCourse) {
-                await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
-                unlocked = true;
-            }
+            if (blueprintCourse) await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
             await targetPage.updateContent(newText);
         } catch (e) {
             error(e instanceof Error ? e.message : "Failed to apply profile");
             return;
-        } finally {
-            if (blueprintCourse && unlocked) {
-                await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, true);
-            }
         }
         const newProfile = readProfileFromPage(newText);
         setFrontPageProfile(newProfile)
