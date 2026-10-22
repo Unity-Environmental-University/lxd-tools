@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 ### Changed
+- Finish Migration continues locking other blueprint items when an individual item cannot be locked, then reports the items and Canvas errors that failed. External tools are skipped, and home/profile pages remain unlocked for section profile writes.
 
 ### Internal
 
