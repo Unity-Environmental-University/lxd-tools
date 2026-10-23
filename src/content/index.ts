@@ -7,6 +7,15 @@ import { canvasUrl } from "@ueu/ueu-canvas/instance";
 
 import { ICourseData } from "@ueu/ueu-canvas/courseTypes";
 
+
+const state = globalThis as typeof globalThis & {
+  __lxdCourseSearchListenerInstalled?: boolean;
+};
+
+if (!state.__lxdCourseSearchListenerInstalled) {
+  state.__lxdCourseSearchListenerInstalled = true;
+}
+
 runtime.onMessage.addListener(async (message: Record<string, any>, sender, sendResponse: (output: any) => void) => {
   if (message.hasOwnProperty("queryString")) {
     try {
