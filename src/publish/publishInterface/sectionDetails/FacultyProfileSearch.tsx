@@ -1,4 +1,4 @@
-import {getFacultyPages, getProfileFromPage} from '@ueu/ueu-canvas/profile';
+import {FacultyBiosCourseNotFoundError, getFacultyPages, getProfileFromPage} from '@ueu/ueu-canvas/profile';
 import React, {FormEvent, useState} from "react";
 import {Button, Form} from "react-bootstrap";
 import {FacultyProfile} from "./FacultyProfile";
@@ -23,8 +23,16 @@ export function FacultyProfileSearch({onProfileSelect, minSearchLength = 3, user
     async function searchForProfiles(e: FormEvent) {
         e.preventDefault();
         if(search.length < minSearchLength) return;
-        const pages = await getFacultyPages(search);
+			try {
+				const pages = await getFacultyPages(search);
         setProfiles(pages.map(page => getProfileFromPage(page, user)))
+			} catch (e: unknown) {
+				alert(
+					e instanceof FacultyBiosCourseNotFoundError
+						? e.message
+						: `Error getting faculty pages: ${e}`
+				);
+			}
     }
 
     return <><h2>Faculty Profile Matches</h2>

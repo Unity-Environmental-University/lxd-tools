@@ -11,7 +11,7 @@ import { ProfileTemplateHelp } from "./ProfileTemplateHelp";
 import { MakeBp } from "./MakeBp";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { Term } from "@ueu/ueu-canvas/term/Term";
-import { getStartDateAssignments } from "@ueu/ueu-canvas/course/changeStartDate";
+import { getStartDateAssignments, NoOverviewModuleFoundError } from "@ueu/ueu-canvas/course/changeStartDate";
 import { IListAction, lutDispatcher, LutSetAction } from "@/ui/reducerDispatchers";
 import { sectionDataGenerator } from "@ueu/ueu-canvas/course/blueprint";
 import { batchGen } from "@ueu/ueu-canvas/canvasUtils";
@@ -209,20 +209,10 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     const { slug: profileSlug, blueprintPageId } = profileResolution;
 
     let updatedCount = 0;
-    let unlocked = false;
     try {
-      // Section copies of a blueprint page are locked against direct edits
-      // by default. Unlock the blueprint's page for the duration of this
-      // pass so the writes below aren't rejected, then always re-lock it
-      // afterward — Canvas has no API to read whether it was already
-      // unlocked, so "restore" here means "back to locked," not "back to
-      // whatever it was." This unlock is inside the try (not before it) so
-      // that a thrown error here still reaches the finally below and resets
-      // loading state instead of leaving the UI stuck on "Updating...".
-      if (course) {
-        await restrictBlueprintPage(course.id, blueprintPageId, false);
-        unlocked = true;
-      }
+      // Profile and home pages stay unlocked so section profile writes continue
+      // to work after this pass.
+      if (course) await restrictBlueprintPage(course.id, blueprintPageId, false);
 
       for (const section of Object.values(sections)) {
         const profiles = potentialProfilesByCourseId[section.id] ?? [];
@@ -251,9 +241,6 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         updatedCount++;
       }
     } finally {
-      if (course && unlocked) {
-        await restrictBlueprintPage(course.id, blueprintPageId, true);
-      }
       setLoading(false);
     }
     if (updatedCount > 0) {
@@ -283,54 +270,65 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     let tempTerm: Term | null = null;
 
     let actualStart: Temporal.PlainDate | null;
-    for await (const sectionInfos of batchGen(sectionGen, 6)) {
-      const promises = sectionInfos.map((sectionInfo) => async () => {
-        const result = await loadSection(sectionInfo.id);
-        console.log(result);
+    try {
+      for await (const sectionInfos of batchGen(sectionGen, 6)) {
+        const promises = sectionInfos.map((sectionInfo) => async () => {
+          const result = await loadSection(sectionInfo.id);
+          console.log(result);
 
-        const { section, instructors, frontPageProfile } = result;
-        if (!sectionStartSet) {
-          actualStart = await section.getStartDateFromModules();
-          if (!actualStart) {
-            actualStart = await getStartDateAssignments(section.id);
+          const { section, instructors, frontPageProfile } = result;
+          if (!sectionStartSet) {
+            try {
+              actualStart = await section.getStartDateFromModules();
+            } catch (error) {
+              if (!(error instanceof NoOverviewModuleFoundError)) throw error;
+              actualStart = null;
+            }
+            if (!actualStart) {
+              actualStart = await getStartDateAssignments(section.id);
+            }
+
+            sectionStartSet = true;
+            if (actualStart) setSectionStart(Temporal.PlainDateTime.from(actualStart));
           }
 
-          sectionStartSet = true;
-          setSectionStart(Temporal.PlainDateTime.from(actualStart));
-        }
+          if (!tempTerm) {
+            tempTerm = await section.getTerm();
+            setTerm(tempTerm);
+          }
 
-        if (!tempTerm) {
-          tempTerm = await section.getTerm();
-          setTerm(tempTerm);
-        }
+          dispatchSections({ set: [section.id, section] });
+          if (frontPageProfile)
+            dispatchFrontPageProfilesByCourseId({
+              set: [section.id, frontPageProfile],
+            });
 
-        dispatchSections({ set: [section.id, section] });
-        if (frontPageProfile)
-          dispatchFrontPageProfilesByCourseId({
-            set: [section.id, frontPageProfile],
-          });
+          setSectionsToPublish({ set: [section.id, section] });
+          if (frontPageProfile)
+            dispatchFrontPageProfilesByCourseId({
+              set: [section.id, frontPageProfile],
+            });
 
-        setSectionsToPublish({ set: [section.id, section] });
-        if (frontPageProfile)
-          dispatchFrontPageProfilesByCourseId({
-            set: [section.id, frontPageProfile],
-          });
+          if (instructors) {
+            dispatchInstructorsByCourseId({
+              set: [section.id, instructors],
+            });
+          }
 
-        if (instructors) {
-          dispatchInstructorsByCourseId({
-            set: [section.id, instructors],
-          });
-        }
-
-        if (section.data.total_students && section.data.total_students > 0) {
-          const emails = instructors?.map((a) => a.email);
-          emails?.forEach((email) => allEmails.add(email));
-          if (emails) setEmails([...allEmails]);
-        }
-      });
-      await Promise.all(promises.map((a) => a()));
+          if (section.data.total_students && section.data.total_students > 0) {
+            const emails = instructors?.map((a) => a.email);
+            emails?.forEach((email) => allEmails.add(email));
+            if (emails) setEmails([...allEmails]);
+          }
+        });
+        await Promise.all(promises.map((a) => a()));
+      }
+    } catch (error) {
+      console.error(error);
+      inform("Couldn't finish loading sections. Reload the page to try again.", "alert-danger");
+    } finally {
+      setCoursesLoading(false);
     }
-    setCoursesLoading(false);
   }
 
   const sectionPublishToggle = (course: Course, publish: boolean) => {
