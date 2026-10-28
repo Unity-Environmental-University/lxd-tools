@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 ### Internal
-
+- Update dependencies to patch vulnerabilities
 
 ## 3.2.4
 
