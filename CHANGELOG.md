@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Internal
+
+## 3.2.5
+
+### Added
 - New course overview formatting validation
 - Introduces a validation to add "Begin Course" and "Contract Your Instructor" buttons to home page in UG courses.
 
