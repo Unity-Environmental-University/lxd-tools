@@ -13,7 +13,18 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 	console.log("Inside syncSyllabus");
 	try {
 		// Get template syllabus
-		const templateCourse = await getCourseById(8217232);
+		let templateCourse: Course | undefined;
+
+		if (course.isUndergrad()) {
+			templateCourse = await getCourseById(7775658);
+		} else if (course.isGrad()) {
+			templateCourse = await getCourseById(7773747);
+		} else if (course.isCareerInstitute()) {
+			templateCourse = await getCourseById(225);
+		}
+
+		if (!templateCourse) throw new Error("No template course found.");
+
 		const templateSyllabus = await templateCourse.getSyllabus();
 
 		if (!templateSyllabus) {
