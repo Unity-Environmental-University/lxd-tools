@@ -291,9 +291,6 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
 
           const { section, instructors, frontPageProfile } = result;
           if (!sectionStartSet) {
-            // A freshly-associated Blueprint section has no modules yet (content syncs down
-            // later), so getStartDateFromModules throws NoOverviewModuleFoundError. Treat that
-            // the same as "no module unlock date" and fall back to assignments.
             try {
               actualStart = await section.getStartDateFromModules();
             } catch (error) {
