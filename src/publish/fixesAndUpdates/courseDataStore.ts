@@ -180,8 +180,8 @@ export async function getProfilePage(courseId: number, slug: string, instance?: 
  * changed in associated courses. blueprintPageId is the page's id on the blueprint
  * course itself (see ProfilePageResult.blueprintPageId), not on an associated section.
  *
- * The profile page (which may be the home page) is unlocked for writes and left
- * unlocked; callers should not re-lock it.
+ * The profile page (which may be the home page) is deliberately left unlocked
+ * so associated sections can write profile data.
  */
 export async function restrictBlueprintPage(
   blueprintCourseId: number,

@@ -1,7 +1,7 @@
 import assert from "assert";
 
 
-import {getNeverLockedPageIds, lockBlueprintChunked, unlockNeverLockedPages} from '@publish/publishInterface/lockBlueprintChunked';
+import {getNeverLockedPageIds, lockBlueprintChunked, unlockNeverLockedPages} from "@/publish/publishInterface/lockBlueprintChunked";
 import {Course} from '@ueu/ueu-canvas/course/Course';
 import {assignmentDataGen, updateAssignmentDueDates} from "@ueu/ueu-canvas/content/assignments";
 import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
@@ -29,13 +29,39 @@ import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
                 unlockBtn.innerHTML = "Unlocked!";
             });
             btn.addEventListener('click', async () => {
+                if (btn.getAttribute("aria-disabled") === "true") return;
                 btn.innerHTML = "Locking...";
-                await lockBlueprintChunked(course.id, await course.getModules(), undefined, undefined, undefined, await getNeverLockedPageIds(course));
-                // Lock first, unlock last so profile/home end up unlocked.
-                await unlockNeverLockedPages(course);
-                btn.innerHTML = "Locked!";
-                location.reload();
-
+                btn.setAttribute("aria-disabled", "true");
+                try {
+                    const neverLock = await getNeverLockedPageIds(course);
+                    const failures = await lockBlueprintChunked(
+                        course.id,
+                        await course.getModules(),
+                        (status, completion) => {
+                            btn.innerHTML = `${status} ${completion}%`;
+                        },
+                        undefined,
+                        undefined,
+                        neverLock
+                    );
+                    await unlockNeverLockedPages(course);
+                    btn.innerHTML = failures.length > 0 ? "Locked with errors" : "Locked!";
+                    if (failures.length > 0) {
+                        const failedItems = failures
+                            .map(({item, error}) => {
+                                const label = item.title || `${item.type} ${item.content_id ?? item.id}`;
+                                const reason = error instanceof Error ? error.message : String(error);
+                                return `• ${label}: ${reason}`;
+                            })
+                            .join("\n");
+                        alert(`${failures.length} item(s) could not be locked:\n${failedItems}`);
+                    }
+                    location.reload();
+                } catch (error) {
+                    btn.innerHTML = "Locking failed";
+                    btn.removeAttribute("aria-disabled");
+                    alert(`Could not complete blueprint locking: ${error instanceof Error ? error.message : String(error)}`);
+                }
             })
         }
 
@@ -54,4 +80,4 @@ import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
         })
     }
 
-})();
+})();

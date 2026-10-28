@@ -124,12 +124,10 @@ export function SectionDetails({
 
         message('Applying new profile')
         const newText = renderProfile(targetPage.body, profile, section.id);
-        // Unlock the blueprint's profile page (which may be the home page) and
-        // leave it unlocked — we never re-lock it.
+        // The profile page (which may be the home page) stays unlocked so
+        // section profile writes continue to work.
         try {
-            if (blueprintCourse) {
-                await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
-            }
+            if (blueprintCourse) await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
             await targetPage.updateContent(newText);
         } catch (e) {
             error(e instanceof Error ? e.message : "Failed to apply profile");
@@ -210,4 +208,4 @@ function AssignmentGroups({assignmentGroups}: IAssignmentGroupsProps) {
             ))
         }
     </div>
-}
+}
