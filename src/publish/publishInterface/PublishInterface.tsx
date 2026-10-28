@@ -339,6 +339,9 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         });
         await Promise.all(promises.map((a) => a()));
       }
+    } catch (error) {
+      console.error(error);
+      inform("Couldn't finish loading sections. Reload the page to try again.", "alert-danger");
     } finally {
       setCoursesLoading(false);
     }

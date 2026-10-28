@@ -4,7 +4,7 @@ import { mockCourseData } from "@ueu/ueu-canvas/course/__mocks__/mockCourseData"
 global.TextEncoder = require("util").TextEncoder;
 
 import React, { act } from "react";
-import { render, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import fetchMock from "jest-fetch-mock";
 import { PublishInterface } from "../PublishInterface";
@@ -56,5 +56,22 @@ describe("PublishInterface section load with no modules", () => {
       render(<PublishInterface course={bp} user={user} />);
     });
     await waitFor(() => expect(getStartDateAssignments).toHaveBeenCalledWith(2));
+  });
+
+  it("shows an error message when a section fails to load for an unexpected reason", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    jest
+      .spyOn(Course.prototype, "getStartDateFromModules")
+      .mockRejectedValue(new Error("Canvas went away"));
+
+    await act(async () => {
+      render(<PublishInterface course={bp} user={user} />);
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Manage Sections" }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Couldn't finish loading sections. Reload the page to try again.",
+      ),
+    );
   });
 });
