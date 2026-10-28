@@ -35,11 +35,6 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 			courseSyllabus,
 			"text/html",
 		);
-		const parsedTemplateSyllabus = parser.parseFromString(
-			templateSyllabus,
-			"text/html",
-		);
-
 		// Pull course-specific information table and Week 1 LMs out of syllabus
 		const metaTable = parsedCourseSyllabus.querySelector(
 			"table[data-course-meta]",
@@ -64,32 +59,21 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 
 		// Preserve inner content of Week 1 Learning Materials box from the course syllabus
 		const courseLmInnerHTML = learningMaterialsBox.innerHTML;
+		const courseLmOuterHTML = learningMaterialsBox.outerHTML;
 		const metaTableHtml = metaTable.outerHTML;
 
 		// Remove from original syllabi
 		metaTable.remove();
 		learningMaterialsBox.remove();
 
-		// Remove the same boxes from the template syllabus, if it exists
-		const templateMetaTable = parsedTemplateSyllabus.querySelector(
-			"table[data-course-meta]",
-		);
-		const templateLmBox = Array.from(
-			parsedTemplateSyllabus.querySelectorAll(".cbt-callout-box"),
-		).find((box) =>
-			box.textContent
-				?.toLowerCase()
-				.includes("week 1 learning materials preview"),
-		);
-
-		templateMetaTable?.remove();
-		templateLmBox?.remove();
-
 		// Build final HTML by combining template syllabus, meta table, banner image and Wk 1 LM
 		const finalTemplateDom = parser.parseFromString(
 			templateSyllabus,
 			"text/html",
 		);
+
+		// Drop the template's meta table so only the course's is kept
+		finalTemplateDom.querySelector("table[data-course-meta]")?.remove();
 
 		// Inject the course LM inner HTML into the corresponding template LM box (if it exists)
 		const templateLmContainer = Array.from(
@@ -101,6 +85,9 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 		);
 		if (templateLmContainer) {
 			templateLmContainer.innerHTML = courseLmInnerHTML;
+		} else {
+			// Template has no Week 1 box, so keep the course's at the end of the body
+			finalTemplateDom.body.insertAdjacentHTML("beforeend", courseLmOuterHTML);
 		}
 
 		// Pull the banner image out of the course syllabus, and replace the template's banner with the course banner.
@@ -114,6 +101,9 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 			finalTemplateDom.querySelector(".cbt-banner-image");
 		if (templateBannerBox && courseBannerHtml) {
 			templateBannerBox.outerHTML = courseBannerHtml;
+		} else if (courseBannerHtml) {
+			// Template has no banner, so keep the course's at the top of the body
+			finalTemplateDom.body.insertAdjacentHTML("afterbegin", courseBannerHtml);
 		}
 
 		// Serialize the modified template to HTML string
@@ -127,7 +117,7 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 		try {
 			course.changeSyllabus(finalSyllabus);
 		} catch (e: any) {
-			throw new Error("Error changing syllabus in course: ", e);
+			throw new Error(`Error changing syllabus in course: ${e}`);
 		}
 
 		uiAlert("Syllabus synced successfully.");
