@@ -209,20 +209,10 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     const { slug: profileSlug, blueprintPageId } = profileResolution;
 
     let updatedCount = 0;
-    let unlocked = false;
     try {
-      // Section copies of a blueprint page are locked against direct edits
-      // by default. Unlock the blueprint's page for the duration of this
-      // pass so the writes below aren't rejected, then always re-lock it
-      // afterward — Canvas has no API to read whether it was already
-      // unlocked, so "restore" here means "back to locked," not "back to
-      // whatever it was." This unlock is inside the try (not before it) so
-      // that a thrown error here still reaches the finally below and resets
-      // loading state instead of leaving the UI stuck on "Updating...".
-      if (course) {
-        await restrictBlueprintPage(course.id, blueprintPageId, false);
-        unlocked = true;
-      }
+      // Profile and home pages stay unlocked so section profile writes continue
+      // to work after this pass.
+      if (course) await restrictBlueprintPage(course.id, blueprintPageId, false);
 
       for (const section of Object.values(sections)) {
         const profiles = potentialProfilesByCourseId[section.id] ?? [];
@@ -251,9 +241,6 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         updatedCount++;
       }
     } finally {
-      if (course && unlocked) {
-        await restrictBlueprintPage(course.id, blueprintPageId, true);
-      }
       setLoading(false);
     }
     if (updatedCount > 0) {
