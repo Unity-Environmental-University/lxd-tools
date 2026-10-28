@@ -19,6 +19,15 @@ import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
             btn.innerHTML = "Lock All";
             moduleHeader.insertBefore(btn, moduleHeader.firstChild);
             btn.classList.add('btn');
+            const unlockBtn = document.createElement('btn');
+            unlockBtn.innerHTML = "Unlock Profile & Home";
+            moduleHeader.insertBefore(unlockBtn, moduleHeader.firstChild);
+            unlockBtn.classList.add('btn');
+            unlockBtn.addEventListener('click', async () => {
+                unlockBtn.innerHTML = "Unlocking...";
+                await unlockNeverLockedPages(course);
+                unlockBtn.innerHTML = "Unlocked!";
+            });
             btn.addEventListener('click', async () => {
                 if (btn.getAttribute("aria-disabled") === "true") return;
                 btn.innerHTML = "Locking...";
