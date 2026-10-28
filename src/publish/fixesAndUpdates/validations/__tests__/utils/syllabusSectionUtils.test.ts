@@ -82,7 +82,7 @@ describe("syllabus fix and validations functions", () => {
         test("Fails on bad caps if needed", async () => matchTest(/Section Name/,  /line 1/, { success: false })())
         test("Fails on on unknown section string", async () => matchTest('Nacho tuesday',  /line 1/, { success: false })())
         test("Fails on empty section name", async () => {
-            await expect(await matchTest('', '', {success: true})).rejects.toThrowError()
+            expect(() => inSyllabusSectionFunc('', '')).toThrow('Section header search strings must have a value')
         })
         test("Fails on regex with no match in section", async () => matchTest(/Section XYZ/, /line 1/i, { success: false })())
     })

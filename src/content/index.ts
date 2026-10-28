@@ -14,19 +14,19 @@ const state = globalThis as typeof globalThis & {
 
 if (!state.__lxdCourseSearchListenerInstalled) {
   state.__lxdCourseSearchListenerInstalled = true;
-}
 
-runtime.onMessage.addListener(async (message: Record<string, any>, sender, sendResponse: (output: any) => void) => {
-  if (message.hasOwnProperty("queryString")) {
-    try {
-      await openTargetCourse(message.queryString, message.subAccount, message.canvasOrigin);
-      sendResponse({ success: true });
-    } catch (e: any) {
-      sendResponse({ success: false, error: e.message || "Unknown error" });
+  runtime.onMessage.addListener(async (message: Record<string, any>, sender, sendResponse: (output: any) => void) => {
+    if (message.hasOwnProperty("queryString")) {
+      try {
+        await openTargetCourse(message.queryString, message.subAccount, message.canvasOrigin);
+        sendResponse({ success: true });
+      } catch (e: any) {
+        sendResponse({ success: false, error: e.message || "Unknown error" });
+      }
     }
-  }
-  return true;
-});
+    return true;
+  });
+}
 
 async function openTargetCourse(queryString: string, subAccount: number, canvasOrigin?: string) {
   console.log(queryString, subAccount);
