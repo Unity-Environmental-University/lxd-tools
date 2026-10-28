@@ -7,9 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- New course overview formatting validation
+- Introduces a validation to add "Begin Course" and "Contract Your Instructor" buttons to home page in UG courses.
 
 ### Changed
 - Finish Migration and Lock All continue when an individual blueprint item cannot be locked, then report the items and Canvas errors that failed. External tools are skipped, and home/profile pages remain unlocked for section profile writes.
+- Handles previously uncaught errors in the process of getting faculty bios.
+- Handles bug where error would be thrown on attempt to lock external tools in a blueprint.
+- getFullCourses now catches errors.
+- Handles duplicate tab bug in search.
 
 ### Internal
 - Update dependencies to patch vulnerabilities
