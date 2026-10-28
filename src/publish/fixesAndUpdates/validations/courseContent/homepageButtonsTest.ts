@@ -7,21 +7,8 @@ type UserData = {
 	homepageBody: string;
 };
 
-// TODO: Make the buttons in my test course so I have what shape they will take
-// TODO: Fill my button variables here, and then run should be done
-// TODO: Test my regex in homepage
-// TODO: In fix, get/build the two urls for the buttons to go to when clicked(course overview page, contact instructor)
-// TODO: Find anchor point for buttons
-// TODO: Place buttons
-// TODO: Write tests
-
-// Checking for strings of the button isn't going to be the most viable because the link information would be different. Could parse and look for an element, but that raises complexity.
-// Other options include dynamically determining what the links should be before the validation runs(getting the id for the course overview page and building the links
-// with those as variables.) Looking for a unique part of the buttons is probably most viable(I'm thinking like div up to the url with a unique attribute), but that only delays the work
-// of needing to figure out what the urls should look like. It may be fine to punt that until the fix and do the minimum viable option in run because it's safer for not getting
-// false failures where it says the buttons don't exist just because the url isn't what it expects.
-const beginButton = "";
-const instructorButton = "";
+const beginButtonTest = "Begin Course</a></div>";
+const instructorButtonTest = "Contact Your Instructor</a></div>";
 
 export const homepageButtonsTest: CourseFixValidation<Course> = {
 	name: "Buttons on Home page",
@@ -39,16 +26,16 @@ async function run(course: Course): Promise<ValidationResult<UserData>> {
 	}
 
 	// Get homepage
-	const pages = await course.getPages();
-	// This may be too cute by half, and run into issues in narrow circumstances where another page has Home in the title and is in the array before Home, or if the home page is
-	// ever not Home, which I don't think is likely in UG courses, so I'm more worried about the first concern than the second.
-	const homepage = pages.filter((page) => /Home/i.test(page.title))[0];
+	const pages = await course.getPages({ queryParams: { include: ["body"] } });
+	// This may be too cute by half, and run into issues if the home page is ever not Home, which I don't think is likely in UG courses,
+	// so I'm more worried about the first concern than the second.
+	const homepage = pages.filter((page) => /^Home$/gm.test(page.title))[0];
 	const homepageBody = homepage.body;
 
 	// Look for both buttons
 	const success =
-		homepageBody.includes(beginButton) &&
-		homepageBody.includes(instructorButton);
+		homepageBody.includes(beginButtonTest) &&
+		homepageBody.includes(instructorButtonTest);
 
 	//Return a result
 	return testResult(success, {
@@ -78,11 +65,27 @@ async function fix(
 		});
 	}
 
+	const buttonDiv = `<div>
+	    <div class="scaffold-media-box cbt-button" data-context-menu="insert delete" data-editable="true" data-caninsertinto="true" data-canhavechild="false"><a title="Course Overview" href="https://unity.instructure.com/courses/${course.id}/pages/course-overview" data-course-type="wikiPages" data-published="true" data-api-endpoint="https://unity.instructure.com/api/v1/courses/${course.id}/pages/course-overview" data-api-returntype="Page">Begin Course</a></div>
+	    <div class="scaffold-media-box cbt-button" data-context-menu="insert delete" data-editable="true" data-caninsertinto="true" data-canhavechild="false"><a class="inline_disabled" href="https://unity.instructure.com/conversations#filter=type=inbox" target="_blank" rel="noopener">Contact Your Instructor</a></div>
+	  </div>`;
+
 	const { homepage, homepageBody } = result.userData;
 
-	// Find the anchor point for the buttons
+	// Find the anchor point for the buttons: directly after the home banner
+	const parser = new DOMParser();
+	const parsedPage = parser.parseFromString(homepageBody, "text/html");
+	const banner = parsedPage.querySelector(".cbt-home-banner");
+
+	if (!banner) {
+		return testResult(false, {
+			failureMessage: "Couldn't find the home banner to place buttons after.",
+		});
+	}
+
 	// Place the buttons
-	const updatedHomepageBody = "";
+	banner.insertAdjacentHTML("afterend", buttonDiv);
+	const updatedHomepageBody = parsedPage.body.innerHTML;
 
 	// Send the page back to the course
 	const updatePage = await PageKind.put(course.id, homepage.id, {
