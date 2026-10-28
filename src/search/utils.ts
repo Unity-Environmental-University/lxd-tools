@@ -6,7 +6,21 @@ import type {
 } from "./types"
 
 let termsPromise: Promise<TermResponse> | null = null;
-export const BASE = "https://lisa.campus.unity.edu"
+export const BASES = {
+  prod: "https://lisa.campus.unity.edu",
+  ce: "https://lisa.campus.unity.edu/ce",
+} as const;
+export type BaseKey = keyof typeof BASES;
+
+let currentBase: string = BASES.prod;
+export const getBase = () => currentBase;
+
+// switching servers invalidates the cached terms, since they come from the old server
+export function setBase(key: BaseKey) {
+  if (currentBase === BASES[key]) return;
+  currentBase = BASES[key];
+  termsPromise = null;
+}
 
 // only fetch terms if promise is null (hasn't been fetched yet)
 function getTerms() {
@@ -60,7 +74,7 @@ async function get<K extends keyof ApiEndpoints>(
 ): Promise<ApiEndpoints[K]['response']> {
   
 
-  const apiBASE = `${BASE}/api`;
+  const apiBASE = `${currentBase}/api`;
   const url = new URL(`${apiBASE}/${slug}`);
 
   if(params){
