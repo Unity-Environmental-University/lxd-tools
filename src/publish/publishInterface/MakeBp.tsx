@@ -26,7 +26,7 @@ import { academicIntegritySetup } from "./academicIntegritySetup";
 import { aiLiteracySetup } from "@/publish/publishInterface/aiLiteracySetup";
 import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
-import { lockBlueprintChunked } from "./lockBlueprintChunked";
+import { getNeverLockedPageIds, lockBlueprintChunked, unlockNeverLockedPages } from "./lockBlueprintChunked";
 
 export const TERM_NAME_PLACEHOLDER = "Fill in term name here to archive.";
 const gradAiLiteracyCourses = ["rsch510", "sbus503", "prof510"];
@@ -294,6 +294,7 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
   ) {
     assert(currentBp);
     setIsLocking(true);
+    let lockFailures: Awaited<ReturnType<typeof lockBlueprintChunked>> = [];
     try {
       if (!(migration as any).blueprintSet) {
         progressCallbacks?.setFinishStatus("Setting as blueprint...");
@@ -304,14 +305,20 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
 
       if (!(migration as any).locked) {
         progressCallbacks?.setFinishStatus("Locking content...");
-        await lockBlueprintChunked(
+        lockFailures = await lockBlueprintChunked(
           currentBp.id,
           await currentBp.getModules(),
           (status, completion) => {
             progressCallbacks?.setFinishStatus(status);
             progressCallbacks?.setFinishCompletion(completion);
-          }
+          },
+          undefined,
+          undefined,
+          await getNeverLockedPageIds(currentBp)
         );
+        // Unlock last as well, so pages already restricted by an earlier run
+        // remain available to section profile writes.
+        await unlockNeverLockedPages(currentBp);
         (migration as any).locked = true;
         cacheCourseMigrations(currentBp.id, [migration]);
       }
@@ -320,6 +327,16 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
       migration.cleanedUp = true;
       cacheCourseMigrations(currentBp.id, [migration]);
       const [newBp] = (await getBlueprintsFromCode(devCourse.parsedCourseCode ?? "", [devCourse.accountId])) ?? [];
+      if (lockFailures.length > 0) {
+        const failedItems = lockFailures
+          .map(({ item, error }) => {
+            const label = item.title || `${item.type} ${item.content_id ?? item.id}`;
+            const reason = error instanceof Error ? error.message : String(error);
+            return `• ${label}: ${reason}`;
+          })
+          .join("\n");
+        alert(`Migration finished, but ${lockFailures.length} item(s) could not be locked:\n${failedItems}`);
+      }
       window.open(newBp.htmlContentUrl);
       location.reload();
     } catch (e: unknown) {

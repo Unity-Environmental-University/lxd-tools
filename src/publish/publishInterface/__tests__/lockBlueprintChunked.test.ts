@@ -61,4 +61,19 @@ describe("lockBlueprintChunked", () => {
     );
     expect(sent()).toEqual([]);
   });
+
+  it("skips wiki pages listed in neverLock (profile/home page)", async () => {
+    mockFetchJson.mockImplementation(async (url: string) =>
+      url === "/api/v1/courses/5/pages/home" ? { page_id: 77 } : {}
+    );
+    await lockBlueprintChunked(
+      5,
+      [{ items: [{ id: 903, type: "Page", url: "/api/v1/courses/5/pages/home" }, { id: 1, type: "Assignment", content_id: 11 }] }],
+      undefined,
+      10,
+      0,
+      new Set([77])
+    );
+    expect(sent()).toEqual([expect.objectContaining({ content_type: "assignment", content_id: "11" })]);
+  });
 });

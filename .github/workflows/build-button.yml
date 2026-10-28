@@ -37,7 +37,7 @@ jobs:
       - name: Run ESLint
         working-directory: lxd-tools
         run: |
-          if npm run link --if-present; then
+          if npm run lint; then
             echo "✅ ESLint passed"
           else
             echo "❌ ESLint failed"
