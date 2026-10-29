@@ -172,7 +172,7 @@ export function SearchApp() {
           checked={server === "ce"}
           onChange={(e) => setServer(e.target.checked ? "ce" : "prod")}
         />
-        {" "}Use CE server
+        {" "}Use CE
       </label>
       {endpoint != "" &&
         (<GenericSearch
