@@ -86,6 +86,7 @@ const scssRule = {
         api: "modern",
         sassOptions: {
           quietDeps: true,
+          silenceDeprecations: ["import"],
           includePaths: [path.join(__dirname, "node_modules")],
         },
       },
@@ -189,7 +190,7 @@ module.exports = {
     hints: isDevelopment ? false : "warning",
   },
   optimization: {
-    minimize: false,
+    minimize: !isDevelopment,
   },
   cache: {
     type: "filesystem",

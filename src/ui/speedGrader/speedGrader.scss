@@ -1,2 +1,19 @@
-@use "bootstrap/scss/bootstrap";
+@use "sass:meta";
 @import "react-datepicker/dist/react-datepicker.css";
+
+// Everything Bootstrap is nested under .lxd-bs so none of it applies to the
+// surrounding Canvas page (reboot's element rules, :root vars, etc.).
+// Canvas's own styles stay untouched; only our subtree gets Bootstrap.
+.lxd-bs {
+  @include meta.load-css("../../css/bootstrap-slim");
+
+  // Bootstrap normally inherits these from <body>, which we don't touch.
+  .modal {
+    font-family: var(--bs-body-font-family);
+    font-size: var(--bs-body-font-size);
+    font-weight: var(--bs-body-font-weight);
+    line-height: var(--bs-body-line-height);
+    color: var(--bs-body-color);
+    text-align: left;
+  }
+}
