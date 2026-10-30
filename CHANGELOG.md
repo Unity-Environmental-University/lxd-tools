@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 ### Internal
+- Switching npm run build to NODE_ENV: production
+- Minifying production builds, shipping with source maps for debugging purposes
+- Introduces bootstrap-slim to avoid shipping all of bootstrap, for size purposes
 
 ## 3.2.5
 

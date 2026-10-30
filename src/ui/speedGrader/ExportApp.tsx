@@ -1,5 +1,5 @@
 import "./speedGrader.scss"
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 
 
 import SpeedGraderModalDialog from "@/ui/speedGrader/controls/SpeedGraderModalDialog";
@@ -33,6 +33,9 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
     const [message, setMessage] = useState<string>('Error');
     const [header, setHeader] = useState<string>('Alert');
     const [multiTermModal, setMultiTermModal] = useState<boolean>(false);
+    // Modals render here (inside our .lxd-bs subtree) rather than on Canvas's <body>,
+    // so the scoped Bootstrap CSS applies to them.
+    const modalContainer = useRef<HTMLDivElement>(null);
 
     useEffectAsync(async () => {
         if (!course) {
@@ -76,7 +79,7 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
     }
 
 
-    return (course && <>
+    return (course && <div ref={modalContainer} data-bs-theme="light" style={{display: "contents"}}>
         {assignment && <ExportOneButton {...handlerProps} {...{course, assignment}} />}
         <ExportAllButton {...handlerProps} {...{course}}/>
         <button onClick={(event) => {
@@ -86,9 +89,10 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
         }}>...
         </button>
 
-        <SpeedGraderModalDialog canClose={canClose} show={modalOpen} header={header} message={message}>
+        <SpeedGraderModalDialog container={modalContainer} canClose={canClose} show={modalOpen} header={header} message={message}>
         </SpeedGraderModalDialog>
         <DateRangeExportDialog
+            container={modalContainer}
             show={multiTermModal}
             course={course}
             handleHide={() => setMultiTermModal(false)}
@@ -100,7 +104,7 @@ function ExportApp({initialCourse, initialAssignment}: ExportAppProps) {
                 popClose();
             }}
         ></DateRangeExportDialog>
-    </>)
+    </div>)
 }
 
 
