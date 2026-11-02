@@ -15,7 +15,7 @@ import {IProfile} from "@ueu/ueu-canvas/type";
 type SectionDetailsProps = {
     section?: Course | null,
     blueprintCourse?: Course | null,
-    onUpdateFrontPageProfile?(profile: IProfile): void,
+    onUpdateTargetPageProfile?(profile: IProfile): void,
     facultyProfileMatches?: (IProfile & {user:IUserData})[] | null,
     onClose?: () => void,
 }
@@ -24,13 +24,13 @@ export function SectionDetails({
                                    section,
                                    blueprintCourse,
                                    onClose,
-                                   onUpdateFrontPageProfile,
+                                   onUpdateTargetPageProfile,
                                    facultyProfileMatches
                                }: SectionDetailsProps) {
     const [modules, setModules] = useState<IModuleData[]>([])
     const [assignmentGroups, setAssignmentGroups] = useState<IAssignmentGroup[]>([])
     const [instructors, setInstructors] = useState<IUserData[]>([])
-    const [frontPageProfile, setFrontPageProfile] = useState<IProfile | null>(null)
+    const [targetPageProfile, setTargetPageProfile] = useState<IProfile | null>(null)
     const [info, setInfo] = useState<string | null>(null)
     const [infoClass, setInfoClass] = useState<string>('alert-primary')
     // A single ProfilePageResult rather than separate slug/error/pageId
@@ -57,7 +57,7 @@ export function SectionDetails({
         if (result.status === "found") {
             const targetPage = await getProfilePage(section.id, result.slug);
             if (targetPage) {
-                setFrontPageProfile(readProfileFromPage(targetPage.body));
+                setTargetPageProfile(readProfileFromPage(targetPage.body));
             }
         }
     }
@@ -68,7 +68,7 @@ export function SectionDetails({
         setInstructors([]);
         setModules([]);
         setAssignmentGroups([]);
-        setFrontPageProfile(null);
+        setTargetPageProfile(null);
         setInfo(null);
         if (!section) return;
 
@@ -134,8 +134,8 @@ export function SectionDetails({
             return;
         }
         const newProfile = readProfileFromPage(newText);
-        setFrontPageProfile(newProfile)
-        if (onUpdateFrontPageProfile && newProfile) onUpdateFrontPageProfile(newProfile);
+        setTargetPageProfile(newProfile)
+        if (onUpdateTargetPageProfile && newProfile) onUpdateTargetPageProfile(newProfile);
         success("Profile updated")
     }
 
@@ -157,7 +157,7 @@ export function SectionDetails({
         {info && <div className={`alert ${infoClass}`}>{info}</div>}
         <Row>
             <div className={'col-sm-8'}>
-                {frontPageProfile && <FacultyProfile profile={frontPageProfile}/>}
+                {targetPageProfile && <FacultyProfile profile={targetPageProfile}/>}
             </div>
             <div className={'col-sm-4'}>
                 <div className={'col'}>

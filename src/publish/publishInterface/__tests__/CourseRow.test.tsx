@@ -17,7 +17,7 @@ const mockCourse: Course = new Course({
   course_code: "BP_TEST000",
 }) as Course;
 
-const mockFrontPageProfile: IProfile = {
+const mockTargetPageProfile: IProfile = {
   id: 1,
   displayName: "Front Page Profile",
 } as IProfile;
@@ -33,9 +33,9 @@ const mockErrors: string[] = [];
 const renderComponent = (props: Partial<ICourseRowProps> = {}) => {
   const defaultProps: ICourseRowProps = {
     course: mockCourse,
-    frontPageProfile: mockFrontPageProfile,
+    targetPageProfile: mockTargetPageProfile,
     instructors: mockInstructors,
-    facultyProfileMatches: [mockFrontPageProfile],
+    facultyProfileMatches: [mockTargetPageProfile],
     onSelectSection: mockOnSelectSection,
     errors: mockErrors,
     ...props,
@@ -53,9 +53,26 @@ describe("CourseRow Component", () => {
     renderComponent();
     expect(screen.getByText("Test Course")).toBeInTheDocument();
     // Source -> target: the source name comes from the single faculty match,
-    // not frontPageProfile directly (see CourseRow.tsx's `source` derivation).
+    // not targetPageProfile directly (see CourseRow.tsx's `source` derivation).
     expect(screen.getByText(/Front Page Profile/)).toBeInTheDocument();
     expect(screen.getByText("Instructor 1, Instructor 2")).toBeInTheDocument();
+  });
+
+  it("shows the name from the target page, not the slug, on the target side", () => {
+    renderComponent({
+      facultyProfileMatches: [{ id: 2, displayName: "Source Name" } as IProfile],
+      targetPageProfile: { id: 3, displayName: "Name On Target" } as IProfile,
+      profileSlug: "meet-your-instructor",
+    });
+    expect(screen.getByText("Source Name → Name On Target")).toBeInTheDocument();
+  });
+
+  it("falls back to the slug when the target page has no name", () => {
+    renderComponent({
+      targetPageProfile: { id: 3, displayName: null } as unknown as IProfile,
+      profileSlug: "meet-your-instructor",
+    });
+    expect(screen.getByText(/→ meet-your-instructor/)).toBeInTheDocument();
   });
 
   it('calls onSelectSection when "Details" button is clicked', () => {
