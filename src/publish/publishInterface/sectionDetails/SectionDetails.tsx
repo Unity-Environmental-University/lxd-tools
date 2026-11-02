@@ -1,5 +1,6 @@
 import React, {useState} from "react";
-import { readProfileFromPage, renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { readProfileFromPage, renderProfileVerified } from "@publish/fixesAndUpdates/profileRenderer";
+import { ProfileWriteWarning } from "../ProfileWriteWarning";
 import { findProfilePageSlug, getProfilePage, ProfilePageResult, restrictBlueprintPage } from "@publish/fixesAndUpdates/courseDataStore";
 import {IModuleData, IUserData} from '@ueu/ueu-canvas/canvasDataDefs';
 import {useEffectAsync} from "../../../ui/utils";
@@ -31,6 +32,7 @@ export function SectionDetails({
     const [assignmentGroups, setAssignmentGroups] = useState<IAssignmentGroup[]>([])
     const [instructors, setInstructors] = useState<IUserData[]>([])
     const [targetPageProfile, setTargetPageProfile] = useState<IProfile | null>(null)
+    const [profileProblems, setProfileProblems] = useState<string[]>([])
     const [info, setInfo] = useState<string | null>(null)
     const [infoClass, setInfoClass] = useState<string>('alert-primary')
     // A single ProfilePageResult rather than separate slug/error/pageId
@@ -123,24 +125,29 @@ export function SectionDetails({
         if (!targetPage) return error(`Profile page "${profileSlug}" not found`);
 
         message('Applying new profile')
-        const newText = renderProfile(targetPage.body, profile, section.id);
+        const rendered = renderProfileVerified(targetPage.body, profile, section.id);
+        if (!rendered.ok) {
+            setProfileProblems([`${section.name}: ${rendered.problem}`]);
+            error(`Profile not written: ${rendered.problem}`);
+            return;
+        }
         // The profile page (which may be the home page) stays unlocked so
         // section profile writes continue to work.
         try {
             if (blueprintCourse) await restrictBlueprintPage(blueprintCourse.id, blueprintPageId, false);
-            await targetPage.updateContent(newText);
+            await targetPage.updateContent(rendered.html);
         } catch (e) {
             error(e instanceof Error ? e.message : "Failed to apply profile");
             return;
         }
-        const newProfile = readProfileFromPage(newText);
-        setTargetPageProfile(newProfile)
-        if (onUpdateTargetPageProfile && newProfile) onUpdateTargetPageProfile(newProfile);
+        setTargetPageProfile(rendered.written)
+        onUpdateTargetPageProfile?.(rendered.written);
         success("Profile updated")
     }
 
 
     return (section && (<div>
+        <ProfileWriteWarning problems={profileProblems} onClose={() => setProfileProblems([])}/>
         <h3>Section Details
             <button onClick={onClose}>X</button>
         </h3>
