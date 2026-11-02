@@ -59,7 +59,10 @@ const tsRule = {
   use: [
     {
       loader: "ts-loader",
-      options: { compilerOptions: { noEmit: false } },
+      options: {
+        transpileOnly: isDevelopment,
+        compilerOptions: { noEmit: false },
+      },
     },
   ],
   exclude: /node_modules|__test__/,
@@ -197,7 +200,7 @@ module.exports = {
     allowCollectingMemory: true,
   },
   entry,
-  devtool: "source-map",
+  devtool: isDevelopment ? "eval-cheap-module-source-map" : "source-map",
   module: _module,
   plugins: createPlugins(),
   resolve: {
