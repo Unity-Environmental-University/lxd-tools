@@ -25,7 +25,8 @@ import {
   ProfilePageResult,
   restrictBlueprintPage,
 } from "@publish/fixesAndUpdates/courseDataStore";
-import { readProfileFromPage, renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { readProfileFromPage, renderProfileVerified } from "@publish/fixesAndUpdates/profileRenderer";
+import { ProfileWriteWarning } from "./ProfileWriteWarning";
 
 export interface IPublishInterfaceProps {
   course?: Course;
@@ -81,6 +82,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [infoClass, setInfoClass] = useState<string>("alert-secondary");
 
+  const [profileProblems, setProfileProblems] = useState<string[]>([]);
   const [unloadWarning, setUnloadWarning] = useState<string | null | undefined>();
 
   useEffectAsync(async () => {
@@ -220,6 +222,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
       // to work after this pass.
       if (course) await restrictBlueprintPage(course.id, blueprintPageId, false);
 
+      const problems: string[] = [];
       for (const section of Object.values(sections)) {
         const profiles = potentialProfilesByCourseId[section.id] ?? [];
         if (profiles.length < 1) {
@@ -238,14 +241,20 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
           continue;
         }
 
-        const html = renderProfile(targetPage.body, profile, section.id);
-        await targetPage.updateContent(html);
+        const rendered = renderProfileVerified(targetPage.body, profile, section.id);
+        if (!rendered.ok) {
+          sectionError(section, rendered.problem);
+          problems.push(`${section.name}: ${rendered.problem}`);
+          continue;
+        }
+        await targetPage.updateContent(rendered.html);
         dispatchTargetPageProfilesByCourseId({
           set: { [section.id]: profile },
         });
         setInfo(`Updated ${profile.displayName}...`);
         updatedCount++;
       }
+      setProfileProblems(problems);
     } finally {
       setLoading(false);
     }
@@ -312,10 +321,6 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
             });
 
           setSectionsToPublish({ set: [section.id, section] });
-          if (targetPageProfile)
-            dispatchTargetPageProfilesByCourseId({
-              set: [section.id, targetPageProfile],
-            });
 
           if (instructors) {
             dispatchInstructorsByCourseId({
@@ -476,6 +481,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   return (
     <>
       <OpenButton isDev={isDev} isBlueprint={isBlueprint} setShow={setShow} />
+      <ProfileWriteWarning problems={profileProblems} onClose={() => setProfileProblems([])} />
       <Modal
         id={"lxd-publish-interface"}
         isOpen={show}
