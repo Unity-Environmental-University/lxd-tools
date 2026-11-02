@@ -25,7 +25,7 @@ import {
   ProfilePageResult,
   restrictBlueprintPage,
 } from "@publish/fixesAndUpdates/courseDataStore";
-import { renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
+import { readProfileFromPage, renderProfile } from "@publish/fixesAndUpdates/profileRenderer";
 
 export interface IPublishInterfaceProps {
   course?: Course;
@@ -33,7 +33,7 @@ export interface IPublishInterfaceProps {
 }
 
 export function PublishInterface({ course, user }: IPublishInterfaceProps) {
-  type SectionInfo = { section: Course; instructors: IUserData[] | null; frontPageProfile: IProfile | null };
+  type SectionInfo = { section: Course; instructors: IUserData[] | null; targetPageProfile: IProfile | null };
 
   //-----
   // DATA
@@ -61,7 +61,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     {} as Record<number, IProfileWithUser[]>
   );
   useState<Record<number, IProfileWithUser[]>>({});
-  const [frontPageProfilesByCourseId, dispatchFrontPageProfilesByCourseId] = useReducer(
+  const [targetPageProfilesByCourseId, dispatchTargetPageProfilesByCourseId] = useReducer(
     lutDispatcher<number, IProfile>,
     {} as Record<number, IProfile>
   );
@@ -143,7 +143,13 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     }, 500);
   }
 
-  async function loadSection(courseId: number) {
+  async function readTargetPageProfile(section: Course, profileSlug: string | null): Promise<IProfile | null> {
+    const targetPage = profileSlug ? await getProfilePage(section.id, profileSlug) : null;
+    const fromTarget = targetPage ? readProfileFromPage(targetPage.body) : null;
+    return fromTarget ?? (await section.getFrontPageProfile());
+  }
+
+  async function loadSection(courseId: number, profileSlug: string | null) {
     if (sectionInfoCache[courseId]) {
       if (sectionInfoCache[courseId] !== "loading") return sectionInfoCache[courseId];
       for (let i = 0; i < 10; i++) {
@@ -159,9 +165,9 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     });
     const section = new Course(sectionData);
 
-    const frontPageProfile = await section.getFrontPageProfile();
+    const targetPageProfile = await readTargetPageProfile(section, profileSlug);
     const instructors = await section.getInstructors();
-    const out = { section, instructors, frontPageProfile };
+    const out = { section, instructors, targetPageProfile };
 
     if (!potentialProfilesByCourseId[section.id]) {
       const profiles = await section.getPotentialInstructorProfiles();
@@ -188,7 +194,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   async function applySectionProfiles(_?: React.MouseEvent) {
     setLoading(true);
     inform("Updating section profiles...");
-    const _currentProfiles = { ...frontPageProfilesByCourseId };
+    const _currentProfiles = { ...targetPageProfilesByCourseId };
     setErrorsByCourseId({});
 
     // No fallback: a course must resolve to exactly one data-attribute profile
@@ -234,7 +240,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
 
         const html = renderProfile(targetPage.body, profile, section.id);
         await targetPage.updateContent(html);
-        dispatchFrontPageProfilesByCourseId({
+        dispatchTargetPageProfilesByCourseId({
           set: { [section.id]: profile },
         });
         setInfo(`Updated ${profile.displayName}...`);
@@ -262,6 +268,8 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   async function getFullCourses(course: Course) {
     if (coursesLoading) return;
     setCoursesLoading(true);
+    const resolution = await findProfilePageSlug(course.id);
+    const profileSlug = resolution.status === "found" ? resolution.slug : null;
     const sectionGen = sectionDataGenerator(course.id, { queryParams: { per_page: 5 } });
     const _allInstructors: Record<number, IUserData[]> = {};
     const allEmails = new Set<string>();
@@ -273,10 +281,10 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     try {
       for await (const sectionInfos of batchGen(sectionGen, 6)) {
         const promises = sectionInfos.map((sectionInfo) => async () => {
-          const result = await loadSection(sectionInfo.id);
+          const result = await loadSection(sectionInfo.id, profileSlug);
           console.log(result);
 
-          const { section, instructors, frontPageProfile } = result;
+          const { section, instructors, targetPageProfile } = result;
           if (!sectionStartSet) {
             try {
               actualStart = await section.getStartDateFromModules();
@@ -298,15 +306,15 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
           }
 
           dispatchSections({ set: [section.id, section] });
-          if (frontPageProfile)
-            dispatchFrontPageProfilesByCourseId({
-              set: [section.id, frontPageProfile],
+          if (targetPageProfile)
+            dispatchTargetPageProfilesByCourseId({
+              set: [section.id, targetPageProfile],
             });
 
           setSectionsToPublish({ set: [section.id, section] });
-          if (frontPageProfile)
-            dispatchFrontPageProfilesByCourseId({
-              set: [section.id, frontPageProfile],
+          if (targetPageProfile)
+            dispatchTargetPageProfilesByCourseId({
+              set: [section.id, targetPageProfile],
             });
 
           if (instructors) {
@@ -421,7 +429,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                   sections={Object.values(sections /* or however you get your list */)}
                   onOpenAll={openAll}
                   instructorsByCourseId={instructorsByCourseId}
-                  frontPageProfilesByCourseId={frontPageProfilesByCourseId}
+                  targetPageProfilesByCourseId={targetPageProfilesByCourseId}
                   potentialProfilesByCourseId={potentialProfilesByCourseId}
                   errorsByCourseId={errorsByCourseId}
                   profileSlug={profileResolution?.status === "found" ? profileResolution.slug : null}
@@ -449,9 +457,9 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         {workingSection && (
           <div>
             <SectionDetails
-              onUpdateFrontPageProfile={(_newProfile) =>
-                dispatchFrontPageProfilesByCourseId({
-                  set: [workingSection.id, frontPageProfilesByCourseId],
+              onUpdateTargetPageProfile={(_newProfile) =>
+                dispatchTargetPageProfilesByCourseId({
+                  set: [workingSection.id, _newProfile],
                 })
               }
               facultyProfileMatches={potentialProfilesByCourseId[workingSection.id]}
@@ -502,7 +510,7 @@ export interface IGetFullCoursesProps {
   dispatchSections: React.Dispatch<IListAction<Course>>;
   setSectionStart: (start: Temporal.PlainDateTime) => void;
   setTerm: (term: Term | null) => void;
-  setFrontPageProfilesByCourseId: (profiles: Record<number, IProfile>) => void;
+  setTargetPageProfilesByCourseId: (profiles: Record<number, IProfile>) => void;
 }
 
 type OpenButtonProps = {
