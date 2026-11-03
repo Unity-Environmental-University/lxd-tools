@@ -1,6 +1,6 @@
 import { IProfile } from "@ueu/ueu-canvas/type";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
-import { renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
+import { getCurioPageFrontPageProfile, renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
 
 type ProfileWithUser = IProfile & { user: IUserData };
 
@@ -116,6 +116,40 @@ export function renderProfile(html: string, profile: ProfileWithUser, courseId: 
   return renderProfileIntoCurioFrontPage(html, profile);
 }
 
+export type ProfileRenderResult =
+  | { ok: true; html: string; written: IProfile }
+  | { ok: false; problem: string };
+
+function plainText(html: string): string {
+  const el = document.createElement("div");
+  el.innerHTML = html;
+  return el.textContent ?? "";
+}
+
+/**
+ * renderProfile, but reads the result back: legacy pages throw when the
+ * "Meet your instructor" section is missing and silently skip the bio and
+ * image when their elements are missing, so a render that returns HTML has
+ * not necessarily written anything.
+ */
+export function renderProfileVerified(html: string, profile: ProfileWithUser, courseId: number): ProfileRenderResult {
+  let rendered: string;
+  try {
+    rendered = renderProfile(html, profile, courseId);
+  } catch {
+    return { ok: false, problem: "Couldn't find the profile section on the page" };
+  }
+  const written = hasDataProfileAttributes(rendered)
+    ? readProfileFromPage(rendered)
+    : getCurioPageFrontPageProfile(rendered);
+  const nameLanded =
+    !profile.displayName || plainText(written?.displayName ?? "") === plainText(profile.displayName);
+  if (!written || !nameLanded) {
+    return { ok: false, problem: `"${profile.displayName}" did not land on the page` };
+  }
+  return { ok: true, html: rendered, written };
+}
+
 /**
  * Read a profile from a page's HTML, if it uses the data-attribute convention.
  * Returns null for legacy Curio pages — caller should use
@@ -136,7 +170,7 @@ function readProfileByDataAttributes(html: string, user?: IUserData): IProfile {
 
   return {
     user,
-    displayName: nameEl?.textContent ?? null,
+    displayName: nameEl?.textContent?.trim() || null,
     bio: bioEl?.innerHTML ?? null,
     imageLink: imageEl instanceof HTMLImageElement ? imageEl.src : null,
   };

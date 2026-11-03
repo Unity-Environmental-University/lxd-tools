@@ -25,7 +25,7 @@ const mockInstructorsByCourseId = {
   2: [{ ...mockUserData, id: 2, name: "Instructor 2" } as IUserData],
 };
 
-const mockFrontPageProfilesByCourseId = {
+const mockTargetPageProfilesByCourseId = {
   1: { id: 1, name: "Profile 1" } as IProfile,
   2: { id: 2, name: "Profile 2" } as IProfile,
 };
@@ -48,7 +48,7 @@ const renderComponent = (props: Partial<ISectionRows> = {}) => {
   const defaultProps: ISectionRows = {
     sections: mockCourses,
     instructorsByCourseId: mockInstructorsByCourseId,
-    frontPageProfilesByCourseId: mockFrontPageProfilesByCourseId,
+    targetPageProfilesByCourseId: mockTargetPageProfilesByCourseId,
     potentialProfilesByCourseId: mockPotentialProfilesByCourseId,
     errorsByCourseId: mockErrorsByCourseId,
     setWorkingSection: mockSetWorkingSection,
