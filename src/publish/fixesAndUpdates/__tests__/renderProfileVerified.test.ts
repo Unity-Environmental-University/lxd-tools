@@ -1,4 +1,4 @@
-import { renderProfileVerified } from "../profileRenderer";
+import { readProfileFromPage, renderProfileVerified } from "../profileRenderer";
 import { IProfile } from "@ueu/ueu-canvas/type";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
 
@@ -61,5 +61,12 @@ describe(`renderProfileVerified (seed ${SEED})`, () => {
       el.innerHTML = result.written.displayName ?? "";
       expect(el.textContent).toContain(profile.displayName!);
     }
+  });
+});
+
+describe("readProfileFromPage names", () => {
+  it.each(["", " ", "\n\t "])("reads a blank name element (%j) as null", (blank) => {
+    const profile = readProfileFromPage(`<h2 data-profile-name>${blank}</h2>`);
+    expect(profile?.displayName).toBeNull();
   });
 });
