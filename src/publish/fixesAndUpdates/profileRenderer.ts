@@ -170,7 +170,7 @@ function readProfileByDataAttributes(html: string, user?: IUserData): IProfile {
 
   return {
     user,
-    displayName: nameEl?.textContent ?? null,
+    displayName: nameEl?.textContent?.trim() || null,
     bio: bioEl?.innerHTML ?? null,
     imageLink: imageEl instanceof HTMLImageElement ? imageEl.src : null,
   };
