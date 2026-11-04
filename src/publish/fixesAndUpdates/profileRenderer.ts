@@ -1,8 +1,13 @@
 import { IProfile } from "@ueu/ueu-canvas/type";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
-import { getCurioPageFrontPageProfile, renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
+import { getCurioPageFrontPageProfile, getProfileFromPage, renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
 
-type ProfileWithUser = IProfile & { user: IUserData };
+/** Any other data-profile-<key> element on the page, read as plain text under its key. */
+export type TemplateProfile = IProfile & { fields: Record<string, string> };
+
+type FacultyPage = Parameters<typeof getProfileFromPage>[0];
+
+type ProfileWithUser = IProfile & { user: IUserData; fields?: Record<string, string> };
 
 /**
  * Data-attribute convention for profile pages. Templates mark elements with
@@ -58,8 +63,24 @@ function inboxComposeUrl(courseId: number, user: IUserData): string {
   return `/conversations?${params.toString()}`;
 }
 
+const ATTR_PREFIX = "data-profile-";
+const RESERVED_ATTRS: ReadonlySet<string> = new Set(Object.values(ATTR));
+
 export function hasDataProfileAttributes(html: string): boolean {
-  return Object.values(ATTR).some((attr) => html.includes(attr));
+  return html.includes(ATTR_PREFIX);
+}
+
+function readExtraFields(root: Element): Record<string, string> {
+  const fields: Record<string, string> = {};
+  for (const node of Array.from(root.querySelectorAll("*"))) {
+    for (const { name } of Array.from(node.attributes)) {
+      if (!name.startsWith(ATTR_PREFIX) || RESERVED_ATTRS.has(name)) continue;
+      const key = name.slice(ATTR_PREFIX.length);
+      const text = node.textContent?.trim();
+      if (text && !(key in fields)) fields[key] = text;
+    }
+  }
+  return fields;
 }
 
 function renderProfileByDataAttributes(html: string, profile: ProfileWithUser, courseId: number): string {
@@ -94,6 +115,14 @@ function renderProfileByDataAttributes(html: string, profile: ProfileWithUser, c
   const messageEl = el.querySelector(`[${ATTR.message}]`);
   if (messageEl instanceof HTMLAnchorElement && profile.user) {
     messageEl.href = inboxComposeUrl(courseId, profile.user);
+  }
+
+  for (const [key, text] of Object.entries(profile.fields ?? {})) {
+    const attr = ATTR_PREFIX + key;
+    if (RESERVED_ATTRS.has(attr)) continue;
+    for (const node of Array.from(el.querySelectorAll("*"))) {
+      if (node.hasAttribute(attr)) node.textContent = text;
+    }
   }
 
   el.querySelectorAll(`[${ATTR.help}]`).forEach((node) => node.remove());
@@ -155,12 +184,12 @@ export function renderProfileVerified(html: string, profile: ProfileWithUser, co
  * Returns null for legacy Curio pages — caller should use
  * getCurioPageFrontPageProfile directly for that format instead of guessing.
  */
-export function readProfileFromPage(html: string, user?: IUserData): IProfile | null {
+export function readProfileFromPage(html: string, user?: IUserData): TemplateProfile | null {
   if (!hasDataProfileAttributes(html)) return null;
   return readProfileByDataAttributes(html, user);
 }
 
-function readProfileByDataAttributes(html: string, user?: IUserData): IProfile {
+function readProfileByDataAttributes(html: string, user?: IUserData): TemplateProfile {
   const el = document.createElement("div");
   el.innerHTML = html;
 
@@ -173,5 +202,18 @@ function readProfileByDataAttributes(html: string, user?: IUserData): IProfile {
     displayName: nameEl?.textContent?.trim() || null,
     bio: bioEl?.innerHTML ?? null,
     imageLink: imageEl instanceof HTMLImageElement ? imageEl.src : null,
+    fields: readExtraFields(el),
   };
+}
+
+/**
+ * Profile for a Faculty Bios page: a page tagged with data-profile-* is read by
+ * its tags; an untagged legacy page falls back to the library's layout guessing.
+ * Bio pages are titled with the instructor's name, which stands in when the
+ * layout guess finds none (e.g. an empty <strong><em></em></strong> shell).
+ */
+export function profileFromFacultyPage(page: FacultyPage, user: IUserData): IProfile {
+  const tagged = readProfileFromPage(page.body ?? "", user);
+  const profile = tagged ? { ...tagged, sourcePage: page } : getProfileFromPage(page, user);
+  return { ...profile, displayName: profile.displayName?.trim() || page.title?.trim() || null };
 }
