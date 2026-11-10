@@ -200,7 +200,7 @@ module.exports = {
     allowCollectingMemory: true,
   },
   entry,
-  devtool: isDevelopment ? "eval-cheap-module-source-map" : "source-map",
+  devtool: isDevelopment ? "cheap-module-source-map" : "source-map",
   module: _module,
   plugins: createPlugins(),
   resolve: {
