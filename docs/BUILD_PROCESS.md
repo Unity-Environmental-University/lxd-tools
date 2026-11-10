@@ -44,7 +44,7 @@ The deployment pipeline manages version control, package signing, storage on Clo
 
 The workflow performs the following automated steps in sequence:
 
-1. **Repository Checkout & Setup** — Clones the lxd-tools repository and installs Node.js 20 with all dependencies. Git tags are fetched to enable version detection.
+1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. The packaging tools (`crx3`, `web-ext`) are installed at pinned versions from `.github/release-tools/` (see [Updating the release tools](#updating-the-release-tools)). Git tags are fetched to enable version detection.
 2. **Version Validation** — Reads the version from `package.json` and verifies it hasn't been deployed before by checking for an existing git tag. If a duplicate version is detected, the entire build fails with a clear error message to prevent accidental re-deployment.
 3. **Extension Compilation** — Runs `npm run build` to compile the extension source code into the `dist` directory.
 4. **Platform-Specific Signing** — The compiled extension is signed for both platforms:
@@ -69,7 +69,7 @@ The workflow performs the following automated steps in sequence:
 ### Security
 
 - All secrets are referenced via `${{ secrets.VAR_NAME }}` syntax, per GitHub Actions format
-- Chrome key is base64-encoded and must be decoded before use
+- Chrome key is base64-encoded; it is decoded to the runner's temp directory only inside the pack step and deleted when that step ends
 - Firefox API credentials are environment variables, never logged
 - GitHub token used for pushing to build repository is scoped and temporary
 
@@ -143,6 +143,10 @@ The workflow produces the following artifacts for monitoring:
 3. Verify npm build script still works
 4. Test signing keys are still valid
 5. Review and test any version management changes
+
+### Updating the release tools
+
+`crx3` and `web-ext` are pinned in `.github/release-tools/package.json` and its own `package-lock.json`, separate from the extension's dependencies so the root `overrides` do not apply to them. To update them, change the versions there, run `npm install` in that folder, and commit both files. Do this in a release PR that also bumps the version in `package.json`: a merged PR that only changes `.github/release-tools/` still triggers the deploy workflow, which then stops at the duplicate-version check.
 
 ## Related Documentation
 

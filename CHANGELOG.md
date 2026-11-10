@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Switching npm run build to NODE_ENV: production
 - Minifying production builds, shipping with source maps for debugging purposes
 - Introduces bootstrap-slim to avoid shipping all of bootstrap, for size purposes
+- Hardens the release workflow: lockfile-only installs (`npm ci`), crx3 and web-ext pinned in their own lockfile, actions pinned to commit SHAs, and the Chrome signing key only on disk while the .crx is packed
 
 ## 3.2.5
 
