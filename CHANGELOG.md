@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Validation adding a course evaluation reminder page to the last module of a course.
 
 ### Changed
 
