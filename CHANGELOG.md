@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Switching npm run build to NODE_ENV: production
 - Minifying production builds, shipping with source maps for debugging purposes
 - Introduces bootstrap-slim to avoid shipping all of bootstrap, for size purposes
+- Adding name differential for local builds
+- Remove persistent id from local builds to allow dual loading a local build alongside the live extension
+- Removed duplicate course.js entry in the manifest that was causing duplicate buttons to be rendered in Firefox
 
 ## 3.2.5
 
