@@ -7,7 +7,7 @@ export interface ISectionRows {
     sections: Course[],
     onOpenAll: () => void,
     instructorsByCourseId: Record<number, ICourseRowProps["instructors"]>,
-    frontPageProfilesByCourseId: Record<number, IProfile>,
+    targetPageProfilesByCourseId: Record<number, IProfile>,
     potentialProfilesByCourseId: Record<number, IProfile[]>,
     errorsByCourseId: Record<number, ICourseRowProps["errors"]>,
     profileSlug?: string | null,
@@ -21,7 +21,7 @@ export function SectionRows({
     onOpenAll,
     sections,
     instructorsByCourseId,
-    frontPageProfilesByCourseId,
+    targetPageProfilesByCourseId,
     potentialProfilesByCourseId,
     errorsByCourseId,
     profileSlug,
@@ -89,7 +89,7 @@ export function SectionRows({
         {sections && sections.toSorted((a, b) => a.name.localeCompare(b.name)).map((course) => (
             <CourseRow
                 instructors={instructorsByCourseId[course.id]}
-                frontPageProfile={frontPageProfilesByCourseId[course.id]}
+                targetPageProfile={targetPageProfilesByCourseId[course.id]}
                 facultyProfileMatches={potentialProfilesByCourseId[course.id]}
                 profileSlug={profileSlug}
                 key={course.id}
