@@ -13,6 +13,10 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
 const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu";
+const isLocalBuild = relativeOutputDir === "../lxd-extension-build";
+const addonId = isLocalBuild
+  ? "lxd-extension-local@unity.edu"
+  : "lxd-extension@unity.edu";
 
 const entry = {
   popup: "./src/popup",
@@ -118,6 +122,16 @@ const transformManifest = (content) => {
   );
   manifest.version = packageJson.version;
 
+  if (isLocalBuild) {
+    // Keep the unpacked development build separate from the published
+    // extension in Chrome and Firefox without changing production identity.
+    delete manifest.key;
+    manifest.name = `${manifest.name} (Local)`;
+    manifest.version_name = `${packageJson.version}-local`;
+    manifest.browser_specific_settings.gecko.id = addonId;
+    delete manifest.browser_specific_settings.gecko.update_url;
+  }
+
   return JSON.stringify(manifest, null, 2);
 };
 
@@ -128,17 +142,20 @@ const transformUpdates = (content) => {
     updates.addons = {};
   }
 
-  if (!updates.addons["lxd-extension@unity.edu"]) {
-    updates.addons["lxd-extension@unity.edu"] = { updates: [] };
+  if (isLocalBuild) {
+    delete updates.addons["lxd-extension@unity.edu"];
   }
 
-  if (updates.addons["lxd-extension@unity.edu"].updates.length === 0) {
-    updates.addons["lxd-extension@unity.edu"].updates.push({});
+  if (!updates.addons[addonId]) {
+    updates.addons[addonId] = { updates: [] };
   }
 
-  updates.addons["lxd-extension@unity.edu"].updates[0].version =
-    packageJson.version;
-  updates.addons["lxd-extension@unity.edu"].updates[0].update_link =
+  if (updates.addons[addonId].updates.length === 0) {
+    updates.addons[addonId].updates.push({});
+  }
+
+  updates.addons[addonId].updates[0].version = packageJson.version;
+  updates.addons[addonId].updates[0].update_link =
     `${BASE_URL}/lxd-extension-${packageJson.version}.xpi`;
 
   return JSON.stringify(updates, null, 2);
@@ -200,7 +217,7 @@ module.exports = {
     allowCollectingMemory: true,
   },
   entry,
-  devtool: isDevelopment ? "eval-cheap-module-source-map" : "source-map",
+  devtool: isDevelopment ? "cheap-module-source-map" : "source-map",
   module: _module,
   plugins: createPlugins(),
   resolve: {
