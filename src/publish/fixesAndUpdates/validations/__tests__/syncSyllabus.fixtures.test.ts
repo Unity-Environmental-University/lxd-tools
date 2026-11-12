@@ -14,6 +14,9 @@ function makeCourse(syllabus: string) {
 	return {
 		getSyllabus: jest.fn(async () => syllabus),
 		changeSyllabus: jest.fn(),
+		isUndergrad: () => true,
+		isGrad: () => false,
+		isCareerInstitute: () => false,
 	};
 }
 

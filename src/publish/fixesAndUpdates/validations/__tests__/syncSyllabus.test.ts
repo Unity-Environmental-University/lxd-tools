@@ -1,3 +1,4 @@
+import { getCourseById } from "@ueu/ueu-canvas";
 import { syncSyllabus } from "../syncSyllabus";
 
 // Mock for the external canvas module
@@ -24,12 +25,15 @@ describe("syncSyllabus", () => {
 		mockCourseInstance = {
 			getSyllabus: jest.fn(),
 			changeSyllabus: jest.fn(),
+			isUndergrad: () => true,
+			isGrad: () => false,
+			isCareerInstitute: () => false,
 		};
 
 		// Default behavior: template returns templateHtml, course returns courseHtml
 		// These will be overridden per test as needed
 		templateCourseForId = (id: number) => {
-			if (id === 8217232) {
+			if (id === 7775658) {
 				return mockTemplateCourse;
 			}
 			return mockCourseInstance;
@@ -59,9 +63,9 @@ describe("syncSyllabus", () => {
 		mockCourseInstance.getSyllabus = jest.fn(async () => courseHtml);
 		mockCourseInstance.changeSyllabus = jest.fn();
 
-		// Re-exported factory must return template when 8217232 is requested
+		// Factory must return template when the undergrad template (7775658) is requested
 		templateCourseForId = (id: number) => {
-			if (id === 8217232) return mockTemplateCourse;
+			if (id === 7775658) return mockTemplateCourse;
 			return mockCourseInstance;
 		};
 
@@ -100,5 +104,46 @@ describe("syncSyllabus", () => {
 
 		expect(result).toBe(false);
 		expect(mockCourseInstance.changeSyllabus).not.toHaveBeenCalled();
+	});
+
+	describe("template selection", () => {
+		const html = `<html><body>
+			<table data-course-meta><tr><td>m</td></tr></table>
+			<div class="cbt-callout-box">Week 1 Learning Materials Preview</div>
+		</body></html>`;
+
+		const types = (u: boolean, g: boolean, ci: boolean) => ({
+			isUndergrad: () => u,
+			isGrad: () => g,
+			isCareerInstitute: () => ci,
+		});
+
+		test.each([
+			["undergrad", types(true, false, false), 7775658],
+			["grad", types(false, true, false), 7773747],
+			["career institute", types(false, false, true), 225],
+		])("%s course uses template %i", async (_name, flags, id) => {
+			(getCourseById as jest.Mock).mockClear();
+			templateCourseForId = () => ({ getSyllabus: async () => html });
+			const course = {
+				...flags,
+				getSyllabus: async () => html,
+				changeSyllabus: jest.fn(),
+			};
+
+			expect(await syncSyllabus(course as any)).toBe(true);
+			expect(getCourseById).toHaveBeenCalledWith(id);
+		});
+
+		test("returns false when the course matches no type", async () => {
+			const course = {
+				...types(false, false, false),
+				getSyllabus: async () => html,
+				changeSyllabus: jest.fn(),
+			};
+
+			expect(await syncSyllabus(course as any)).toBe(false);
+			expect(course.changeSyllabus).not.toHaveBeenCalled();
+		});
 	});
 });
