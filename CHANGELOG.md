@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+
+### Changed
+- Fixed Reporting "Find Users" sending an endless stream of roster requests to Canvas. Each course's teachers are now requested once, only teachers (not every enrolled user) are requested, and only for the account's courses in the selected terms.
+- Reporting no longer saves course rosters, enrollments or course data in the browser's storage; only terms and account ids are kept. Rosters saved by earlier versions are cleared on first use.
+- Fixed Reporting dropping or duplicating courses and enrollments, and the Find Users list not showing instructors.
+- Fixed "Loading Courses..." getting stuck in Reporting.
+
+### Internal
+- Removed debug logging of user records from Reporting.
+- Reporting requests course teachers directly instead of through ueu-canvas `getUserGenerator`, which (as of 0.0.17) drops the `enrollment_type` filter.
+
+## 3.3.0
+
+### Added
 - Validation adding a course evaluation reminder page to the last module of a course.
 - Syllabus Sync functionality added
 

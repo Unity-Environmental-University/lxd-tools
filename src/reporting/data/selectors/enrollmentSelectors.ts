@@ -10,7 +10,7 @@ type RootReportingState = {
 
 export const selectEnrollmentsById = ({enrollments}: RootReportingState) => enrollments.enrollmentsById;
 export const selectEnrollmentsByCourseId = ({enrollments}: RootReportingState) =>
-    Object.values(enrollments.enrollmentsByCourseId);
+    enrollments.enrollmentsByCourseId;
 export const selectEnrollmentsByUserId = ({enrollments}: RootReportingState) =>
     enrollments.enrollmentsByUserId;
 
