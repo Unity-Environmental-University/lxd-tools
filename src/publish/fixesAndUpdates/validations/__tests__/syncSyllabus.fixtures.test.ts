@@ -62,6 +62,39 @@ it("syncs a syllabus with a meta table onto a template without one", async () =>
 	expect(out).toContain("Statement on Fair Practices");
 });
 
+it("keeps the course's own Instructor Name homepage link, not the template's", async () => {
+	useTemplate(withoutMeta);
+	const course = makeCourse(withMeta);
+
+	expect(await syncSyllabus(course as any)).toBe(true);
+
+	const out = course.changeSyllabus.mock.calls[0][0] as string;
+	const doc = new DOMParser().parseFromString(out, "text/html");
+
+	const instructorParas = Array.from(doc.querySelectorAll("p")).filter((p) =>
+		/^\s*instructor name/i.test(p.textContent ?? ""),
+	);
+	expect(instructorParas).toHaveLength(1);
+	const href = instructorParas[0].querySelector("a")?.getAttribute("href");
+	expect(href).toBe("/courses/1000001/pages/home");
+	expect(out).not.toContain("/courses/2000001/pages/home");
+});
+
+it("keeps the template's Instructor Name line when the course has none", async () => {
+	useTemplate(withoutMeta);
+	const noInstructor = withMeta.replace(
+		/<p>\s*<strong>Instructor Name:(?:&nbsp;|\s)*<\/strong>[\s\S]*?<\/p>/i,
+		"",
+	);
+	expect(noInstructor).not.toBe(withMeta);
+	const course = makeCourse(noInstructor);
+
+	expect(await syncSyllabus(course as any)).toBe(true);
+
+	const out = course.changeSyllabus.mock.calls[0][0] as string;
+	expect(out).toContain("/courses/2000001/pages/home");
+});
+
 it("fails and saves nothing for a syllabus without a meta table", async () => {
 	useTemplate(withMeta);
 	const course = makeCourse(withoutMeta);

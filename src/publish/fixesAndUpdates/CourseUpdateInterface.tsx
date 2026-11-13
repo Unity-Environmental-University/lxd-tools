@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useEffectAsync } from "../../ui/utils";
-import { Button } from "react-bootstrap";
+import { Alert, Button, Spinner } from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
 import { UpdateStartDate } from "./UpdateStartDate";
 import { CourseValidator } from "./CourseValidator";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { CourseValidation } from "@publish/fixesAndUpdates/validations/types";
-import { syncSyllabus } from "@publish/fixesAndUpdates/validations/syncSyllabus";
+import { syncSyllabusWithResult } from "@publish/fixesAndUpdates/validations/syncSyllabus";
+
+type SyncStatus =
+	| { state: "idle" }
+	| { state: "syncing" }
+	| { state: "success"; message: string }
+	| { state: "error"; message: string; details: string };
 
 export type CourseUpdateInterfaceProps = {
 	course?: Course;
@@ -46,6 +52,30 @@ export function CourseUpdateInterface({
 	const [showValidationsComplete, setShowValidationsComplete] = useState(false);
 	const [showUpdateStartDate, setShowUpdateStartDate] = useState(false);
 	const [isChangingStartDate, setIsChangingStartDate] = useState(false);
+	const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: "idle" });
+
+	const runSyncSyllabus = async (course: Course) => {
+		if (syncStatus.state === "syncing") return;
+		setSyncStatus({ state: "syncing" });
+		// Keep "Syncing..." visible long enough to register, even when the sync is instant
+		const minDisplay = new Promise((resolve) => setTimeout(resolve, 600));
+		const result = await syncSyllabusWithResult(course);
+		await minDisplay;
+		if (result.success) {
+			setSyncStatus({ state: "success", message: result.message });
+		} else {
+			setSyncStatus({
+				state: "error",
+				message: result.message,
+				details: [
+					"Syllabus sync failed",
+					`Course: ${course.name} (id ${course.id})`,
+					`Time: ${new Date().toISOString()}`,
+					`Error: ${result.message}`,
+				].join("\n"),
+			});
+		}
+	};
 
 	const runValidationsDisabled =
 		!course || isRemovingAnnotations() || batchingValidations;
@@ -193,16 +223,85 @@ export function CourseUpdateInterface({
 			<>
 				<h2>Content Fixes for {course.name}</h2>
 
-				<Button
-					onClick={() => toggleStartDateUI()}
-					disabled={isChangingStartDate}
-				>
-					Update Start Date
-				</Button>
+				<div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+					<Button
+						onClick={() => toggleStartDateUI()}
+						disabled={isChangingStartDate}
+					>
+						Update Start Date
+					</Button>
 
-				<Button onClick={() => syncSyllabus(course)} disabled={!course}>
-					Sync Syllabus
-				</Button>
+					<Button
+						onClick={() => runSyncSyllabus(course)}
+						disabled={!course || syncStatus.state === "syncing"}
+					>
+						{syncStatus.state === "syncing" ? (
+							<>
+								<Spinner
+									as="span"
+									animation="border"
+									size="sm"
+									role="status"
+									aria-hidden="true"
+									style={{ marginRight: "8px" }}
+								/>
+								Syncing...
+							</>
+						) : (
+							"Sync Syllabus"
+						)}
+					</Button>
+				</div>
+
+				{syncStatus.state === "success" && (
+					<Alert variant="success" style={{ marginTop: "12px" }}>
+						<div
+							style={{
+								display: "flex",
+								justifyContent: "space-between",
+								alignItems: "center",
+								gap: "12px",
+							}}
+						>
+							<span>{syncStatus.message}</span>
+							<Button
+								size="sm"
+								variant="outline-success"
+								onClick={() => setSyncStatus({ state: "idle" })}
+							>
+								Dismiss
+							</Button>
+						</div>
+					</Alert>
+				)}
+				{syncStatus.state === "error" && (
+					<Alert variant="danger" style={{ marginTop: "12px" }}>
+						<Alert.Heading as="h3">Syllabus sync failed</Alert.Heading>
+						<p style={{ marginBottom: "8px" }}>{syncStatus.message}</p>
+						<p style={{ marginBottom: "8px" }}>
+							The syllabus was not changed. Please report this message to the
+							LXD tools team.
+						</p>
+						<div style={{ display: "flex", gap: "8px" }}>
+							<Button
+								size="sm"
+								variant="outline-danger"
+								onClick={() =>
+									navigator.clipboard?.writeText(syncStatus.details)
+								}
+							>
+								Copy details
+							</Button>
+							<Button
+								size="sm"
+								variant="outline-secondary"
+								onClick={() => setSyncStatus({ state: "idle" })}
+							>
+								Dismiss
+							</Button>
+						</div>
+					</Alert>
+				)}
 
 				<hr />
 

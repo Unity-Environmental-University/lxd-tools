@@ -1,15 +1,35 @@
 import { Course, getCourseById } from "@ueu/ueu-canvas";
 
-function uiAlert(message: string) {
-	if (typeof window !== "undefined" && (window as any).alert) {
-		(window as any).alert(message);
-	} else {
-		console.log(message);
-	}
+// The "Instructor Name: See Homepage" line of the syllabus's top callout box. Its link goes to this course's own home
+// page, so it has to come from the course, not the template (a template's link points at the template course).
+function findInstructorNameParagraph(doc: Document) {
+	return (
+		Array.from(doc.querySelectorAll(".cbt-callout-box p")).find((p) =>
+			/^\s*instructor name\b/i.test(p.textContent ?? ""),
+		) ?? null
+	);
+}
+
+export type SyncSyllabusResult = {
+	success: boolean;
+	/** Human-readable outcome. On failure, this is what the user should report. */
+	message: string;
+};
+
+// Boolean wrapper kept for callers that only care about success
+export async function syncSyllabus(course: Course): Promise<boolean> {
+	return (await syncSyllabusWithResult(course)).success;
 }
 
 // Synchronize a course syllabus by merging template and course-specific sections
-export async function syncSyllabus(course: Course): Promise<boolean> {
+export async function syncSyllabusWithResult(
+	course: Course,
+): Promise<SyncSyllabusResult> {
+	const fail = (message: string): SyncSyllabusResult => {
+		console.error("Syllabus sync failed:", message);
+		return { success: false, message };
+	};
+
 	console.log("Inside syncSyllabus");
 	try {
 		// Get template syllabus
@@ -28,16 +48,16 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 		const templateSyllabus = await templateCourse.getSyllabus();
 
 		if (!templateSyllabus) {
-			uiAlert("Couldn't find template syllabus.");
-			return false;
+			return fail(
+				`Couldn't find the template syllabus (template course ${templateCourse.id}).`,
+			);
 		}
 
 		// Get course syllabus
 		const courseSyllabus = await course.getSyllabus();
 
 		if (!courseSyllabus) {
-			uiAlert("Couldn't find course syllabus.");
-			return false;
+			return fail("Couldn't find this course's syllabus.");
 		}
 
 		// Parse syllabi
@@ -60,12 +80,20 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 				.includes("week 1 learning materials preview"),
 		);
 
+		// Kept from the course, like the banner image, so its Homepage link doesn't turn into the template's
+		const courseInstructorNameHtml = findInstructorNameParagraph(parsedCourseSyllabus)?.outerHTML;
+
 		console.log("meta table: ", metaTable);
 		console.log("learning materials box: ", learningMaterialsBox);
 
 		if (!metaTable || !learningMaterialsBox) {
-			console.log("Unable to find metaTable or learning material box.");
-			return false;
+			const missing = [
+				!metaTable && "course meta table (table[data-course-meta])",
+				!learningMaterialsBox && '"Week 1 Learning Materials Preview" box',
+			].filter(Boolean);
+			return fail(
+				`This course's syllabus is missing its ${missing.join(" and ")}. Nothing was changed.`,
+			);
 		}
 
 		// Preserve inner content of Week 1 Learning Materials box from the course syllabus
@@ -117,6 +145,15 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 			finalTemplateDom.body.insertAdjacentHTML("afterbegin", courseBannerHtml);
 		}
 
+		// Keep the course's own "Instructor Name: See Homepage" line in place of the template's.
+		// If either side doesn't have one, the template's line is left as it is.
+		const templateInstructorName = findInstructorNameParagraph(finalTemplateDom);
+		if (templateInstructorName && courseInstructorNameHtml) {
+			templateInstructorName.outerHTML = courseInstructorNameHtml;
+		} else if (!courseInstructorNameHtml) {
+			console.log("No 'Instructor Name' line in the course syllabus; keeping the template's.");
+		}
+
 		// Serialize the modified template to HTML string
 		const finalHtmlFromTemplate = finalTemplateDom.documentElement.outerHTML;
 
@@ -126,16 +163,14 @@ export async function syncSyllabus(course: Course): Promise<boolean> {
 		const finalSyllabus = finalDoc.documentElement.outerHTML;
 
 		try {
-			course.changeSyllabus(finalSyllabus);
+			// Awaited so async failures (e.g. a rejected Canvas request) are caught instead of lost
+			await course.changeSyllabus(finalSyllabus);
 		} catch (e: any) {
 			throw new Error(`Error changing syllabus in course: ${e}`);
 		}
 
-		uiAlert("Syllabus synced successfully.");
-		return true;
+		return { success: true, message: "Syllabus synced successfully." };
 	} catch (err) {
-		console.error("Error syncing syllabus:", err);
-		uiAlert(`Syllabus sync failed: ${err}`);
-		return false;
+		return fail(err instanceof Error ? err.message : String(err));
 	}
 }
