@@ -157,7 +157,7 @@ The workflow produces the following artifacts for monitoring:
 
 ### Updating the release tools
 
-`crx3` and `web-ext` are pinned in `.github/release-tools/package.json` and its own `package-lock.json`, separate from the extension's dependencies so the root `overrides` do not apply to them. To update them, change the versions there, run `npm install` in that folder, and commit both files. A pull request that only changes `.github/release-tools/` does not start the deploy workflow and does not need a version bump; the new versions are used by the next release.
+`crx3` and `web-ext` are pinned in `.github/release-tools/package.json` and its own `package-lock.json`, separate from the extension's dependencies so the root `overrides` do not apply to them. To update them, change the versions there, run `npm install` in that folder, and commit both files. A pull request that only changes `.github/release-tools/` does not start the deploy workflow and does not need a version bump; the new versions are used by the next release. The Build testing workflow runs `npm ci --ignore-scripts` in that folder on every pull request, so an out-of-sync lockfile fails the PR.
 
 ## Related Documentation
 

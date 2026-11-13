@@ -40,6 +40,15 @@ jobs:
           npm config set registry https://registry.npmjs.org/
           npm ci
 
+      - name: Verify pinned release tools install
+        # No secrets here. Fails the PR if .github/release-tools/package-lock.json is
+        # out of sync, or the tools stop resolving, instead of failing during a deploy.
+        working-directory: lxd-tools/.github/release-tools
+        run: |
+          npm ci --ignore-scripts
+          ./node_modules/.bin/web-ext --version
+          test -x ./node_modules/.bin/crx3
+
       - name: Run ESLint
         working-directory: lxd-tools
         run: |
