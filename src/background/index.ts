@@ -1,7 +1,8 @@
 // drawing from https://hackernoon.com/how-to-create-a-chrome-extension-with-react
 
-import { runtime, action, scripting, Runtime, tabs } from "webextension-polyfill";
+import { runtime, action, scripting, Runtime, tabs, storage } from "webextension-polyfill";
 import { backgroundDownloadImage } from "../utils/image";
+import { OPEN_AI_API_KEY_KEY } from "../consts";
 
 type MessageHandler<T, Output> = (
   params: T,
@@ -58,6 +59,16 @@ runtime.onMessage.addListener((message: { downloadImage: string }, sender, sendR
       sendResponse(resized);
     })();
     return true;
+  }
+});
+
+// The popup used to store an OpenAI API key in plaintext that nothing used.
+// The setting has been removed; clear any key left over from older versions.
+runtime.onInstalled.addListener(async () => {
+  try {
+    await storage.local.remove(OPEN_AI_API_KEY_KEY);
+  } catch (e) {
+    console.warn("Unable to remove stored OpenAI API key:", e);
   }
 });
 
