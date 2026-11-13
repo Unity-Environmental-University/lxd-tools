@@ -58,7 +58,7 @@ The workflow performs the following automated steps in sequence:
 5. **Artifact Verification** — Validates that all required output files exist: both signed extensions (`.crx` and `.xpi`), plus the update manifests (`updates.json` and `update.xml`). File paths are captured for downstream steps.
 6. **Upload to Cloudflare R2** — All artifacts are uploaded to the R2 bucket with appropriate content types. This includes both signed extensions and update manifests needed by the browser extension update mechanisms.
 7. **Version Pruning** — Automatically deletes old versions from R2, keeping only the 5 most recent releases of each file type (`.crx` and `.xpi`). This reduces storage costs while maintaining version history.
-8. **Sync to Build Repository** — The entire `dist` directory is copied to the `lxd-tools-build` repository on the main branch, creating an audit trail of all deployments with commits attributed to `github-actions[bot]`.
+8. **Sync to Build Repository** — The entire `dist` directory is copied to the `lxd-tools-build` repository on the `stable` branch, creating an audit trail of all deployments with commits attributed to `github-actions[bot]`.
 9. **Git Release Management** — A git tag matching the version number is created and pushed, and a corresponding release branch (`release/{VERSION}`) is created for long-term reference and potential rollback scenarios.
 
 ## Important Considerations
@@ -87,12 +87,12 @@ The workflow performs the following automated steps in sequence:
 ### Repository Structure
 
 - **Source code**: `lxd-tools` repository (main branch)
-- **Built artifacts**: `lxd-tools-build` repository (main branch)
+- **Built artifacts**: `lxd-tools-build` repository (`stable` branch)
 - This separation allows history tracking and rollback capability
 
 ## Workflow Execution Environment
 
-- **Runner**: ubuntu-latest
+- **Runner**: ubuntu-22.04
 - **Permissions**: `contents: write` (for creating tags and commits)
 - **Duration**: Typically 5-10 minutes depending on npm install time
 
