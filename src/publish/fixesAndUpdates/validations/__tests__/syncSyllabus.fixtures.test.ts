@@ -1,7 +1,8 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { getCourseById } from "@ueu/ueu-canvas";
-import { syncSyllabus } from "../syncSyllabus";
+import { syncSyllabus, syncSyllabusWithResult } from "../syncSyllabus";
+import { fingerprint, loadSnapshot } from "../syllabusUndo";
 
 jest.mock("@ueu/ueu-canvas", () => ({ getCourseById: jest.fn() }));
 
@@ -12,6 +13,8 @@ const withoutMeta = readFileSync(join(FIXTURES, "course-without-meta.html"), "ut
 
 function makeCourse(syllabus: string) {
 	return {
+		id: 1000001,
+		name: "DEV_EXAMPLE101",
 		getSyllabus: jest.fn(async () => syllabus),
 		changeSyllabus: jest.fn(),
 		isUndergrad: () => true,
@@ -27,6 +30,7 @@ function useTemplate(syllabus: string) {
 }
 
 beforeEach(() => {
+	localStorage.clear();
 	jest.spyOn(console, "log").mockImplementation(() => {});
 	jest.spyOn(console, "error").mockImplementation(() => {});
 	window.alert = jest.fn();
@@ -101,4 +105,41 @@ it("fails and saves nothing for a syllabus without a meta table", async () => {
 
 	expect(await syncSyllabus(course as any)).toBe(false);
 	expect(course.changeSyllabus).not.toHaveBeenCalled();
+});
+
+describe("backup for undo", () => {
+	it("saves the previous syllabus before writing, and notes what Canvas stored afterward", async () => {
+		const course = makeCourse(withMeta);
+		const stored = "<p>what Canvas stored</p>";
+		(getCourseById as jest.Mock)
+			.mockResolvedValueOnce({ getSyllabus: jest.fn(async () => withoutMeta) }) // the template
+			.mockResolvedValueOnce({ getSyllabus: jest.fn(async () => stored) }); // read back after saving
+
+		const result = await syncSyllabusWithResult(course as any);
+
+		expect(result.success).toBe(true);
+		expect(result.undoAvailable).toBe(true);
+		const snapshot = loadSnapshot(1000001);
+		expect(snapshot?.originalHtml).toBe(withMeta);
+		expect(snapshot?.courseName).toBe("DEV_EXAMPLE101");
+		expect(snapshot?.syncedFingerprint).toBe(fingerprint(stored));
+	});
+
+	it("keeps no backup when the save fails", async () => {
+		useTemplate(withoutMeta);
+		const course = makeCourse(withMeta);
+		course.changeSyllabus.mockRejectedValue(new Error("403"));
+
+		const result = await syncSyllabusWithResult(course as any);
+
+		expect(result.success).toBe(false);
+		expect(loadSnapshot(1000001)).toBeNull();
+	});
+
+	it("keeps no backup when the sync stops before saving", async () => {
+		useTemplate(withMeta);
+		const course = makeCourse(withoutMeta); // no meta table, so sync refuses
+		expect(await syncSyllabus(course as any)).toBe(false);
+		expect(loadSnapshot(1000001)).toBeNull();
+	});
 });

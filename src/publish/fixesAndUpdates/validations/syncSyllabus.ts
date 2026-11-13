@@ -1,4 +1,9 @@
 import { Course, getCourseById } from "@ueu/ueu-canvas";
+import {
+	clearSnapshot,
+	recordSyncedFingerprint,
+	saveSnapshot,
+} from "@publish/fixesAndUpdates/validations/syllabusUndo";
 
 // The "Instructor Name: See Homepage" line of the syllabus's top callout box. Its link goes to this course's own home
 // page, so it has to come from the course, not the template (a template's link points at the template course).
@@ -10,10 +15,24 @@ function findInstructorNameParagraph(doc: Document) {
 	);
 }
 
+// After the save, read the syllabus back the same way Undo will, and note what Canvas actually stored, so Undo can tell
+// whether the syllabus was edited since. (Not taken from the save's response, which may be serialized differently.)
+// If the read fails the check is skipped rather than failing the sync.
+async function rememberSyncedSyllabus(course: Course) {
+	try {
+		const stored = await (await getCourseById(course.id)).getSyllabus();
+		recordSyncedFingerprint(Number(course.id), stored);
+	} catch (e) {
+		console.warn("Could not read the syllabus back after syncing:", e);
+	}
+}
+
 export type SyncSyllabusResult = {
 	success: boolean;
 	/** Human-readable outcome. On failure, this is what the user should report. */
 	message: string;
+	/** True when the previous syllabus was saved in this browser, so the sync can be undone. */
+	undoAvailable?: boolean;
 };
 
 // Boolean wrapper kept for callers that only care about success
@@ -162,14 +181,26 @@ export async function syncSyllabusWithResult(
 		finalDoc.body.insertAdjacentHTML("afterbegin", metaTableHtml);
 		const finalSyllabus = finalDoc.documentElement.outerHTML;
 
+		// Keep the syllabus as it is now, so the sync can be undone if the result looks wrong
+		const undoAvailable = saveSnapshot({
+			courseId: Number(course.id),
+			courseName: course.name ?? "",
+			savedAt: Date.now(),
+			originalHtml: courseSyllabus,
+			syncedFingerprint: null,
+		});
+
 		try {
 			// Awaited so async failures (e.g. a rejected Canvas request) are caught instead of lost
 			await course.changeSyllabus(finalSyllabus);
 		} catch (e: any) {
+			clearSnapshot(); // nothing was changed, so there is nothing to undo
 			throw new Error(`Error changing syllabus in course: ${e}`);
 		}
 
-		return { success: true, message: "Syllabus synced successfully." };
+		if (undoAvailable) await rememberSyncedSyllabus(course);
+
+		return { success: true, message: "Syllabus synced successfully.", undoAvailable };
 	} catch (err) {
 		return fail(err instanceof Error ? err.message : String(err));
 	}
