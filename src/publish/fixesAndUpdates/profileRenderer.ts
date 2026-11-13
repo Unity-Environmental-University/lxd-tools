@@ -1,6 +1,10 @@
 import { IProfile } from "@ueu/ueu-canvas/type";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
-import { getCurioPageFrontPageProfile, getProfileFromPage, renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
+import {
+	getCurioPageFrontPageProfile,
+	getProfileFromPage,
+	renderProfileIntoCurioFrontPage,
+} from "@ueu/ueu-canvas/profile";
 import { parseHtmlInert } from "@/utils/html";
 
 /** Any other data-profile-<key> element on the page, read as plain text under its key. */
@@ -8,7 +12,10 @@ export type TemplateProfile = IProfile & { fields: Record<string, string> };
 
 type FacultyPage = Parameters<typeof getProfileFromPage>[0];
 
-type ProfileWithUser = IProfile & { user: IUserData; fields?: Record<string, string> };
+type ProfileWithUser = IProfile & {
+	user: IUserData;
+	fields?: Record<string, string>;
+};
 
 /**
  * Data-attribute convention for profile pages. Templates mark elements with
@@ -41,11 +48,11 @@ type ProfileWithUser = IProfile & { user: IUserData; fields?: Record<string, str
  *   <div data-profile-help>Setup instructions for whoever built this page.</div>
  */
 const ATTR = {
-  name: "data-profile-name",
-  bio: "data-profile-bio",
-  image: "data-profile-image",
-  message: "data-profile-message",
-  help: "data-profile-help",
+	name: "data-profile-name",
+	bio: "data-profile-bio",
+	image: "data-profile-image",
+	message: "data-profile-message",
+	help: "data-profile-help",
 } as const;
 
 /**
@@ -56,78 +63,82 @@ const ATTR = {
  * "course_<id>", and user_id as the bare numeric id (no "user_" prefix).
  */
 function inboxComposeUrl(courseId: number, user: IUserData): string {
-  const params = new URLSearchParams({
-    context_id: `course_${courseId}`,
-    user_id: String(user.id),
-    user_name: user.name,
-  });
-  return `/conversations?${params.toString()}`;
+	const params = new URLSearchParams({
+		context_id: `course_${courseId}`,
+		user_id: String(user.id),
+		user_name: user.name,
+	});
+	return `/conversations?${params.toString()}`;
 }
 
 const ATTR_PREFIX = "data-profile-";
 const RESERVED_ATTRS: ReadonlySet<string> = new Set(Object.values(ATTR));
 
 export function hasDataProfileAttributes(html: string): boolean {
-  return html.includes(ATTR_PREFIX);
+	return html.includes(ATTR_PREFIX);
 }
 
 function readExtraFields(root: Element): Record<string, string> {
-  const fields: Record<string, string> = {};
-  for (const node of Array.from(root.querySelectorAll("*"))) {
-    for (const { name } of Array.from(node.attributes)) {
-      if (!name.startsWith(ATTR_PREFIX) || RESERVED_ATTRS.has(name)) continue;
-      const key = name.slice(ATTR_PREFIX.length);
-      const text = node.textContent?.trim();
-      if (text && !(key in fields)) fields[key] = text;
-    }
-  }
-  return fields;
+	const fields: Record<string, string> = {};
+	for (const node of Array.from(root.querySelectorAll("*"))) {
+		for (const { name } of Array.from(node.attributes)) {
+			if (!name.startsWith(ATTR_PREFIX) || RESERVED_ATTRS.has(name)) continue;
+			const key = name.slice(ATTR_PREFIX.length);
+			const text = node.textContent?.trim();
+			if (text && !(key in fields)) fields[key] = text;
+		}
+	}
+	return fields;
 }
 
-function renderProfileByDataAttributes(html: string, profile: ProfileWithUser, courseId: number): string {
-  const el = parseHtmlInert(html);
+function renderProfileByDataAttributes(
+	html: string,
+	profile: ProfileWithUser,
+	courseId: number,
+): string {
+	const el = parseHtmlInert(html);
 
-  const nameEl = el.querySelector(`[${ATTR.name}]`);
-  if (nameEl && profile.displayName) {
-    nameEl.textContent = profile.displayName;
-  }
+	const nameEl = el.querySelector(`[${ATTR.name}]`);
+	if (nameEl && profile.displayName) {
+		nameEl.textContent = profile.displayName;
+	}
 
-  const bioEl = el.querySelector(`[${ATTR.bio}]`);
-  if (bioEl && profile.bio) {
-    bioEl.innerHTML = profile.bio;
-    if (profile.user?.email) {
-      const contact = document.createElement("p");
-      contact.textContent = `${profile.displayName} should be contacted during the term using Canvas Inbox, but can be reached after and before the term via their email address: ${profile.user.email}`;
-      bioEl.appendChild(contact);
-    }
-  }
+	const bioEl = el.querySelector(`[${ATTR.bio}]`);
+	if (bioEl && profile.bio) {
+		bioEl.innerHTML = profile.bio;
+		if (profile.user?.email) {
+			const contact = document.createElement("p");
+			contact.textContent = `${profile.displayName} should be contacted during the term using Canvas Inbox, but can be reached after and before the term via their email address: ${profile.user.email}`;
+			bioEl.appendChild(contact);
+		}
+	}
 
-  const imageEl = el.querySelector(`[${ATTR.image}] img`);
-  if (imageEl instanceof HTMLImageElement) {
-    if (profile.image) {
-      imageEl.src = profile.image.src;
-      imageEl.alt = profile.image.alt ?? profile.displayName ?? "";
-    } else if (profile.imageLink) {
-      imageEl.src = profile.imageLink;
-    }
-  }
+	const imageEl = el.querySelector(`[${ATTR.image}] img`);
+	if (imageEl instanceof HTMLImageElement) {
+		if (profile.image) {
+			imageEl.src = profile.image.src;
+			imageEl.alt = profile.image.alt ?? profile.displayName ?? "";
+		} else if (profile.imageLink) {
+			imageEl.src = profile.imageLink;
+		}
+	}
 
-  const messageEl = el.querySelector(`[${ATTR.message}]`);
-  if (messageEl instanceof HTMLAnchorElement && profile.user) {
-    messageEl.href = inboxComposeUrl(courseId, profile.user);
-  }
+	const messageEl = el.querySelector(`[${ATTR.message}]`);
+	if (messageEl instanceof HTMLAnchorElement && profile.user) {
+		messageEl.href = inboxComposeUrl(courseId, profile.user);
+	}
 
-  for (const [key, text] of Object.entries(profile.fields ?? {})) {
-    const attr = ATTR_PREFIX + key;
-    if (RESERVED_ATTRS.has(attr)) continue;
-    for (const node of Array.from(el.querySelectorAll("*"))) {
-      if (node.hasAttribute(attr)) node.textContent = text;
-    }
-  }
+	for (const [key, text] of Object.entries(profile.fields ?? {})) {
+		const attr = ATTR_PREFIX + key;
+		if (RESERVED_ATTRS.has(attr)) continue;
+		for (const node of Array.from(el.querySelectorAll("*"))) {
+			if (node.hasAttribute(attr)) node.textContent = text;
+		}
+	}
 
-  el.querySelectorAll(`[${ATTR.help}]`).forEach((node) => node.remove());
+	el.querySelectorAll(`[${ATTR.help}]`).forEach((node) => node.remove());
 
-  return el.innerHTML;
+	return el.innerHTML;
 }
 
 /**
@@ -138,20 +149,56 @@ function renderProfileByDataAttributes(html: string, profile: ProfileWithUser, c
  * This is the single call site for profile rendering — the format decision
  * is made here, not by the caller.
  */
-export function renderProfile(html: string, profile: ProfileWithUser, courseId: number): string {
-  if (hasDataProfileAttributes(html)) {
-    return renderProfileByDataAttributes(html, profile, courseId);
-  }
-  return renderProfileIntoCurioFrontPage(html, profile);
+export function renderProfile(
+	html: string,
+	profile: ProfileWithUser,
+	courseId: number,
+): string {
+	if (hasDataProfileAttributes(html)) {
+		return renderProfileByDataAttributes(html, profile, courseId);
+	}
+	return renderProfileIntoCurioFrontPage(html, profile);
 }
 
 export type ProfileRenderResult =
-  | { ok: true; html: string; written: IProfile }
-  | { ok: false; problem: string };
+	| { ok: true; html: string; written: IProfile }
+	| { ok: false; problem: string };
 
-function plainText(html: string): string {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  return doc.documentElement.textContent ?? "";
+const NAMED_ENTITIES: Record<string, string> = {
+	amp: "&",
+	lt: "<",
+	gt: ">",
+	quot: '"',
+	apos: "'",
+	nbsp: "\u00a0",
+};
+
+/**
+ * Normalise a display name for comparison. The Curio renderer reads names back
+ * from `innerHTML`, so they arrive HTML-escaped ("Li &amp; Co"), while data-attribute
+ * pages and the requested name are plain text. Decode the character references in
+ * a single pass and collapse whitespace so both forms compare equal.
+ *
+ * This deliberately does not parse the string as HTML: text read from the DOM is
+ * never turned back into markup, and decoding once means "&amp;lt;" stays "&lt;".
+ * Only the references the HTML serializer emits (plus numeric ones) are decoded.
+ *
+ * @internal exported for tests
+ */
+export function normaliseName(text: string): string {
+	return text
+		.replace(
+			/&(?:#(\d{1,7})|#x([0-9a-f]{1,6})|([a-z]+));/gi,
+			(match, dec?: string, hex?: string, name?: string) => {
+				if (name) return NAMED_ENTITIES[name.toLowerCase()] ?? match;
+				const code = dec ? Number(dec) : parseInt(hex ?? "", 16);
+				return code > 0 && code <= 0x10ffff
+					? String.fromCodePoint(code)
+					: match;
+			},
+		)
+		.replace(/\s+/g, " ")
+		.trim();
 }
 
 /**
@@ -160,22 +207,34 @@ function plainText(html: string): string {
  * image when their elements are missing, so a render that returns HTML has
  * not necessarily written anything.
  */
-export function renderProfileVerified(html: string, profile: ProfileWithUser, courseId: number): ProfileRenderResult {
-  let rendered: string;
-  try {
-    rendered = renderProfile(html, profile, courseId);
-  } catch {
-    return { ok: false, problem: "Couldn't find the profile section on the page" };
-  }
-  const written = hasDataProfileAttributes(rendered)
-    ? readProfileFromPage(rendered)
-    : getCurioPageFrontPageProfile(rendered);
-  const nameLanded =
-    !profile.displayName || plainText(written?.displayName ?? "") === plainText(profile.displayName);
-  if (!written || !nameLanded) {
-    return { ok: false, problem: `"${profile.displayName}" did not land on the page` };
-  }
-  return { ok: true, html: rendered, written };
+export function renderProfileVerified(
+	html: string,
+	profile: ProfileWithUser,
+	courseId: number,
+): ProfileRenderResult {
+	let rendered: string;
+	try {
+		rendered = renderProfile(html, profile, courseId);
+	} catch {
+		return {
+			ok: false,
+			problem: "Couldn't find the profile section on the page",
+		};
+	}
+	const written = hasDataProfileAttributes(rendered)
+		? readProfileFromPage(rendered)
+		: getCurioPageFrontPageProfile(rendered);
+	const nameLanded =
+		!profile.displayName ||
+		normaliseName(written?.displayName ?? "") ===
+			normaliseName(profile.displayName);
+	if (!written || !nameLanded) {
+		return {
+			ok: false,
+			problem: `"${profile.displayName}" did not land on the page`,
+		};
+	}
+	return { ok: true, html: rendered, written };
 }
 
 /**
@@ -183,25 +242,31 @@ export function renderProfileVerified(html: string, profile: ProfileWithUser, co
  * Returns null for legacy Curio pages — caller should use
  * getCurioPageFrontPageProfile directly for that format instead of guessing.
  */
-export function readProfileFromPage(html: string, user?: IUserData): TemplateProfile | null {
-  if (!hasDataProfileAttributes(html)) return null;
-  return readProfileByDataAttributes(html, user);
+export function readProfileFromPage(
+	html: string,
+	user?: IUserData,
+): TemplateProfile | null {
+	if (!hasDataProfileAttributes(html)) return null;
+	return readProfileByDataAttributes(html, user);
 }
 
-function readProfileByDataAttributes(html: string, user?: IUserData): TemplateProfile {
-  const el = parseHtmlInert(html);
+function readProfileByDataAttributes(
+	html: string,
+	user?: IUserData,
+): TemplateProfile {
+	const el = parseHtmlInert(html);
 
-  const nameEl = el.querySelector(`[${ATTR.name}]`);
-  const bioEl = el.querySelector(`[${ATTR.bio}]`);
-  const imageEl = el.querySelector(`[${ATTR.image}] img`);
+	const nameEl = el.querySelector(`[${ATTR.name}]`);
+	const bioEl = el.querySelector(`[${ATTR.bio}]`);
+	const imageEl = el.querySelector(`[${ATTR.image}] img`);
 
-  return {
-    user,
-    displayName: nameEl?.textContent?.trim() || null,
-    bio: bioEl?.innerHTML ?? null,
-    imageLink: imageEl instanceof HTMLImageElement ? imageEl.src : null,
-    fields: readExtraFields(el),
-  };
+	return {
+		user,
+		displayName: nameEl?.textContent?.trim() || null,
+		bio: bioEl?.innerHTML ?? null,
+		imageLink: imageEl instanceof HTMLImageElement ? imageEl.src : null,
+		fields: readExtraFields(el),
+	};
 }
 
 /**
@@ -210,8 +275,16 @@ function readProfileByDataAttributes(html: string, user?: IUserData): TemplatePr
  * Bio pages are titled with the instructor's name, which stands in when the
  * layout guess finds none (e.g. an empty <strong><em></em></strong> shell).
  */
-export function profileFromFacultyPage(page: FacultyPage, user: IUserData): IProfile {
-  const tagged = readProfileFromPage(page.body ?? "", user);
-  const profile = tagged ? { ...tagged, sourcePage: page } : getProfileFromPage(page, user);
-  return { ...profile, displayName: profile.displayName?.trim() || page.title?.trim() || null };
+export function profileFromFacultyPage(
+	page: FacultyPage,
+	user: IUserData,
+): IProfile {
+	const tagged = readProfileFromPage(page.body ?? "", user);
+	const profile = tagged
+		? { ...tagged, sourcePage: page }
+		: getProfileFromPage(page, user);
+	return {
+		...profile,
+		displayName: profile.displayName?.trim() || page.title?.trim() || null,
+	};
 }

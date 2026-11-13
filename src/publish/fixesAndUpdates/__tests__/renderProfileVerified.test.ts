@@ -1,4 +1,4 @@
-import { readProfileFromPage, renderProfileVerified } from "../profileRenderer";
+import { normaliseName, readProfileFromPage, renderProfileVerified } from "../profileRenderer";
 import { IProfile } from "@ueu/ueu-canvas/type";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
 
@@ -57,9 +57,7 @@ describe(`renderProfileVerified (seed ${SEED})`, () => {
       const page = pick(r, pagesWithProfileStructure);
       const result = renderProfileVerified(page, profile, 1);
       if (!result.ok) throw new Error(`not ok on ${JSON.stringify(page)} for ${profile.displayName} (seed ${SEED})`);
-      const el = document.createElement("div");
-      el.innerHTML = result.written.displayName ?? "";
-      expect(el.textContent).toContain(profile.displayName!);
+      expect(normaliseName(result.written.displayName ?? "")).toContain(normaliseName(profile.displayName!));
     }
   });
 });
@@ -68,5 +66,35 @@ describe("readProfileFromPage names", () => {
   it.each(["", " ", "\n\t "])("reads a blank name element (%j) as null", (blank) => {
     const profile = readProfileFromPage(`<h2 data-profile-name>${blank}</h2>`);
     expect(profile?.displayName).toBeNull();
+  });
+});
+
+describe("normaliseName", () => {
+  it.each([
+    ["Dr. Li &amp; Co Doe", "Dr. Li & Co Doe"],
+    ["O&#39;Neil", "O'Neil"],
+    ["O&#x27;Neil", "O'Neil"],
+    ["Zo\u00eb", "Zo\u00eb"],
+    ["A&nbsp;B", "A B"],
+    ["  A \n\t B  ", "A B"],
+    ["1 &lt; 2 &gt; 0", "1 < 2 > 0"],
+  ])("normalises %j to %j", (input, expected) => {
+    expect(normaliseName(input)).toBe(expected);
+  });
+
+  it("decodes only once, so escaped references stay escaped", () => {
+    expect(normaliseName("&amp;lt;b&amp;gt;")).toBe("&lt;b&gt;");
+  });
+
+  it("leaves unknown or invalid references alone", () => {
+    expect(normaliseName("&euml; &#0; &#99999999; &bogus;")).toBe("&euml; &#0; &#99999999; &bogus;");
+  });
+
+  it("does not parse its input as markup", () => {
+    expect(normaliseName("<b>x</b>")).toBe("<b>x</b>");
+  });
+
+  it("treats the serialized and plain forms of a name as equal", () => {
+    expect(normaliseName("Li &amp; Co")).toBe(normaliseName("Li & Co"));
   });
 });
