@@ -38,6 +38,25 @@ import { SectionData } from "@ueu/ueu-canvas/courseTypes";
 jest.mock("@ueu/ueu-canvas/course/blueprint");
 import { getBlueprintsFromCode } from "@ueu/ueu-canvas/course/blueprint";
 
+// The real getTermNameFromSyllabus is tested in ueu_canvas. It's stubbed here so these tests don't depend on the
+// installed @ueu/ueu-canvas version having it (added after 0.0.16). Same behavior: meta table first, then callout.
+// TODO: drop this mock once lxd-tools depends on a @ueu/ueu-canvas release that includes it.
+jest.mock("@ueu/ueu-canvas/course/changeStartDate", () => ({
+  ...jest.requireActual("@ueu/ueu-canvas/course/changeStartDate"),
+  getTermNameFromSyllabus: (html: string) => {
+    const body = document.createElement("div");
+    body.innerHTML = html;
+    const metaRow = Array.from(body.querySelectorAll("table[data-course-meta] tr")).find(
+      (row) => row.children[0]?.textContent?.trim() === "course-term"
+    );
+    const metaValue = metaRow?.children[1]?.textContent?.trim();
+    if (metaValue) return metaValue;
+    const paras = Array.from(body.querySelectorAll("div.cbt-callout-box p")).filter((p) => p.querySelector("strong"));
+    const termEl = paras[1];
+    return termEl ? (termEl.textContent?.trim().replace(/^.*:\s*/, "") ?? "") : null;
+  },
+}));
+
 jest.mock("@ueu/ueu-canvas/course/getTermNameFromSections", () => ({
   getTermNameFromSections: jest.fn(),
 }));
@@ -139,6 +158,15 @@ const mockSyllabus = `<div class="cbt-callout-box">
             <p><strong>Course Number and Title:</strong> TEST101: Testing</p>
             <p><strong>Year/Term/Session:</strong><span> DE5W06.04.20</span></p></div>`;
 
+// New "course meta" format: the callout holds an empty placeholder and the term lives in the meta table.
+const mockCourseMetaSyllabus = `<table data-course-meta=""><tbody>
+        <tr><td>course-title</td><td>TEST101: Testing</td></tr>
+        <tr><td>course-term</td><td><span>DE5W06.04.20</span></td></tr></tbody></table>
+    <div class="cbt-callout-box">
+        <div class="content">
+            <p><strong>Course Number and Title:</strong> <span data-course-field="course-title">&nbsp;</span></p>
+            <p><strong>Year/Term/Session:</strong> <span data-course-field="course-term">&nbsp;</span></p></div></div>`;
+
 describe("MakeBp Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -183,6 +211,21 @@ describe("MakeBp Component", () => {
 
     const termNameInput = getByPlaceholderText(TERM_NAME_PLACEHOLDER);
     expect(termNameInput).toHaveValue("DE5W06.04.20");
+  });
+
+  it("pulls the term name from a course meta format syllabus", async () => {
+    (blueprintApi.getBlueprintsFromCode as jest.Mock).mockResolvedValue([
+      {
+        ...mockBlueprintCourse,
+        id: 101,
+        getSyllabus: jest.fn().mockResolvedValue(mockCourseMetaSyllabus),
+      },
+    ]);
+
+    const { getByPlaceholderText } = await renderComponent();
+
+    expect(getByPlaceholderText(TERM_NAME_PLACEHOLDER)).toHaveValue("DE5W06.04.20");
+    expect(screen.getByText(/Archive/)).not.toBeDisabled();
   });
 });
 

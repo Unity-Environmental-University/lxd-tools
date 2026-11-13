@@ -7,7 +7,11 @@ import { useEffectAsync } from "../ui/utils";
 import { Form } from "react-bootstrap";
 import { OPEN_AI_API_KEY_KEY, SUB_ACCOUNT } from "../consts";
 import { isCanvasUrl } from "@ueu/ueu-canvas/instance";
-import { getInstances, saveInstances, getInstanceFromUrl, CanvasInstance } from "../canvasInstances";
+import {
+	getInstances,
+	getInstanceFromUrl,
+	CanvasInstance,
+} from "../canvasInstances";
 
 function PopUpApp() {
   const [advanced, setAdvanced] = useState(false);

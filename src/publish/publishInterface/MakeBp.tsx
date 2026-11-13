@@ -10,6 +10,7 @@ import {
 import { bpify } from "@/admin";
 import { migrationsForCourseGen, IMigrationData, startMigration } from "@ueu/ueu-canvas/course/migration";
 import { Course } from "@ueu/ueu-canvas/course/Course";
+import { getTermNameFromSyllabus } from "@ueu/ueu-canvas/course/changeStartDate";
 import { listDispatcher } from "@/ui/reducerDispatchers";
 import {
   loadCachedCourseMigrations,
@@ -180,7 +181,6 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
           if (sectionData.term_name) setTermName(sectionData.term_name);
         }
       } else {
-        const syllabusBody = document.createElement("div");
         let currentBpSyllabus = "";
 
         if (typeof currentBp.getSyllabus === "function") {
@@ -190,15 +190,9 @@ export function MakeBp({ devCourse, onBpSet, onTermNameSet, onSectionsSet }: IMa
           return;
         }
 
-        syllabusBody.innerHTML = currentBpSyllabus;
-        const syllabusCalloutBox = syllabusBody.querySelector("div.cbt-callout-box");
-        if (syllabusCalloutBox) {
-          const paras = Array.from(syllabusCalloutBox.querySelectorAll("p"));
-          const strongParas = paras.filter((para) => para.querySelector("strong"));
-          const termNameEl = strongParas[1];
-
-          setTermName(termNameEl.textContent?.trim().replace(/^.*:\s*/, "") ?? "");
-        }
+        // Reads the term from the course meta table (new syllabus format), or the callout box (original format).
+        const syllabusTermName = getTermNameFromSyllabus(currentBpSyllabus);
+        if (syllabusTermName !== null) setTermName(syllabusTermName);
       }
       setSections(sections);
     }
