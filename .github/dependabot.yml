@@ -19,3 +19,9 @@ updates:
       actions:
         patterns:
           - "*"
+  - package-ecosystem: "npm"
+    directory: "/.github/release-tools"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+    open-pull-requests-limit: 0

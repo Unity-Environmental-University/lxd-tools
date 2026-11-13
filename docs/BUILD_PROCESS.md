@@ -11,7 +11,7 @@ The deployment pipeline manages version control, package signing, storage on Clo
 ### When the workflow runs
 
 - A push to the main branch, which in practice means a pull request was merged (branch protection requires a pull request for main)
-  - If the push only changes .md, .yml and/or .yaml files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
+  - If the push only changes .md, .yml, .yaml and/or `.github/release-tools/` files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
 - A manual run (Actions → "Deploy Extension Updates" → Run workflow). This is a fallback, for example to re-run a deploy that failed partway. It always builds the tip of main.
 
 ### What triggers it NOT to run
@@ -48,7 +48,7 @@ These are stored as secrets of the `production` GitHub environment, whose deploy
 
 The workflow performs the following automated steps in sequence:
 
-1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. Git tags are fetched to enable version detection.
+1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. The packaging tools (`crx3`, `web-ext`) are installed at pinned versions from `.github/release-tools/` (see [Updating the release tools](#updating-the-release-tools)). Git tags are fetched to enable version detection.
 2. **Version Validation** — Reads the version from `package.json` and verifies it hasn't been deployed before by checking for an existing git tag. If a duplicate version is detected, the entire build fails with a clear error message to prevent accidental re-deployment.
 3. **Extension Compilation** — Runs `npm run build` to compile the extension source code into the `dist` directory.
 4. **Platform-Specific Signing** — The compiled extension is signed for both platforms:
@@ -154,6 +154,10 @@ The workflow produces the following artifacts for monitoring:
 3. Verify npm build script still works
 4. Test signing keys are still valid
 5. Review and test any version management changes
+
+### Updating the release tools
+
+`crx3` and `web-ext` are pinned in `.github/release-tools/package.json` and its own `package-lock.json`, separate from the extension's dependencies so the root `overrides` do not apply to them. To update them, change the versions there, run `npm install` in that folder, and commit both files. A pull request that only changes `.github/release-tools/` does not start the deploy workflow and does not need a version bump; the new versions are used by the next release.
 
 ## Related Documentation
 
