@@ -26,8 +26,6 @@ export const FacultyView = () => {
 
     const handleSubmit = (e:FormEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        console.log("SUBMIT", accountId);
-        console.log(instructors.map(i => i?.id))
         setSelectedTerms(selectableTerms ?? []);
         if(!accountId || !selectableTerms || selectableTerms.length == 0) return;
         dispatch(fetchCoursesThunk({
@@ -46,11 +44,11 @@ export const FacultyView = () => {
                     <button onClick={handleSubmit} disabled={!selectableTerms || selectableTerms.length == 0}>Find Users</button>
                     <TermPicker onPickTerms={onPickTerm} />
                     <Row>
-                        {instructors.filter(f => typeof f !== 'undefined').map(faculty => (
+                        {instructors.map(faculty => (
                             <FacultyRow userId={faculty.id} key={faculty.id} />
                         ))}
                     </Row>
-                    {courses.map(course => <Row>{course.course_code}</Row>)}
+                    {courses.map(course => <Row key={course.id}>{course.course_code}</Row>)}
                 </Container>
             </Card.Body>
         </Card>
