@@ -1,0 +1,9 @@
+{
+  "name": "lxd-tools-release-tools",
+  "private": true,
+  "description": "Pinned packaging and signing tools for main-deploy.yml. Kept apart from the extension's package.json so its overrides do not apply to them.",
+  "dependencies": {
+    "crx3": "2.0.0",
+    "web-ext": "10.8.0"
+  }
+}

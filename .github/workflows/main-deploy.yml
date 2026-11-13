@@ -4,7 +4,8 @@ name: Deploy Extension Updates
 # secrets.
 #
 # - push to main: runs when a PR is merged (branch protection should require a
-#   PR for main). Docs/yaml-only changes are skipped.
+#   PR for main). Docs/yaml-only changes, and changes only under
+#   .github/release-tools/, are skipped.
 # - workflow_dispatch: manual fallback, e.g. to re-run a failed deploy. Runs
 #   the tip of main only.
 #
@@ -18,6 +19,7 @@ on:
       - '**/*.md'
       - '**/*.yml'
       - '**/*.yaml'
+      - '.github/release-tools/**'
   workflow_dispatch:
 
 # Never run two deploys at once (e.g. a push and a manual run).
@@ -51,6 +53,13 @@ jobs:
           npm config set registry https://registry.npmjs.org/
           npm ci
 
+      - name: Install release tools
+        # crx3 and web-ext at the exact versions in this folder's package-lock.json.
+        # They live apart from the extension's package.json so its overrides do not
+        # apply to them, and none of their dependencies need install scripts.
+        working-directory: lxd-tools/.github/release-tools
+        run: npm ci --ignore-scripts
+
       - name: Get version and check for duplicates
         id: get_version
         working-directory: lxd-tools
@@ -79,7 +88,7 @@ jobs:
       - name: Pack Chrome extension
         working-directory: lxd-tools
         run: |
-          npx crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
+          .github/release-tools/node_modules/.bin/crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
 
       - name: Sign Firefox extension
         working-directory: lxd-tools
@@ -87,7 +96,7 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
         run: |
-          npx web-ext sign \
+          .github/release-tools/node_modules/.bin/web-ext sign \
             --source-dir ../dist \
             --api-key $WEB_EXT_API_KEY \
             --api-secret $WEB_EXT_API_SECRET \
