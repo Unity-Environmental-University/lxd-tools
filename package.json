@@ -62,6 +62,7 @@
     "jest-environment-jsdom": "^30.3.0",
     "jest-fetch-mock": "^3.0.3",
     "jest-module-name-mapper": "^0.1.5",
+    "openapi-typescript": "^7.13.0",
     "postcss-loader": "^8.1.1",
     "process": "^0.11.10",
     "react": "^18.2.0",
@@ -94,7 +95,12 @@
     "publish": "node publish.mjs",
     "test": "jest",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gen:lisa-api": "openapi-typescript src/search/lisa-api/openapi.json -o src/search/lisa-api/schema.d.ts",
+    "sync:lisa-api": "node sync-lisa-api.mjs",
+    "postinstall": "npm run gen:lisa-api",
+    "prebuild": "npm run gen:lisa-api",
+    "pretypecheck": "npm run gen:lisa-api"
   },
   "eslintConfig": {
     "extends": [

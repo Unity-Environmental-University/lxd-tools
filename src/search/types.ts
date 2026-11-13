@@ -1,97 +1,34 @@
-// TODO have backend send an API spec that we can derive these from
-// currently some of these are unused because lisa endpoints are generic enough
+// LISA's request and response shapes, derived from its OpenAPI spec.
+// lisa-api/schema.d.ts is generated from the committed lisa-api/openapi.json
+// snapshot (npm run gen:lisa-api); update the snapshot with npm run sync:lisa-api.
+import type {components, paths} from './lisa-api/schema';
 
-type BaseParams = {
-  page: number;
-  page_size: number;
-}
+type Get<P extends keyof paths> = paths[P]['get'];
 
-type SortBaseParams = BaseParams & {
-    sort_column: string;
-    sort_direction: string;
-}
+/** Query params of a LISA GET endpoint */
+export type Query<P extends keyof paths> = NonNullable<Get<P>['parameters']['query']>;
 
-type SyllabusParams = BaseParams & {
-  course_name: string;
-  term_id: number | null;
-  phrase: string;
-}
+/** 200 response body of a LISA GET endpoint */
+export type Ok<P extends keyof paths> =
+  Get<P>['responses'][200]['content']['application/json'];
 
-type Syllabus = {
-  course_id: number;
-  name: string;
-  resource_link: string;
-}
+/** Every /api/search-* path in LISA's spec */
+export type SearchPath = Extract<keyof paths, `/api/search-${string}`>;
 
-type Pagination = {
-  page: number;
-  page_size: number;
-  total_count: number;
-  total_pages: number;
-}
+export type SearchParams<P extends SearchPath = SearchPath> = Query<P>;
+export type SearchResponse<P extends SearchPath = SearchPath> = Ok<P>;
+export type SearchRow<P extends SearchPath = SearchPath> = SearchResponse<P>['results'][number];
+export type SortColumn<P extends SearchPath = SearchPath> = NonNullable<SearchParams<P>['sort_column']>;
+export type SortDirection = NonNullable<SearchParams['sort_direction']>;
 
-type Syllabi = {
-  pagination: Pagination;
-  results: Syllabus[];
-}
+/** The search form's state. Every search takes the same params, except that
+ * each has its own sort_column enum; the form only offers the selected
+ * endpoint's columns (sortColumns) */
+export type SearchForm = Omit<SearchParams, 'sort_column'> & {sort_column?: SortColumn};
 
-type Assignment = {
-  assignment_id: number;
-  course_id: number;
-  course_name: string;
-  resource_link: string;
-  title: string;
-};
+export type Term = components['schemas']['Term'];
 
-type Assignments = {
-    pagination: Pagination;
-    results: Assignment[]
-}
-
-type AssignmentParams = SortBaseParams & {
-    course_name: string;
-    term_id: number | null;
-    phrase: string;
-}
-
-type Term = {
-  id: number;
-  name: string;
-  start_at: string;
-  end_at: string;
-}
-
-export type TermResponse = Term[]
-
-type GenericParams = AssignmentParams
-type GenericDBObject = Record<string, string|number>
-type GenericDBResponse = {
-  pagination: Pagination;
-  results: GenericDBObject[];
-}
-
-export type ApiEndpoints = {
-  'search-syllabi': {
-    params: SyllabusParams;
-    response: Syllabi;
-  };
-  'terms': {
-    params: undefined;
-    response: TermResponse;
-  }
-  'search-assignments': {
-    params: AssignmentParams;
-    response: Assignments;
-  }
-  'generic': {
-    params: GenericParams;
-    response: GenericDBResponse;
-  }
-}
-
-export type UserFacingEndpoint = Exclude<keyof ApiEndpoints, 'terms'>;
-
-export type DataTableProps<T extends Record<string, string | number>> = {
+export type DataTableProps<T extends SearchRow> = {
   data: T[];
   loading: boolean;
   currentPage: number;
@@ -101,7 +38,7 @@ export type DataTableProps<T extends Record<string, string | number>> = {
 };
 
 export type TermSelectProps = {
-    terms: TermResponse;
-    currentSelection: number | null;
-    onChange: (termID:number|null) => void;
+  terms: Term[];
+  currentSelection: number | undefined;
+  onChange: (termID: number | undefined) => void;
 };

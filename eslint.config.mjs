@@ -3,6 +3,8 @@ import tseslint from "typescript-eslint";
 
 
 export default tseslint.config(
+    // generated from the LISA spec by npm run gen:lisa-api
+    { ignores: ["src/search/lisa-api/schema.d.ts"] },
     ...tseslint.configs.recommended,
     {
         files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],

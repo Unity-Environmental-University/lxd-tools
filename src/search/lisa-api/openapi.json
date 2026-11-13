@@ -1,0 +1,2709 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LISA API",
+    "version": "1.0.1",
+    "description": "The documented subset of the LISA API. Generated from lisa_backend/models/api_schemas.py; don't edit by hand."
+  },
+  "servers": [
+    {
+      "url": "..",
+      "description": "The LISA server serving this spec"
+    }
+  ],
+  "paths": {
+    "/api/search-syllabi": {
+      "get": {
+        "operationId": "search_syllabus",
+        "summary": "Search course syllabi for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyllabusPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search-assignments": {
+      "get": {
+        "operationId": "search_assignments",
+        "summary": "Search assignment descriptions for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search-pages": {
+      "get": {
+        "operationId": "search_pages",
+        "summary": "Search wiki page bodies for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiPagePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search-topics": {
+      "get": {
+        "operationId": "search_topics",
+        "summary": "Search discussion topic and announcement messages for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link",
+                "type"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscussionTopicPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search-topic-replies": {
+      "get": {
+        "operationId": "search_replies",
+        "summary": "Search discussion replies for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link",
+                "discussion_topic_id",
+                "parent_id"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscussionEntryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search-filenames": {
+      "get": {
+        "operationId": "search_filenames",
+        "summary": "Search course file names for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link",
+                "modified_at",
+                "viewed_at",
+                "folder_id",
+                "file_state",
+                "size",
+                "display_name",
+                "content_type",
+                "original_copy_id"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search-quizzes": {
+      "get": {
+        "operationId": "search_quizzes",
+        "summary": "Search quiz descriptions for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link",
+                "question_count",
+                "quiz_type",
+                "scoring_policy",
+                "show_correct_answers",
+                "shuffle_answers",
+                "allowed_attempts",
+                "assignment_id",
+                "points_possible",
+                "published_at",
+                "due_at"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search-questions": {
+      "get": {
+        "operationId": "search_questions",
+        "summary": "Search quiz bank question text for a phrase",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phrase",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive substring to search for. Must not be blank"
+          },
+          {
+            "name": "course_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Only courses whose name contains this"
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Only courses in this term"
+          },
+          {
+            "name": "course_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "description": "Only these courses. Repeat the param for each id",
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort_column",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "course_id",
+                "course_name",
+                "term_id",
+                "id",
+                "title",
+                "workflow_state",
+                "created_at",
+                "updated_at",
+                "resource_link",
+                "bank_id",
+                "bank_title"
+              ],
+              "default": "id"
+            },
+            "description": "Any result column. Unknown columns fall back to id"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No search phrase given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in with Canvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/terms": {
+      "get": {
+        "operationId": "get_available_terms",
+        "summary": "Get the list of terms, newest first, for filtering",
+        "tags": [
+          "terms"
+        ],
+        "security": [
+          {
+            "canvasSession": []
+          },
+          {
+            "dashboardSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every term",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$defs": {
+                    "Term": {
+                      "additionalProperties": false,
+                      "description": "An enrollment term. start_at is shifted to when the term starts in the\nbusiness; both dates are YYYY-MM-DD in Eastern time",
+                      "properties": {
+                        "id": {
+                          "title": "Id",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "title": "Name"
+                        },
+                        "start_at": {
+                          "anyOf": [
+                            {
+                              "format": "date",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "title": "Start At"
+                        },
+                        "end_at": {
+                          "anyOf": [
+                            {
+                              "format": "date",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "title": "End At"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "start_at",
+                        "end_at"
+                      ],
+                      "title": "Term",
+                      "type": "object"
+                    }
+                  },
+                  "items": {
+                    "$ref": "#/components/schemas/Term"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to fetch terms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssignmentPage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/AssignmentResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "AssignmentPage",
+        "type": "object"
+      },
+      "AssignmentResult": {
+        "additionalProperties": false,
+        "description": "An assignment whose description matched",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link"
+        ],
+        "title": "AssignmentResult",
+        "type": "object"
+      },
+      "DiscussionEntryPage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/DiscussionEntryResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "DiscussionEntryPage",
+        "type": "object"
+      },
+      "DiscussionEntryResult": {
+        "additionalProperties": false,
+        "description": "A discussion reply whose message matched. title is its discussion's title",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          },
+          "discussion_topic_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discussion Topic Id"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link",
+          "discussion_topic_id",
+          "parent_id"
+        ],
+        "title": "DiscussionEntryResult",
+        "type": "object"
+      },
+      "DiscussionTopicPage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/DiscussionTopicResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "DiscussionTopicPage",
+        "type": "object"
+      },
+      "DiscussionTopicResult": {
+        "additionalProperties": false,
+        "description": "A discussion topic or announcement whose message matched",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Announcement, or null for a discussion",
+            "title": "Type"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link",
+          "type"
+        ],
+        "title": "DiscussionTopicResult",
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "description": "The body of every 4xx/5xx response",
+        "properties": {
+          "error": {
+            "title": "Error",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Message"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "FilePage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/FileResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "FilePage",
+        "type": "object"
+      },
+      "FileResult": {
+        "additionalProperties": false,
+        "description": "A course file whose name matched",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          },
+          "modified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modified At"
+          },
+          "viewed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Viewed At"
+          },
+          "folder_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
+          },
+          "file_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File State"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          },
+          "original_copy_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The file this one was copied from, if any",
+            "title": "Original Copy Id"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link",
+          "modified_at",
+          "viewed_at",
+          "folder_id",
+          "file_state",
+          "size",
+          "display_name",
+          "content_type",
+          "original_copy_id"
+        ],
+        "title": "FileResult",
+        "type": "object"
+      },
+      "Pagination": {
+        "additionalProperties": false,
+        "description": "Paging info of a paginated response (utils/api_helpers.page_response)",
+        "properties": {
+          "sort_column": {
+            "description": "The column the page is sorted by, or empty for none",
+            "title": "Sort Column",
+            "type": "string"
+          },
+          "sort_direction": {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "title": "Sort Direction",
+            "type": "string"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total_count": {
+            "title": "Total Count",
+            "type": "integer"
+          },
+          "total_pages": {
+            "title": "Total Pages",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sort_column",
+          "sort_direction",
+          "page",
+          "page_size",
+          "total_count",
+          "total_pages"
+        ],
+        "title": "Pagination",
+        "type": "object"
+      },
+      "QuestionPage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/QuestionResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "QuestionPage",
+        "type": "object"
+      },
+      "QuestionResult": {
+        "additionalProperties": false,
+        "description": "A question bank question whose text matched. title is the question's name",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          },
+          "bank_id": {
+            "title": "Bank Id",
+            "type": "integer"
+          },
+          "bank_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Title"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link",
+          "bank_id",
+          "bank_title"
+        ],
+        "title": "QuestionResult",
+        "type": "object"
+      },
+      "QuizPage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/QuizResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "QuizPage",
+        "type": "object"
+      },
+      "QuizResult": {
+        "additionalProperties": false,
+        "description": "A quiz whose description matched",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          },
+          "question_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question Count"
+          },
+          "quiz_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quiz Type"
+          },
+          "scoring_policy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scoring Policy"
+          },
+          "show_correct_answers": {
+            "title": "Show Correct Answers",
+            "type": "boolean"
+          },
+          "shuffle_answers": {
+            "title": "Shuffle Answers",
+            "type": "boolean"
+          },
+          "allowed_attempts": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Attempts"
+          },
+          "assignment_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignment Id"
+          },
+          "points_possible": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points Possible"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link",
+          "question_count",
+          "quiz_type",
+          "scoring_policy",
+          "show_correct_answers",
+          "shuffle_answers",
+          "allowed_attempts",
+          "assignment_id",
+          "points_possible",
+          "published_at",
+          "due_at"
+        ],
+        "title": "QuizResult",
+        "type": "object"
+      },
+      "SyllabusPage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SyllabusResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "SyllabusPage",
+        "type": "object"
+      },
+      "SyllabusResult": {
+        "additionalProperties": false,
+        "description": "A course whose syllabus matched. id is the course id, title its name",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link"
+        ],
+        "title": "SyllabusResult",
+        "type": "object"
+      },
+      "Term": {
+        "additionalProperties": false,
+        "description": "An enrollment term. start_at is shifted to when the term starts in the\nbusiness; both dates are YYYY-MM-DD in Eastern time",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "start_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start At"
+          },
+          "end_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End At"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "start_at",
+          "end_at"
+        ],
+        "title": "Term",
+        "type": "object"
+      },
+      "WikiPagePage": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/WikiPageResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "pagination"
+        ],
+        "title": "WikiPagePage",
+        "type": "object"
+      },
+      "WikiPageResult": {
+        "additionalProperties": false,
+        "description": "A wiki page whose body matched",
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "integer"
+          },
+          "course_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Name"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Id of the matched object",
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "workflow_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow State"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "resource_link": {
+            "description": "Link to the matched object in Canvas",
+            "title": "Resource Link",
+            "type": "string"
+          }
+        },
+        "required": [
+          "course_id",
+          "course_name",
+          "term_id",
+          "id",
+          "title",
+          "workflow_state",
+          "created_at",
+          "updated_at",
+          "resource_link"
+        ],
+        "title": "WikiPageResult",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "canvasSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "Session from the Canvas login (/login/canvas)"
+      },
+      "dashboardSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "Session from the dashboard login (/api/login)"
+      }
+    }
+  }
+}

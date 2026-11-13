@@ -1,14 +1,19 @@
+import { useEffect } from "react";
 import type {
     DataTableProps,
+    SearchPath,
+    SearchRow,
+    SortColumn,
+    SortDirection,
     TermSelectProps,
 } from "./types"
-import { useGet, useTerms } from "./utils";
+import { cellText, sortColumns, useSearch, useTerms } from "./utils";
 import "./search.css"
 
-const ALLOWED_DIRECTIONS = ["asc", "desc"]
+const ALLOWED_DIRECTIONS: SortDirection[] = ["asc", "desc"]
 
 // TODO should I turn hooks/components into a folder instead of a file?
-function DataTable<T extends Record<string, string | number>>({
+function DataTable<T extends SearchRow>({
   data,
   loading,
   currentPage,
@@ -18,7 +23,7 @@ function DataTable<T extends Record<string, string | number>>({
 }: DataTableProps<T>) {
   if (data.length === 0) return <p>No data</p>;
 
-  const columns = Object.keys(data[0]) as (keyof T)[];
+  const columns = Object.keys(data[0]) as (keyof T & string)[];
 
   return (
     <>
@@ -26,7 +31,7 @@ function DataTable<T extends Record<string, string | number>>({
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={String(col)}>{String(col)}</th>
+              <th key={col}>{col}</th>
             ))}
           </tr>
         </thead>
@@ -35,8 +40,8 @@ function DataTable<T extends Record<string, string | number>>({
           {data.map((row) => (
             <tr key={row.id}>
               {columns.map((col) => (
-                <td key={String(col)}>
-                  {col === "resource_link" ? <a href={String(row[col])} target="_blank" rel="noopener noreferrer">{String(row[col])}</a> : String(row[col])}
+                <td key={col}>
+                  {col === "resource_link" ? <a href={row.resource_link} target="_blank" rel="noopener noreferrer">{row.resource_link}</a> : cellText(col, row[col])}
                 </td>
               ))}
             </tr>
@@ -74,13 +79,13 @@ function TermSelect({ terms, currentSelection, onChange }: TermSelectProps) {
     <select
       value={currentSelection ?? ""}
       onChange={(e) =>
-        onChange(e.target.value === "" ? null : Number(e.target.value))
+        onChange(e.target.value === "" ? undefined : Number(e.target.value))
       }
     >
       <option value="">All Terms</option>
       {(terms).map((term) => (
         <option key={term.id} value={term.id}>
-          {term.name}
+          {term.name ?? `Term ${term.id}`}
         </option>
       ))}
     </select>
@@ -88,7 +93,7 @@ function TermSelect({ terms, currentSelection, onChange }: TermSelectProps) {
 }
 
 // currently this works for everything because the endpoints are simple
-export function GenericSearch({endpoint, allowed_sort_columns}: {endpoint: string, allowed_sort_columns: string[]}) {
+export function GenericSearch({endpoint}: {endpoint: SearchPath}) {
   const {
     params,
     setParams,
@@ -96,18 +101,21 @@ export function GenericSearch({endpoint, allowed_sort_columns}: {endpoint: strin
     loading,
     error,
     search,
-  } = useGet<'generic'>(
+  } = useSearch(
     endpoint,
     {
       course_name: '',
       phrase: '',
-      term_id: null,
       page: 1,
       page_size: 20,
-      sort_direction: '',
-      sort_column: ''
     }
   );
+  const allowed_sort_columns = sortColumns(endpoint);
+
+  // the previous endpoint's sort column may not exist on this one
+  useEffect(() => {
+    setParams(p => ({...p, sort_column: undefined}));
+  }, [endpoint, setParams]);
 
   const {terms, error:_err} = useTerms()
 
@@ -150,11 +158,11 @@ export function GenericSearch({endpoint, allowed_sort_columns}: {endpoint: strin
       />
 
       <select
-        value={params.sort_direction}
+        value={params.sort_direction ?? ""}
         onChange={(e) =>
           setParams({
             ...params,
-            sort_direction: e.target.value,
+            sort_direction: e.target.value === "" ? undefined : e.target.value as SortDirection,
             page:1
           })
         }
@@ -174,11 +182,11 @@ export function GenericSearch({endpoint, allowed_sort_columns}: {endpoint: strin
       </select>
 
       <select
-        value={params.sort_column}
+        value={params.sort_column ?? ""}
         onChange={(e) =>
           setParams({
             ...params,
-            sort_column: e.target.value,
+            sort_column: e.target.value === "" ? undefined : e.target.value as SortColumn,
             page:1
           })
         }
