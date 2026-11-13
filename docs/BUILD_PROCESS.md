@@ -48,7 +48,7 @@ These are stored as secrets of the `production` GitHub environment, whose deploy
 
 The workflow performs the following automated steps in sequence:
 
-1. **Repository Checkout & Setup** — Clones the lxd-tools repository and installs Node.js 20 with all dependencies. Git tags are fetched to enable version detection.
+1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. Git tags are fetched to enable version detection.
 2. **Version Validation** — Reads the version from `package.json` and verifies it hasn't been deployed before by checking for an existing git tag. If a duplicate version is detected, the entire build fails with a clear error message to prevent accidental re-deployment.
 3. **Extension Compilation** — Runs `npm run build` to compile the extension source code into the `dist` directory.
 4. **Platform-Specific Signing** — The compiled extension is signed for both platforms:
