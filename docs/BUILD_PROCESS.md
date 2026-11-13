@@ -74,7 +74,7 @@ The workflow performs the following automated steps in sequence:
 
 - The deploy job only runs from main and uses the `production` environment; the secrets are not available to other branches
 - All secrets are referenced via `${{ secrets.VAR_NAME }}` syntax, per GitHub Actions format
-- Chrome key is base64-encoded and must be decoded before use
+- Chrome key is base64-encoded; it is decoded to the runner's temp directory only inside the pack step and deleted when that step ends
 - Firefox API credentials are environment variables, never logged
 - GitHub token used for pushing to build repository is scoped and temporary
 
