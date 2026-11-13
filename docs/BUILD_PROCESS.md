@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the automated build and deployment process for the LXD browser extension. The workflow is triggered when a pull request is merged to the main branch and handles building, signing, and distributing the extension across multiple platforms (Chrome and Firefox).
+This document describes the automated build and deployment process for the LXD browser extension. The workflow runs when a change is pushed to the main branch (in practice, when a pull request is merged) or when it is started manually from main, and handles building, signing, and distributing the extension across multiple platforms (Chrome and Firefox).
 
 The deployment pipeline manages version control, package signing, storage on Cloudflare R2, and maintains a clean version history.
 
@@ -10,14 +10,16 @@ The deployment pipeline manages version control, package signing, storage on Clo
 
 ### When the workflow runs
 
-- A pull request is merged to the main branch
-  - If the pull request has only .md and/or .yml files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
-- The event type must be 'closed' (not open, reopened, or synchronize)
+- A push to the main branch, which in practice means a pull request was merged (branch protection requires a pull request for main)
+  - If the push only changes .md, .yml and/or .yaml files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
+- A manual run (Actions → "Deploy Extension Updates" → Run workflow). This is a fallback, for example to re-run a deploy that failed partway. It always builds the tip of main.
 
 ### What triggers it NOT to run
 
-- Pull request is closed without merging
-- Pull request is opened or updated
+- Pull request is closed without merging, opened or updated
+- A manual run started on any ref other than main (the job is skipped)
+
+Test builds that must not publish use the separate **Build testing** workflow (`build-testing.yml`), which runs on pull requests and can be started manually for any branch. It uploads an unsigned `dist/` as a workflow artifact and never uses the secrets below.
 
 ## Pre-requisites
 
@@ -28,6 +30,8 @@ The deployment pipeline manages version control, package signing, storage on Clo
 - `updates.json` and `update.xml` files are present in the dist directory
 
 ### Secrets and credentials
+
+These are stored as secrets of the `production` GitHub environment, whose deployment branches are limited to `main`. Only the deploy job (`environment: production`) can read them, so workflows on other branches cannot.
 
 | Secret Name             | Purpose                                                     |
 | ----------------------- | ----------------------------------------------------------- |
@@ -68,6 +72,7 @@ The workflow performs the following automated steps in sequence:
 
 ### Security
 
+- The deploy job only runs from main and uses the `production` environment; the secrets are not available to other branches
 - All secrets are referenced via `${{ secrets.VAR_NAME }}` syntax, per GitHub Actions format
 - Chrome key is base64-encoded and must be decoded before use
 - Firefox API credentials are environment variables, never logged
@@ -111,8 +116,14 @@ After successful execution, the following files are available:
 **Solution**:
 
 1. Update `package.json` with a new version number
-2. Push the change to a new commit or amend the PR
-3. Re-merge the PR to trigger the workflow again
+2. Land the change on main through a new pull request that includes the bump
+
+### Re-running a failed deploy
+
+After fixing the cause, start the workflow manually from main (Actions → "Deploy Extension Updates" → Run workflow).
+
+- If the failed run had already pushed the version tag, delete the tag first (`git push --delete origin {VERSION}`), and also the `release/{VERSION}` branch if it was created. Otherwise the duplicate-version check stops the new run.
+- If the failure came after the Firefox signing step, AMO has already used that version number and will reject signing it again. Bump the version through a new pull request instead.
 
 ### Chrome extension fails to sign
 

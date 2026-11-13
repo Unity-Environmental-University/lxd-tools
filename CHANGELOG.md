@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 ### Internal
+- Release workflow: `main-deploy.yml` now runs on push to `main` or manual dispatch (main only), uses a `production` environment, and is the only workflow that publishes. The old `manual-deploy.yml` ("Build testing") is removed; `build-testing.yml` (renamed from `pr-build.yml`) is the single build-only workflow and also runs manually.
 
 ## 3.2.5
 
