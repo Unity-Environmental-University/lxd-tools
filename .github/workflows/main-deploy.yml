@@ -59,10 +59,17 @@ jobs:
         run: |
           VERSION=$(node -p 'require("./package.json").version')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          if git tag | grep -qx "$VERSION"; then
-            echo "ERROR: Version $VERSION has already been deployed. Update package.json version before merging."
-            exit 1
-          fi
+          # Ask origin for the tag instead of listing local tags: the checkout is
+          # shallow (depth 1), so older release tags are not present locally and
+          # `git tag` would never see them. ls-remote exits 0 if the tag exists,
+          # 2 if it does not, and anything else if origin could not be queried.
+          rc=0
+          git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1 || rc=$?
+          case $rc in
+            0) echo "ERROR: Version $VERSION has already been deployed (tag exists on origin). Update package.json version before merging."; exit 1 ;;
+            2) echo "OK: no tag $VERSION on origin" ;;
+            *) echo "ERROR: could not check origin for tag $VERSION (git ls-remote exit $rc)"; exit 1 ;;
+          esac
 
       - name: Write Chrome key
         run: echo "${{ secrets.CHROME_KEY_PEM_B64 }}" | base64 -d > lxd-tools/chrome-key.pem
