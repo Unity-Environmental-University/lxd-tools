@@ -41,6 +41,9 @@ jobs:
         with:
           path: lxd-tools
           fetch-tags: true
+          # Keep the write-scoped token out of .git/config while dependency and
+          # build code runs; the tag step below authenticates on its own.
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -78,17 +81,24 @@ jobs:
             *) echo "ERROR: could not check origin for tag $VERSION (git ls-remote exit $rc)"; exit 1 ;;
           esac
 
-      - name: Write Chrome key
-        run: echo "${{ secrets.CHROME_KEY_PEM_B64 }}" | base64 -d > lxd-tools/chrome-key.pem
-
       - name: Build extension
         working-directory: lxd-tools
         run: npm run build
 
       - name: Pack Chrome extension
         working-directory: lxd-tools
+        env:
+          CHROME_KEY_PEM_B64: ${{ secrets.CHROME_KEY_PEM_B64 }}
         run: |
-          .github/release-tools/node_modules/.bin/crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
+          # The signing key exists only for the duration of this step, outside the
+          # checkout and dist, and is removed even if packing fails.
+          umask 077
+          KEY_FILE="$RUNNER_TEMP/chrome-key.pem"
+          trap 'shred -u "$KEY_FILE" 2>/dev/null || rm -f "$KEY_FILE"' EXIT
+          echo "$CHROME_KEY_PEM_B64" | base64 -d > "$KEY_FILE"
+          # Fail clearly if the secret is unset rather than handing crx3 an empty key file.
+          if [ ! -s "$KEY_FILE" ]; then echo "ERROR: Chrome signing key is empty" && exit 1; fi
+          .github/release-tools/node_modules/.bin/crx3 ../dist -p "$KEY_FILE" -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
 
       - name: Sign Firefox extension
         working-directory: lxd-tools
@@ -176,10 +186,14 @@ jobs:
 
       - name: Tag deployed version and create release branch
         working-directory: lxd-tools
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # The checkout did not persist credentials; authenticate only for these pushes.
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git tag "$VERSION"
           git push origin "$VERSION"
           git checkout -b "release/$VERSION"
