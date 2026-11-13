@@ -31,6 +31,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The Kaltura size validation reports "LTI endpoint not found" only for a 404. Other failures (401, 403, 5xx) now show the actual error.
 - The reporting instructor fetch now passes the teacher enrollment filter, so it only returns teachers.
 - The "Lock All" button on the modules page now checks blueprint status by calling `course.isBlueprint()`; before, it always appeared.
+- Fixed Reporting "Find Users" sending an endless stream of roster requests to Canvas. Each course's teachers are now requested once, only teachers (not every enrolled user) are requested, and only for the account's courses in the selected terms.
+- Reporting no longer saves course rosters, enrollments or course data in the browser's storage; only terms and account ids are kept. Rosters saved by earlier versions are cleared on first use.
+- Fixed Reporting dropping or duplicating courses and enrollments, and the Find Users list not showing instructors.
+- Fixed "Loading Courses..." getting stuck in Reporting.
 
 ### Internal
 
@@ -51,6 +55,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Deploy workflow: the release tag is now `v`-prefixed (e.g. `v3.3.1`) and is created together with a GitHub Release by one `gh release create` call. The release notes come from the version's `CHANGELOG.md` section (falling back to generated notes), and the release includes the signed `.crx`, the signed `.xpi` and a zip of the unpacked build.
 - Deploy workflow: the "Tag deployed version and create release branch" step is split into "Create release branch" and "Tag deployed version and create release". The release is created last, and a version counts as deployed once its GitHub Release (or a legacy unprefixed tag) exists, so a failed run can be re-run. The release branch step skips a branch that already exists, and the job has a 45 minute timeout.
 - Docs: remove the `npm run publish` instructions from the README and describe the automated deploy; update `docs/BUILD_PROCESS.md` and `AGENTS.md` for the release changes.
+- Removed debug logging of user records from Reporting.
+- Reporting requests course teachers directly instead of through ueu-canvas `getUserGenerator`, which (as of 0.0.17) drops the `enrollment_type` filter.
 
 ## 3.3.0
 
