@@ -1,11 +1,21 @@
-name: lxd-tools build
+name: Build testing
 
 on:
   pull_request:
     branches:
       - "**"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build"
+        required: true
+        default: "main"
 
+# Build-only: lints, type-checks, tests and builds, then uploads an unsigned
+# artifact. It must never reference secrets or publish anything. Publishing
+# lives in main-deploy.yml.
 permissions:
+  contents: read
   pull-requests: write
 
 jobs:
@@ -15,6 +25,8 @@ jobs:
       - name: Checkout lxd-tools
         uses: actions/checkout@v4
         with:
+          # Empty on pull_request events, which falls back to the PR ref.
+          ref: ${{ github.event.inputs.branch }}
           path: lxd-tools
 
       - name: Setup Node.js
@@ -77,6 +89,7 @@ jobs:
           retention-days: 30
 
       - name: Comment download link on PR
+        if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: build

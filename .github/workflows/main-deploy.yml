@@ -1,19 +1,35 @@
 name: Deploy Extension Updates
 
+# Publishes the extension. This is the only workflow that touches production
+# secrets.
+#
+# - push to main: runs when a PR is merged (branch protection should require a
+#   PR for main). Docs/yaml-only changes are skipped.
+# - workflow_dispatch: manual fallback, e.g. to re-run a failed deploy. Runs
+#   the tip of main only.
+#
+# Triggers are push/dispatch rather than pull_request so that github.ref is
+# refs/heads/main, which lets the production environment be limited to main.
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types: [closed]
     paths-ignore:
       - '**/*.md'
       - '**/*.yml'
       - '**/*.yaml'
+  workflow_dispatch:
+
+# Never run two deploys at once (e.g. a push and a manual run).
+concurrency:
+  group: deploy-extension
+  cancel-in-progress: false
 
 jobs:
-  deploy_if_merged:
-    if: github.event.pull_request.merged == true
+  deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-22.04
+    environment: production
     permissions:
       contents: write
 
