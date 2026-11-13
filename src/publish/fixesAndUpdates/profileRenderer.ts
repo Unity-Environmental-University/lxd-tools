@@ -150,7 +150,9 @@ export type ProfileRenderResult =
   | { ok: false; problem: string };
 
 function plainText(html: string): string {
-  return new DOMParser().parseFromString(html, "text/html").body.textContent ?? "";
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = html;
+  return textarea.value;
 }
 
 /**
