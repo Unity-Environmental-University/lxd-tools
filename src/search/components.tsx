@@ -78,9 +78,9 @@ function TermSelect({ terms, currentSelection, onChange }: TermSelectProps) {
       }
     >
       <option value="">All Terms</option>
-      {Object.entries(terms).map(([id, name]) => (
-        <option key={id} value={id}>
-          {name}
+      {(terms).map((term) => (
+        <option key={term.id} value={term.id}>
+          {term.name}
         </option>
       ))}
     </select>

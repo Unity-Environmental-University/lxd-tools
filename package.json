@@ -1,13 +1,13 @@
 {
   "name": "lxd-tools-react",
-  "version": "3.2.5",
+  "version": "3.3.0",
   "private": true,
   "main": "src/publish/index.tsx",
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@reduxjs/toolkit": "^2.3.0",
-    "@ueu/ueu-canvas": "^0.0.16",
+    "@ueu/ueu-canvas": "^0.0.17",
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.18",
     "bootstrap": "^5.3.3",
@@ -54,6 +54,7 @@
     "css-loader": "^7.1.5",
     "eslint": "^9.39.1",
     "eslint-plugin-react": "^7.37.5",
+    "fast-check": "^4.10.2",
     "globals": "^15.11.0",
     "html-webpack-plugin": "^5.6.0",
     "identity-obj-proxy": "^3.0.0",
@@ -81,11 +82,11 @@
   },
   "overrides": {
     "postcss": "^8.4.41",
-    "minimatch": "^10.2.1",
+    "minimatch": "^11.0.1",
     "glob": "^13.0.6"
   },
   "scripts": {
-    "build": "webpack --config webpack.config.js",
+    "build": "cross-env NODE_ENV=production webpack --config webpack.config.js",
     "build:dev": "cross-env BUILD_OUTPUT_DIR=../lxd-extension-build webpack --config webpack.config.js",
     "watch": "webpack -w --config webpack.config.js",
     "watch:dev": "cross-env BUILD_OUTPUT_DIR=../lxd-extension-build webpack -w --config webpack.config.js",

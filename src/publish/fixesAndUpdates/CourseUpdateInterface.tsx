@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useEffectAsync } from "../../ui/utils";
-import { Button } from "react-bootstrap";
+import { Alert, Button, Spinner } from "react-bootstrap";
 import Modal from "../../ui/widgets/Modal/index";
 import { UpdateStartDate } from "./UpdateStartDate";
 import { CourseValidator } from "./CourseValidator";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { CourseValidation } from "@publish/fixesAndUpdates/validations/types";
+import { syncSyllabusWithResult } from "@publish/fixesAndUpdates/validations/syncSyllabus";
+import { SyncUndoBanner } from "../../ui/syllabus/SyncUndoBanner";
+
+const SUCCESS_MESSAGE_MS = 3000;
+
+type SyncStatus =
+	| { state: "idle" }
+	| { state: "syncing" }
+	| { state: "success"; message: string; autoDismiss: boolean }
+	| { state: "error"; message: string; details: string };
 
 export type CourseUpdateInterfaceProps = {
 	course?: Course;
@@ -45,6 +55,48 @@ export function CourseUpdateInterface({
 	const [showValidationsComplete, setShowValidationsComplete] = useState(false);
 	const [showUpdateStartDate, setShowUpdateStartDate] = useState(false);
 	const [isChangingStartDate, setIsChangingStartDate] = useState(false);
+	const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: "idle" });
+	const [syncBackupVersion, setSyncBackupVersion] = useState(0);
+
+	const runSyncSyllabus = async (course: Course) => {
+		if (syncStatus.state === "syncing") return;
+		setSyncStatus({ state: "syncing" });
+		// Keep "Syncing..." visible long enough to register, even when the sync is instant
+		const minDisplay = new Promise((resolve) => setTimeout(resolve, 600));
+		const result = await syncSyllabusWithResult(course);
+		await minDisplay;
+		setSyncBackupVersion((v) => v + 1); // re-read the backup of the previous syllabus
+		if (result.success) {
+			setSyncStatus({
+				state: "success",
+				// The blue undo banner carries the follow-up, so the green box fades away; unless it says undo is unavailable
+				autoDismiss: result.undoAvailable !== false,
+				message:
+					result.message +
+					(result.undoAvailable === false
+						? " Undo isn't available for this sync, because this browser couldn't save a backup of the previous syllabus."
+						: ""),
+			});
+		} else {
+			setSyncStatus({
+				state: "error",
+				message: result.message,
+				details: [
+					"Syllabus sync failed",
+					`Course: ${course.name} (id ${course.id})`,
+					`Time: ${new Date().toISOString()}`,
+					`Error: ${result.message}`,
+				].join("\n"),
+			});
+		}
+	};
+
+	// The green success box clears itself after a few seconds (the undo banner stays)
+	useEffect(() => {
+		if (syncStatus.state !== "success" || !syncStatus.autoDismiss) return;
+		const timer = setTimeout(() => setSyncStatus({ state: "idle" }), SUCCESS_MESSAGE_MS);
+		return () => clearTimeout(timer);
+	}, [syncStatus]);
 
 	const runValidationsDisabled =
 		!course || isRemovingAnnotations() || batchingValidations;
@@ -186,18 +238,109 @@ export function CourseUpdateInterface({
 		setShowUpdateStartDate((current) => !current);
 	};
 
+	// Sync results and the undo banner, shown at the top of the window beside the "Show All Tests" button
+	// (A plain function, not a component, so the banner keeps its state when this window re-renders)
+	function renderSyncBanners(course: Course) {
+		return (
+			<>
+				{syncStatus.state === "success" && (
+					<Alert variant="success" style={{ margin: 0 }}>
+						<div
+							style={{
+								display: "flex",
+								justifyContent: "space-between",
+								alignItems: "center",
+								gap: "12px",
+							}}
+						>
+							<span>{syncStatus.message}</span>
+							<Button
+								size="sm"
+								variant="outline-success"
+								onClick={() => setSyncStatus({ state: "idle" })}
+							>
+								Dismiss
+							</Button>
+						</div>
+					</Alert>
+				)}
+				{syncStatus.state === "error" && (
+					<Alert variant="danger" style={{ margin: 0 }}>
+						<Alert.Heading as="h3">Syllabus sync failed</Alert.Heading>
+						<p style={{ marginBottom: "8px" }}>{syncStatus.message}</p>
+						<p style={{ marginBottom: "8px" }}>
+							The syllabus was not changed. Please report this message to the
+							LXD tools team.
+						</p>
+						<div style={{ display: "flex", gap: "8px" }}>
+							<Button
+								size="sm"
+								variant="outline-danger"
+								onClick={() =>
+									navigator.clipboard?.writeText(syncStatus.details)
+								}
+							>
+								Copy details
+							</Button>
+							<Button
+								size="sm"
+								variant="outline-secondary"
+								onClick={() => setSyncStatus({ state: "idle" })}
+							>
+								Dismiss
+							</Button>
+						</div>
+					</Alert>
+				)}
+
+				{course && (
+					<SyncUndoBanner
+						courseId={course.id}
+						variant="panel"
+						style={{ margin: 0 }}
+						refreshKey={syncBackupVersion}
+						onUndone={() => void refreshCourse()}
+					/>
+				)}
+			</>
+		);
+	}
+
 	// This is the styling of the course update interface
 	function FixesMode({ course }: { course: Course }) {
 		return (
 			<>
 				<h2>Content Fixes for {course.name}</h2>
 
-				<Button
-					onClick={() => toggleStartDateUI()}
-					disabled={isChangingStartDate}
-				>
-					Update Start Date
-				</Button>
+				<div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+					<Button
+						onClick={() => toggleStartDateUI()}
+						disabled={isChangingStartDate}
+					>
+						Update Start Date
+					</Button>
+
+					<Button
+						onClick={() => runSyncSyllabus(course)}
+						disabled={!course || syncStatus.state === "syncing"}
+					>
+						{syncStatus.state === "syncing" ? (
+							<>
+								<Spinner
+									as="span"
+									animation="border"
+									size="sm"
+									role="status"
+									aria-hidden="true"
+									style={{ marginRight: "8px" }}
+								/>
+								Syncing...
+							</>
+						) : (
+							"Sync Syllabus"
+						)}
+					</Button>
+				</div>
 
 				<hr />
 
@@ -256,7 +399,21 @@ export function CourseUpdateInterface({
 					requestClose={() => setShow(false)}
 					canClose={!deannotatingCount && !isChangingStartDate}
 				>
-					<div className={"d-flex justify-content-end"}>
+					<div
+						className={"d-flex justify-content-between align-items-start"}
+						style={{ gap: "12px" }}
+					>
+						<div
+							style={{
+								flex: 1,
+								minWidth: 0,
+								display: "flex",
+								flexDirection: "column",
+								gap: "8px",
+							}}
+						>
+							{mode === "fix" && renderSyncBanners(course)}
+						</div>
 						{mode === "fix" && (
 							<Button onClick={() => setMode("unitTest")}>
 								Show All Tests

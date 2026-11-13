@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Validation adding a course evaluation reminder page to the last module of a course.
+- Syllabus Sync functionality added
 
 ### Changed
 
@@ -15,6 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Pins workflow actions to commit SHAs and installs with `npm ci` (lockfile enforced) in the build, test and deploy workflows
 - crx3 and web-ext are pinned in `.github/release-tools/` with their own lockfile instead of being fetched unpinned with `npx` during a release
 - Release workflow: the Chrome signing key is only on disk while the .crx is packed, and the checkout no longer persists the write-scoped git token during the build
+- Switching npm run build to NODE_ENV: production
+- Minifying production builds, shipping with source maps for debugging purposes
+- Introduces bootstrap-slim to avoid shipping all of bootstrap, for size purposes
+- Adding name differential for local builds
+- Remove persistent id from local builds to allow dual loading a local build alongside the live extension
+- Removed duplicate course.js entry in the manifest that was causing duplicate buttons to be rendered in Firefox
 
 ## 3.2.5
 
