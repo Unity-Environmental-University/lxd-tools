@@ -1,4 +1,4 @@
-import {csvRowsForCourse, csvEncode} from "../csvRowsForCourse";
+import {csvRowsForCourse, csvEncode, neutraliseCsvFormula} from "../csvRowsForCourse";
 import {assignmentDataGen} from "@ueu/ueu-canvas/content/assignments";
 import fetchMock from 'jest-fetch-mock';
 import {getRows} from "@/ui/speedGrader/getData/getRows";
@@ -90,5 +90,36 @@ describe('csvEncode', () => {
 
     it('should handle regular strings correctly', () => {
         expect(csvEncode('test')).toBe('"test"');
+    });
+
+    it.each([
+        ['=HYPERLINK("http://example.invalid","x")', '"\'=HYPERLINK(""http://example.invalid"",""x"")"'],
+        ['+1+2', '"\'+1+2"'],
+        ['-1+2', '"\'-1+2"'],
+        ['@SUM(A1:A2)', '"\'@SUM(A1:A2)"'],
+        ['\t=1+1', '"\'\t=1+1"'],
+        ['\r=1+1', '"\'\r=1+1"'],
+        ['  =1+1', '"\'  =1+1"'],
+        ['\n=1+1', '"\' =1+1"'],
+    ])('should neutralise formula-like value %j', (input, expected) => {
+        expect(csvEncode(input)).toBe(expected);
+    });
+
+    it('should leave plain numbers and ordinary text unprefixed', () => {
+        expect(csvEncode(-5)).toBe('"-5"');
+        expect(csvEncode('-5')).toBe('"-5"');
+        expect(csvEncode('+1.5')).toBe('"+1.5"');
+        expect(csvEncode('-.5e3')).toBe('"-.5e3"');
+        expect(csvEncode(12)).toBe('"12"');
+        expect(csvEncode('Smith, Jane')).toBe('"Smith, Jane"');
+        expect(csvEncode('a=b')).toBe('"a=b"');
+        expect(csvEncode('')).toBe('""');
+    });
+});
+
+describe('neutraliseCsvFormula', () => {
+    it('prefixes formula-like values with a single quote', () => {
+        expect(neutraliseCsvFormula('=1+1')).toBe("'=1+1");
+        expect(neutraliseCsvFormula('Module 1')).toBe('Module 1');
     });
 });
