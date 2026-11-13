@@ -1,6 +1,7 @@
 import { IProfile } from "@ueu/ueu-canvas/type";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
 import { getCurioPageFrontPageProfile, getProfileFromPage, renderProfileIntoCurioFrontPage } from "@ueu/ueu-canvas/profile";
+import { parseHtmlInert } from "@/utils/html";
 
 /** Any other data-profile-<key> element on the page, read as plain text under its key. */
 export type TemplateProfile = IProfile & { fields: Record<string, string> };
@@ -84,8 +85,7 @@ function readExtraFields(root: Element): Record<string, string> {
 }
 
 function renderProfileByDataAttributes(html: string, profile: ProfileWithUser, courseId: number): string {
-  const el = document.createElement("div");
-  el.innerHTML = html;
+  const el = parseHtmlInert(html);
 
   const nameEl = el.querySelector(`[${ATTR.name}]`);
   if (nameEl && profile.displayName) {
@@ -188,8 +188,7 @@ export function readProfileFromPage(html: string, user?: IUserData): TemplatePro
 }
 
 function readProfileByDataAttributes(html: string, user?: IUserData): TemplateProfile {
-  const el = document.createElement("div");
-  el.innerHTML = html;
+  const el = parseHtmlInert(html);
 
   const nameEl = el.querySelector(`[${ATTR.name}]`);
   const bioEl = el.querySelector(`[${ATTR.bio}]`);
