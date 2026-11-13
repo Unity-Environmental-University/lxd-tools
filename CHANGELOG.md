@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 ### Internal
+- Release workflow: `main-deploy.yml` now runs on push to `main` or manual dispatch (main only), uses a `production` environment, and is the only workflow that publishes. The old `manual-deploy.yml` ("Build testing") is removed; `build-testing.yml` (renamed from `pr-build.yml`) is the single build-only workflow and also runs manually.
+- Pins workflow actions to commit SHAs and installs with `npm ci` (lockfile enforced) in the build, test and deploy workflows
+- crx3 and web-ext are pinned in `.github/release-tools/` with their own lockfile instead of being fetched unpinned with `npx` during a release
+- Release workflow: the Chrome signing key is only on disk while the .crx is packed, and the checkout no longer persists the write-scoped git token during the build
 - Switching npm run build to NODE_ENV: production
 - Minifying production builds, shipping with source maps for debugging purposes
 - Introduces bootstrap-slim to avoid shipping all of bootstrap, for size purposes

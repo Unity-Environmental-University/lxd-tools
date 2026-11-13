@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the automated build and deployment process for the LXD browser extension. The workflow is triggered when a pull request is merged to the main branch and handles building, signing, and distributing the extension across multiple platforms (Chrome and Firefox).
+This document describes the automated build and deployment process for the LXD browser extension. The workflow runs when a change is pushed to the main branch (in practice, when a pull request is merged) or when it is started manually from main, and handles building, signing, and distributing the extension across multiple platforms (Chrome and Firefox).
 
 The deployment pipeline manages version control, package signing, storage on Cloudflare R2, and maintains a clean version history.
 
@@ -10,14 +10,16 @@ The deployment pipeline manages version control, package signing, storage on Clo
 
 ### When the workflow runs
 
-- A pull request is merged to the main branch
-  - If the pull request has only .md and/or .yml files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
-- The event type must be 'closed' (not open, reopened, or synchronize)
+- A push to the main branch, which in practice means a pull request was merged (branch protection requires a pull request for main)
+  - If the push only changes .md, .yml, .yaml and/or `.github/release-tools/` files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
+- A manual run (Actions → "Deploy Extension Updates" → Run workflow). This is a fallback, for example to re-run a deploy that failed partway. It always builds the tip of main.
 
 ### What triggers it NOT to run
 
-- Pull request is closed without merging
-- Pull request is opened or updated
+- Pull request is closed without merging, opened or updated
+- A manual run started on any ref other than main (the job is skipped)
+
+Test builds that must not publish use the separate **Build testing** workflow (`build-testing.yml`), which runs on pull requests and can be started manually for any branch. It uploads an unsigned `dist/` as a workflow artifact and never uses the secrets below.
 
 ## Pre-requisites
 
@@ -28,6 +30,8 @@ The deployment pipeline manages version control, package signing, storage on Clo
 - `updates.json` and `update.xml` files are present in the dist directory
 
 ### Secrets and credentials
+
+These are stored as secrets of the `production` GitHub environment, whose deployment branches are limited to `main`. Only the deploy job (`environment: production`) can read them, so workflows on other branches cannot.
 
 | Secret Name             | Purpose                                                     |
 | ----------------------- | ----------------------------------------------------------- |
@@ -44,7 +48,7 @@ The deployment pipeline manages version control, package signing, storage on Clo
 
 The workflow performs the following automated steps in sequence:
 
-1. **Repository Checkout & Setup** — Clones the lxd-tools repository and installs Node.js 20 with all dependencies. Git tags are fetched to enable version detection.
+1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. The packaging tools (`crx3`, `web-ext`) are installed at pinned versions from `.github/release-tools/` (see [Updating the release tools](#updating-the-release-tools)). Git tags are fetched to enable version detection.
 2. **Version Validation** — Reads the version from `package.json` and verifies it hasn't been deployed before by checking for an existing git tag. If a duplicate version is detected, the entire build fails with a clear error message to prevent accidental re-deployment.
 3. **Extension Compilation** — Runs `npm run build` to compile the extension source code into the `dist` directory.
 4. **Platform-Specific Signing** — The compiled extension is signed for both platforms:
@@ -54,7 +58,7 @@ The workflow performs the following automated steps in sequence:
 5. **Artifact Verification** — Validates that all required output files exist: both signed extensions (`.crx` and `.xpi`), plus the update manifests (`updates.json` and `update.xml`). File paths are captured for downstream steps.
 6. **Upload to Cloudflare R2** — All artifacts are uploaded to the R2 bucket with appropriate content types. This includes both signed extensions and update manifests needed by the browser extension update mechanisms.
 7. **Version Pruning** — Automatically deletes old versions from R2, keeping only the 5 most recent releases of each file type (`.crx` and `.xpi`). This reduces storage costs while maintaining version history.
-8. **Sync to Build Repository** — The entire `dist` directory is copied to the `lxd-tools-build` repository on the main branch, creating an audit trail of all deployments with commits attributed to `github-actions[bot]`.
+8. **Sync to Build Repository** — The entire `dist` directory is copied to the `lxd-tools-build` repository on the `stable` branch, creating an audit trail of all deployments with commits attributed to `github-actions[bot]`.
 9. **Git Release Management** — A git tag matching the version number is created and pushed, and a corresponding release branch (`release/{VERSION}`) is created for long-term reference and potential rollback scenarios.
 
 ## Important Considerations
@@ -68,8 +72,9 @@ The workflow performs the following automated steps in sequence:
 
 ### Security
 
+- The deploy job only runs from main and uses the `production` environment; the secrets are not available to other branches
 - All secrets are referenced via `${{ secrets.VAR_NAME }}` syntax, per GitHub Actions format
-- Chrome key is base64-encoded and must be decoded before use
+- Chrome key is base64-encoded; it is decoded to the runner's temp directory only inside the pack step and deleted when that step ends
 - Firefox API credentials are environment variables, never logged
 - GitHub token used for pushing to build repository is scoped and temporary
 
@@ -82,12 +87,12 @@ The workflow performs the following automated steps in sequence:
 ### Repository Structure
 
 - **Source code**: `lxd-tools` repository (main branch)
-- **Built artifacts**: `lxd-tools-build` repository (main branch)
+- **Built artifacts**: `lxd-tools-build` repository (`stable` branch)
 - This separation allows history tracking and rollback capability
 
 ## Workflow Execution Environment
 
-- **Runner**: ubuntu-latest
+- **Runner**: ubuntu-22.04
 - **Permissions**: `contents: write` (for creating tags and commits)
 - **Duration**: Typically 5-10 minutes depending on npm install time
 
@@ -111,8 +116,14 @@ After successful execution, the following files are available:
 **Solution**:
 
 1. Update `package.json` with a new version number
-2. Push the change to a new commit or amend the PR
-3. Re-merge the PR to trigger the workflow again
+2. Land the change on main through a new pull request that includes the bump
+
+### Re-running a failed deploy
+
+After fixing the cause, start the workflow manually from main (Actions → "Deploy Extension Updates" → Run workflow).
+
+- If the failed run had already pushed the version tag, delete the tag first (`git push --delete origin {VERSION}`), and also the `release/{VERSION}` branch if it was created. Otherwise the duplicate-version check stops the new run.
+- If the failure came after the Firefox signing step, AMO has already used that version number and will reject signing it again. Bump the version through a new pull request instead.
 
 ### Chrome extension fails to sign
 
@@ -143,6 +154,10 @@ The workflow produces the following artifacts for monitoring:
 3. Verify npm build script still works
 4. Test signing keys are still valid
 5. Review and test any version management changes
+
+### Updating the release tools
+
+`crx3` and `web-ext` are pinned in `.github/release-tools/package.json` and its own `package-lock.json`, separate from the extension's dependencies so the root `overrides` do not apply to them. To update them, change the versions there, run `npm install` in that folder, and commit both files. A pull request that only changes `.github/release-tools/` does not start the deploy workflow and does not need a version bump; the new versions are used by the next release. The Build testing workflow runs `npm ci --ignore-scripts` in that folder on every pull request, so an out-of-sync lockfile fails the PR.
 
 ## Related Documentation
 

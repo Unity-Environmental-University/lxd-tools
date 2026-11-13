@@ -8,6 +8,7 @@ on:
       - '**/*.md'
       - '**/*.yml'
       - '**/*.yaml'
+      - '.github/release-tools/**'
 
 permissions:
   contents: read
@@ -17,7 +18,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check version is bumped from main
         run: |

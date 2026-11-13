@@ -4,7 +4,8 @@ name: Deploy Extension Updates
 # secrets.
 #
 # - push to main: runs when a PR is merged (branch protection should require a
-#   PR for main). Docs/yaml-only changes are skipped.
+#   PR for main). Docs/yaml-only changes, and changes only under
+#   .github/release-tools/, are skipped.
 # - workflow_dispatch: manual fallback, e.g. to re-run a failed deploy. Runs
 #   the tip of main only.
 #
@@ -18,6 +19,7 @@ on:
       - '**/*.md'
       - '**/*.yml'
       - '**/*.yaml'
+      - '.github/release-tools/**'
   workflow_dispatch:
 
 # Never run two deploys at once (e.g. a push and a manual run).
@@ -35,13 +37,16 @@ jobs:
 
     steps:
       - name: Checkout lxd-tools
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: lxd-tools
           fetch-tags: true
+          # Keep the write-scoped token out of .git/config while dependency and
+          # build code runs; the tag step below authenticates on its own.
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
 
@@ -49,9 +54,14 @@ jobs:
         working-directory: lxd-tools
         run: |
           npm config set registry https://registry.npmjs.org/
-          npm cache clean --force
-          npm install
-          npm install @testing-library/react --save-dev
+          npm ci
+
+      - name: Install release tools
+        # crx3 and web-ext at the exact versions in this folder's package-lock.json.
+        # They live apart from the extension's package.json so its overrides do not
+        # apply to them, and none of their dependencies need install scripts.
+        working-directory: lxd-tools/.github/release-tools
+        run: npm ci --ignore-scripts
 
       - name: Get version and check for duplicates
         id: get_version
@@ -59,13 +69,17 @@ jobs:
         run: |
           VERSION=$(node -p 'require("./package.json").version')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          if git tag | grep -qx "$VERSION"; then
-            echo "ERROR: Version $VERSION has already been deployed. Update package.json version before merging."
-            exit 1
-          fi
-
-      - name: Write Chrome key
-        run: echo "${{ secrets.CHROME_KEY_PEM_B64 }}" | base64 -d > lxd-tools/chrome-key.pem
+          # Ask origin for the tag instead of listing local tags: the checkout is
+          # shallow (depth 1), so older release tags are not present locally and
+          # `git tag` would never see them. ls-remote exits 0 if the tag exists,
+          # 2 if it does not, and anything else if origin could not be queried.
+          rc=0
+          git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1 || rc=$?
+          case $rc in
+            0) echo "ERROR: Version $VERSION has already been deployed (tag exists on origin). Update package.json version before merging."; exit 1 ;;
+            2) echo "OK: no tag $VERSION on origin" ;;
+            *) echo "ERROR: could not check origin for tag $VERSION (git ls-remote exit $rc)"; exit 1 ;;
+          esac
 
       - name: Build extension
         working-directory: lxd-tools
@@ -73,8 +87,18 @@ jobs:
 
       - name: Pack Chrome extension
         working-directory: lxd-tools
+        env:
+          CHROME_KEY_PEM_B64: ${{ secrets.CHROME_KEY_PEM_B64 }}
         run: |
-          npx crx3 ../dist -p chrome-key.pem -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
+          # The signing key exists only for the duration of this step, outside the
+          # checkout and dist, and is removed even if packing fails.
+          umask 077
+          KEY_FILE="$RUNNER_TEMP/chrome-key.pem"
+          trap 'shred -u "$KEY_FILE" 2>/dev/null || rm -f "$KEY_FILE"' EXIT
+          echo "$CHROME_KEY_PEM_B64" | base64 -d > "$KEY_FILE"
+          # Fail clearly if the secret is unset rather than handing crx3 an empty key file.
+          if [ ! -s "$KEY_FILE" ]; then echo "ERROR: Chrome signing key is empty" && exit 1; fi
+          .github/release-tools/node_modules/.bin/crx3 ../dist -p "$KEY_FILE" -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
 
       - name: Sign Firefox extension
         working-directory: lxd-tools
@@ -82,7 +106,7 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
         run: |
-          npx web-ext sign \
+          .github/release-tools/node_modules/.bin/web-ext sign \
             --source-dir ../dist \
             --api-key $WEB_EXT_API_KEY \
             --api-secret $WEB_EXT_API_SECRET \
@@ -162,10 +186,14 @@ jobs:
 
       - name: Tag deployed version and create release branch
         working-directory: lxd-tools
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # The checkout did not persist credentials; authenticate only for these pushes.
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git tag "$VERSION"
           git push origin "$VERSION"
           git checkout -b "release/$VERSION"
