@@ -1,5 +1,17 @@
 import {ImportButton} from "@/ui/syllabus/ImportButton";
+import {SyncUndoBanner} from "@/ui/syllabus/SyncUndoBanner";
+import {loadSnapshot} from "@publish/fixesAndUpdates/validations/syllabusUndo";
 import ReactDOM from "react-dom/client";
+
+// If Syllabus Sync was run on this course recently (from this browser), show the banner to review and undo it
+function addSyncUndoBanner() {
+    const courseId = Number(location.pathname.match(/\/courses\/(\d+)/)?.[1]);
+    if (!courseId || !loadSnapshot(courseId)) return;
+    const container = document.querySelector("#content") ?? document.body;
+    const rootDiv = document.createElement("div");
+    container.prepend(rootDiv);
+    ReactDOM.createRoot(rootDiv).render(<SyncUndoBanner courseId={courseId} variant="page" />);
+}
 
 // will add the import button to the given location's grandparent if it exists
 function addImportButton(location: Element) {
@@ -24,6 +36,11 @@ function addImportButton(location: Element) {
 }
 
 export function main() {
+    try {
+        addSyncUndoBanner();
+    } catch (e) {
+        console.error("could not add the Syllabus Sync undo banner", e);
+    }
     // grab the location to add the button to
     // TODO this location is hardcoded has Week 1 Learning Materials
     // at least make it a constant because this is used in ImportHelpers as

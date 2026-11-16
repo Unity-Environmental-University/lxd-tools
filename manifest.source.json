@@ -77,11 +77,6 @@
       "run_at": "document_end"
     },
     {
-      "matches": ["*://*.instructure.com/courses/**"],
-      "js": ["js/ui/course.js"],
-      "run_at": "document_end"
-    },
-    {
       "matches": ["*://*.instructure.com/accounts/*"],
       "js": ["js/ui/account.js", "js/reporting.js"],
       "run_at": "document_end"

@@ -11,7 +11,7 @@ export interface ICourseRowProps {
   // fills in asynchronously per-course, slightly after the course itself appears
   // in `sections`, so a render can land in between.
   facultyProfileMatches?: IProfile[];
-  frontPageProfile: IProfile | null;
+  targetPageProfile: IProfile | null;
   profileSlug?: string | null;
   onSelectSection?: (course: Course) => void;
   selectionToggle?: (course: Course, publish: boolean) => void;
@@ -21,7 +21,7 @@ export interface ICourseRowProps {
 export function CourseRow({
   course,
   errors,
-  frontPageProfile,
+  targetPageProfile,
   profileSlug,
   instructors,
   onSelectSection,
@@ -31,7 +31,7 @@ export function CourseRow({
 }: ICourseRowProps) {
   const matches = facultyProfileMatches ?? [];
   const rowClass = ["row", "course-row", "align-items-center"];
-  const displayFacultyProfileWarning = matches.length > 1 && !frontPageProfile;
+  const displayFacultyProfileWarning = matches.length > 1 && !targetPageProfile;
   const source = matches.length === 1 ? matches[0].displayName : null;
 
   if (displayFacultyProfileWarning || errors?.length) rowClass.push("alert-danger");
@@ -51,7 +51,7 @@ export function CourseRow({
       </div>
       <div className={"col-xs-1"}>{course.data.total_students}</div>
       <div className={"col-xs-3"} title={`Source profile: ${source ?? "none"} — Target page: ${profileSlug ?? "unresolved"}`}>
-        {source ?? "—"} → {profileSlug ?? "—"}
+        {source ?? "—"} → {targetPageProfile?.displayName ?? profileSlug ?? "—"}
       </div>
       <div className={"col-xs-1"}>
         {onSelectSection && course && <button onClick={() => onSelectSection(course)}>Details</button>}

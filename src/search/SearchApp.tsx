@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { GenericSearch } from "./components";
-import { BASE } from "./utils"
-
-const loginBase = `${BASE}/login/canvas`;
-const authBase = `${loginBase}/status`
+import { BASES, setBase, type BaseKey } from "./utils"
 
 // TODO make an openapi spec for lisa so I don't have to maintain this
 // TODO also LISA currently uses separate get endpoints
@@ -132,7 +129,13 @@ type EndpointKey = keyof typeof ENDPOINT_CONFIG;
 
 export function SearchApp() {
   const [endpoint, setEndpoint] = useState<EndpointKey | "">("");
+  const [server, setServer] = useState<BaseKey>("prod");
   const allowed_sort_columns = endpoint ? ENDPOINT_CONFIG[endpoint].allowed_sort_columns : []
+
+  // set synchronously during render so children's effects see the right base
+  setBase(server);
+  const loginBase = `${BASES[server]}/login/canvas`;
+  const authBase = `${loginBase}/status`;
 
   // open window for canvas auth if not already authed according to LISA
   useEffect(() => {
@@ -151,7 +154,7 @@ export function SearchApp() {
       });
 
     return () => { cancelled = true; };
-  }, []);
+  }, [authBase, loginBase]);
 
   return (
     <div className="ResultsApp container">
@@ -163,8 +166,17 @@ export function SearchApp() {
             </option>
         ))}
       </select>
+      <label>
+        <input
+          type="checkbox"
+          checked={server === "ce"}
+          onChange={(e) => setServer(e.target.checked ? "ce" : "prod")}
+        />
+        {" "}Use CE
+      </label>
       {endpoint != "" &&
         (<GenericSearch
+          key={server}
           endpoint={endpoint}
           allowed_sort_columns={allowed_sort_columns}
         />)

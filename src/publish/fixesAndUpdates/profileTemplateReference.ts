@@ -1,3 +1,5 @@
+import { parseHtmlInert } from "@/utils/html";
+
 /**
  * Single source of truth for the data-profile-* convention reference —
  * consumed both as JSX (ProfileTemplateHelp modal) and as an HTML string
@@ -124,12 +126,10 @@ function escapeHtml(text: string): string {
  * own — this replaces exactly the querySelector-matched element instead.
  */
 export function upsertProfileTemplateHelpHtml(pageHtml: string): string {
-  const container = document.createElement("div");
-  container.innerHTML = pageHtml;
+  const container = parseHtmlInert(pageHtml);
 
   const existing = container.querySelector("[data-profile-help]");
-  const helpEl = document.createElement("div");
-  helpEl.innerHTML = renderProfileTemplateHelpHtml();
+  const helpEl = parseHtmlInert(renderProfileTemplateHelpHtml());
   const newHelpNode = helpEl.firstElementChild;
   if (!newHelpNode) return pageHtml;
 

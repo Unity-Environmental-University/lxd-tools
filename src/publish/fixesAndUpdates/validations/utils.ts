@@ -3,6 +3,7 @@ import {IContentHaver, ICourseDataHaver, IIdHaver, ISyllabusHaver} from "@ueu/ue
 import {BaseContentItem} from "@ueu/ueu-canvas/content/BaseContentItem";
 import {overrideConfig} from "@ueu/ueu-canvas/fetch/utils";
 import {ICourseData} from "@ueu/ueu-canvas/courseTypes";
+import {parseHtmlInert} from "@/utils/html";
 
 //number of characters to show around a match
 const SHOW_WINDOW = 30;
@@ -296,9 +297,7 @@ export type InSyllabusSectionFuncUserData =
     | InSyllabusSectionFuncErrorData;
 
 export function syllabusToEl(syllabus: string): HTMLElement {
-    const syllabusEl = document.createElement("div");
-    syllabusEl.innerHTML = syllabus;
-    return syllabusEl;
+    return parseHtmlInert(syllabus);
 }
 
 /**

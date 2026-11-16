@@ -7,6 +7,7 @@ import React from "react";
 
 const rootContainer = document.querySelector('#gradebook_header div.statsMetric')
 const root = document.createElement("span")
+root.className = "lxd-bs"
 assert(rootContainer);
 rootContainer?.appendChild(root);
 const rootDiv = ReactDOM.createRoot(root);

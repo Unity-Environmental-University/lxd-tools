@@ -54,11 +54,14 @@ type AssignmentParams = SortBaseParams & {
     phrase: string;
 }
 
-type Terms = Record<string, string>
-
-export type TermResponse = {
-    terms: Terms
+type Term = {
+  id: number;
+  name: string;
+  start_at: string;
+  end_at: string;
 }
+
+export type TermResponse = Term[]
 
 type GenericParams = AssignmentParams
 type GenericDBObject = Record<string, string|number>
@@ -98,7 +101,7 @@ export type DataTableProps<T extends Record<string, string | number>> = {
 };
 
 export type TermSelectProps = {
-    terms: Record<string, string>;
+    terms: TermResponse;
     currentSelection: number | null;
     onChange: (termID:number|null) => void;
 };

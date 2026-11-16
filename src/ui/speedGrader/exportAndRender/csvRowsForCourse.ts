@@ -56,6 +56,24 @@ export async function csvRowsForCourse(course: SectionData | ICourseData, assign
     return csvRows;
 }
 
+// Spreadsheet apps (Excel, Sheets, LibreOffice) evaluate a cell as a formula when it
+// starts with one of these characters, even if the value is quoted in the CSV.
+// Leading whitespace is allowed for because some apps trim it before evaluating.
+const FORMULA_PREFIX = /^(?:[\t\r]|\s*[=+\-@])/;
+// Plain numbers such as "-5" or "+1.5e3" cannot be formulas and must stay numeric.
+const PLAIN_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/;
+
+/**
+ * Neutralise a cell value that a spreadsheet would treat as a formula by
+ * prefixing it with a single quote (OWASP CSV injection guidance).
+ */
+export function neutraliseCsvFormula(value: string): string {
+    if (FORMULA_PREFIX.test(value) && !PLAIN_NUMBER.test(value)) {
+        return `'${value}`;
+    }
+    return value;
+}
+
 export function csvEncode(string: | number | null | undefined | string) {
 
     if (typeof (string) === 'undefined' || string === null || string === 'null') {
@@ -64,6 +82,7 @@ export function csvEncode(string: | number | null | undefined | string) {
     string = String(string);
 
     if (string) {
+        string = neutraliseCsvFormula(string);
         string = string.replace(/(")/g, '"$1');
         string = string.replace(/\s*\n\s*/g, ' ');
     }

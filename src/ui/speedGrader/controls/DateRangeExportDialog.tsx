@@ -15,6 +15,7 @@ export interface IDateRangeExportProps {
   handleHide: () => void;
   onExporting: () => void;
   onFinishedExporting: () => void;
+  container?: React.RefObject<HTMLElement | null>;
 }
 
 export default function DateRangeExportDialog({
@@ -24,13 +25,14 @@ export default function DateRangeExportDialog({
   handleHide,
   onExporting,
   onFinishedExporting,
+  container,
 }: IDateRangeExportProps) {
   const [exportStart, setExportStart] = useState<Date | null>(new Date());
   const [exportEnd, setExportEnd] = useState<Date | null>(new Date());
   const colWidth = "sm-6";
 
   return (
-    <Modal show={show} onHide={handleHide} onShow={handleShow}>
+    <Modal show={show} onHide={handleHide} onShow={handleShow} container={container}>
       <Modal.Title>Export Range of Sections</Modal.Title>
       <Modal.Body>
         <Row>

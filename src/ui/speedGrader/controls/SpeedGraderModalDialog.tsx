@@ -6,12 +6,13 @@ export default function SpeedGraderModalDialog(props: {
     show: boolean,
     canClose: boolean,
     header: string,
-    message: string
+    message: string,
+    container?: React.RefObject<HTMLElement | null>
 }) {
-    const {show, canClose, message, header} = props;
+    const {show, canClose, message, header, container} = props;
 
     return (<>
-        <Modal show={show}>
+        <Modal show={show} container={container}>
             <Modal.Header closeButton={canClose}>
                 <Modal.Title>{header}</Modal.Title>
             </Modal.Header>

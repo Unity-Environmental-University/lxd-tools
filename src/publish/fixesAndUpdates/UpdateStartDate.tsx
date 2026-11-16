@@ -162,6 +162,10 @@ export function UpdateStartDate({
       // I've changed this from syllabusText to _syllabusText because syllabusText exists at the top level.
       const _syllabusText = syllabusText ?? (await course.getSyllabus());
       if (!startDate) throw new StartDateNotSetError();
+      // Check that the syllabus can take the new date before anything else is changed (this only builds the new
+      // HTML, it saves nothing). Otherwise a syllabus it can't update, such as one with an unrecognized term name,
+      // would fail at the end, after the modules, assignments and announcements had already moved.
+      if (_syllabusText) updatedDateSyllabusHtml(_syllabusText, workingStartDate, isGradCourse(course));
       const modules = await renderAsyncGen(moduleGenerator(course.id));
       await changeModuleLockDate(course.id, modules[0], workingStartDate);
 
@@ -338,6 +342,11 @@ class StartDateNotSetError extends Error {
   name = "StartDateNotSetError";
 }
 
+function isGradCourse(course: Course) {
+  const [courseNum] = course.courseCode?.match(/\d{3}/gi) ?? [""];
+  return parseInt(courseNum) >= 500;
+}
+
 async function updateSyllabus(
   syllabusText: string,
   updateStartDate: Temporal.PlainDate,
@@ -345,9 +354,7 @@ async function updateSyllabus(
   startDate: Temporal.PlainDate | null
 ) {
   const affectedItems: React.ReactElement[] = [];
-  const [courseNum] = course.courseCode?.match(/\d{3}/gi) ?? [""];
-  const isGrad = parseInt(courseNum) >= 500;
-  const results = updatedDateSyllabusHtml(syllabusText, updateStartDate, isGrad);
+  const results = updatedDateSyllabusHtml(syllabusText, updateStartDate, isGradCourse(course));
   if (syllabusText !== results.html) {
     await course.changeSyllabus(results.html);
     if (updateStartDate != startDate) {
