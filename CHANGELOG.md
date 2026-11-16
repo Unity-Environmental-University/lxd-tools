@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Internal
+
+## 3.3.0
+
+### Added
 - Validation adding a course evaluation reminder page to the last module of a course.
 - Syllabus Sync functionality added
 
