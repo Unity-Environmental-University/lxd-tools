@@ -44,6 +44,8 @@ These are stored as secrets of the `production` GitHub environment, whose deploy
 | `R2_BUCKET_NAME`        | Name of the Cloudflare R2 bucket for storage                |
 | `LXD_TOOLS_BUILD_TOKEN` | GitHub personal access token for lxd-tools-build repository |
 
+> **`LXD_TOOLS_BUILD_TOKEN` expires on November 17, 2027.** It must be renewed before then (see [Renewing the build repository token](#renewing-the-build-repository-token)). If it lapses, the deploy fails at the "Push to lxd-tools-build" step.
+
 ## Build Process Steps
 
 The workflow performs the following automated steps in sequence:
@@ -76,7 +78,7 @@ The workflow performs the following automated steps in sequence:
 - All secrets are referenced via `${{ secrets.VAR_NAME }}` syntax, per GitHub Actions format
 - Chrome key is base64-encoded; it is decoded to the runner's temp directory only inside the pack step and deleted when that step ends
 - Firefox API credentials are environment variables, never logged
-- GitHub token used for pushing to build repository is scoped and temporary
+- GitHub token used for pushing to build repository is scoped and temporary (it expires; see [Renewing the build repository token](#renewing-the-build-repository-token))
 
 ### Storage Retention
 
@@ -154,6 +156,16 @@ The workflow produces the following artifacts for monitoring:
 3. Verify npm build script still works
 4. Test signing keys are still valid
 5. Review and test any version management changes
+
+### Renewing the build repository token
+
+`LXD_TOOLS_BUILD_TOKEN` is a GitHub personal access token with write access to `lxd-tools-build`. The organization caps token lifetime at 366 days, so it must be renewed every year. The current token **expires November 17, 2027**; renew it before then.
+
+1. Generate a new token with the same scope (write access to `lxd-tools-build`) and a 366-day lifetime
+2. Update the `LXD_TOOLS_BUILD_TOKEN` secret in the `production` environment (Settings → Environments → production)
+3. Update the expiration date in this section and in the Secrets table above
+
+If the token expires before renewal, the deploy fails at "Push to lxd-tools-build" and never reaches the tag/release-branch step. After renewing, push the build and tag by hand or re-run the workflow (see [Re-running a failed deploy](#re-running-a-failed-deploy)).
 
 ### Updating the release tools
 
