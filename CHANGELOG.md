@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Internal
 
+- Write production and development extension builds inside the source repository; align packaging and CI artifact paths with the new locations.
+- Add repository-specific agent guidance for architecture, validation, browser reloads, and release workflows.
+
 ## 3.3.0
 
 ### Added
