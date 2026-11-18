@@ -18,7 +18,6 @@ import { batchGen } from "@ueu/ueu-canvas/canvasUtils";
 import { getCourseData } from "@ueu/ueu-canvas/course";
 import { sleep } from "@/utils/toolbox";
 import { IProfile, IProfileWithUser } from "@ueu/ueu-canvas/type";
-import isEqual from "lodash/isEqual";
 import {
   findProfilePageSlug,
   getProfilePage,
@@ -384,7 +383,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   console.log(sectionsToPublish);
 
   function RenderBpInterface({ course, user }: BpSectionInterface) {
-    const sectionsListIdentical = isEqual(sections, sectionsToPublish);
+    const sectionsListIdentical = allSectionsSelected(sections, sectionsToPublish);
     const allSections = Object.values(sections);
     const selectedSections = selectedOnly(sectionsToPublish);
     const selectedSectionsEmpty = selectedSections.length === 0;
@@ -547,6 +546,19 @@ export interface IGetFullCoursesProps {
  */
 export function selectedOnly(record: Record<SectionKey, Course | undefined>): Course[] {
   return Object.values(record).filter((section): section is Course => section != null);
+}
+
+/**
+ * True when every section is ticked. Compares by section key rather than deep
+ * equality: after a publish refresh the sections are brand-new Course objects
+ * (each with its own function properties), so a deep compare reports a
+ * difference even though nothing was unticked.
+ */
+export function allSectionsSelected(
+  sections: Record<SectionKey, Course>,
+  selected: Record<SectionKey, Course | undefined>
+): boolean {
+  return Object.keys(sections).every((key) => selected[key as SectionKey] != null);
 }
 
 /**

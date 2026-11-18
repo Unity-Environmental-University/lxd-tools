@@ -7,7 +7,7 @@ import React, { act } from "react";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import fetchMock from "jest-fetch-mock";
-import { PublishInterface, selectedOnly, splitByValidId } from "../PublishInterface";
+import { PublishInterface, allSectionsSelected, selectedOnly, splitByValidId } from "../PublishInterface";
 import { IUserData } from "@ueu/ueu-canvas/canvasDataDefs";
 import { Course } from "@ueu/ueu-canvas/course/Course";
 import { SectionData } from "@ueu/ueu-canvas/courseTypes";
@@ -343,6 +343,18 @@ describe("selection helpers", () => {
     const b = makeCourse({ id: 4 });
     const record = { 2: a, 3: undefined, 4: b } as Record<number, Course | undefined>;
     expect(selectedOnly(record)).toEqual([a, b]);
+  });
+
+  it("allSectionsSelected ignores object identity, so a refresh does not look like an unticked section", () => {
+    const sections = { 2: makeCourse({ id: 2 }), 4: makeCourse({ id: 4 }) } as Record<number, Course>;
+    const refreshed = { 2: makeCourse({ id: 2 }), 4: makeCourse({ id: 4 }) } as Record<number, Course>;
+    expect(allSectionsSelected(sections, refreshed)).toBe(true);
+  });
+
+  it("allSectionsSelected is false once any section is unticked or missing", () => {
+    const sections = { 2: makeCourse({ id: 2 }), 4: makeCourse({ id: 4 }) } as Record<number, Course>;
+    expect(allSectionsSelected(sections, { 2: sections[2], 4: undefined })).toBe(false);
+    expect(allSectionsSelected(sections, { 2: sections[2] })).toBe(false);
   });
 
   it("splitByValidId separates sections without a numeric id", () => {
