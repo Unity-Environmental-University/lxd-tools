@@ -44,13 +44,15 @@ These are stored as secrets of the `production` GitHub environment, whose deploy
 | `R2_BUCKET_NAME`        | Name of the Cloudflare R2 bucket for storage                |
 | `LXD_TOOLS_BUILD_TOKEN` | GitHub personal access token for lxd-tools-build repository |
 
+> **`LXD_TOOLS_BUILD_TOKEN` expires on November 17, 2027.** It must be renewed before then (see [Renewing the build repository token](#renewing-the-build-repository-token)). If it lapses, the deploy fails at the "Push to lxd-tools-build" step.
+
 ## Build Process Steps
 
 The workflow performs the following automated steps in sequence:
 
 1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. The packaging tools (`crx3`, `web-ext`) are installed at pinned versions from `.github/release-tools/` (see [Updating the release tools](#updating-the-release-tools)). Git tags are fetched to enable version detection.
 2. **Version Validation** — Reads the version from `package.json` and verifies it hasn't been deployed before by checking for an existing git tag. If a duplicate version is detected, the entire build fails with a clear error message to prevent accidental re-deployment.
-3. **Extension Compilation** — Runs `npm run build` to compile the extension source code into the `dist` directory.
+3. **Extension Compilation** — Runs `npm run build` to compile the extension source code into `dist/` inside the source repository. Since Actions checks out the source into `lxd-tools/`, the workspace-relative artifact path is `lxd-tools/dist/`. Local development builds use repo-local `lxd-extension-build/` with a separate extension identity.
 4. **Platform-Specific Signing** — The compiled extension is signed for both platforms:
    - **Chrome**: Uses the crx3 tool with the private key to produce `lxd-extension-{VERSION}.crx`
    - **Firefox**: Uses the `web-ext sign` command with AMO API credentials to produce `lxd-extension-{VERSION}.xpi` signed for the unlisted channel
@@ -67,6 +69,8 @@ The workflow performs the following automated steps in sequence:
 
 - `package.json` version must be incremented **BEFORE** merging the PR
   - The pull reqest will be blocked from merging unless the package version is bumped
+  - Bump it with `npm version <new version>` (e.g. `npm version 3.3.1` or `npm version patch`) rather than editing `package.json` by hand. This updates `package.json` and both version fields in `package-lock.json` (the top-level `version` and `packages[""].version`) in one step. The repository's `.npmrc` sets `git-tag-version=false`, so npm does not create a commit or a `v`-prefixed tag; the deploy workflow creates the unprefixed tag itself.
+  - The Version Check workflow also fails the PR if either `package-lock.json` version differs from `package.json`
 - Duplicate version deployments are prevented by version validation step
 - If version already exists, entire build fails with clear error message
 
@@ -76,7 +80,7 @@ The workflow performs the following automated steps in sequence:
 - All secrets are referenced via `${{ secrets.VAR_NAME }}` syntax, per GitHub Actions format
 - Chrome key is base64-encoded; it is decoded to the runner's temp directory only inside the pack step and deleted when that step ends
 - Firefox API credentials are environment variables, never logged
-- GitHub token used for pushing to build repository is scoped and temporary
+- GitHub token used for pushing to build repository is scoped and temporary (it expires; see [Renewing the build repository token](#renewing-the-build-repository-token))
 
 ### Storage Retention
 
@@ -115,7 +119,7 @@ After successful execution, the following files are available:
 
 **Solution**:
 
-1. Update `package.json` with a new version number
+1. Run `npm version <new version>` to update `package.json` and `package-lock.json` together
 2. Land the change on main through a new pull request that includes the bump
 
 ### Re-running a failed deploy
@@ -154,6 +158,16 @@ The workflow produces the following artifacts for monitoring:
 3. Verify npm build script still works
 4. Test signing keys are still valid
 5. Review and test any version management changes
+
+### Renewing the build repository token
+
+`LXD_TOOLS_BUILD_TOKEN` is a GitHub personal access token with write access to `lxd-tools-build`. The organization caps token lifetime at 366 days, so it must be renewed every year. The current token **expires November 17, 2027**; renew it before then.
+
+1. Generate a new token with the same scope (write access to `lxd-tools-build`) and a 366-day lifetime
+2. Update the `LXD_TOOLS_BUILD_TOKEN` secret in the `production` environment (Settings → Environments → production)
+3. Update the expiration date in this section and in the Secrets table above
+
+If the token expires before renewal, the deploy fails at "Push to lxd-tools-build" and never reaches the tag/release-branch step. After renewing, push the build and tag by hand or re-run the workflow (see [Re-running a failed deploy](#re-running-a-failed-deploy)).
 
 ### Updating the release tools
 

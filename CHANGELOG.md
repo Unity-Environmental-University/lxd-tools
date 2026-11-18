@@ -15,6 +15,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - If publishing fails, or the section list can't be refreshed afterwards, the section manager now shows the error. Before, it stayed stuck on loading.
 
 ### Internal
+
+- Write production and development extension builds inside the source repository; align packaging and CI artifact paths with the new locations.
+- AGENTS.md file added.
+- Legacy publish script removed from repo and package scripts.
+- Introduce a package-lock version check into the version-check workflow
+- Add .npmrc file that sets git-tag-version to false to make npm version only bump version number in package and package-lock without a commit or a tag.
+- Update documentation to instruct the use of npm version.
 - The section manager checks blueprint status with `course.isBlueprint()` instead of testing the method itself, which was always truthy.
 
 ## 3.3.0
