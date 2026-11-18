@@ -28,7 +28,6 @@ yarn-error.log*
 .idea/.gitignore
 .idea/
 dist/
-/lxd-extension-build/
 *.d.ts
 .env.dev
 .env.prod
@@ -49,3 +48,4 @@ bun.lock.env
 .edge/
 lxd-extension-install/
 lxd-extension-install.zip
+lxd-extension-build/
