@@ -28,6 +28,7 @@ yarn-error.log*
 .idea/.gitignore
 .idea/
 dist/
+/lxd-extension-build/
 *.d.ts
 .env.dev
 .env.prod
