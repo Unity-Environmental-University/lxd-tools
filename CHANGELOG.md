@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Write production and development extension builds inside the source repository; align packaging and CI artifact paths with the new locations.
 - AGENTS.md file added.
 - Legacy publish script removed from repo and package scripts.
+- Introduce a package-lock version check into the version-check workflow
+- Add .npmrc file that sets git-tag-version to false to make npm version only bump version number in package and package-lock without a commit or a tag.
+- Update documentation to instruct the use of npm version.
 
 ## 3.3.0
 

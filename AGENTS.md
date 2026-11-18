@@ -108,7 +108,14 @@ Use `.github/workflows/` as the authority for current automation:
 - `main-deploy.yml`: production signing, R2 uploads/pruning, build-repository
   sync, tags, and release branches on eligible pushes/manual runs from main.
 - `version-check.yml`: requires a changed package version for applicable PRs
-  into main; Markdown/YAML-only and release-tools-only changes are excluded.
+  into main, and that both version fields in `package-lock.json` match
+  `package.json`; Markdown/YAML-only and release-tools-only changes are excluded.
+
+Bump versions with `npm version <version>` (or `patch`/`minor`/`major`), never by
+hand-editing `package.json`: it updates `package.json` and both lockfile version
+fields (`version` and `packages[""].version`) together. The repo's `.npmrc` sets
+`git-tag-version=false`, so it makes no commit or tag; `main-deploy.yml` creates
+the unprefixed release tag. Keep tokens out of `.npmrc`.
 
 Keep build, packaging, artifact discovery, and distribution-copy paths aligned
 when changing output locations. Release tools have their own lockfile under
