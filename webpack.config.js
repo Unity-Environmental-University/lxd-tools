@@ -9,11 +9,10 @@ const packageJson = require("./package.json");
 const { TsconfigPathsPlugin } = require("tsconfig-paths-webpack-plugin");
 const _dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 const isDevelopment = process.env.NODE_ENV !== "production";
-//const outputPath = path.resolve(__dirname, "../dist");
-const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "../dist";
+const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
 const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu";
-const isLocalBuild = relativeOutputDir === "../lxd-extension-build";
+const isLocalBuild = outputPath === path.resolve(__dirname, "lxd-extension-build");
 const addonId = isLocalBuild
   ? "lxd-extension-local@unity.edu"
   : "lxd-extension@unity.edu";

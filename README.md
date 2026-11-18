@@ -7,6 +7,16 @@ or README.dist.md, pointing the extensions loader to dist/
 
 # LXD Extension Development Guide
 
+Production builds (`npm run build`) are written to `dist/` inside this repository.
+Load that folder as an unpacked extension, then reload the extension and refresh
+Canvas tabs after rebuilding. `npm run build:dev` and `npm run watch:dev` use
+repo-local `lxd-extension-build/` with a separate local extension identity.
+Older builds used `../dist/`; check the loaded directory if an old version persists.
+
+Current automated release behavior is documented in [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md).
+The manual publishing instructions below describe the legacy `publish.mjs` path,
+which expects a separate Git repository at `../dist/` and does not use this local build.
+
 ## Getting Started
 
 This guide will walk you through setting up your local development environment for the LXD extension. Follow the steps below to create your local branches, install dependencies, build local changes, and test your work.
