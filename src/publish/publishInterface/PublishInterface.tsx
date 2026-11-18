@@ -27,6 +27,7 @@ import {
 } from "@publish/fixesAndUpdates/courseDataStore";
 import { readProfileFromPage, renderProfileVerified } from "@publish/fixesAndUpdates/profileRenderer";
 import { ProfileWriteWarning } from "./ProfileWriteWarning";
+import { sectionKey, SectionKey } from "./sectionKey";
 
 export interface IPublishInterfaceProps {
   course?: Course;
@@ -42,10 +43,13 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   const [show, setShow] = useState<boolean>(false);
   const [info, setInfo] = useState<string | null | boolean>(null);
   const [coursesLoading, setCoursesLoading] = useState(false);
-  const [sections, dispatchSections] = useReducer(lutDispatcher<number, Course>, {} as Record<number, Course>);
+  const [sections, dispatchSections] = useReducer(
+    lutDispatcher<SectionKey, Course>,
+    {} as Record<SectionKey, Course>
+  );
   const [sectionsToPublish, setSectionsToPublish] = useReducer(
-    lutDispatcher<number, Course>,
-    {} as Record<number, Course>
+    lutDispatcher<SectionKey, Course>,
+    {} as Record<SectionKey, Course>
   );
   const [term, setTerm] = useState<Term | null>();
   const [sectionStart, setSectionStart] = useState<Temporal.PlainDateTime>();
@@ -87,7 +91,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
 
   useEffectAsync(async () => {
     if (!course) return;
-    setIsBlueprint(course.isBlueprint);
+    setIsBlueprint(course.isBlueprint());
     setIsDev(course.isDev);
     if (course.id !== workingCourseId) {
       setWorkingCourseId(course.id);
@@ -122,26 +126,38 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   //-----
   // EVENTS
   //-----
-  async function publishCourses(event: React.MouseEvent, sections: Record<number, Course> = sectionsToPublish) {
+  async function publishCourses(_event: React.MouseEvent, targetSections: Course[]) {
     const accountId = course?.getItem<number>("account_id");
     if (typeof accountId === "undefined") throw new Error("Course has no account Id");
+    const { valid: toPublish, invalid } = splitByValidId(targetSections);
     inform("Publishing");
     setLoading(true);
-    const toPublish = Object.values(sections);
     const numToPublish = toPublish.length;
-    await Course.publishAll(toPublish, accountId);
+    try {
+      await Course.publishAll(toPublish, accountId);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      inform(`Publishing failed: ${errorMessage(error)}`, "alert-danger");
+      return;
+    }
     //Waits half a second to allow changes to propagate on the server
     window.setTimeout(async () => {
-      let newAssocCourses = (await course?.getAssociatedCourses()) as Course[] | undefined;
-      if (newAssocCourses) {
-        newAssocCourses = [...newAssocCourses];
-      } else {
-        newAssocCourses = [];
+      try {
+        const newAssocCourses = ((await course?.getAssociatedCourses()) as Course[] | undefined) ?? [];
+        dispatchSections({ set: Object.fromEntries(newAssocCourses.map((a) => [sectionKey(a), a])) });
+        const message = "Published " + numToPublish + " sections";
+        if (invalid.length > 0) inform(skippedMessage(message, invalid), "alert-warning");
+        else success(message);
+      } catch (error) {
+        console.error(error);
+        inform(
+          `Published ${numToPublish} sections, but the section list could not be refreshed: ${errorMessage(error)}`,
+          "alert-warning"
+        );
+      } finally {
+        setLoading(false);
       }
-
-      dispatchSections({ set: Object.fromEntries(newAssocCourses.map((a) => [a.id, a])) });
-      setLoading(false);
-      success("Published " + numToPublish + " sections");
     }, 500);
   }
 
@@ -186,17 +202,18 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   }
 
   function sectionError(section: Course, error: string) {
-    const tempErrors = { ...errorsByCourseId };
-    const errorSet = tempErrors[section.id] ?? [];
-    errorSet.push(error);
-    tempErrors[section.id] = errorSet;
-    setErrorsByCourseId({ ...tempErrors });
+    // Functional update: this runs several times in one pass, so building on
+    // the render-time errorsByCourseId would keep only the last error.
+    setErrorsByCourseId((prev) => ({
+      ...prev,
+      [section.id]: [...(prev[section.id] ?? []), error],
+    }));
   }
 
-  async function applySectionProfiles(_?: React.MouseEvent) {
+  async function applySectionProfiles(targetSections: Course[]) {
+    const { valid: sectionsToUpdate, invalid } = splitByValidId(targetSections);
     setLoading(true);
     inform("Updating section profiles...");
-    const _currentProfiles = { ...targetPageProfilesByCourseId };
     setErrorsByCourseId({});
 
     // No fallback: a course must resolve to exactly one data-attribute profile
@@ -207,11 +224,11 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
         profileResolution?.status === "ambiguous"
           ? `Multiple profile pages: ${profileResolution.candidates.join(", ")}`
           : "No profile page found on blueprint";
-      for (const section of Object.values(sections)) {
+      for (const section of sectionsToUpdate) {
         sectionError(section, message);
       }
       setLoading(false);
-      inform("No profiles updated — see errors below", "alert-danger");
+      inform(skippedMessage("No profiles updated — see errors below", invalid), "alert-danger");
       return;
     }
     const { slug: profileSlug, blueprintPageId } = profileResolution;
@@ -223,7 +240,7 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
       if (course) await restrictBlueprintPage(course.id, blueprintPageId, false);
 
       const problems: string[] = [];
-      for (const section of Object.values(sections)) {
+      for (const section of sectionsToUpdate) {
         const profiles = potentialProfilesByCourseId[section.id] ?? [];
         if (profiles.length < 1) {
           sectionError(section, "No Profiles");
@@ -258,10 +275,12 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
     } finally {
       setLoading(false);
     }
-    if (updatedCount > 0) {
+    if (updatedCount > 0 && invalid.length === 0) {
       success(`${updatedCount} profile(s) updated`);
+    } else if (updatedCount > 0) {
+      inform(skippedMessage(`${updatedCount} profile(s) updated`, invalid), "alert-warning");
     } else {
-      inform("No profiles updated — see errors below", "alert-danger");
+      inform(skippedMessage("No profiles updated — see errors below", invalid), "alert-danger");
     }
   }
 
@@ -314,13 +333,13 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
             setTerm(tempTerm);
           }
 
-          dispatchSections({ set: [section.id, section] });
+          dispatchSections({ set: [sectionKey(section), section] });
           if (targetPageProfile)
             dispatchTargetPageProfilesByCourseId({
               set: [section.id, targetPageProfile],
             });
 
-          setSectionsToPublish({ set: [section.id, section] });
+          setSectionsToPublish({ set: [sectionKey(section), section] });
 
           if (instructors) {
             dispatchInstructorsByCourseId({
@@ -345,10 +364,10 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
   }
 
   const sectionPublishToggle = (course: Course, publish: boolean) => {
-    const payload: LutSetAction<number, Course> = {
+    const payload: LutSetAction<SectionKey, Course> = {
       // map‐style LutSetAction: each key ∈ RecordKeyType mapped to a single Course
-      [course.id]: publish ? course : (undefined as any),
-    } as LutSetAction<number, Course>;
+      [sectionKey(course)]: publish ? course : (undefined as any),
+    } as LutSetAction<SectionKey, Course>;
 
     setSectionsToPublish({ set: payload });
   };
@@ -366,7 +385,10 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
 
   function RenderBpInterface({ course, user }: BpSectionInterface) {
     const sectionsListIdentical = isEqual(sections, sectionsToPublish);
-    const selectedSectionsEmpty = Object.values(sectionsToPublish).every((v) => v === undefined);
+    const allSections = Object.values(sections);
+    const selectedSections = selectedOnly(sectionsToPublish);
+    const selectedSectionsEmpty = selectedSections.length === 0;
+    const notBlueprint = !course.isBlueprint();
 
     return (
       <>
@@ -382,8 +404,8 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
               <div className={"col-xs-2"} style={{ display: "contents" }}>
                 <Button
                   className="btn"
-                  disabled={loading || !course?.isBlueprint}
-                  onClick={applySectionProfiles}
+                  disabled={loading || notBlueprint}
+                  onClick={() => applySectionProfiles(allSections)}
                   style={{ marginLeft: "8px" }}
                 >
                   Set Bios
@@ -391,8 +413,8 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                 {!sectionsListIdentical && (
                   <Button
                     className="btn"
-                    disabled={selectedSectionsEmpty || loading || !course?.isBlueprint}
-                    onClick={applySectionProfiles}
+                    disabled={selectedSectionsEmpty || loading || notBlueprint}
+                    onClick={() => applySectionProfiles(selectedSections)}
                     style={{ marginLeft: "8px" }}
                   >
                     Set Selected Bios
@@ -400,8 +422,8 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                 )}
                 <Button
                   className="btn"
-                  disabled={loading || !course?.isBlueprint}
-                  onClick={(e) => publishCourses(e, sections)}
+                  disabled={loading || notBlueprint}
+                  onClick={(e) => publishCourses(e, allSections)}
                   style={{ marginLeft: "8px" }}
                 >
                   Publish all
@@ -409,8 +431,8 @@ export function PublishInterface({ course, user }: IPublishInterfaceProps) {
                 {!sectionsListIdentical && (
                   <Button
                     className="btn"
-                    disabled={selectedSectionsEmpty || loading || !course?.isBlueprint}
-                    onClick={(e) => publishCourses(e, sectionsToPublish)}
+                    disabled={selectedSectionsEmpty || loading || notBlueprint}
+                    onClick={(e) => publishCourses(e, selectedSections)}
                     style={{ marginLeft: "8px" }}
                   >
                     Publish selected
@@ -517,6 +539,38 @@ export interface IGetFullCoursesProps {
   setSectionStart: (start: Temporal.PlainDateTime) => void;
   setTerm: (term: Term | null) => void;
   setTargetPageProfilesByCourseId: (profiles: Record<number, IProfile>) => void;
+}
+
+/**
+ * The sections the user has ticked. Unticking a section stores `undefined`
+ * under its id (see sectionPublishToggle), so those entries are dropped here.
+ */
+export function selectedOnly(record: Record<SectionKey, Course | undefined>): Course[] {
+  return Object.values(record).filter((section): section is Course => section != null);
+}
+
+/**
+ * Separates sections with a usable Canvas id from ones without, so a missing
+ * id is reported to the user instead of being sent to Canvas as "undefined".
+ */
+export function splitByValidId(courses: Course[]): { valid: Course[]; invalid: Course[] } {
+  const valid: Course[] = [];
+  const invalid: Course[] = [];
+  for (const course of courses) {
+    if (typeof course?.id === "number" && Number.isFinite(course.id)) valid.push(course);
+    else invalid.push(course);
+  }
+  return { valid, invalid };
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function skippedMessage(message: string, skipped: Course[]) {
+  if (skipped.length === 0) return message;
+  const names = skipped.map((section) => section?.name ?? "unnamed section").join(", ");
+  return `${message}. Skipped ${skipped.length} section(s) with no course id: ${names}`;
 }
 
 type OpenButtonProps = {
