@@ -48,3 +48,4 @@ bun.lock.env
 .edge/
 lxd-extension-install/
 lxd-extension-install.zip
+lxd-extension-build/
