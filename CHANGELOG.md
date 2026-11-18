@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Publish and Set Bios skip sections that have no course id and name them in the status message, instead of sending "undefined" to Canvas. Unchecked sections are no longer counted in the "Published N sections" message.
 - If publishing fails, or the section list can't be refreshed afterwards, the section manager now shows the error. Before, it stayed stuck on loading.
 - Course eval validation handles the scenario where more than one module has Module 5 in the title.
+- 
 
 ### Internal
 
@@ -24,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Add .npmrc file that sets git-tag-version to false to make npm version only bump version number in package and package-lock without a commit or a tag.
 - Update documentation to instruct the use of npm version.
 - The section manager checks blueprint status with `course.isBlueprint()` instead of testing the method itself, which was always truthy.
+- Stop treating refreshed Course objects as changed when all sections remain selected in Publish Interface.
 
 ## 3.3.0
 
