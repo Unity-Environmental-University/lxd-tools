@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Internal
 - Removed debug logging of user records from Reporting.
 - Reporting requests course teachers directly instead of through ueu-canvas `getUserGenerator`, which (as of 0.0.17) drops the `enrollment_type` filter.
+- Write production and development extension builds inside the source repository; align packaging and CI artifact paths with the new locations.
+- AGENTS.md file added.
+- Legacy publish script removed from repo and package scripts.
 
 ## 3.3.0
 

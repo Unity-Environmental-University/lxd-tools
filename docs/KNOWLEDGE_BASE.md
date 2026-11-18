@@ -56,6 +56,7 @@ On every pull request, this workflow will lint, typecheck and test the code and 
 
 ## Tips/Tricks
 
-- npm run build:dev will build the extension at ../lxd-extension-build to create a local build. This was created so you could keep the released version along side a local version for testing
+- `npm run build` writes the production extension to `dist/` inside this repository. Load that folder as an unpacked extension, then reload the extension and existing Canvas tabs after rebuilding.
+- `npm run build:dev` writes to `lxd-extension-build/` inside this repository with a separate local extension identity, so it can coexist with the released extension. `npm run watch:dev` rebuilds the same folder on changes.
 - A Canvas test environment exists at https://unity.test.instructure.com/.
   - I find myself using a test course in the live Canvas more often, which allows me to reset and pull any course in.
