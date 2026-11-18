@@ -8,7 +8,6 @@ import {
     ICanvasCallConfig,
     ICourseData
 } from "@ueu/ueu-canvas";
-import {RootReportingState} from "@/reporting/data/reportingStore";
 import {getPagedDataGenerator} from "@ueu/ueu-canvas";
 
 
@@ -26,7 +25,7 @@ const courseDefaultConfig: GetCoursesFromAccountOptions = {
 
 export const fetchCoursesThunk = createAsyncThunk(
     "courses/fetchCourses",
-    async (params: FetchCoursesParams, {dispatch, getState}) => {
+    async (params: FetchCoursesParams, {dispatch}) => {
         const {config: _config, ...rest} = params;
 
         const config = {
@@ -37,22 +36,23 @@ export const fetchCoursesThunk = createAsyncThunk(
 
         const accountId = rest.accountId;
         dispatch(setStatus('loading'));
-        for (const termId of termIds) {
+        try {
+            for (const termId of termIds) {
 
-            const gen = getPagedDataGenerator(`/api/v1/accounts/${accountId}/courses`, {
-                queryParams: {
-                    enrollment_term_id: termId,
-                    ...config.queryParams,
+                const gen = getPagedDataGenerator(`/api/v1/accounts/${accountId}/courses`, {
+                    queryParams: {
+                        enrollment_term_id: termId,
+                        ...config.queryParams,
+                    }
+                })
+                for await (const course of gen) {
+                    dispatch(addCourse(course as ICourseData));
+                    dispatch(setCourseStatus({courseId: course.id, status: 'fulfilled'}))
                 }
-            })
-            for await (const course of gen) {
-                console.log(course.course_code);
-                const state = getState() as RootReportingState;
-                console.log(state.courses.courseStatus[course.id])
-                if (state.courses.courseStatus[course.id] === 'loading') continue;
-                dispatch(addCourse(course as ICourseData));
-                dispatch(setCourseStatus({courseId: course.id, status: 'fulfilled'}))
             }
+        } catch (e) {
+            dispatch(setStatus('failed'));
+            throw e;
         }
 
         dispatch(setStatus('fulfilled'));
