@@ -67,6 +67,8 @@ The workflow performs the following automated steps in sequence:
 
 - `package.json` version must be incremented **BEFORE** merging the PR
   - The pull reqest will be blocked from merging unless the package version is bumped
+  - Bump it with `npm version <new version>` (e.g. `npm version 3.3.1` or `npm version patch`) rather than editing `package.json` by hand. This updates `package.json` and both version fields in `package-lock.json` (the top-level `version` and `packages[""].version`) in one step. The repository's `.npmrc` sets `git-tag-version=false`, so npm does not create a commit or a `v`-prefixed tag; the deploy workflow creates the unprefixed tag itself.
+  - The Version Check workflow also fails the PR if either `package-lock.json` version differs from `package.json`
 - Duplicate version deployments are prevented by version validation step
 - If version already exists, entire build fails with clear error message
 
@@ -115,7 +117,7 @@ After successful execution, the following files are available:
 
 **Solution**:
 
-1. Update `package.json` with a new version number
+1. Run `npm version <new version>` to update `package.json` and `package-lock.json` together
 2. Land the change on main through a new pull request that includes the bump
 
 ### Re-running a failed deploy
