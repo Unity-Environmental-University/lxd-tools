@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Set Bios now shows the error for every section that fails, not only the last one.
 - Publish and Set Bios skip sections that have no course id and name them in the status message, instead of sending "undefined" to Canvas. Unchecked sections are no longer counted in the "Published N sections" message.
 - If publishing fails, or the section list can't be refreshed afterwards, the section manager now shows the error. Before, it stayed stuck on loading.
+- Course eval validation handles the scenario where more than one module has Module 5 in the title.
 
 ### Internal
 
