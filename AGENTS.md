@@ -35,15 +35,15 @@ to work around an outdated `node_modules` installation.
 
 | Command | Behavior |
 | --- | --- |
-| `npm run build` | Production build, minification and TypeScript checking; writes to sibling `../dist/`. |
-| `npm run build:dev` | Development build in sibling `../lxd-extension-build/`, with a separate local extension identity. |
-| `npm run watch` | Development watcher writing to `../dist/`; retains the normal extension identity. |
+| `npm run build` | Production build, minification and TypeScript checking; writes to sibling `dist/`. |
+| `npm run build:dev` | Development build in sibling `lxd-extension-build/`, with a separate local extension identity. |
+| `npm run watch` | Development watcher writing to `dist/`; retains the normal extension identity. |
 | `npm run watch:dev` | Development watcher using the separate local build and identity. |
 
 Output paths resolve against the repository directory, not the shell working directory.
 The sibling layout supports a separate build repository and the CI workspace layout. `BUILD_OUTPUT_DIR` can
 override the output path, but the separate local identity is selected only for
-the exact `../lxd-extension-build` override used by the dev scripts. Development builds transpile without
+the exact `lxd-extension-build/` override used by the dev scripts. Development builds transpile without
 type checking; run `npm run typecheck` separately. Generated artifacts are
 ignored; edit sources, not bundles. Version values in the generated manifest
 and update manifests come from `package.json`.
@@ -104,7 +104,7 @@ Use `.github/workflows/` as the authority for current automation:
 - `push-test.yaml`: tests, lint, and types on pushes.
 - `build-testing.yml`: PR/manual unsigned builds; artifacts come from
   `dist` at the workspace root because Actions checks out the source into
-  `lxd-tools/` and webpack writes to its sibling `../dist/`.
+  `lxd-tools/` and webpack writes to its sibling `dist/`.
 - `main-deploy.yml`: production signing, R2 uploads/pruning, build-repository
   sync, tags, and release branches on eligible pushes/manual runs from main.
 - `version-check.yml`: requires a changed package version for applicable PRs
@@ -116,10 +116,4 @@ when changing output locations. Release tools have their own lockfile under
 `docs/SYLLABUS_SYNC.md` for syllabus behavior. Some README publishing instructions
 describe the older manual process; verify them against the workflows.
 
-`npm run publish` invokes the legacy `publish.mjs`, which expects a separate Git
-repository at `../dist` and creates tags, commits, and pushes. Never run it for
-a local build or test. Repointing it at an ordinary folder inside the source
-checkout can make Git commands act on the source repository instead. Any output
-path change must account for this script and existing browser installations.
-Signing, publishing, deployment dispatch, and merging are separate actions from building or opening a PR. Keep private signing keys,
-tokens, `.env` files, and browser/session data out of commits and artifacts.
+Signing, publishing, deployment dispatch, and merging are separate actions from building or opening a PR. Keep private signing keys, tokens, `.env` files, and browser/session data out of commits and artifacts.
