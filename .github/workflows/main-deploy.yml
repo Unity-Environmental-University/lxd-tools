@@ -98,7 +98,7 @@ jobs:
           echo "$CHROME_KEY_PEM_B64" | base64 -d > "$KEY_FILE"
           # Fail clearly if the secret is unset rather than handing crx3 an empty key file.
           if [ ! -s "$KEY_FILE" ]; then echo "ERROR: Chrome signing key is empty" && exit 1; fi
-          .github/release-tools/node_modules/.bin/crx3 ../dist -p "$KEY_FILE" -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
+          .github/release-tools/node_modules/.bin/crx3 dist -p "$KEY_FILE" -o "dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
 
       - name: Sign Firefox extension
         working-directory: lxd-tools
@@ -107,22 +107,22 @@ jobs:
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
         run: |
           .github/release-tools/node_modules/.bin/web-ext sign \
-            --source-dir ../dist \
+            --source-dir dist \
             --api-key $WEB_EXT_API_KEY \
             --api-secret $WEB_EXT_API_SECRET \
             --channel unlisted \
-            --artifacts-dir ../dist \
+            --artifacts-dir dist \
             --ignore-files "*.crx" "*.xpi"
-          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
-          mv "$SIGNED" "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.xpi"
+          SIGNED=$(find dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
+          mv "$SIGNED" "dist/lxd-extension-${{ steps.get_version.outputs.version }}.xpi"
 
       - name: Find necessary files
         id: find_files
         run: |
-          XPI=$(find dist/ -maxdepth 1 -name "*.xpi" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
-          CRX=$(find dist/ -maxdepth 1 -name "lxd-extension-*.crx" | head -1)
-          UPDATES_JSON="dist/updates.json"
-          UPDATE_XML="dist/update.xml"
+          XPI=$(find lxd-tools/dist/ -maxdepth 1 -name "*.xpi" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+          CRX=$(find lxd-tools/dist/ -maxdepth 1 -name "lxd-extension-*.crx" | head -1)
+          UPDATES_JSON="lxd-tools/dist/updates.json"
+          UPDATE_XML="lxd-tools/dist/update.xml"
 
           if [ -z "$XPI" ]; then echo "ERROR: .xpi not found" && exit 1; fi
           if [ -z "$CRX" ]; then echo "ERROR: .crx not found" && exit 1; fi
@@ -175,7 +175,7 @@ jobs:
           git checkout stable || git checkout -b stable
           git reset --hard origin/stable 2>/dev/null || true
           rm -rf ./*
-          cp -r ../dist/* .
+          cp -r ../lxd-tools/dist/* .
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add --all
