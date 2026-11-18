@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Internal
 
 - Write production and development extension builds inside the source repository; align packaging and CI artifact paths with the new locations.
+- AGENTS.md file added.
+- Legacy publish script removed from repo and package scripts.
 
 ## 3.3.0
 
