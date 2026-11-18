@@ -28,17 +28,14 @@ The code was getting a lot of unused variable warnings that were false flags as 
 
 ### Link checking
 
-There are three patterns used in this codebase for checking URLs, depending on context:
+**Find a link in Canvas HTML**
 
-**1. Regex over raw HTML strings (syllabus/discussion content)**
+Parse the syllabus or discussion body with [`parseHtmlInert`](../src/utils/html.ts).
+Select anchors with `a[href]` and compare each anchor's `getAttribute("href")`
+with the expected value. An `href` that contains the URL inside a redirect
+has a different attribute value.
 
-When checking whether a specific URL exists in an HTML string (e.g. a syllabus or discussion body), use `new RegExp(escapedUrl, "ig")` where `escapedUrl` has been sanitized with `.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")`. This escapes special regex characters in the URL so dots and other metacharacters are treated as literals. See `makeSyllabusUrlCheck` in [syllabusTests.ts](../src/publish/fixesAndUpdates/validations/syllabusTests.ts).
-
-**2. Quote-bounded substring check (HTML attribute values)**
-
-When checking for the presence or absence of a URL as an `href` value inside an HTML string, wrap the URL in double quotes: `htmlString.includes(`"${url}"`)`. Since HTML attributes are quoted, this ensures the URL is matched as an exact attribute value rather than as a substring of a longer URL (e.g. a redirect parameter). See `aiPolicyMediaRun` in [syllabusTests.ts](../src/publish/fixesAndUpdates/validations/syllabusTests.ts) and the `run` function in [discussionTests.ts](../src/publish/fixesAndUpdates/validations/discussionTests.ts).
-
-**3. URL hostname check (actual browser URLs)**
+**Check the current page's hostname**
 
 When checking whether the current page URL belongs to a trusted host, parse the URI with `new URL()` and check the `hostname` property: `new URL(document.documentURI).hostname.endsWith(".instructure.com")`. Never use `.includes()` on a raw URL string to check the host — a URL like `https://evil.com/?r=https://unity.instructure.com` would falsely pass. See [content/index.ts](../src/content/index.ts).
 
