@@ -12,8 +12,14 @@ export default function ExportAcrossSectionsButton({course, ...handlers}: Export
     return <button id="all_sections" onClick={async (event) => {
         event.preventDefault();
         handlers.popUp("Exporting scores, please wait...", "Exporting");
-        await exportSectionsInTerm(course);
-        handlers.popClose();
+        try {
+            await exportSectionsInTerm(course);
+            handlers.popClose();
+        } catch (e) {
+            handlers.popClose();
+            handlers.popUp(`ERROR ${e} while retrieving assignment data from Canvas. Please refresh and try again.`, "OK");
+            console.error(e);
+        }
 
     }}>Rubrics:Term
     </button>

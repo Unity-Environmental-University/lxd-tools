@@ -1,14 +1,17 @@
 jest.mock('@ueu/ueu-canvas/fetch/getPagedDataGenerator', () => ({
     getPagedDataGenerator: jest.fn(),
 }));
-jest.mock('@ueu/ueu-canvas/fetch/fetchJson');
+jest.mock('@ueu/ueu-canvas/fetch/fetchJson', () => ({
+    ...jest.requireActual('@ueu/ueu-canvas/fetch/fetchJson'),
+    fetchJson: jest.fn(),
+}));
 jest.mock('@ueu/ueu-canvas/canvasUtils', () => ({
     formDataify: jest.fn((data) => data),
 }));
 
 import { kalturaSizeTests } from "../kalturaSizeFix";
 import { getPagedDataGenerator } from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
-import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import { fetchJson, FetchJsonError } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
 import { mockAsyncGen } from "@/__mocks__/utils";
 
@@ -75,6 +78,22 @@ describe('kalturaSizeTests.run', () => {
         mockGetPagedDataGenerator.mockImplementation(() => { throw new Error('Network error'); });
         const result = await kalturaSizeTests.run(course);
         expect(result.success).toBe('unknown');
+    });
+
+    it('reports a missing LTI endpoint when Canvas answers 404', async () => {
+        mockGetPagedDataGenerator.mockImplementation(() => { throw new FetchJsonError(404, 'Not Found'); });
+        const result = await kalturaSizeTests.run(course);
+        expect(result.success).toBe('unknown');
+        expect(JSON.stringify(result.messages)).toContain('LTI endpoint not found.');
+    });
+
+    it.each([401, 403, 500])('reports the failure, not a missing endpoint, when Canvas answers %i', async (status) => {
+        mockGetPagedDataGenerator.mockImplementation(() => { throw new FetchJsonError(status, 'Error'); });
+        const result = await kalturaSizeTests.run(course);
+        expect(result.success).toBe('unknown');
+        const text = JSON.stringify(result.messages);
+        expect(text).not.toContain('LTI endpoint not found.');
+        expect(text).toContain(`${status}`);
     });
 });
 
