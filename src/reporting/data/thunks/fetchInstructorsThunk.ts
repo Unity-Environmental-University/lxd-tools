@@ -14,7 +14,7 @@ export const fetchInstructorsThunk = createAsyncThunk(
         config.queryParams = {...config.queryParams ?? {}, enrollment_type: "teacher"}
 
         // Generate data using provided generator function and parameters.
-        const gen = getUserGenerator(params)
+        const gen = getUserGenerator(config)
         dispatch(setStatus('loading'));
 
         try {
