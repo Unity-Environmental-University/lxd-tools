@@ -12,6 +12,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Internal
 
+## 3.3.1
+
+### Added
+
+### Changed
+- "Set Selected Bios" now updates only the sections that are checked. It used to rewrite the profile page on every section.
+- Set Bios now shows the error for every section that fails, not only the last one.
+- Publish and Set Bios skip sections that have no course id and name them in the status message, instead of sending "undefined" to Canvas. Unchecked sections are no longer counted in the "Published N sections" message.
+- If publishing fails, or the section list can't be refreshed afterwards, the section manager now shows the error. Before, it stayed stuck on loading.
+- Course eval validation handles the scenario where more than one module has Module 5 in the title. It picks the one containing Learning Materials, and reports that attention is needed if none or several do.
+- Canvas fetch errors are now surfaced instead of leaving screens stuck or failing silently:
+  - Reporting (courses, enrollments, instructors, terms) sets a failed status and rethrows.
+  - Admin course search stops the searching indicator and keeps the results found so far.
+  - SpeedGrader "Rubrics:Term" export shows an error message if retrieving data fails.
+  - Async effects log errors rather than causing unhandled rejections.
+- The Kaltura size validation reports "LTI endpoint not found" only for a 404. Other failures (401, 403, 5xx) now show the actual error.
+- The reporting instructor fetch now passes the teacher enrollment filter, so it only returns teachers.
+- The "Lock All" button on the modules page now checks blueprint status by calling `course.isBlueprint()`; before, it always appeared.
+
+### Internal
+
+- Write production and development extension builds inside the source repository; align packaging and CI artifact paths with the new locations.
+- AGENTS.md file added.
+- Legacy publish script removed from repo and package scripts.
+- Introduce a package-lock version check into the version-check workflow
+- Add .npmrc file that sets git-tag-version to false to make npm version only bump version number in package and package-lock without a commit or a tag.
+- Update documentation to instruct the use of npm version.
+- The section manager checks blueprint status with `course.isBlueprint()` instead of testing the method itself, which was always truthy.
+- Stop treating refreshed Course objects as changed when all sections remain selected in Publish Interface.
+- The `build:dev` script and the webpack output default and local-identity check now use in-repo paths (`dist/`, `lxd-extension-build/`).
+- Update `.gitignore`, README, `docs/BUILD_PROCESS.md` and `docs/KNOWLEDGE_BASE.md` for the new build and versioning process.
+- Add tests for section selection, course eval validation, Kaltura size validation and the instructor thunk.
+
 ## 3.3.0
 
 ### Added

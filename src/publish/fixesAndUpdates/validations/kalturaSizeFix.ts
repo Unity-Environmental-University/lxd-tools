@@ -1,7 +1,7 @@
 import { CourseFixValidation, CourseValidation } from "@/publish/fixesAndUpdates/validations/types";
 import { testResult, ValidationResult } from "@publish/fixesAndUpdates/validations/utils";
 import { getPagedDataGenerator } from "@ueu/ueu-canvas/fetch/getPagedDataGenerator";
-import { fetchJson } from "@ueu/ueu-canvas/fetch/fetchJson";
+import { fetchJson, FetchJsonError } from "@ueu/ueu-canvas/fetch/fetchJson";
 import { formDataify } from "@ueu/ueu-canvas/canvasUtils";
 
 type KalturaLtiItem = {
@@ -46,8 +46,12 @@ const run: CourseValidation<{ id: number }, KalturaLtiData>["run"] = async ({ id
         }
     } catch (error) {
         console.error(error instanceof Error ? error.message : error);
+        // only a 404 means the course has no LTI endpoint; other failures (401, 403, 5xx) are real errors
+        const notFound = error instanceof FetchJsonError && error.status === 404;
         return testResult("unknown", {
-            notFailureMessage: "LTI endpoint not found.",
+            notFailureMessage: notFound
+                ? "LTI endpoint not found."
+                : `Could not check Kaltura sizes: ${error instanceof Error ? error.message : error}`,
         });
     }
 };

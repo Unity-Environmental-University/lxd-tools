@@ -36,27 +36,33 @@ export function SearchCourses({
         if (typeof rootAccount === 'undefined') throw new RootAccountNotFoundError();
         const accountIds = [rootAccount.id];
         setIsSearching(true)
-        let courses: (Course & IMultiSelectOption)[] = [];
-        for (const code of seekCourseCodes) {
+        try {
+            let courses: (Course & IMultiSelectOption)[] = [];
+            for (const code of seekCourseCodes) {
 
-            const config = onlySearchBlueprints ? {
-                queryParams: {blueprint: true,}
-            } : undefined;
-            const generator = getCourseGenerator(code, accountIds, undefined,config);
+                const config = onlySearchBlueprints ? {
+                    queryParams: {blueprint: true,}
+                } : undefined;
+                const generator = getCourseGenerator(code, accountIds, undefined,config);
 
-            for await (const course of generator) {
-                const [optionCourse] = optionize(
-                    [course],
-                    course => course.id,
-                    course => course.parsedCourseCode ?? course.name ?? course.id.toString()
-                );
-                courses = [...courses, optionCourse].toSorted((a, b) => (a.baseCode ?? a.name).localeCompare(b.baseCode ?? b.name));
-                if (onlySearchBlueprints) courses = courses.filter(course => course.isBlueprint())
-                setFoundCourses(courses);
+                for await (const course of generator) {
+                    const [optionCourse] = optionize(
+                        [course],
+                        course => course.id,
+                        course => course.parsedCourseCode ?? course.name ?? course.id.toString()
+                    );
+                    courses = [...courses, optionCourse].toSorted((a, b) => (a.baseCode ?? a.name).localeCompare(b.baseCode ?? b.name));
+                    if (onlySearchBlueprints) courses = courses.filter(course => course.isBlueprint())
+                    setFoundCourses(courses);
 
+                }
             }
+        } catch (error) {
+            // Canvas errors now throw from the generators; results found so far stay shown
+            console.error(error);
+        } finally {
+            setIsSearching(false);
         }
-        setIsSearching(false);
     }
 
     useEffect(() => {
@@ -86,4 +92,4 @@ export function SearchCourses({
         </button>
 
     </Form>
-}
+}

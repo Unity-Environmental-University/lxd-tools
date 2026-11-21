@@ -7,6 +7,16 @@ or README.dist.md, pointing the extensions loader to dist/
 
 # LXD Extension Development Guide
 
+Production builds (`npm run build`) are written to `dist/` inside this repository.
+Load that folder as an unpacked extension, then reload the extension and refresh
+Canvas tabs after rebuilding. `npm run build:dev` and `npm run watch:dev` use
+repo-local `lxd-extension-build/` with a separate local extension identity.
+Older builds used `../dist/`; check the loaded directory if an old version persists.
+
+Current automated release behavior is documented in [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md).
+The manual publishing instructions below describe the legacy `publish.mjs` path,
+which expects a separate Git repository at `../dist/` and does not use this local build.
+
 ## Getting Started
 
 This guide will walk you through setting up your local development environment for the LXD extension. Follow the steps below to create your local branches, install dependencies, build local changes, and test your work.
@@ -67,8 +77,9 @@ This guide explains how to publish the LXD Extension.
 
 ### 2. Update the Version Number
 
-- **Increment the Version in package.json:**
-  - Open `package.json` and update the `version` field to the next release version (e.g., from `2.9.1.2` to `2.9.1.3`).
+- **Increment the Version:**
+  - Run `npm version <new version>` (e.g., `npm version 3.3.1`, or `npm version patch`). This updates `package.json` **and** both version fields in `package-lock.json` together, so type the version only once. The repo's `.npmrc` sets `git-tag-version=false`, so this does not create a commit or tag; the deploy workflow creates the tag.
+  - Don't edit the `version` field in `package.json` by hand: the PR's Version Check fails if `package-lock.json` doesn't match.
 
   - Versioning in incremented based on the following:
 
@@ -125,7 +136,7 @@ The publish script performs the following tasks:
 1. **Merge Changes Down:**
    - Consolidate updates from various branches into the release branch.
 2. **Increment the Version:**
-   - Update the version number in `package.json`.
+   - Run `npm version <new version>` (updates `package.json` and `package-lock.json`; no commit or tag is made).
 3. **Run Tests:**
    - Run `npm test` Ensure all tests pass (fix any failing tests).
 4. **Build Locally**
