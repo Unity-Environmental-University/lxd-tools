@@ -35,27 +35,28 @@ to work around an outdated `node_modules` installation.
 
 | Command | Behavior |
 | --- | --- |
-| `npm run build` | Production build, minification and TypeScript checking; writes to sibling `dist/`. |
-| `npm run build:dev` | Development build in sibling `lxd-extension-build/`, with a separate local extension identity. |
+| `npm run build` | Production build, minification and TypeScript checking; writes to `dist/` inside the repository. |
+| `npm run build:dev` | Development build in `lxd-extension-build/` inside the repository, with a separate local extension identity. |
 | `npm run watch` | Development watcher writing to `dist/`; retains the normal extension identity. |
-| `npm run watch:dev` | Development watcher using the separate local build and identity. |
+| `npm run watch:dev` | Development watcher writing to `lxd-extension-build/`, using the separate local identity. |
 
 Output paths resolve against the repository directory, not the shell working directory.
-The sibling layout supports a separate build repository and the CI workspace layout. `BUILD_OUTPUT_DIR` can
-override the output path, but the separate local identity is selected only for
-the exact `lxd-extension-build/` override used by the dev scripts. Development builds transpile without
-type checking; run `npm run typecheck` separately. Generated artifacts are
-ignored; edit sources, not bundles. Version values in the generated manifest
-and update manifests come from `package.json`.
+Both output folders are git-ignored and excluded from ESLint in `eslint.config.mjs`.
+`BUILD_OUTPUT_DIR` can override the output path, but the separate local identity is
+selected only for the exact `lxd-extension-build/` override used by the dev scripts.
+Development builds transpile without type checking; run `npm run typecheck`
+separately. Generated artifacts are ignored; edit sources, not bundles. Version
+values in the generated manifest and update manifests come from `package.json`.
 
 Load the relevant output folder as an unpacked extension. After rebuilding,
 reload that extension in the browser's extension manager and refresh existing
 Canvas tabs. If the browser shows an old version, check the loaded folder and
 its `manifest.json`; a successful build does not reload installed extensions.
-The default build does not update an in-repo `dist/` folder. Check for duplicate
-installations before changing the output path. Multiple source checkouts under
-one parent directory share the same default output, so use isolated parent
-directories or an explicit `BUILD_OUTPUT_DIR` when testing worktrees.
+Older builds wrote to a sibling `../dist/`; if the browser still loads that folder,
+reload the extension from the in-repo output instead. Check for duplicate
+installations before changing the output path. Each checkout or worktree has its
+own output folders, so builds from different worktrees do not overwrite each
+other, but each must be loaded as its own unpacked extension.
 
 ## Validation
 
@@ -103,17 +104,26 @@ Use `.github/workflows/` as the authority for current automation:
 
 - `push-test.yaml`: tests, lint, and types on pushes.
 - `build-testing.yml`: PR/manual unsigned builds; artifacts come from
-  `dist` at the workspace root because Actions checks out the source into
-  `lxd-tools/` and webpack writes to its sibling `dist/`.
+  `lxd-tools/dist` because Actions checks out the source into `lxd-tools/`
+  and webpack writes to `dist/` inside it.
 - `main-deploy.yml`: production signing, R2 uploads/pruning, build-repository
-  sync, tags, and release branches on eligible pushes/manual runs from main.
+  sync, release branches, and GitHub Releases (tag, changelog notes, and
+  build assets) on eligible pushes/manual runs from main.
 - `version-check.yml`: requires a changed package version for applicable PRs
-  into main; Markdown/YAML-only and release-tools-only changes are excluded.
+  into main, and that both version fields in `package-lock.json` match
+  `package.json`; Markdown/YAML-only and release-tools-only changes are excluded.
+
+Bump versions with `npm version <version>` (or `patch`/`minor`/`major`), never by
+hand-editing `package.json`: it updates `package.json` and both lockfile version
+fields (`version` and `packages[""].version`) together. The repo's `.npmrc` sets
+`git-tag-version=false`, so it makes no commit or tag; `main-deploy.yml` creates
+the `v`-prefixed release tag (e.g. `v3.3.1`) and GitHub Release. Keep tokens out of `.npmrc`.
 
 Keep build, packaging, artifact discovery, and distribution-copy paths aligned
 when changing output locations. Release tools have their own lockfile under
 `.github/release-tools/`. See `docs/BUILD_PROCESS.md` for deployment details and
-`docs/SYLLABUS_SYNC.md` for syllabus behavior. Some README publishing instructions
-describe the older manual process; verify them against the workflows.
+`docs/SYLLABUS_SYNC.md` for syllabus behavior. `README.md` is the user-facing install
+guide (it is also copied into the built extension); developer setup and release steps
+are in `CONTRIBUTING.md`.
 
 Signing, publishing, deployment dispatch, and merging are separate actions from building or opening a PR. Keep private signing keys, tokens, `.env` files, and browser/session data out of commits and artifacts.

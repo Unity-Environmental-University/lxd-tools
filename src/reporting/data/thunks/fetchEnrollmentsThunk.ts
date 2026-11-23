@@ -11,8 +11,14 @@ export const fetchEnrollmentsThunk = createAsyncThunk(
 
         const gen = getEnrollmentGenerator(params)
         dispatch(setStatus('loading'))
-        for await (const enrollments of gen) {
-            dispatch(updateEnrollment({ enrollment: enrollments }))
+        try {
+            for await (const enrollments of gen) {
+                dispatch(updateEnrollment({ enrollment: enrollments }))
+            }
+        } catch (error) {
+            // Canvas errors now throw from the generator; surface them instead of staying on 'loading'
+            dispatch(setStatus('failed'))
+            throw error
         }
     }
 )

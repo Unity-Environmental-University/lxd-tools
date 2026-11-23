@@ -14,12 +14,18 @@ export const fetchInstructorsThunk = createAsyncThunk(
         config.queryParams = {...config.queryParams ?? {}, enrollment_type: "teacher"}
 
         // Generate data using provided generator function and parameters.
-        const gen = getUserGenerator(params)
+        const gen = getUserGenerator(config)
         dispatch(setStatus('loading'));
 
-        for await (const instructor of gen) {
-            console.log(JSON.stringify(instructor));
-            dispatch(updateInstructors({instructor}));
+        try {
+            for await (const instructor of gen) {
+                console.log(JSON.stringify(instructor));
+                dispatch(updateInstructors({instructor}));
+            }
+        } catch (error) {
+            // Canvas errors now throw from the generator; surface them instead of staying on 'loading'
+            dispatch(setStatus('failed'));
+            throw error;
         }
         dispatch(setStatus('fulfilled'));
     }

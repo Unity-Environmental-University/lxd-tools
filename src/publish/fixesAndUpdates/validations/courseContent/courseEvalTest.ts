@@ -3,6 +3,7 @@ import {
 	formDataify,
 	getCourseById,
 	IContentHaver,
+	IModuleData,
 	Page,
 	PageKind,
 } from "@ueu/ueu-canvas";
@@ -89,12 +90,25 @@ async function fix(
 	const filteredModules = modules.filter((m) =>
 		m.name.toLowerCase().includes(moduleName),
 	);
+
+	let finalModule: IModuleData | undefined = filteredModules[0];
+
+	// Several modules can match the name; the real one has the learning materials.
 	if (filteredModules.length > 1) {
-		return testResult("not run", {
-			notFailureMessage: "More than 1 final module found",
-		});
+		const withLearningMaterials = filteredModules.filter((m) =>
+			m.items?.some((i) => i.title.toLowerCase().includes("learning materials")),
+		);
+
+		if (withLearningMaterials.length !== 1) {
+			return testResult("not run", {
+				notFailureMessage:
+					withLearningMaterials.length === 0
+						? "More than 1 final module found, and none contain Learning Materials. Attention needed."
+						: "More than 1 final module found with Learning Materials. Attention needed.",
+			});
+		}
+		finalModule = withLearningMaterials[0];
 	}
-	const finalModule = filteredModules[0];
 
 	if (!finalModule)
 		return testResult("not run", {
@@ -132,6 +146,9 @@ async function fix(
 							page_url: createPage.url,
 							position: 3,
 							indent: 1,
+							completion_requirement: {
+								type: "must_view",
+							},
 						},
 					}),
 				},

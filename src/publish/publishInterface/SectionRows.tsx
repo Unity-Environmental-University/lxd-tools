@@ -2,6 +2,7 @@ import {ICourseRowProps, CourseRow} from "./CourseRow";
 import React, {FormEvent} from "react";
 import {Course} from '@ueu/ueu-canvas/course/Course';
 import {IProfile} from "@ueu/ueu-canvas/type";
+import {sectionKey, SectionKey} from "./sectionKey";
 
 export interface ISectionRows {
     sections: Course[],
@@ -13,7 +14,7 @@ export interface ISectionRows {
     profileSlug?: string | null,
     profileSlugError?: string | null,
     setWorkingSection: (section: Course) => void,
-    sectionPublishRecord?: Record<number, Course>,
+    sectionPublishRecord?: Record<SectionKey, Course>,
     sectionPublishToggle?: (course: Course, publish: boolean) => void,
 }
 
@@ -42,7 +43,7 @@ export function SectionRows({
         if (!sectionPublishToggle || !sectionPublishRecord) return;
 
         // Count how many sections are currently checked vs unchecked
-        const checkedCount = sections.filter(section => sectionPublishRecord[section.id]).length;
+        const checkedCount = sections.filter(section => sectionPublishRecord[sectionKey(section)]).length;
         const uncheckedCount = sections.length - checkedCount;
 
         // Determine the minority status (what we should set all checkboxes to)
@@ -58,7 +59,7 @@ export function SectionRows({
     function getToggleAllText(): string {
         if (!sectionPublishRecord) return "Check/Uncheck All";
 
-        const checkedCount = sections.filter(section => sectionPublishRecord[section.id]).length;
+        const checkedCount = sections.filter(section => sectionPublishRecord[sectionKey(section)]).length;
         const uncheckedCount = sections.length - checkedCount;
 
         // If more are unchecked (or equal), clicking will check all
@@ -92,11 +93,11 @@ export function SectionRows({
                 targetPageProfile={targetPageProfilesByCourseId[course.id]}
                 facultyProfileMatches={potentialProfilesByCourseId[course.id]}
                 profileSlug={profileSlug}
-                key={course.id}
+                key={sectionKey(course)}
                 errors={errorsByCourseId[course.id]}
                 onSelectSection={(section) => setWorkingSection(section)}
                 course={course}
-                selected={Boolean(sectionPublishRecord?.[course.id])}
+                selected={Boolean(sectionPublishRecord?.[sectionKey(course)])}
                 selectionToggle={sectionPublishToggle}/>))}
     </div>)
 }

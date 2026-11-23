@@ -30,3 +30,18 @@ jobs:
             echo "ERROR: package.json version ($PR_VERSION) must be bumped before merging to main."
             exit 1
           fi
+
+      - name: Check package-lock.json version matches package.json
+        # Fix with: npm run bump -- <version>  (or: npm install --package-lock-only)
+        run: |
+          node -e '
+            const pkg = require("./package.json").version;
+            const lock = require("./package-lock.json");
+            const top = lock.version;
+            const root = lock.packages && lock.packages[""] && lock.packages[""].version;
+            console.log(`package.json: ${pkg}, lock top-level: ${top}, lock root package: ${root}`);
+            if (top !== pkg || root !== pkg) {
+              console.error("ERROR: package-lock.json version fields must match package.json. Run: npm run bump -- " + pkg);
+              process.exit(1);
+            }
+          '

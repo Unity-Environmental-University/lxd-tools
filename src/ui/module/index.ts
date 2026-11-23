@@ -14,7 +14,7 @@ import {renderAsyncGen} from "@ueu/ueu-canvas/canvasUtils";
     const moduleHeader = document.querySelector('.header-bar-right__buttons');
 
     if (moduleHeader) {
-        if (course?.isBlueprint) {
+        if (course?.isBlueprint()) {
             const btn = document.createElement('btn');
             btn.innerHTML = "Lock All";
             moduleHeader.insertBefore(btn, moduleHeader.firstChild);

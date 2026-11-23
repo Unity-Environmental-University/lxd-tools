@@ -32,6 +32,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-22.04
     environment: production
+    timeout-minutes: 45
     permissions:
       contents: write
 
@@ -42,7 +43,7 @@ jobs:
           path: lxd-tools
           fetch-tags: true
           # Keep the write-scoped token out of .git/config while dependency and
-          # build code runs; the tag step below authenticates on its own.
+          # build code runs; the release branch step below authenticates on its own.
           persist-credentials: false
 
       - name: Setup Node.js
@@ -66,18 +67,32 @@ jobs:
       - name: Get version and check for duplicates
         id: get_version
         working-directory: lxd-tools
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           VERSION=$(node -p 'require("./package.json").version')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          # Ask origin for the tag instead of listing local tags: the checkout is
-          # shallow (depth 1), so older release tags are not present locally and
-          # `git tag` would never see them. ls-remote exits 0 if the tag exists,
-          # 2 if it does not, and anything else if origin could not be queried.
+          # A version counts as deployed once its GitHub Release exists. The release
+          # is the last step of the workflow, so a run that failed earlier (even
+          # after pushing the release branch) can simply be re-run. A bare v$VERSION
+          # tag does not block a re-run: `gh release create` reuses an existing tag.
+          rc=0
+          out=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$VERSION" 2>&1) || rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "ERROR: Version $VERSION has already been deployed (release v$VERSION exists). Update package.json version before merging."; exit 1
+          elif echo "$out" | grep -q "HTTP 404"; then
+            echo "OK: no release v$VERSION"
+          else
+            echo "ERROR: could not check for release v$VERSION: $out"; exit 1
+          fi
+          # Versions deployed before the "v" prefix were tagged without it. Ask origin
+          # for the tag instead of listing local tags (the checkout is shallow).
+          # ls-remote exits 0 if the tag exists, 2 if not, anything else on error.
           rc=0
           git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1 || rc=$?
           case $rc in
-            0) echo "ERROR: Version $VERSION has already been deployed (tag exists on origin). Update package.json version before merging."; exit 1 ;;
-            2) echo "OK: no tag $VERSION on origin" ;;
+            0) echo "ERROR: Version $VERSION has already been deployed (legacy tag $VERSION exists on origin). Update package.json version before merging."; exit 1 ;;
+            2) echo "OK: no legacy tag $VERSION on origin" ;;
             *) echo "ERROR: could not check origin for tag $VERSION (git ls-remote exit $rc)"; exit 1 ;;
           esac
 
@@ -98,7 +113,7 @@ jobs:
           echo "$CHROME_KEY_PEM_B64" | base64 -d > "$KEY_FILE"
           # Fail clearly if the secret is unset rather than handing crx3 an empty key file.
           if [ ! -s "$KEY_FILE" ]; then echo "ERROR: Chrome signing key is empty" && exit 1; fi
-          .github/release-tools/node_modules/.bin/crx3 ../dist -p "$KEY_FILE" -o "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
+          .github/release-tools/node_modules/.bin/crx3 dist -p "$KEY_FILE" -o "dist/lxd-extension-${{ steps.get_version.outputs.version }}.crx"
 
       - name: Sign Firefox extension
         working-directory: lxd-tools
@@ -107,22 +122,22 @@ jobs:
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
         run: |
           .github/release-tools/node_modules/.bin/web-ext sign \
-            --source-dir ../dist \
+            --source-dir dist \
             --api-key $WEB_EXT_API_KEY \
             --api-secret $WEB_EXT_API_SECRET \
             --channel unlisted \
-            --artifacts-dir ../dist \
+            --artifacts-dir dist \
             --ignore-files "*.crx" "*.xpi"
-          SIGNED=$(find ../dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
-          mv "$SIGNED" "../dist/lxd-extension-${{ steps.get_version.outputs.version }}.xpi"
+          SIGNED=$(find dist -maxdepth 1 -name "*.xpi" ! -name "lxd-extension-*.xpi" | head -1)
+          mv "$SIGNED" "dist/lxd-extension-${{ steps.get_version.outputs.version }}.xpi"
 
       - name: Find necessary files
         id: find_files
         run: |
-          XPI=$(find dist/ -maxdepth 1 -name "*.xpi" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
-          CRX=$(find dist/ -maxdepth 1 -name "lxd-extension-*.crx" | head -1)
-          UPDATES_JSON="dist/updates.json"
-          UPDATE_XML="dist/update.xml"
+          XPI=$(find lxd-tools/dist/ -maxdepth 1 -name "*.xpi" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+          CRX=$(find lxd-tools/dist/ -maxdepth 1 -name "lxd-extension-*.crx" | head -1)
+          UPDATES_JSON="lxd-tools/dist/updates.json"
+          UPDATE_XML="lxd-tools/dist/update.xml"
 
           if [ -z "$XPI" ]; then echo "ERROR: .xpi not found" && exit 1; fi
           if [ -z "$CRX" ]; then echo "ERROR: .crx not found" && exit 1; fi
@@ -167,24 +182,7 @@ jobs:
                 done
           done
 
-      - name: Push to lxd-tools-build
-        run: |
-          git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
-          cd lxd-tools-build
-          git fetch origin
-          git checkout stable || git checkout -b stable
-          git reset --hard origin/stable 2>/dev/null || true
-          rm -rf ./*
-          cp -r ../dist/* .
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add --all
-          # Commit message changed to just the version number
-          git commit -m "${{ steps.get_version.outputs.version }}" || echo "No changes to commit"
-          # Push to stable
-          git push origin stable
-
-      - name: Tag deployed version and create release branch
+      - name: Create release branch
         working-directory: lxd-tools
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -192,9 +190,61 @@ jobs:
           VERSION=${{ steps.get_version.outputs.version }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # The checkout did not persist credentials; authenticate only for these pushes.
+          # The checkout did not persist credentials; authenticate only for this push.
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git tag "$VERSION"
-          git push origin "$VERSION"
-          git checkout -b "release/$VERSION"
-          git push origin "release/$VERSION"
+          # Idempotent for re-runs: skip if an earlier attempt already pushed it.
+          rc=0
+          git ls-remote --exit-code --heads origin "refs/heads/release/$VERSION" >/dev/null 2>&1 || rc=$?
+          case $rc in
+            0) echo "release/$VERSION already exists on origin; skipping" ;;
+            2) git checkout -b "release/$VERSION"
+               git push origin "release/$VERSION" ;;
+            *) echo "ERROR: could not check origin for branch release/$VERSION (git ls-remote exit $rc)"; exit 1 ;;
+          esac
+
+      # Last step on purpose: the release existing is what marks this version as
+      # deployed (see the duplicate check), so everything before it is safe to re-run.
+      - name: Tag deployed version and create release
+        working-directory: lxd-tools
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          # `gh release create` creates the v$VERSION tag on the deployed commit
+          # itself, so tag and release are one API call and can't end up split.
+          # Use the CHANGELOG.md section for this version as the release notes.
+          # Matches "## 3.3.1", "## [3.3.1]" and "## [3.3.1] - date" headings, and
+          # drops "###" subsections that have no entries under them.
+          NOTES_FILE="$RUNNER_TEMP/release-notes.md"
+          awk -v v="$VERSION" '
+            function flush() { if (head != "" && body != "") printf "%s%s", head, body; head = ""; body = "" }
+            /^## / {
+              flush()
+              if (in_section) exit
+              h = $0; sub(/^## \[?/, "", h); sub(/\]?([ ].*)?$/, "", h)
+              in_section = (h == v)
+              next
+            }
+            !in_section { next }
+            /^### / { flush(); head = $0 "\n"; next }
+            /[^[:space:]]/ { body = body $0 "\n"; next }
+            body != "" { body = body "\n" }
+            END { flush() }
+          ' CHANGELOG.md > "$NOTES_FILE"
+          # Release assets: the signed Chrome (.crx) and Firefox (.xpi) packages, plus a
+          # zip of the unpacked build for "Load unpacked". The update manifests are
+          # deployment plumbing and the packages are attached separately, so neither
+          # goes in the zip.
+          BUILD_ZIP="$RUNNER_TEMP/lxd-extension-$VERSION-build.zip"
+          (cd dist && zip -r -q "$BUILD_ZIP" . -x '*.crx' '*.xpi' updates.json update.xml)
+          ASSETS=("dist/lxd-extension-$VERSION.crx" "dist/lxd-extension-$VERSION.xpi" "$BUILD_ZIP")
+          for f in "${ASSETS[@]}"; do
+            [ -s "$f" ] || { echo "ERROR: release asset missing or empty: $f"; exit 1; }
+          done
+          if grep -q '[^[:space:]]' "$NOTES_FILE"; then
+            echo "Using CHANGELOG.md section for $VERSION as release notes"
+            gh release create "v$VERSION" "${ASSETS[@]}" --target "$GITHUB_SHA" --title "v$VERSION" --notes-file "$NOTES_FILE"
+          else
+            echo "::warning::No entries found for $VERSION in CHANGELOG.md; falling back to generated release notes"
+            gh release create "v$VERSION" "${ASSETS[@]}" --target "$GITHUB_SHA" --title "v$VERSION" --generate-notes
+          fi

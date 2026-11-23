@@ -3,8 +3,8 @@ site_name: LXD Extension Documentation
 docs_dir: .
 
 nav:
-  - User Guide: README.dist.md
-  - Developer Guide: README.md
+  - User Guide: README.md
+  - Developer Guide: CONTRIBUTING.md
   - Build Process: docs/BUILD_PROCESS.md
   - Knowledge Base: docs/KNOWLEDGE_BASE.md
   - Learning Materials Report: docs/LEARNING_MATERIALS_REPORT.md

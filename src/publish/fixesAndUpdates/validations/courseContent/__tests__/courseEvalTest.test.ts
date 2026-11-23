@@ -18,7 +18,7 @@ type CourseType = "undergrad" | "grad" | "ci" | "unknown";
 function makeCourseObj({
     type = "undergrad",
     modules = [{ id: 5, name: "Module 5: Wrap Up" }],
-}: { type?: CourseType; modules?: { id: number; name: string }[] } = {}) {
+}: { type?: CourseType; modules?: { id: number; name: string; items?: { title: string }[] }[] } = {}) {
     return {
         isUndergrad: () => type === "undergrad",
         isGrad: () => type === "grad",
@@ -131,21 +131,59 @@ describe("courseEvalTest.fix", () => {
         expect(PageKind.post).not.toHaveBeenCalled();
     });
 
-    it("does not create a page when more than one module matches", async () => {
-        (getCourseById as jest.Mock).mockResolvedValue(
-            makeCourseObj({
-                modules: [
-                    { id: 5, name: "Module 5" },
-                    { id: 6, name: "Module 5 Extras" },
-                ],
-            }),
-        );
+    describe("when more than one module matches", () => {
+        const lm = [{ title: "Learning Materials" }];
 
-        const result = await courseEvalTest.fix!(course, resultWith(0));
+        it("picks the module that has the Learning Materials page", async () => {
+            (getCourseById as jest.Mock).mockResolvedValue(
+                makeCourseObj({
+                    modules: [
+                        { id: 5, name: "Module 5 Extras", items: [{ title: "Bonus" }] },
+                        { id: 6, name: "Module 5", items: lm },
+                        { id: 7, name: "Module 5 Archive", items: [] },
+                    ],
+                }),
+            );
 
-        expect(result.success).toBe("not run");
-        expect(lines(result)).toEqual(["More than 1 final module found"]);
-        expect(PageKind.post).not.toHaveBeenCalled();
+            const result = await courseEvalTest.fix!(course, resultWith(0));
+
+            expect(result.success).toBe(true);
+            expect((fetchJson as jest.Mock).mock.calls[0][0]).toBe("/api/v1/courses/123/modules/6/items");
+        });
+
+        it("does not run when none have Learning Materials", async () => {
+            (getCourseById as jest.Mock).mockResolvedValue(
+                makeCourseObj({
+                    modules: [
+                        { id: 5, name: "Module 5", items: [] },
+                        { id: 6, name: "Module 5 Extras", items: [{ title: "Bonus" }] },
+                    ],
+                }),
+            );
+
+            const result = await courseEvalTest.fix!(course, resultWith(0));
+
+            expect(result.success).toBe("not run");
+            expect(lines(result)[0]).toContain("none contain Learning Materials");
+            expect(PageKind.post).not.toHaveBeenCalled();
+        });
+
+        it("does not run when several have Learning Materials", async () => {
+            (getCourseById as jest.Mock).mockResolvedValue(
+                makeCourseObj({
+                    modules: [
+                        { id: 5, name: "Module 5", items: lm },
+                        { id: 6, name: "Module 5 Copy", items: lm },
+                    ],
+                }),
+            );
+
+            const result = await courseEvalTest.fix!(course, resultWith(0));
+
+            expect(result.success).toBe("not run");
+            expect(lines(result)[0]).toContain("with Learning Materials");
+            expect(PageKind.post).not.toHaveBeenCalled();
+        });
     });
 
     it("creates a published page and adds it to Module 5 for undergrad courses", async () => {
@@ -167,6 +205,7 @@ describe("courseEvalTest.fix", () => {
                             title: "Course Evaluation",
                             type: "Page",
                             page_url: "course-evaluation",
+                            completion_requirement: { type: "must_view" },
                         }),
                     },
                 }),

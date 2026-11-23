@@ -3,6 +3,10 @@ import tseslint from "typescript-eslint";
 
 
 export default tseslint.config(
+    {
+        // Generated build output; ESLint does not read .gitignore in flat config.
+        ignores: ["dist/**", "lxd-extension-build/**"],
+    },
     ...tseslint.configs.recommended,
     {
         files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],

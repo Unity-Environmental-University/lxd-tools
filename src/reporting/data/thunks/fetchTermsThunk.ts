@@ -22,10 +22,16 @@ export const fetchTermsThunk = createAsyncThunk<void, GetTermsThunkParams>(
         const gen = getTermsGenerator(rootAccountId, params);
         dispatch(setStatus('loading'));
         let i = 0;
-        for await(const term of gen) {
-            dispatch(addTerm(term as ITermData));
-            i++;
-            if (max && i >= max) break;
+        try {
+            for await(const term of gen) {
+                dispatch(addTerm(term as ITermData));
+                i++;
+                if (max && i >= max) break;
+            }
+        } catch (error) {
+            // Canvas errors now throw from the generator; surface them instead of staying on 'loading'
+            dispatch(setStatus('failed'));
+            throw error;
         }
         dispatch(setStatus('fulfilled'));
     });

@@ -37,22 +37,28 @@ export const fetchCoursesThunk = createAsyncThunk(
 
         const accountId = rest.accountId;
         dispatch(setStatus('loading'));
-        for (const termId of termIds) {
+        try {
+            for (const termId of termIds) {
 
-            const gen = getPagedDataGenerator(`/api/v1/accounts/${accountId}/courses`, {
-                queryParams: {
-                    enrollment_term_id: termId,
-                    ...config.queryParams,
+                const gen = getPagedDataGenerator(`/api/v1/accounts/${accountId}/courses`, {
+                    queryParams: {
+                        enrollment_term_id: termId,
+                        ...config.queryParams,
+                    }
+                })
+                for await (const course of gen) {
+                    console.log(course.course_code);
+                    const state = getState() as RootReportingState;
+                    console.log(state.courses.courseStatus[course.id])
+                    if (state.courses.courseStatus[course.id] === 'loading') continue;
+                    dispatch(addCourse(course as ICourseData));
+                    dispatch(setCourseStatus({courseId: course.id, status: 'fulfilled'}))
                 }
-            })
-            for await (const course of gen) {
-                console.log(course.course_code);
-                const state = getState() as RootReportingState;
-                console.log(state.courses.courseStatus[course.id])
-                if (state.courses.courseStatus[course.id] === 'loading') continue;
-                dispatch(addCourse(course as ICourseData));
-                dispatch(setCourseStatus({courseId: course.id, status: 'fulfilled'}))
             }
+        } catch (error) {
+            // Canvas errors now throw from the generator; surface them instead of staying on 'loading'
+            dispatch(setStatus('failed'));
+            throw error;
         }
 
         dispatch(setStatus('fulfilled'));
