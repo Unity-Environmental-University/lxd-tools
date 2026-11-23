@@ -47,3 +47,4 @@ bun.lock.env
 lxd-extension-install/
 lxd-extension-install.zip
 lxd-extension-build/
+tsconfig.tsbuildinfo
