@@ -182,23 +182,6 @@ jobs:
                 done
           done
 
-      - name: Push to lxd-tools-build
-        run: |
-          git clone https://x-access-token:${{ secrets.LXD_TOOLS_BUILD_TOKEN }}@github.com/Unity-Environmental-University/lxd-tools-build.git lxd-tools-build
-          cd lxd-tools-build
-          git fetch origin
-          git checkout stable || git checkout -b stable
-          git reset --hard origin/stable 2>/dev/null || true
-          rm -rf ./*
-          cp -r ../lxd-tools/dist/* .
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add --all
-          # Commit message changed to just the version number
-          git commit -m "${{ steps.get_version.outputs.version }}" || echo "No changes to commit"
-          # Push to stable
-          git push origin stable
-
       - name: Create release branch
         working-directory: lxd-tools
         env:

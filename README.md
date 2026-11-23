@@ -1,152 +1,194 @@
-# Installation
+# LXD Chrome Extension
 
-Follow instructions in https://github.com/Unity-Environmental-University/lxd-tools-build
-or README.dist.md, pointing the extensions loader to dist/
+This extension is for use by Unity Environmental University Learning Experience Designers working in Canvas.
+
+> **Developers:** this repository is the extension's source code. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, build, test and release instructions.
 
 ---
 
-# LXD Extension Development Guide
+## Installation
 
-Production builds (`npm run build`) are written to `dist/` inside this repository.
-Load that folder as an unpacked extension, then reload the extension and refresh
-Canvas tabs after rebuilding. `npm run build:dev` and `npm run watch:dev` use
-repo-local `lxd-extension-build/` with a separate local extension identity.
-Older builds used `../dist/`; check the loaded directory if an old version persists.
+For most people who use this extension at Unity, it should now automatically install on your laptop. If it doesn't, you can follow the steps below.
 
-Current automated release behavior is documented in [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md).
-The manual publishing instructions below describe the legacy `publish.mjs` path,
-which expects a separate Git repository at `../dist/` and does not use this local build.
+Every version is published on the [Releases page](https://github.com/Unity-Environmental-University/lxd-tools/releases/latest). Don't use **Code** → **Download ZIP** on the repository: that downloads the source code, not a working extension.
 
-## Getting Started
+### Chrome (and other Chromium browsers)
 
-This guide will walk you through setting up your local development environment for the LXD extension. Follow the steps below to create your local branches, install dependencies, build local changes, and test your work.
+1. Download `lxd-extension-<version>-build.zip` from the latest release, then extract it and place the folder somewhere easy to find
+2. Load the extension into Chrome:
+   - Go to `chrome://extensions`
+   - Enable **Developer Mode** (toggle in the top-right corner)
+   - Click **Load unpacked** and select the folder where you extracted the extension files
 
-### Prerequisites
+Full walkthrough: https://webkul.com/blog/how-to-install-the-unpacked-extension-in-chrome/
 
-- [**Git:**](https://git-scm.com/install/) Ensure you have Git installed and configured.
-- **[Node.js](https://nodejs.org/en/download) & [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):** Verify that your Node.js and npm installations are up-to-date.
-- **Existing Tools:**
-  - [**lxd-tools**](https://github.com/Unity-Environmental-University/lxd-tools) repository
-- [**GitHub Desktop**](https://desktop.github.com/download/)(optional): Depending on your familiarity working with Git in the command line, GitHub Desktop may be a helpful tool for pulling repos and committing your code changes.
+### Firefox
 
-### Step-by-Step Setup
+1. Download `lxd-extension-<version>.xpi` from the latest release
+2. Open the file in Firefox (or go to `about:addons`, click the gear icon, and choose **Install Add-on From File...**) and approve the installation
 
-#### 1. Create a Local Branch of lxd-tools
+## Updating
 
-1. Clone the `lxd-tools` repository:
+1. Download the latest `lxd-extension-<version>-build.zip` from the [Releases page](https://github.com/Unity-Environmental-University/lxd-tools/releases/latest) and extract it
+2. Replace all files in your original installation folder with the new ones, keeping the same folder
+3. Go to `chrome://extensions` and click the **Update** button at the top of the page (or the reload icon on the extension's card)
 
-   `git clone <URL_TO_LXD_TOOLS_REPOSITORY>`
+For Firefox, install the newer `.xpi` the same way as the first time.
 
-   `cd lxd-tools`
+---
 
-2. Install dependencies:
+## Features
 
-   `npm install`
+### Extension Popup
 
-Note: These dependencies are also defined in the package.json of lxd-tools.
+Click the extension icon in your browser toolbar (or press **Alt+Shift+F**) to open the popup panel. From here you can:
 
-#### 2. Starting Development
+- **Search for courses** by course code and jump directly to them in Canvas
+- **Filter by subaccount** (Distance Education, Distance Education Development, Unity College)
+- **Open Salesforce reports** with one click:
+  - Undergrad Section Check
+  - Grad Section Check
+  - Unique Course Offerings by Term
+- **Save your OpenAI API key** (used by AI-powered features in the extension — see Advanced Options)
 
-1. At this point, you should test if you're able to build the extension locally. In the `lxd-tools` directory, run `npm run build`. If that fails, you will need to address any errors.
+---
 
-2. If your build is successful, you are ready to start working on code. Work can be done either in the current release branch(for small changes), your own testing branch, or a feature branch(if the work you're doing will go on to be it's own feature.) Make sure you checkout/create a branch that isn't main before you begin working.
+### Course Navigation Buttons
 
-3. After you made changes, please document them in the Unreleased section of the [change log](./CHANGELOG.md)
+When viewing any Canvas course, the extension adds buttons to the top of the page:
 
-#### 3. Testing Your Changes
+| Button       | What it does                                                    |
+| ------------ | --------------------------------------------------------------- |
+| **DEV**      | Opens the DEV\_ version of this course in a new tab             |
+| **BP**       | Opens the Blueprint version of this course in a new tab         |
+| **BPs**      | Shows a list of all available Blueprint versions of this course |
+| **SECTIONS** | Opens all student sections linked to this Blueprint             |
 
-1. Once the local build is working and you're in a non-main branch, you can make changes to the code and test them in the browser. To have a build of the extension that updates every time the code is changed, you can run `npm run watch`.
+These buttons try to take you to the same page you are currently on (e.g., the same assignment or discussion) in the corresponding course version. If a matching page is not found, the course home page opens instead.
 
-2. Jest is the testing suite used for unit testing. Any time you change code, you should run the tests to make sure they still pass. Tests can be run with the command `npm test`.
+---
 
-#### 4. Finalizing Your Changes
+### Quick Course Search (Keyboard Shortcut)
 
-- Features that have passed testing and are ready to go into the extension can be pushed to the current release branch.
-- Features that still need work may be best placed in their own feature branch.
+Press **Alt+Shift+F** to open a quick-search dialog. You can type:
 
-## Publishing the Extension
+| Query               | Result                                                       |
+| ------------------- | ------------------------------------------------------------ |
+| `DEV_TEST000`       | Navigate directly to that course                             |
+| `w2a`               | Open all assignments in Week 2                               |
+| `w2q`               | Open all quizzes in Week 2                                   |
+| `w2d`               | Open all discussions in Week 2                               |
+| `w3d2`              | Go to the second discussion in Week 3                        |
+| `w1d0`              | Go to the course Introduction (usually Week 1, Discussion 0) |
+| `DEV_TEST000\|w3q1` | Go to the first quiz in Week 3 of a different course         |
 
-This guide explains how to publish the LXD Extension.
+---
 
-### 1. Prepare Your Branches
+### Links Button
 
-- **Merge Changes Down:**  
-   Ensure that finished code in feature or development branches are merged down into the release branch.
-- **Push Commits:**  
-   Before starting the publishing process, verify that all users' finished changes on the release branch have been pushed to the remote repository.
+On any Canvas content page (pages, assignments, discussions), a **Links** button appears in the header. Clicking it opens all external links and file links embedded in that page in new tabs at once — useful for quickly checking that all resources in a lesson are accessible.
 
-### 2. Update the Version Number
+---
 
-- **Increment the Version:**
-  - Run `npm version <new version>` (e.g., `npm version 3.3.1`, or `npm version patch`). This updates `package.json` **and** both version fields in `package-lock.json` together, so type the version only once. The repo's `.npmrc` sets `git-tag-version=false`, so this does not create a commit or tag; the deploy workflow creates the `v`-prefixed tag and the GitHub Release.
-  - Don't edit the `version` field in `package.json` by hand: the PR's Version Check fails if `package-lock.json` doesn't match.
+### Modules Page
 
-  - Versioning in incremented based on the following:
+When viewing the Modules page of a course, the extension adds two buttons to the header:
 
-    +0.0.0.1 for a hotfix
-    +0.0.1 for sprint-based releases
-    +0.1 for feature releases
-    +1.0 for massive changes
+- **Lock All** _(Blueprint courses only)_ — Locks every module item in the Blueprint with a single click. The page reloads automatically when done.
+- **Adjust Due Dates** — Prompts you for a number of days, then shifts all assignment due dates in the course by that amount. Useful when copying a course to a new term.
 
-### 3. Run Tests
+---
 
-- **Test the Code:**  
-   Run the test suite to validate that all tests pass successfully:
-  `npm test`
+### Rubric Reordering
 
-- **Fix Any Failures:**  
-   If any tests fail, resolve the issues before proceeding.
+When editing a rubric, the extension adds reordering controls to each rubric criterion row:
 
-### 4. Build Locally and Test Manually
+- **↑ / ↓ buttons** to move a criterion up or down
+- **Drag and drop** rows to reorder them directly (the dragged row turns semi-transparent, and a blue border shows the drop target)
 
-- **Build the extension locally for testing**
+The reorder controls appear when you enter edit mode and disappear when you save or cancel.
 
-  Run `npm run build` to build the extension locally
+---
 
-- **Test the Local Build Version:**  
-   Perform a manual test of the extension in its intended environment. Verify that all functionalities work as expected.
+### SpeedGrader — Rubric Score Exports
 
-### 5. Publish the Extension
+On the Canvas SpeedGrader page, the extension adds export buttons to the gradebook header:
 
-Publishing is automated; there is no local publish command. Before merging, rename the `Unreleased` heading in [CHANGELOG.md](./CHANGELOG.md) to the new version (and add a fresh `Unreleased` section above it), since those entries become the GitHub Release notes.
+| Button                  | What it exports                                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Rubrics: Assignment** | Rubric scores for the current assignment → `Rubric Scores {AssignmentName}.csv`                                  |
+| **Rubrics: Section**    | Rubric scores for all assignments in the course → `Rubric Scores {CourseCode}.csv`                               |
+| **...** (three dots)    | Opens a date-range picker to export scores for a specific term window → `{CourseCode}-{StartDate}-{EndDate}.csv` |
 
-Merging the release branch into `main` (through a pull request) starts the **Deploy Extension Updates** workflow, which:
+A loading indicator appears while the export is being generated.
 
-- Fails if the version in `package.json` has already been deployed.
-- Builds the extension and signs the Chrome (`.crx`) and Firefox (`.xpi`) packages.
-- Uploads the packages and update manifests, and syncs the build to the `lxd-tools-build` repository.
-- Pushes a `release/<version>` branch.
-- Creates the `v<version>` tag and a GitHub Release with the changelog notes, the `.crx`, the `.xpi`, and a zip of the unpacked build.
+---
 
-See [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md) for details, including how to re-run a failed deploy.
+### Syllabus — Import Week 1 Materials
 
-### 6. Communicate & Finalize the Release
+On the Course Syllabus page, an **Import Wk1 Mats** button appears above the "Week 1 Learning Materials" section. Clicking it:
 
-- **Notify the Team:**  
-   Let everyone know about the new release. The people that use the extension are in The Mighty LXD Team chat on Microsoft Teams. Let them know there's a new version of the extension, including a few top level details about what is new.
+1. Reads the course's "Week 1 Learning Materials" page
+2. Extracts all video embeds and learning material boxes from that page
+3. Replaces the existing syllabus content in that section with the imported materials
+4. Resizes embedded video iframes to fit the syllabus layout
 
-* **Merge Current Release Branch into main in LXD-Tools**
-  Merge the current release branch into main in the lxd-tools repository.
+The page reloads automatically after a successful import.
 
-- **New Release Branch in LXD-Tools:**  
-   Create a new release branch in lxd-tools based on the newly merged main branch.
+---
 
-### Summary
+### Large Image Warning
 
-1. **Merge Changes Down:**
-   - Consolidate updates from various branches into the release branch.
-2. **Increment the Version:**
-   - Run `npm version <new version>` (updates `package.json` and `package-lock.json`; no commit or tag is made).
-3. **Run Tests:**
-   - Run `npm test` Ensure all tests pass (fix any failing tests).
-4. **Build Locally**
-   - Run `npm run build` to build the extension locally for testing.
-5. **Manual Testing:**
-   - Manually verify that the extension works as intended.
-6. **Publish:**
-   - Move the version's entries in `CHANGELOG.md` under a heading for the new version.
-   - Merge changes in lxd-tools to main; the deploy workflow publishes the extension automatically.
-7. **Notify the Team:**
-   - Communicate the new release to the team.
-8. **Manage Release Branches:**
-   - Create a new release branch in lxd-tools for the next version.
+When editing a Canvas page that contains a banner image wider than 2000px, the extension displays a prominent warning around the image. A **Try Resize** button appears — clicking it attempts to resize the image to 1200px wide.
+
+---
+
+### Home Tile Image Generator
+
+On a course's Module Home section, a **Generate Home Tiles** button appears. This tool automatically creates marketing thumbnail images for the course:
+
+- **Use Course Image** checkbox — uses the course's banner image as the source (checked by default)
+- **Module Number** field — specify a module number as the image source (use `0` for the course-level image)
+- Click **Generate** to produce two image files:
+  - `{CourseCode}DetailImage.png` (1920px wide)
+  - `{CourseCode}ListImage.png` (600px wide)
+- A **Salesforce Image Download** button is also available to extract and download course images in Salesforce-compatible formats
+
+---
+
+### Version Update Notice
+
+If a newer version of the extension is available, a banner appears on Canvas course pages alerting you:
+
+> _You are not running the latest version (X.X.X) of the extension. You are running Y.Y.Y._
+
+Follow the [Updating](#updating) steps above to get the latest version.
+
+---
+
+### Admin Panel
+
+On course Settings and publishing pages, an **Admin** button opens a modal with tools for bulk operations across multiple courses:
+
+- **Search courses** by code or name, with filters for Blueprints, Legacy BPs, Dev copies, and Sections
+- **Select and run validations** to check course content against defined standards
+- **View results** showing which courses passed or failed, with direct links to each course
+- **Sync Blueprint** — trigger a Blueprint sync from the server for any Blueprint course
+
+---
+
+### Faculty Reporting
+
+On Canvas account/admin pages, a **Reporting** button opens a modal where you can:
+
+- Select one or more terms
+- Find all instructors active in those terms
+- View a list of courses for those terms
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut        | Action                                         |
+| --------------- | ---------------------------------------------- |
+| **Alt+Shift+F** | Open the extension popup / quick course search |

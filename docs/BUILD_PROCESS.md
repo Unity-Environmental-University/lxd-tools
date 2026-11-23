@@ -42,9 +42,6 @@ These are stored as secrets of the `production` GitHub environment, whose deploy
 | `R2_SECRET_ACCESS_KEY`  | Cloudflare R2 secret access key                             |
 | `CF_ACCOUNT_ID`         | Cloudflare account ID for R2 endpoint                       |
 | `R2_BUCKET_NAME`        | Name of the Cloudflare R2 bucket for storage                |
-| `LXD_TOOLS_BUILD_TOKEN` | GitHub personal access token for lxd-tools-build repository |
-
-> **`LXD_TOOLS_BUILD_TOKEN` expires on November 17, 2027.** It must be renewed before then (see [Renewing the build repository token](#renewing-the-build-repository-token)). If it lapses, the deploy fails at the "Push to lxd-tools-build" step.
 
 ## Build Process Steps
 
@@ -60,9 +57,8 @@ The workflow performs the following automated steps in sequence:
 5. **Artifact Verification** — Validates that all required output files exist: both signed extensions (`.crx` and `.xpi`), plus the update manifests (`updates.json` and `update.xml`). File paths are captured for downstream steps.
 6. **Upload to Cloudflare R2** — All artifacts are uploaded to the R2 bucket with appropriate content types. This includes both signed extensions and update manifests needed by the browser extension update mechanisms.
 7. **Version Pruning** — Automatically deletes old versions from R2, keeping only the 5 most recent releases of each file type (`.crx` and `.xpi`). This reduces storage costs while maintaining version history.
-8. **Sync to Build Repository** — The entire `dist` directory is copied to the `lxd-tools-build` repository on the `stable` branch, creating an audit trail of all deployments with commits attributed to `github-actions[bot]`.
-9. **Release Branch** — A release branch (`release/{VERSION}`) is pushed for long-term reference and potential rollback scenarios. If the branch already exists on origin (from an earlier attempt), this step is skipped.
-10. **GitHub Release** — The final step creates the `v{VERSION}` tag on the deployed commit and a GitHub Release in a single `gh release create` call. The release notes are the `CHANGELOG.md` section for the version (headings `## 3.3.1`, `## [3.3.1]` or `## [3.3.1] - date`, with empty subsections dropped); if that section is missing or has no entries, a warning is logged and GitHub-generated notes are used instead. The release has three assets: the signed `.crx` (Chrome), the signed `.xpi` (Firefox), and `lxd-extension-{VERSION}-build.zip`, the unpacked build for "Load unpacked" (it excludes the `.crx`, `.xpi` and update manifests). The release is created last on purpose: its existence is what marks the version as deployed.
+8. **Release Branch** — A release branch (`release/{VERSION}`) is pushed for long-term reference and potential rollback scenarios. If the branch already exists on origin (from an earlier attempt), this step is skipped.
+9. **GitHub Release** — The final step creates the `v{VERSION}` tag on the deployed commit and a GitHub Release in a single `gh release create` call. The release notes are the `CHANGELOG.md` section for the version (headings `## 3.3.1`, `## [3.3.1]` or `## [3.3.1] - date`, with empty subsections dropped); if that section is missing or has no entries, a warning is logged and GitHub-generated notes are used instead. The release has three assets: the signed `.crx` (Chrome), the signed `.xpi` (Firefox), and `lxd-extension-{VERSION}-build.zip`, the unpacked build for "Load unpacked" (it excludes the `.crx`, `.xpi` and update manifests). The release is created last on purpose: its existence is what marks the version as deployed.
 
 ## Important Considerations
 
@@ -82,7 +78,7 @@ The workflow performs the following automated steps in sequence:
 - All secrets are referenced via `${{ secrets.VAR_NAME }}` syntax, per GitHub Actions format
 - Chrome key is base64-encoded; it is decoded to the runner's temp directory only inside the pack step and deleted when that step ends
 - Firefox API credentials are environment variables, never logged
-- GitHub token used for pushing to build repository is scoped and temporary (it expires; see [Renewing the build repository token](#renewing-the-build-repository-token))
+- The release branch and GitHub Release steps use the job's built-in `GITHUB_TOKEN`, which is scoped to this repository (`contents: write`) and expires when the job ends; no long-lived GitHub token is stored
 
 ### Storage Retention
 
@@ -93,8 +89,8 @@ The workflow performs the following automated steps in sequence:
 ### Repository Structure
 
 - **Source code**: `lxd-tools` repository (main branch)
-- **Built artifacts**: `lxd-tools-build` repository (`stable` branch)
-- This separation allows history tracking and rollback capability
+- **Built artifacts**: GitHub Releases in the `lxd-tools` repository (the `.crx`, `.xpi` and an unpacked-build zip for every version) and the Cloudflare R2 bucket (the 5 most recent versions plus the update manifests)
+- The former `lxd-tools-build` repository is archived and is no longer written to by the workflow
 
 ## Workflow Execution Environment
 
@@ -131,7 +127,7 @@ The GitHub Release for `v{VERSION}` additionally carries the `.crx`, the `.xpi` 
 
 After fixing the cause, start the workflow manually from main (Actions → "Deploy Extension Updates" → Run workflow).
 
-- Most failures can simply be re-run. The GitHub Release is created last, and it is what the duplicate-version check looks for, so a run that failed earlier leaves nothing that blocks the next one. The release branch step skips a branch that already exists, and the R2 upload and `lxd-tools-build` push are safe to repeat.
+- Most failures can simply be re-run. The GitHub Release is created last, and it is what the duplicate-version check looks for, so a run that failed earlier leaves nothing that blocks the next one. The release branch step skips a branch that already exists, and the R2 upload is safe to repeat.
 - If the run failed at the final step after creating the release, the version counts as deployed and the check will stop a re-run. Finish the remaining work by hand, or delete the release and the `v{VERSION}` tag first.
 - If the failure came after the Firefox signing step, AMO has already used that version number and will reject signing it again. Bump the version through a new pull request instead.
 
@@ -153,7 +149,6 @@ The workflow produces the following artifacts for monitoring:
 - **GitHub Actions logs**: Real-time build output in Actions tab
 - **GitHub Releases**: A `v{VERSION}` release (with tag, notes and the `.crx`, `.xpi` and build zip assets) created on successful deployment
 - **Release branches**: Version-specific branches created at release/{VERSION}
-- **lxd-tools-build commits**: Automatic commits showing deployment history
 
 ## Maintenance
 
@@ -165,15 +160,7 @@ The workflow produces the following artifacts for monitoring:
 4. Test signing keys are still valid
 5. Review and test any version management changes
 
-### Renewing the build repository token
 
-`LXD_TOOLS_BUILD_TOKEN` is a GitHub personal access token with write access to `lxd-tools-build`. The organization caps token lifetime at 366 days, so it must be renewed every year. The current token **expires November 17, 2027**; renew it before then.
-
-1. Generate a new token with the same scope (write access to `lxd-tools-build`) and a 366-day lifetime
-2. Update the `LXD_TOOLS_BUILD_TOKEN` secret in the `production` environment (Settings → Environments → production)
-3. Update the expiration date in this section and in the Secrets table above
-
-If the token expires before renewal, the deploy fails at "Push to lxd-tools-build" and never reaches the release-branch and release steps. After renewing, push the build, branch and release by hand or re-run the workflow (see [Re-running a failed deploy](#re-running-a-failed-deploy)).
 
 ### Updating the release tools
 

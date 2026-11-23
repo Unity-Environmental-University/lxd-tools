@@ -173,7 +173,7 @@ const createPlugins = () => [
   }),
   new CopyPlugin({
     patterns: [
-      { from: "./README.dist.md", to: "README.md" },
+      { from: "./README.md", to: "README.md" },
       {
         from: path.resolve(__dirname, "manifest.source.json"),
         to: "manifest.json",

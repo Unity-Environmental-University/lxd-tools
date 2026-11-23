@@ -122,7 +122,8 @@ the `v`-prefixed release tag (e.g. `v3.3.1`) and GitHub Release. Keep tokens out
 Keep build, packaging, artifact discovery, and distribution-copy paths aligned
 when changing output locations. Release tools have their own lockfile under
 `.github/release-tools/`. See `docs/BUILD_PROCESS.md` for deployment details and
-`docs/SYLLABUS_SYNC.md` for syllabus behavior. Some README publishing instructions
-describe the older manual process; verify them against the workflows.
+`docs/SYLLABUS_SYNC.md` for syllabus behavior. `README.md` is the user-facing install
+guide (it is also copied into the built extension); developer setup and release steps
+are in `CONTRIBUTING.md`.
 
 Signing, publishing, deployment dispatch, and merging are separate actions from building or opening a PR. Keep private signing keys, tokens, `.env` files, and browser/session data out of commits and artifacts.
