@@ -14,8 +14,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## 3.3.1
 
-### Added
-
 ### Changed
 - "Set Selected Bios" now updates only the sections that are checked. It used to rewrite the profile page on every section.
 - Set Bios now shows the error for every section that fails, not only the last one.
