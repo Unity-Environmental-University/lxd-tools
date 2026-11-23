@@ -62,6 +62,7 @@
     "jest-environment-jsdom": "^30.3.0",
     "jest-fetch-mock": "^3.0.3",
     "jest-module-name-mapper": "^0.1.5",
+    "knip": "^6.48.0",
     "postcss-loader": "^8.1.1",
     "process": "^0.11.10",
     "react": "^18.2.0",
@@ -74,7 +75,7 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.9.3",
     "typescript-eslint": "8.73",
     "typescript-plugin-css-modules": "^5.3.0",
     "webpack": "^5.90.3",
@@ -93,7 +94,8 @@
     "pack:crx": "google-chrome --pack-extension=dist --pack-extension-key=chrome-key.pem && mv dist.crx \"dist/lxd-extension-$(node -p 'require(\"./package.json\").version').crx\"",
     "test": "jest",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "knip": "knip"
   },
   "eslintConfig": {
     "extends": [
