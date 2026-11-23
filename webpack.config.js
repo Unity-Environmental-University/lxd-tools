@@ -6,16 +6,23 @@ const HTMLPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const packageJson = require("./package.json");
+const manifestSource = require("./manifest.source.json");
 const { TsconfigPathsPlugin } = require("tsconfig-paths-webpack-plugin");
 const _dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 const isDevelopment = process.env.NODE_ENV !== "production";
 const relativeOutputDir = process.env.BUILD_OUTPUT_DIR || "dist";
 const outputPath = path.resolve(__dirname, relativeOutputDir);
 const BASE_URL = "https://cdn-lxd-extension-delivery.unity.edu";
-const isLocalBuild = outputPath === path.resolve(__dirname, "lxd-extension-build");
+const isLocalBuild =
+  outputPath === path.resolve(__dirname, "lxd-extension-build");
 const addonId = isLocalBuild
   ? "lxd-extension-local@unity.edu"
   : "lxd-extension@unity.edu";
+
+// Single source of truth for the displayed extension name (manifest + page titles).
+const extensionName = isLocalBuild
+  ? `${manifestSource.name} (Local)`
+  : manifestSource.name;
 
 const entry = {
   popup: "./src/popup",
@@ -108,7 +115,7 @@ function getHtmlPlugins(chunks) {
   return chunks.map(
     (chunk) =>
       new HTMLPlugin({
-        title: "React extension",
+        title: extensionName,
         filename: `${chunk}.html`,
         chunks: [chunk],
       }),
@@ -125,7 +132,7 @@ const transformManifest = (content) => {
     // Keep the unpacked development build separate from the published
     // extension in Chrome and Firefox without changing production identity.
     delete manifest.key;
-    manifest.name = `${manifest.name} (Local)`;
+    manifest.name = extensionName;
     manifest.version_name = `${packageJson.version}-local`;
     manifest.browser_specific_settings.gecko.id = addonId;
     delete manifest.browser_specific_settings.gecko.update_url;
@@ -237,5 +244,6 @@ module.exports = {
     path: outputPath,
     filename: "[name].js",
     chunkFilename: "[name].js",
+    devtoolNamespace: extensionName,
   },
 };
