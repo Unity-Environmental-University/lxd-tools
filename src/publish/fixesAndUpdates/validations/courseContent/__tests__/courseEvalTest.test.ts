@@ -205,6 +205,7 @@ describe("courseEvalTest.fix", () => {
                             title: "Course Evaluation",
                             type: "Page",
                             page_url: "course-evaluation",
+                            completion_requirement: { type: "must_view" },
                         }),
                     },
                 }),

@@ -146,6 +146,9 @@ async function fix(
 							page_url: createPage.url,
 							position: 3,
 							indent: 1,
+							completion_requirement: {
+								type: "must_view",
+							},
 						},
 					}),
 				},
