@@ -50,8 +50,8 @@ These are stored as secrets of the `production` GitHub environment, whose deploy
 
 The workflow performs the following automated steps in sequence:
 
-1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. The packaging tools (`crx3`, `web-ext`) are installed at pinned versions from `.github/release-tools/` (see [Updating the release tools](#updating-the-release-tools)). Git tags are fetched to enable version detection.
-2. **Version Validation** — Reads the version from `package.json` and verifies it hasn't been deployed before by checking for an existing git tag. If a duplicate version is detected, the entire build fails with a clear error message to prevent accidental re-deployment.
+1. **Repository Checkout & Setup** — Clones the lxd-tools repository, sets up Node.js 24 and installs dependencies from the lockfile with `npm ci`. The packaging tools (`crx3`, `web-ext`) are installed at pinned versions from `.github/release-tools/` (see [Updating the release tools](#updating-the-release-tools)). 
+2. **Version Validation** — Reads the version from `package.json` and verifies it hasn't been deployed before. A version counts as deployed once its GitHub Release (`v{VERSION}`) exists; the legacy unprefixed git tag `{VERSION}` used by older deploys is also checked. If a duplicate version is detected, the entire build fails with a clear error message to prevent accidental re-deployment. A bare `v{VERSION}` tag without a release does not block a re-run.
 3. **Extension Compilation** — Runs `npm run build` to compile the extension source code into `dist/` inside the source repository. Since Actions checks out the source into `lxd-tools/`, the workspace-relative artifact path is `lxd-tools/dist/`. Local development builds use repo-local `lxd-extension-build/` with a separate extension identity.
 4. **Platform-Specific Signing** — The compiled extension is signed for both platforms:
    - **Chrome**: Uses the crx3 tool with the private key to produce `lxd-extension-{VERSION}.crx`
@@ -61,7 +61,8 @@ The workflow performs the following automated steps in sequence:
 6. **Upload to Cloudflare R2** — All artifacts are uploaded to the R2 bucket with appropriate content types. This includes both signed extensions and update manifests needed by the browser extension update mechanisms.
 7. **Version Pruning** — Automatically deletes old versions from R2, keeping only the 5 most recent releases of each file type (`.crx` and `.xpi`). This reduces storage costs while maintaining version history.
 8. **Sync to Build Repository** — The entire `dist` directory is copied to the `lxd-tools-build` repository on the `stable` branch, creating an audit trail of all deployments with commits attributed to `github-actions[bot]`.
-9. **Git Release Management** — A git tag matching the version number is created and pushed, and a corresponding release branch (`release/{VERSION}`) is created for long-term reference and potential rollback scenarios.
+9. **Release Branch** — A release branch (`release/{VERSION}`) is pushed for long-term reference and potential rollback scenarios. If the branch already exists on origin (from an earlier attempt), this step is skipped.
+10. **GitHub Release** — The final step creates the `v{VERSION}` tag on the deployed commit and a GitHub Release in a single `gh release create` call. The release notes are the `CHANGELOG.md` section for the version (headings `## 3.3.1`, `## [3.3.1]` or `## [3.3.1] - date`, with empty subsections dropped); if that section is missing or has no entries, a warning is logged and GitHub-generated notes are used instead. The release has three assets: the signed `.crx` (Chrome), the signed `.xpi` (Firefox), and `lxd-extension-{VERSION}-build.zip`, the unpacked build for "Load unpacked" (it excludes the `.crx`, `.xpi` and update manifests). The release is created last on purpose: its existence is what marks the version as deployed.
 
 ## Important Considerations
 
@@ -69,10 +70,11 @@ The workflow performs the following automated steps in sequence:
 
 - `package.json` version must be incremented **BEFORE** merging the PR
   - The pull reqest will be blocked from merging unless the package version is bumped
-  - Bump it with `npm version <new version>` (e.g. `npm version 3.3.1` or `npm version patch`) rather than editing `package.json` by hand. This updates `package.json` and both version fields in `package-lock.json` (the top-level `version` and `packages[""].version`) in one step. The repository's `.npmrc` sets `git-tag-version=false`, so npm does not create a commit or a `v`-prefixed tag; the deploy workflow creates the unprefixed tag itself.
+  - Bump it with `npm version <new version>` (e.g. `npm version 3.3.1` or `npm version patch`) rather than editing `package.json` by hand. This updates `package.json` and both version fields in `package-lock.json` (the top-level `version` and `packages[""].version`) in one step. The repository's `.npmrc` sets `git-tag-version=false`, so npm does not create a commit or a tag; the deploy workflow creates the `v`-prefixed tag (e.g. `v3.3.1`) and the GitHub Release itself.
   - The Version Check workflow also fails the PR if either `package-lock.json` version differs from `package.json`
-- Duplicate version deployments are prevented by version validation step
-- If version already exists, entire build fails with clear error message
+- Duplicate version deployments are prevented by the version validation step
+- If the version's GitHub Release (or a legacy unprefixed tag) already exists, the entire build fails with a clear error message
+- Add the release notes to `CHANGELOG.md` under a heading for the new version (rename `Unreleased`) before merging, so the GitHub Release uses them
 
 ### Security
 
@@ -97,7 +99,8 @@ The workflow performs the following automated steps in sequence:
 ## Workflow Execution Environment
 
 - **Runner**: ubuntu-22.04
-- **Permissions**: `contents: write` (for creating tags and commits)
+- **Permissions**: `contents: write` (for creating releases, tags and branches)
+- **Timeout**: 45 minutes
 - **Duration**: Typically 5-10 minutes depending on npm install time
 
 ## File Outputs
@@ -111,11 +114,13 @@ After successful execution, the following files are available:
 | `update.xml`                  | R2 bucket & dist/ | Chrome   | Update manifest for Chrome  |
 | `updates.json`                | R2 bucket & dist/ | Firefox  | Update manifest for Firefox |
 
+The GitHub Release for `v{VERSION}` additionally carries the `.crx`, the `.xpi` and `lxd-extension-{VERSION}-build.zip` (the unpacked build) as downloadable assets.
+
 ## Troubleshooting
 
 ### Build fails at version validation
 
-**Cause**: `package.json` version was not incremented
+**Cause**: `package.json` version was not incremented, or that version already has a GitHub Release (or a legacy unprefixed tag)
 
 **Solution**:
 
@@ -126,7 +131,8 @@ After successful execution, the following files are available:
 
 After fixing the cause, start the workflow manually from main (Actions → "Deploy Extension Updates" → Run workflow).
 
-- If the failed run had already pushed the version tag, delete the tag first (`git push --delete origin {VERSION}`), and also the `release/{VERSION}` branch if it was created. Otherwise the duplicate-version check stops the new run.
+- Most failures can simply be re-run. The GitHub Release is created last, and it is what the duplicate-version check looks for, so a run that failed earlier leaves nothing that blocks the next one. The release branch step skips a branch that already exists, and the R2 upload and `lxd-tools-build` push are safe to repeat.
+- If the run failed at the final step after creating the release, the version counts as deployed and the check will stop a re-run. Finish the remaining work by hand, or delete the release and the `v{VERSION}` tag first.
 - If the failure came after the Firefox signing step, AMO has already used that version number and will reject signing it again. Bump the version through a new pull request instead.
 
 ### Chrome extension fails to sign
@@ -145,7 +151,7 @@ After fixing the cause, start the workflow manually from main (Actions → "Depl
 The workflow produces the following artifacts for monitoring:
 
 - **GitHub Actions logs**: Real-time build output in Actions tab
-- **Git tags**: Version tags created on successful deployment (visible in Releases)
+- **GitHub Releases**: A `v{VERSION}` release (with tag, notes and the `.crx`, `.xpi` and build zip assets) created on successful deployment
 - **Release branches**: Version-specific branches created at release/{VERSION}
 - **lxd-tools-build commits**: Automatic commits showing deployment history
 
@@ -167,7 +173,7 @@ The workflow produces the following artifacts for monitoring:
 2. Update the `LXD_TOOLS_BUILD_TOKEN` secret in the `production` environment (Settings → Environments → production)
 3. Update the expiration date in this section and in the Secrets table above
 
-If the token expires before renewal, the deploy fails at "Push to lxd-tools-build" and never reaches the tag/release-branch step. After renewing, push the build and tag by hand or re-run the workflow (see [Re-running a failed deploy](#re-running-a-failed-deploy)).
+If the token expires before renewal, the deploy fails at "Push to lxd-tools-build" and never reaches the release-branch and release steps. After renewing, push the build, branch and release by hand or re-run the workflow (see [Re-running a failed deploy](#re-running-a-failed-deploy)).
 
 ### Updating the release tools
 

@@ -78,7 +78,7 @@ This guide explains how to publish the LXD Extension.
 ### 2. Update the Version Number
 
 - **Increment the Version:**
-  - Run `npm version <new version>` (e.g., `npm version 3.3.1`, or `npm version patch`). This updates `package.json` **and** both version fields in `package-lock.json` together, so type the version only once. The repo's `.npmrc` sets `git-tag-version=false`, so this does not create a commit or tag; the deploy workflow creates the tag.
+  - Run `npm version <new version>` (e.g., `npm version 3.3.1`, or `npm version patch`). This updates `package.json` **and** both version fields in `package-lock.json` together, so type the version only once. The repo's `.npmrc` sets `git-tag-version=false`, so this does not create a commit or tag; the deploy workflow creates the `v`-prefixed tag and the GitHub Release.
   - Don't edit the `version` field in `package.json` by hand: the PR's Version Check fails if `package-lock.json` doesn't match.
 
   - Versioning in incremented based on the following:
@@ -108,17 +108,17 @@ This guide explains how to publish the LXD Extension.
 
 ### 5. Publish the Extension
 
-- **Execute the Publishing Command:**  
-   Once you've built the extension, publish the extension by running the publish script:
-  `npm run publish`
+Publishing is automated; there is no local publish command. Before merging, rename the `Unreleased` heading in [CHANGELOG.md](./CHANGELOG.md) to the new version (and add a fresh `Unreleased` section above it), since those entries become the GitHub Release notes.
 
-The publish script performs the following tasks:
+Merging the release branch into `main` (through a pull request) starts the **Deploy Extension Updates** workflow, which:
 
-- Checks the current version from `package.json` and creates the corresponding package tag.
-- Ensures that the tag does not already exist in the distribution folder’s Git history.
-- Updates Git tags.
-- Reads the manifest (`manifest.source.json`) and synchronizes its version with the package version.
-- Stages changes, constructs a commit message from the differences between tags, commits the changes, and finally pushes commit and tags to the remote repository.
+- Fails if the version in `package.json` has already been deployed.
+- Builds the extension and signs the Chrome (`.crx`) and Firefox (`.xpi`) packages.
+- Uploads the packages and update manifests, and syncs the build to the `lxd-tools-build` repository.
+- Pushes a `release/<version>` branch.
+- Creates the `v<version>` tag and a GitHub Release with the changelog notes, the `.crx`, the `.xpi`, and a zip of the unpacked build.
+
+See [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md) for details, including how to re-run a failed deploy.
 
 ### 6. Communicate & Finalize the Release
 
@@ -143,10 +143,10 @@ The publish script performs the following tasks:
    - Run `npm run build` to build the extension locally for testing.
 5. **Manual Testing:**
    - Manually verify that the extension works as intended.
-6. **Build & Publish:**
-   - Run `npm run publish` to publish the extension.
+6. **Publish:**
+   - Move the version's entries in `CHANGELOG.md` under a heading for the new version.
+   - Merge changes in lxd-tools to main; the deploy workflow publishes the extension automatically.
 7. **Notify the Team:**
    - Communicate the new release to the team.
 8. **Manage Release Branches:**
-   - Merge changes in lxd-tools to main.
-   - Create a new release branch in lxd-tools for the new version.
+   - Create a new release branch in lxd-tools for the next version.
