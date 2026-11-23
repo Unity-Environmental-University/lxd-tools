@@ -12,7 +12,7 @@ import {IMultiSelectOption} from "@/ui/widgets/MuliSelect";
 import { runtime } from "webextension-polyfill";
 
 import {fetchJson} from "@ueu/ueu-canvas/fetch/fetchJson";
-import {DIST_REPO_MANIFEST} from "@/publish/consts";
+import {LATEST_VERSION_MANIFEST_URL} from "@/publish/consts";
 import validations from "@publish/fixesAndUpdates/validations";
 import {Provider} from "react-redux";
 import {store} from "@publish/publishInterface/videoUpdater/data/store";
@@ -91,7 +91,7 @@ export function versionCompare(a:string, b:string) {
 }
 
 export async function getLatestVersionNumber() {
-    const manifest = await fetchJson(DIST_REPO_MANIFEST) as { version: string };
+    const manifest = await fetchJson(LATEST_VERSION_MANIFEST_URL) as { version: string };
     return manifest.version;
 }
 export default PublishApp
