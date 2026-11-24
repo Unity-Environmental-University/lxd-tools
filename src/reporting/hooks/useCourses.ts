@@ -1,24 +1,29 @@
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { selectCourses } from "@/reporting/data/selectors/courseSelectors";
+import { selectCourseIdsByTermId, selectCoursesById } from "@/reporting/data/selectors/courseSelectors";
 import { ICourseData, ITermData } from "@ueu/ueu-canvas";
 
 const sortCourseByName = (a: ICourseData, b: ICourseData) => a.name.localeCompare(b.name);
 
+/**
+ * The account's courses in the selected terms, as found by the account course search.
+ * Courses stored only for display (fetched one at a time from instructors' enrollments)
+ * are not indexed by term and so are never included.
+ */
 export const useCourses = (selectedTerms?: ITermData[]) => {
-    const courses = useSelector(selectCourses);
+    const courseIdsByTermId = useSelector(selectCourseIdsByTermId);
+    const coursesById = useSelector(selectCoursesById);
 
-    const termIds = selectedTerms?.map(t => t.id) ?? []
+    // Key on the term ids so a new-but-equivalent selectedTerms array does not produce a new result
+    const termIdsKey = selectedTerms?.map(t => t.id).join(",") ?? "";
 
-    // return useMemo(() => {
-        const filtered = courses.filter(c => {
-            if (!c.enrollment_term_id) return false; // Exclude undefined cases
+    return useMemo(() => {
+        const termIds = termIdsKey ? termIdsKey.split(",").map(Number) : [];
+        const courseIds = new Set(termIds.flatMap(termId => courseIdsByTermId[termId] ?? []));
+        const courses = Array.from(courseIds)
+            .map(id => coursesById[id])
+            .filter((course): course is ICourseData => typeof course !== "undefined");
 
-            // Normalize to an array for uniform comparison
-            const enrollmentTermIds = Array.isArray(c.enrollment_term_id) ? c.enrollment_term_id : [c.enrollment_term_id];
-
-            return enrollmentTermIds.some(id => termIds.includes(id));
-        });
-
-        return filtered.sort(sortCourseByName);
-    // }, [courses, termIds]);
+        return courses.sort(sortCourseByName);
+    }, [courseIdsByTermId, coursesById, termIdsKey]);
 };

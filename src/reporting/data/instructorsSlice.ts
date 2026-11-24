@@ -5,7 +5,7 @@ import {IUserData} from "@ueu/ueu-canvas"
 export type InstructorsState = {
     instructorsById: Record<number, IUserData>;
     instructorsByCourseId: Record<number, number[]>; // Store only instructor IDs for consistency
-    instructorLoadStatus: Record<number, LoadStatus>;
+    loadStatusByCourseId: Record<number, LoadStatus | undefined>;
     status: LoadStatus;
     error?: string;
 };
@@ -13,7 +13,7 @@ export type InstructorsState = {
 const initialState: InstructorsState = {
     instructorsById: {},
     instructorsByCourseId: {},
-    instructorLoadStatus: {},
+    loadStatusByCourseId: {},
     status: "idle",
 };
 
@@ -23,6 +23,10 @@ const instructorsSlice = createSlice({
     reducers: {
         setStatus: (state, action: PayloadAction<LoadStatus>) => {
             state.status = action.payload;
+        },
+        setCourseInstructorsStatus: (state, action: PayloadAction<{ courseId: number, status: LoadStatus }>) => {
+            const {courseId, status} = action.payload;
+            state.loadStatusByCourseId[courseId] = status;
         },
         updateInstructors: (
             state,
@@ -41,27 +45,17 @@ const instructorsSlice = createSlice({
             });
 
             // Handle course-specific logic
-            if (courseId) {
-                if (!state.instructorsByCourseId[courseId] || overwrite) {
-                    // Overwrite or initialize new array
-                    state.instructorsByCourseId[courseId] = instructors.map(inst => inst.id);
-                } else {
-                    // Append new instructors, avoiding duplicates
-                    const existingIds = new Set(state.instructorsByCourseId[courseId]);
-                    instructors.forEach(inst => existingIds.add(inst.id));
-                    state.instructorsByCourseId[courseId] = Array.from(existingIds);
-                }
+            if (typeof courseId === 'number') {
+                const existingIds = overwrite ? [] : state.instructorsByCourseId[courseId] ?? [];
+                // Merge, avoiding duplicates (also within a single payload)
+                state.instructorsByCourseId[courseId] = Array.from(new Set([
+                    ...existingIds,
+                    ...instructors.map(inst => inst.id),
+                ]));
             }
         },
     },
 });
 
-export const { setStatus, updateInstructors } = instructorsSlice.actions;
+export const { setStatus, setCourseInstructorsStatus, updateInstructors } = instructorsSlice.actions;
 export const instructorReducer = instructorsSlice.reducer;
-
-// Selector to retrieve all instructors as an array
-
-
-
-
-
