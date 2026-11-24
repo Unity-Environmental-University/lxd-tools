@@ -137,6 +137,12 @@ The page reloads automatically after a successful import.
 
 ---
 
+### Syllabus Sync
+
+Syllabus Sync brings a course's syllabus up to date with the current syllabus template while keeping everything that belongs to the course. Use it when updating a course to keep the syllabus current. See [Syllabus Sync](docs/SYLLABUS_SYNC.md) for more information on this process.
+
+---
+
 ### Large Image Warning
 
 When editing a Canvas page that contains a banner image wider than 2000px, the extension displays a prominent warning around the image. A **Try Resize** button appears — clicking it attempts to resize the image to 1200px wide.
