@@ -41,15 +41,23 @@ When checking whether the current page URL belongs to a trusted host, parse the 
 
 ## GitHub Actions
 
-There are currently two active GitHub Action Workflows:
+There are currently four active GitHub Action Workflows:
 
 ### Push Test
 
 On every commit, this action runs runs test coverage, linting and typechecking on the code to ensure that changes haven't caused any errors.
 
-### PR Build
+### Build Testing
 
 On every pull request, this workflow will lint, typecheck and test the code and then create a build artifact that it will comment in the pull request, this makes it easier for a user to pull the built extension and test.
+
+### Version Check
+
+Checks pull requests to main to make sure the version number in package and package-lock have been updated. This is to prevent issues in production deploys. A second version exists that skips the check if the changes are only .md, .yml, or .yaml files. This allows the documentation and workflow files to be iterated separetly from a publishes.
+
+### Production Deploy
+
+On a merged pull request to main that has more that documentation and workflow files, the build process runs. More on the build process can be found [here](docs/BUILD_PROCESS.md).
 
 ## Tips/Tricks
 

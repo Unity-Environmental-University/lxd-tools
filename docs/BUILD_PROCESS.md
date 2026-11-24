@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the automated build and deployment process for the LXD browser extension. The workflow runs when a change is pushed to the main branch (in practice, when a pull request is merged) or when it is started manually from main, and handles building, signing, and distributing the extension across multiple platforms (Chrome and Firefox).
+This document describes the automated build and deployment process for the LXD browser extension. The workflow runs when a pull request containing code is merged into main or when it is started manually from main, and handles building, signing, and distributing the extension across multiple platforms (Chrome and Firefox).
 
 The deployment pipeline manages version control, package signing, storage on Cloudflare R2, and maintains a clean version history.
 
@@ -10,7 +10,7 @@ The deployment pipeline manages version control, package signing, storage on Clo
 
 ### When the workflow runs
 
-- A push to the main branch, which in practice means a pull request was merged (branch protection requires a pull request for main)
+- A pull request was merged (branch protection requires a pull request for main)
   - If the push only changes .md, .yml, .yaml and/or `.github/release-tools/` files, the workflow will not run. This allows documentation and workflows to be iterated separately of release cycles.
 - A manual run (Actions → "Deploy Extension Updates" → Run workflow). This is a fallback, for example to re-run a deploy that failed partway. It always builds the tip of main.
 
@@ -25,7 +25,7 @@ Test builds that must not publish use the separate **Build testing** workflow (`
 
 ### Repository requirements
 
-- Version number in `package.json` is updated with each release
+- Version number in `package.json` and `package-lock.json` is updated with each release
 - Extension source code follows the npm build pipeline
 - `updates.json` and `update.xml` files are present in the dist directory
 
@@ -57,7 +57,7 @@ The workflow performs the following automated steps in sequence:
 5. **Artifact Verification** — Validates that all required output files exist: both signed extensions (`.crx` and `.xpi`), plus the update manifests (`updates.json` and `update.xml`). File paths are captured for downstream steps.
 6. **Upload to Cloudflare R2** — All artifacts are uploaded to the R2 bucket with appropriate content types. This includes both signed extensions and update manifests needed by the browser extension update mechanisms.
 7. **Version Pruning** — Automatically deletes old versions from R2, keeping only the 5 most recent releases of each file type (`.crx` and `.xpi`). This reduces storage costs while maintaining version history.
-8. **Release Branch** — A release branch (`release/{VERSION}`) is pushed for long-term reference and potential rollback scenarios. If the branch already exists on origin (from an earlier attempt), this step is skipped.
+8. **Release Branch** — A release branch (`release/{VERSION}`) is pushed for development. 
 9. **GitHub Release** — The final step creates the `v{VERSION}` tag on the deployed commit and a GitHub Release in a single `gh release create` call. The release notes are the `CHANGELOG.md` section for the version (headings `## 3.3.1`, `## [3.3.1]` or `## [3.3.1] - date`, with empty subsections dropped); if that section is missing or has no entries, a warning is logged and GitHub-generated notes are used instead. The release has three assets: the signed `.crx` (Chrome), the signed `.xpi` (Firefox), and `lxd-extension-{VERSION}-build.zip`, the unpacked build for "Load unpacked" (it excludes the `.crx`, `.xpi` and update manifests). The release is created last on purpose: its existence is what marks the version as deployed.
 
 ## Important Considerations
