@@ -65,3 +65,34 @@ On a merged pull request to main that has more that documentation and workflow f
 - `npm run build:dev` writes to `lxd-extension-build/` inside this repository with a separate local extension identity, so it can coexist with the released extension. `npm run watch:dev` rebuilds the same folder on changes.
 - A Canvas test environment exists at https://unity.test.instructure.com/.
   - I find myself using a test course in the live Canvas more often, which allows me to reset and pull any course in.
+
+### Testing changes to ueu-canvas locally
+
+I've found situations where I need to make sure changes to ueu-canvas don't break things in the extension. Below is my preferred way of doing so.
+
+
+1. Build and pack ueu-canvas
+``` bash
+cd <local ueu-canvas repo>
+npm run build && npm pack     # creates ueu-ueu-canvas-<version>.tgz
+```
+
+2. Install the tarball into lxd-tools and clear the webpack cache
+``` bash
+cd <local lxd-tools repo>
+npm install --no-save <local ueu-canvas repo>/ueu-ueu-canvas-<version>.tgz
+rm -rf node_modules/.cache/webpack/default-development
+```
+
+3. Test
+
+4. After testing, restore the registry version and clear the cache again
+``` bash
+cd <local lxd-tools repo>
+npm install
+rm -rf node_modules/.cache/webpack/default-development
+```
+
+- `--no-save` leaves `package.json` and the lockfile untouched.
+- Clear the cache after each install, not just once. Webpack caches the previous build of `ueu-canvas`, so without the wipe you may test stale code.
+- Re-run `npm run build && npm pack` and repeat steps 2-3 after every change to `ueu-canvas`.
