@@ -14,8 +14,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## 3.3.1
 
-### Added
-
 ### Changed
 - "Set Selected Bios" now updates only the sections that are checked. It used to rewrite the profile page on every section.
 - Set Bios now shows the error for every section that fails, not only the last one.
@@ -58,8 +56,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Validation adding a course evaluation reminder page to the last module of a course.
 - Syllabus Sync functionality added
 
-### Changed
-
 ### Internal
 - Release workflow: `main-deploy.yml` now runs on push to `main` or manual dispatch (main only), uses a `production` environment, and is the only workflow that publishes. The old `manual-deploy.yml` ("Build testing") is removed; `build-testing.yml` (renamed from `pr-build.yml`) is the single build-only workflow and also runs manually.
 - Pins workflow actions to commit SHAs and installs with `npm ci` (lockfile enforced) in the build, test and deploy workflows
@@ -90,8 +86,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## 3.2.4
 
-### Added
-
 ### Changed
 - Fixed Finish Migration not completing: the course is now set as a blueprint before its content is locked. Locking first always failed because Canvas has no blueprint template until the course is a blueprint, which left the migration unfinished. Errors during this step now show the actual Canvas message.
 - Fixed locking during Finish Migration sending the wrong content type and id to Canvas (module item `Assignment` / module item id instead of `assignment` / content id), which made Canvas reject every item with a 400.
@@ -99,16 +93,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Removed the annotations button from the course update interface.
 - Fix an issue where no addendum page would result in a 404 that would cause the Copy Form Email button to fail. 404s now simply result in the addendum section of the form email being an empty string.
 
-### Internal
-
 ## 3.2.3
-
-### Added
 
 ### Changed
 - Made changes to fix the date input interpreting calendar select as a blank entry and flagging it as an invalid date entry.
-
-### Internal
 
 ## 3.2.2
 
@@ -142,14 +130,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## 3.2.0
 
-### Added
-
 ### Changed
 - Majorty of validations removed from the extension
 
 ## 3.1.9
-
-### Added
 
 ### Changed
 - Flipped the switch to turn Citations Module button back on in MakeBp Screen
@@ -160,16 +144,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## 3.1.8
 
-### Added
-
 ### Changed
 - Corrected dev template course IDs in EmailLink
 
-### Changed
-
 ## 3.1.7
-
-### Added
 
 ### Changed
 - Hid Academic Integrity Assignment button(MakeBp.tsx)
@@ -183,12 +161,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## 3.1.6
 
-### Added
-
 ### Changed
 - Policy tech link for honor code in syllabus
-
-### Internal
 
 ## 3.1.5
 
@@ -200,8 +174,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Course Overview Test updated to reflect correct language
 - Updated documentation
-
-### Internal
 
 ## 3.1.4
 

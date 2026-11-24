@@ -48,7 +48,7 @@ Note: These dependencies are also defined in the package.json of lxd-tools.
 
 #### 3. Testing Your Changes
 
-1. Once the local build is working and you're in a non-main branch, you can make changes to the code and test them in the browser. To have a build of the extension that updates every time the code is changed, you can run `npm run watch`.
+1. Once the local build is working and you're in a non-main branch, you can make changes to the code and test them in the browser. `npm run build` will output a dist folder that you can load into the browser. `npm run watch` does the same, but rebuilds every time you make a change in the code. `npm run build:dev` and `npm run watch:dev` do the same thing but output to lxd-extension-build and have -local on the version number and (Local) in the title, which makes it a bit easier to know which is which if you load it alongside the production extension.
 
 2. Jest is the testing suite used for unit testing. Any time you change code, you should run the tests to make sure they still pass. Tests can be run with the command `npm test`.
 
@@ -81,14 +81,6 @@ This guide explains how to publish the LXD Extension.
     +0.1 for feature releases
     +1.0 for massive changes
 
-### 3. Run Tests
-
-- **Test the Code:**  
-   Run the test suite to validate that all tests pass successfully:
-  `npm test`
-
-- **Fix Any Failures:**  
-   If any tests fail, resolve the issues before proceeding.
 
 ### 4. Build Locally and Test Manually
 
@@ -110,18 +102,12 @@ Merging the release branch into `main` (through a pull request) starts the **Dep
 - Pushes a `release/<version>` branch.
 - Creates the `v<version>` tag and a GitHub Release with the changelog notes, the `.crx`, the `.xpi`, and a zip of the unpacked build.
 
-See [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md) for details, including how to re-run a failed deploy.
+See [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md) for details, including how to re-run a failed deploy. PRs to main are blocked if the test workflow or version check workflow fails.
 
 ### 6. Communicate & Finalize the Release
 
 - **Notify the Team:**  
    Let everyone know about the new release. The people that use the extension are in The Mighty LXD Team chat on Microsoft Teams. Let them know there's a new version of the extension, including a few top level details about what is new.
-
-* **Merge Current Release Branch into main in LXD-Tools**
-  Merge the current release branch into main in the lxd-tools repository.
-
-- **New Release Branch in LXD-Tools:**  
-   Create a new release branch in lxd-tools based on the newly merged main branch.
 
 ### Summary
 
@@ -129,8 +115,6 @@ See [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md) for details, including how to
    - Consolidate updates from various branches into the release branch.
 2. **Increment the Version:**
    - Run `npm version <new version>` (updates `package.json` and `package-lock.json`; no commit or tag is made).
-3. **Run Tests:**
-   - Run `npm test` Ensure all tests pass (fix any failing tests).
 4. **Build Locally**
    - Run `npm run build` to build the extension locally for testing.
 5. **Manual Testing:**
@@ -140,5 +124,3 @@ See [docs/BUILD_PROCESS.md](docs/BUILD_PROCESS.md) for details, including how to
    - Merge changes in lxd-tools to main; the deploy workflow publishes the extension automatically.
 7. **Notify the Team:**
    - Communicate the new release to the team.
-8. **Manage Release Branches:**
-   - Create a new release branch in lxd-tools for the next version.
