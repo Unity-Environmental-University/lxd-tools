@@ -35,6 +35,7 @@ dist/
 /src/.vs
 **/.vs
 /src/.vscode
+.zed
 .claude/
 *.pem
 .prettierignore
